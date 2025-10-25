@@ -4,9 +4,22 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"yas80/parser"
 )
+
+func getYYDebugEnv() int {
+	v := os.Getenv("YYDEBUG")
+	if v == "" {
+		return 0
+	}
+	num, err := strconv.Atoi(v)
+	if err == nil {
+		return num
+	}
+	return 0
+}
 
 // メイン関数
 func main() {
@@ -15,6 +28,7 @@ func main() {
 	}
 	input := os.Args[1]
 
+	parser.SetYYDebug(getYYDebugEnv())
 	l := parser.NewLexer(bufio.NewReader(strings.NewReader(input)))
 	ret := parser.Parse(l)
 

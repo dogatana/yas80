@@ -19,3 +19,7 @@ func parseInt(s string) (int64, error) {
 		return strconv.ParseInt(str, 0, 0)
 	}
 }
+
+func SetYYDebug(v int) {
+	yyDebug = v
+}
