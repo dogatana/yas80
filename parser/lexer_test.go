@@ -179,3 +179,117 @@ func TestIDENT(t *testing.T) {
 		}
 	}
 }
+
+func TestZ80REG8(t *testing.T) {
+	tests := []struct {
+		input string
+		op    byte
+	}{
+		{"A", Z80_REG_A},
+		{"B", Z80_REG_B},
+		{"C", Z80_REG_C},
+		{"D", Z80_REG_D},
+		{"E", Z80_REG_E},
+		{"H", Z80_REG_H},
+		{"L", Z80_REG_L},
+		{"IXH", Z80_REG_IXH},
+		{"IXL", Z80_REG_IXL},
+		{"IYH", Z80_REG_IYH},
+		{"IYL", Z80_REG_IYL},
+		{"I", Z80_REG_I},
+		{"R", Z80_REG_R},
+	}
+
+	for _, tt := range tests {
+		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		tok := l.NextToken()
+		if tok.Type != Z80_REG8 {
+			t.Errorf("tokenize %q. expected Type Z80_REG8. got %#v", tt.input, yySymNames[yyXLAT[tok.Type]])
+		}
+		if tok.Literal != tt.input {
+			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
+		}
+		if tok.Op != tt.op {
+			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.Op)
+		}
+	}
+}
+
+func TestZ80REG16(t *testing.T) {
+	tests := []struct {
+		input string
+		op    byte
+	}{
+		{"SP", Z80_REG_SP},
+		{"IX", Z80_REG_IX},
+		{"IY", Z80_REG_IY},
+		{"AF", Z80_REG_AF},
+		{"AF'", Z80_REG_AFEX},
+		{"BC", Z80_REG_BC},
+		{"DE", Z80_REG_DE},
+	}
+
+	for _, tt := range tests {
+		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		tok := l.NextToken()
+		if tok.Type != Z80_REG16 {
+			t.Errorf("tokenize %q. expected Type Z80_REG16. got %#v", tt.input, yySymNames[yyXLAT[tok.Type]])
+		}
+		if tok.Literal != tt.input {
+			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
+		}
+		if tok.Op != tt.op {
+			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.Op)
+		}
+	}
+}
+
+func TestZ80FLAG(t *testing.T) {
+	tests := []struct {
+		input string
+		op    byte
+	}{
+		// C は Z80_REG8 トークンとなる
+		{"NC", Z80_FLAG_NC},
+		{"Z", Z80_FLAG_Z},
+		{"NZ", Z80_FLAG_NZ},
+		{"PO", Z80_FLAG_PO},
+		{"PE", Z80_FLAG_PE},
+		{"P", Z80_FLAG_P},
+		{"M", Z80_FLAG_M},
+	}
+
+	for _, tt := range tests {
+		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		tok := l.NextToken()
+		if tok.Type != Z80_FLAG {
+			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, yySymNames[yyXLAT[tok.Type]])
+		}
+		if tok.Literal != tt.input {
+			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
+		}
+		if tok.Op != tt.op {
+			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.Op)
+		}
+	}
+}
+
+func TestZ80Instructions(t *testing.T) {
+	input := "LD PUSH POP EX EXX LDI LDIR LDDR CPI CPIR CPDR ADD ADC SUB SBC AND OR " +
+		"CP INC DEC DAA CPL NEG CCF SCF NOP HALT DI EI IM " +
+		"RLCA RLA RRCA RRA RLC RL RR SLA SRA SRL RLD RRD " +
+		"BIT SET RES JP JR DJNZ CALL RET RETI RETN REST " +
+		"IN INI INIR INDR OUT OUTI OTIR OUTD OTDR"
+
+	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	for {
+		tok := l.NextToken()
+		if tok.Type == EOL {
+			break
+		}
+
+		if tok.Type != Z80Instructions[tok.Literal] {
+			t.Errorf("expected Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		}
+	}
+}

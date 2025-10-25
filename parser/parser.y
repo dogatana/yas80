@@ -17,6 +17,7 @@ var _ = __yyfmt__.Sprintf
 // プログラムの構成要素を指定
 %type<num> expr program
 %token<token> NUMBER IDENT
+%token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
 %token '+' '-' '*' '/' '(' ')'
 %token INVALID EOL
 %token<token> error

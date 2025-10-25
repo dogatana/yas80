@@ -88,6 +88,15 @@ func (l *Lexer) NextToken() Token {
 			literal += string(peek) + l.readWord()
 		}
 		l.nextChar()
+		// AF’の対処
+		if len(literal) == 2 && l.curChar == '\'' {
+			literal += "'"
+			l.nextChar()
+		}
+		tok, ok := l.checkRegisteredWord(literal)
+		if ok {
+			return tok
+		}
 		return Token{Type: IDENT, Literal: literal}
 	case l.curChar == '@' || l.curChar == '.':
 		literal = string(l.curChar)
@@ -100,6 +109,26 @@ func (l *Lexer) NextToken() Token {
 		l.nextChar()
 		return Token{Type: INVALID, Literal: literal}
 	}
+}
+
+func (l *Lexer) checkRegisteredWord(word string) (Token, bool) {
+	var (
+		tok Token
+		tp  int
+		ok  bool
+	)
+
+	// Z80 レジスタ、フラグ
+	tok, ok = Z80Registers[word]
+	if ok {
+		return tok, ok
+	}
+	// Z80 命令
+	tp, ok = Z80Instructions[word]
+	if ok {
+		return Token{Type: tp, Literal: word}, true
+	}
+	return Token{}, false
 }
 
 func (l *Lexer) nextChar() {

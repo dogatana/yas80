@@ -6,6 +6,7 @@ import "fmt"
 type Token struct {
 	Type    int
 	Literal string
+	Op      byte
 	Line    int
 	Column  int
 }
