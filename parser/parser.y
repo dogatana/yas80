@@ -16,6 +16,8 @@ var _ = __yyfmt__.Sprintf
 }
 // プログラムの構成要素を指定
 %type<num> expr program
+%type<token> instruction
+
 %token<token> NUMBER IDENT
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
 %token '+' '-' '*' '/' '(' ')'
@@ -36,12 +38,19 @@ program		: { $$ = 0}
 				Result = $2
 				__yyfmt__.Println("Result", $2)
 			}
+			| program instruction EOL
+			{
+				__yyfmt__.Println("Result", $2)
+			}
 			| program error EOL
 			{
 				yylex.Error(
 					__yyfmt__.Sprintf("%q の後に誤りがあります", $2.Literal))
 				yyerrok()
 			}
+			;
+
+instruction	: Z80_INST0	{ $$ = $1}
 			;
 
 expr		: NUMBER
@@ -65,6 +74,5 @@ expr		: NUMBER
 %%
 
 func Parse(l yyLexer) int {
-	yyDebug = 3
 	return yyParse(l)
 }

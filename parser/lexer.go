@@ -93,7 +93,8 @@ func (l *Lexer) NextToken() Token {
 			literal += "'"
 			l.nextChar()
 		}
-		tok, ok := l.checkRegisteredWord(literal)
+		tok, ok := l.checkZ80ReservedWord(literal)
+		fmt.Println("search", literal, tok, ok)
 		if ok {
 			return tok
 		}
@@ -111,20 +112,25 @@ func (l *Lexer) NextToken() Token {
 	}
 }
 
-func (l *Lexer) checkRegisteredWord(word string) (Token, bool) {
+func (l *Lexer) checkZ80ReservedWord(literal string) (Token, bool) {
 	var (
 		tok Token
 		ok  bool
 	)
 
+	// 大文字化して検索
+	word := strings.ToUpper(literal)
+
 	// Z80 レジスタ、フラグ
 	tok, ok = Z80Registers[word]
 	if ok {
+		tok.Literal = literal
 		return tok, ok
 	}
 	// Z80 命令
 	tok, ok = Z80Instructions[word]
 	if ok {
+		tok.Literal = literal
 		return tok, ok
 	}
 	return Token{}, false
