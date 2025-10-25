@@ -189,7 +189,7 @@ var Z80Instructions map[string]Token = map[string]Token{
 	"JR":   {Type: Z80_INST2, Literal: "JR", Op: Z80_INST_JR}, // cc 有無によりOPCODE1, OPCODE2 両方あり
 	"DJNZ": {Type: Z80_INST1, Literal: "DJNZ", Op: Z80_INST_DJNZ},
 	"CALL": {Type: Z80_INST2, Literal: "CALL", Op: Z80_INST_CALL}, // cc 有無によりOPCODE1, OPCODE2 両方あり
-	"RET":  {Type: Z80_INST1, Literal: "RET", Op: Z80_INST_RET},   // cc 有無により OPCODE0, OPCODE1 両方あり
+	"RET":  {Type: Z80_INST0, Literal: "RET", Op: Z80_INST_RET},   // cc 有無により OPCODE0, OPCODE1 両方あり
 	"RETI": {Type: Z80_INST0, Literal: "RETI", Op: Z80_INST_RETI},
 	"RETN": {Type: Z80_INST0, Literal: "RETN", Op: Z80_INST_RETN},
 	"REST": {Type: Z80_INST1, Literal: "REST", Op: Z80_INST_REST},
