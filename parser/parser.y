@@ -3,8 +3,10 @@ package parser
 
 import (
 	"fmt"
+	"yas80/ast"
 )
 
+var Program []ast.Node
 var Result int
 // goyacc が __yyfmt__ を勝手に import することの対策
 var _ = __yyfmt__.Sprintf
@@ -12,11 +14,14 @@ var _ = __yyfmt__.Sprintf
 %union {
 	token Token
 	num int
+	node ast.Node
 	err any
 }
+
+
 // プログラムの構成要素を指定
 %type<num> expr program
-%type<token> instruction
+%type<node> instruction
 
 %token<token> NUMBER IDENT
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
@@ -41,6 +46,7 @@ program		: { $$ = 0}
 			| program instruction EOL
 			{
 				__yyfmt__.Println("Result", $2)
+				Program = append(Program, $2)
 			}
 			| program error EOL
 			{
@@ -50,7 +56,7 @@ program		: { $$ = 0}
 			}
 			;
 
-instruction	: Z80_INST0	{ $$ = $1}
+instruction	: Z80_INST0	{ $$ = &ast.Z80Instruction{OpCode: $1.Type, Line: $1.Line} }
 			;
 
 expr		: NUMBER

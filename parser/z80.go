@@ -139,7 +139,7 @@ var Z80Registers map[string]Token = map[string]Token{
 	"M":  {Type: Z80_FLAG, Literal: "M", Op: Z80_FLAG_M},
 }
 
-var Z80Instructions map[string]Token = map[string]Token{
+var Z80OpCodes map[string]Token = map[string]Token{
 	"LD":   {Type: Z80_INST0, Literal: "LD", Op: Z80_INST_LD},
 	"PUSH": {Type: Z80_INST1, Literal: "PUSH", Op: Z80_INST_PUSH},
 	"POP":  {Type: Z80_INST1, Literal: "POP", Op: Z80_INST_POP},
@@ -202,4 +202,18 @@ var Z80Instructions map[string]Token = map[string]Token{
 	"OTIR": {Type: Z80_INST0, Literal: "OTIR", Op: Z80_INST_OTIR},
 	"OUTD": {Type: Z80_INST0, Literal: "OUTD", Op: Z80_INST_OUTD},
 	"OTDR": {Type: Z80_INST0, Literal: "OTDR", Op: Z80_INST_OTDR},
+}
+
+func Z80Names(opcode int) string {
+	for _, v := range Z80Registers {
+		if v.Op == opcode {
+			return v.Literal
+		}
+	}
+	for _, v := range Z80OpCodes {
+		if v.Op == opcode {
+			return v.Literal
+		}
+	}
+	return "UNKNOWN"
 }

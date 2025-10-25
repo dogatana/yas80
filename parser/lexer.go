@@ -128,7 +128,7 @@ func (l *Lexer) checkZ80ReservedWord(literal string) (Token, bool) {
 		return tok, ok
 	}
 	// Z80 命令
-	tok, ok = Z80Instructions[word]
+	tok, ok = Z80OpCodes[word]
 	if ok {
 		tok.Literal = literal
 		return tok, ok
