@@ -1,0 +1,17 @@
+*~
+.*~
+
+*.pyc
+
+temp/
+venv/
+
+*.xlsx
+*.xls
+
+*.html
+*.txt
+*.output
+*.exe
+
+parser.go
