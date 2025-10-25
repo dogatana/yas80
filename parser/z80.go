@@ -1,7 +1,7 @@
 package parser
 
 const (
-	// 8bit
+	// 8bit Register
 	Z80_REG_A   = 'A'
 	Z80_REG_B   = 'B'
 	Z80_REG_C   = 'C'
@@ -16,19 +16,19 @@ const (
 	Z80_REG_I   = 'I'
 	Z80_REG_R   = 'R'
 
-	// 16bit
+	// 16bit Register
 	Z80_REG_SP = 'S'
 	Z80_REG_IX = 'X'
 	Z80_REG_IY = 'Y'
 
-	// register pair,
+	// Register Pair,
 	Z80_REG_AF   = 'A'
 	Z80_REG_AFEX = 'F' // AF'
 	Z80_REG_BC   = 'B'
 	Z80_REG_DE   = 'D'
 	Z80_REG_HL   = 'H'
 
-	// flag
+	// Flag
 	Z80_FLAG_C  = 'C'
 	Z80_FLAG_NC = 'c'
 	Z80_FLAG_Z  = 'Z'
@@ -37,6 +37,72 @@ const (
 	Z80_FLAG_PE = 'E'
 	Z80_FLAG_P  = 'P'
 	Z80_FLAG_M  = 'M'
+)
+
+const (
+	// Instruction
+	Z80_INST_LD = iota + 256
+	Z80_INST_PUSH
+	Z80_INST_POP
+	Z80_INST_EX
+	Z80_INST_EXX
+	Z80_INST_LDI
+	Z80_INST_LDIR
+	Z80_INST_LDDR
+	Z80_INST_CPI
+	Z80_INST_CPIR
+	Z80_INST_CPDR
+	Z80_INST_ADD
+	Z80_INST_ADC
+	Z80_INST_SUB
+	Z80_INST_SBC
+	Z80_INST_AND
+	Z80_INST_OR
+	Z80_INST_CP
+	Z80_INST_INC
+	Z80_INST_DEC
+	Z80_INST_DAA
+	Z80_INST_CPL
+	Z80_INST_NEG
+	Z80_INST_CCF
+	Z80_INST_SCF
+	Z80_INST_NOP
+	Z80_INST_HALT
+	Z80_INST_DI
+	Z80_INST_EI
+	Z80_INST_IM
+	Z80_INST_RLCA
+	Z80_INST_RLA
+	Z80_INST_RRCA
+	Z80_INST_RRA
+	Z80_INST_RLC
+	Z80_INST_RL
+	Z80_INST_RR
+	Z80_INST_SLA
+	Z80_INST_SRA
+	Z80_INST_SRL
+	Z80_INST_RLD
+	Z80_INST_RRD
+	Z80_INST_BIT
+	Z80_INST_SET
+	Z80_INST_RES
+	Z80_INST_JP
+	Z80_INST_JR
+	Z80_INST_DJNZ
+	Z80_INST_CALL
+	Z80_INST_RET
+	Z80_INST_RETI
+	Z80_INST_RETN
+	Z80_INST_REST
+	Z80_INST_IN
+	Z80_INST_INI
+	Z80_INST_INIR
+	Z80_INST_INDR
+	Z80_INST_OUT
+	Z80_INST_OUTI
+	Z80_INST_OTIR
+	Z80_INST_OUTD
+	Z80_INST_OTDR
 )
 
 var Z80Registers map[string]Token = map[string]Token{
@@ -73,81 +139,67 @@ var Z80Registers map[string]Token = map[string]Token{
 	"M":  {Type: Z80_FLAG, Literal: "M", Op: Z80_FLAG_M},
 }
 
-var Z80Instructions map[string]int = map[string]int{
-	"LD": Z80_INST0,
-
-	"PUSH": Z80_INST1,
-	"POP":  Z80_INST1,
-
-	"EX":  Z80_INST2,
-	"EXX": Z80_INST0,
-
-	"LDI":  Z80_INST0,
-	"LDIR": Z80_INST0,
-	"LDDR": Z80_INST0,
-	"CPI":  Z80_INST0,
-	"CPIR": Z80_INST0,
-	"CPDR": Z80_INST0,
-
-	"ADD": Z80_INST2,
-	"ADC": Z80_INST2,
-
-	"SUB": Z80_INST1,
-	"SBC": Z80_INST2,
-
-	"AND": Z80_INST1,
-	"OR":  Z80_INST1,
-	"CP":  Z80_INST1,
-	"INC": Z80_INST1,
-	"DEC": Z80_INST1,
-
-	"DAA":  Z80_INST0,
-	"CPL":  Z80_INST0,
-	"NEG":  Z80_INST0,
-	"CCF":  Z80_INST0,
-	"SCF":  Z80_INST0,
-	"NOP":  Z80_INST0,
-	"HALT": Z80_INST0,
-	"DI":   Z80_INST0,
-	"EI":   Z80_INST0,
-	"IM":   Z80_INST1,
-
-	"RLCA": Z80_INST0,
-	"RLA":  Z80_INST0,
-	"RRCA": Z80_INST0,
-	"RRA":  Z80_INST0,
-
-	"RLC": Z80_INST1,
-	"RL":  Z80_INST1,
-	"RR":  Z80_INST1,
-	"SLA": Z80_INST1,
-	"SRA": Z80_INST1,
-	"SRL": Z80_INST1,
-
-	"RLD": Z80_INST0,
-	"RRD": Z80_INST0,
-
-	"BIT": Z80_INST2,
-	"SET": Z80_INST2,
-	"RES": Z80_INST2,
-
-	"JP":   Z80_INST2, // cc 有無によりOPCODE1, OPCODE2 両方あり
-	"JR":   Z80_INST2, // cc 有無によりOPCODE1, OPCODE2 両方あり
-	"DJNZ": Z80_INST1,
-
-	"CALL": Z80_INST2, // cc 有無によりOPCODE1, OPCODE2 両方あり
-	"RET":  Z80_INST1, // cc 有無により OPCODE0, OPCODE1 両方あり
-	"RETI": Z80_INST0,
-	"RETN": Z80_INST0,
-	"REST": Z80_INST1,
-
-	"IN":   Z80_INST2,
-	"INI":  Z80_INST0,
-	"INIR": Z80_INST0,
-	"INDR": Z80_INST0,
-	"OUT":  Z80_INST2,
-	"OUTI": Z80_INST0,
-	"OTIR": Z80_INST0,
-	"OUTD": Z80_INST0,
-	"OTDR": Z80_INST0,
+var Z80Instructions map[string]Token = map[string]Token{
+	"LD":   {Type: Z80_INST0, Literal: "LD", Op: Z80_INST_LD},
+	"PUSH": {Type: Z80_INST1, Literal: "PUSH", Op: Z80_INST_PUSH},
+	"POP":  {Type: Z80_INST1, Literal: "POP", Op: Z80_INST_POP},
+	"EX":   {Type: Z80_INST2, Literal: "EX", Op: Z80_INST_EX},
+	"EXX":  {Type: Z80_INST0, Literal: "EXX", Op: Z80_INST_EXX},
+	"LDI":  {Type: Z80_INST0, Literal: "LDI", Op: Z80_INST_LDI},
+	"LDIR": {Type: Z80_INST0, Literal: "LDIR", Op: Z80_INST_LDIR},
+	"LDDR": {Type: Z80_INST0, Literal: "LDDR", Op: Z80_INST_LDDR},
+	"CPI":  {Type: Z80_INST0, Literal: "CPI", Op: Z80_INST_CPI},
+	"CPIR": {Type: Z80_INST0, Literal: "CPIR", Op: Z80_INST_CPIR},
+	"CPDR": {Type: Z80_INST0, Literal: "CPDR", Op: Z80_INST_CPDR},
+	"ADD":  {Type: Z80_INST2, Literal: "ADD", Op: Z80_INST_ADD},
+	"ADC":  {Type: Z80_INST2, Literal: "ADC", Op: Z80_INST_ADC},
+	"SUB":  {Type: Z80_INST1, Literal: "SUB", Op: Z80_INST_SUB},
+	"SBC":  {Type: Z80_INST2, Literal: "SBC", Op: Z80_INST_SBC},
+	"AND":  {Type: Z80_INST1, Literal: "AND", Op: Z80_INST_AND},
+	"OR":   {Type: Z80_INST1, Literal: "OR", Op: Z80_INST_OR},
+	"CP":   {Type: Z80_INST1, Literal: "CP", Op: Z80_INST_CP},
+	"INC":  {Type: Z80_INST1, Literal: "INC", Op: Z80_INST_INC},
+	"DEC":  {Type: Z80_INST1, Literal: "DEC", Op: Z80_INST_DEC},
+	"DAA":  {Type: Z80_INST0, Literal: "DAA", Op: Z80_INST_DAA},
+	"CPL":  {Type: Z80_INST0, Literal: "CPL", Op: Z80_INST_CPL},
+	"NEG":  {Type: Z80_INST0, Literal: "NEG", Op: Z80_INST_NEG},
+	"CCF":  {Type: Z80_INST0, Literal: "CCF", Op: Z80_INST_CCF},
+	"SCF":  {Type: Z80_INST0, Literal: "SCF", Op: Z80_INST_SCF},
+	"NOP":  {Type: Z80_INST0, Literal: "NOP", Op: Z80_INST_NOP},
+	"HALT": {Type: Z80_INST0, Literal: "HALT", Op: Z80_INST_HALT},
+	"DI":   {Type: Z80_INST0, Literal: "DI", Op: Z80_INST_DI},
+	"EI":   {Type: Z80_INST0, Literal: "EI", Op: Z80_INST_EI},
+	"IM":   {Type: Z80_INST1, Literal: "IM", Op: Z80_INST_IM},
+	"RLCA": {Type: Z80_INST0, Literal: "RLCA", Op: Z80_INST_RLCA},
+	"RLA":  {Type: Z80_INST0, Literal: "RLA", Op: Z80_INST_RLA},
+	"RRCA": {Type: Z80_INST0, Literal: "RRCA", Op: Z80_INST_RRCA},
+	"RRA":  {Type: Z80_INST0, Literal: "RRA", Op: Z80_INST_RRA},
+	"RLC":  {Type: Z80_INST1, Literal: "RLC", Op: Z80_INST_RLC},
+	"RL":   {Type: Z80_INST1, Literal: "RL", Op: Z80_INST_RL},
+	"RR":   {Type: Z80_INST1, Literal: "RR", Op: Z80_INST_RR},
+	"SLA":  {Type: Z80_INST1, Literal: "SLA", Op: Z80_INST_SLA},
+	"SRA":  {Type: Z80_INST1, Literal: "SRA", Op: Z80_INST_SRA},
+	"SRL":  {Type: Z80_INST1, Literal: "SRL", Op: Z80_INST_SRL},
+	"RLD":  {Type: Z80_INST0, Literal: "RLD", Op: Z80_INST_RLD},
+	"RRD":  {Type: Z80_INST0, Literal: "RRD", Op: Z80_INST_RRD},
+	"BIT":  {Type: Z80_INST2, Literal: "BIT", Op: Z80_INST_BIT},
+	"SET":  {Type: Z80_INST2, Literal: "SET", Op: Z80_INST_SET},
+	"RES":  {Type: Z80_INST2, Literal: "RES", Op: Z80_INST_RES},
+	"JP":   {Type: Z80_INST2, Literal: "JP", Op: Z80_INST_JP}, // cc 有無によりOPCODE1, OPCODE2 両方あり
+	"JR":   {Type: Z80_INST2, Literal: "JR", Op: Z80_INST_JR}, // cc 有無によりOPCODE1, OPCODE2 両方あり
+	"DJNZ": {Type: Z80_INST1, Literal: "DJNZ", Op: Z80_INST_DJNZ},
+	"CALL": {Type: Z80_INST2, Literal: "CALL", Op: Z80_INST_CALL}, // cc 有無によりOPCODE1, OPCODE2 両方あり
+	"RET":  {Type: Z80_INST1, Literal: "RET", Op: Z80_INST_RET},   // cc 有無により OPCODE0, OPCODE1 両方あり
+	"RETI": {Type: Z80_INST0, Literal: "RETI", Op: Z80_INST_RETI},
+	"RETN": {Type: Z80_INST0, Literal: "RETN", Op: Z80_INST_RETN},
+	"REST": {Type: Z80_INST1, Literal: "REST", Op: Z80_INST_REST},
+	"IN":   {Type: Z80_INST2, Literal: "IN", Op: Z80_INST_IN},
+	"INI":  {Type: Z80_INST0, Literal: "INI", Op: Z80_INST_INI},
+	"INIR": {Type: Z80_INST0, Literal: "INIR", Op: Z80_INST_INIR},
+	"INDR": {Type: Z80_INST0, Literal: "INDR", Op: Z80_INST_INDR},
+	"OUT":  {Type: Z80_INST2, Literal: "OUT", Op: Z80_INST_OUT},
+	"OUTI": {Type: Z80_INST0, Literal: "OUTI", Op: Z80_INST_OUTI},
+	"OTIR": {Type: Z80_INST0, Literal: "OTIR", Op: Z80_INST_OTIR},
+	"OUTD": {Type: Z80_INST0, Literal: "OUTD", Op: Z80_INST_OUTD},
+	"OTDR": {Type: Z80_INST0, Literal: "OTDR", Op: Z80_INST_OTDR},
 }

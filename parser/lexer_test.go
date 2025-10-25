@@ -183,7 +183,7 @@ func TestIDENT(t *testing.T) {
 func TestZ80REG8(t *testing.T) {
 	tests := []struct {
 		input string
-		op    byte
+		op    int
 	}{
 		{"A", Z80_REG_A},
 		{"B", Z80_REG_B},
@@ -218,7 +218,7 @@ func TestZ80REG8(t *testing.T) {
 func TestZ80REG16(t *testing.T) {
 	tests := []struct {
 		input string
-		op    byte
+		op    int
 	}{
 		{"SP", Z80_REG_SP},
 		{"IX", Z80_REG_IX},
@@ -247,7 +247,7 @@ func TestZ80REG16(t *testing.T) {
 func TestZ80FLAG(t *testing.T) {
 	tests := []struct {
 		input string
-		op    byte
+		op    int
 	}{
 		// C は Z80_REG8 トークンとなる
 		{"NC", Z80_FLAG_NC},
@@ -288,8 +288,20 @@ func TestZ80Instructions(t *testing.T) {
 			break
 		}
 
-		if tok.Type != Z80Instructions[tok.Literal] {
+		expectedToken, ok := Z80Instructions[tok.Literal]
+		if !ok {
+			t.Errorf("instruction %q not found", tok.Literal)
+			continue
+		}
+		if tok.Type != expectedToken.Type {
 			t.Errorf("expected Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
 		}
+		if tok.Literal != expectedToken.Literal {
+			t.Errorf("expected Literal %q. got %#v", expectedToken.Literal, tok)
+		}
+		if tok.Op != expectedToken.Op {
+			t.Errorf("expected Op '%d'. got %#v", expectedToken.Op, tok)
+		}
+
 	}
 }

@@ -114,7 +114,6 @@ func (l *Lexer) NextToken() Token {
 func (l *Lexer) checkRegisteredWord(word string) (Token, bool) {
 	var (
 		tok Token
-		tp  int
 		ok  bool
 	)
 
@@ -124,9 +123,9 @@ func (l *Lexer) checkRegisteredWord(word string) (Token, bool) {
 		return tok, ok
 	}
 	// Z80 命令
-	tp, ok = Z80Instructions[word]
+	tok, ok = Z80Instructions[word]
 	if ok {
-		return Token{Type: tp, Literal: word}, true
+		return tok, ok
 	}
 	return Token{}, false
 }
