@@ -27,6 +27,7 @@ func tokenType(t int) string {
 	case t >= 0x20 && t < 0x100:
 		return fmt.Sprintf("'%c'", t)
 	default:
-		return fmt.Sprintf("'TOKEN(%d)'", t)
+		return yySymNames[yyXLAT[t]]
+		// return fmt.Sprintf("'TOKEN(%d)'", t)
 	}
 }
