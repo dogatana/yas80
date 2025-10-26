@@ -15,6 +15,7 @@ type Node interface {
 // 文
 type Statement interface {
 	Node
+	LineNumber() int
 	statementNode()
 }
 
@@ -47,16 +48,17 @@ func (p *Program) String() string {
 
 // Z80Instruction
 type Z80Instruction struct {
-	OpCode int
-	Op1    Node
-	Op2    Node
-	Line   int
+	OpCode     int
+	Op1        Node
+	Op2        Node
+	lineNumber int
 }
 
 func (z *Z80Instruction) statementNode() {}
 func (z *Z80Instruction) Type() int {
 	return z.OpCode
 }
+func (z *Z80Instruction) LineNumber() int { return z.lineNumber }
 func (z *Z80Instruction) String() string {
 	var out bytes.Buffer
 

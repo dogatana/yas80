@@ -61,34 +61,34 @@ program		: { }
 
 instruction	: Z80_INST0
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber} 
+				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber} 
 			}
 			| Z80_INST1 '(' expr ')'
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}}
+				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST1 expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: $2}
+				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: $2}
 			}
 			| Z80_INST2 '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
+					OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST2 expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: nil, Op2: $2}
+				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: nil, Op2: $2}
 			}
 			| Z80_INST2 '(' expr ')' ',' expr
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
+					OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
 			}
 			| Z80_INST2 expr ',' '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
+					OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
 			}
 			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
 			{
@@ -97,7 +97,7 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST2 expr ',' expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: $2, Op2: $4}
+				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: $2, Op2: $4}
 			}
 			;
 
