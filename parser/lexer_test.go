@@ -2,40 +2,9 @@ package parser
 
 import (
 	"bufio"
-	"fmt"
 	"strings"
 	"testing"
 )
-
-func testNextChars(t *testing.T) {
-	tests := []string{
-		"",
-		" ",
-		"\t",
-		"\n",
-		" + - * / ( ) ",
-	}
-	for _, input := range tests {
-		l := NewLexer(bufio.NewReader(strings.NewReader(input)))
-		for i := 0; i < 20; i++ {
-			fmt.Printf("tokenize=%q, curChar=%q, index=%d\n", input, l.curChar, l.index)
-			if l.curChar == EOF {
-				break
-			}
-			l.nextChar()
-		}
-	}
-}
-
-func testNextTokens(t *testing.T) {
-	input := " + - * / ( ) "
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
-
-	for i := 0; i < 20; i++ {
-		tok := l.NextToken()
-		fmt.Println(tok.String())
-	}
-}
 
 func TestLexerOneCharacter(t *testing.T) {
 	input := " ( ) "
