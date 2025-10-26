@@ -163,6 +163,7 @@ func (l *Lexer) nextChar() {
 			l.isEOF = true
 			return
 		}
+		l.lineNumber++
 		l.text = []rune(l.scanner.Text())
 	}
 	if l.index >= len(l.text) {
