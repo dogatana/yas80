@@ -20,7 +20,7 @@ var _ = __yyfmt__.Sprintf
 
 // プログラムの構成要素を指定
 %type<num> program
-%type<node> expr indirect
+%type<node> expr 
 %type<node> instruction
 
 %token<token> NUMBER IDENT
@@ -62,7 +62,7 @@ instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line} 
 			}
-			| Z80_INST1 '(' indirect ')'
+			| Z80_INST1 '(' expr ')'
 			{
 				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: &IndirectExpression{Expression: $3}}
 			}
@@ -70,7 +70,7 @@ instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: $2}
 			}
-			| Z80_INST2 '(' indirect ')'
+			| Z80_INST2 '(' expr ')'
 			{
 				$$ = &Z80Instruction{
 					OpCode: $1.Op, Line: $1.Line, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
@@ -79,17 +79,17 @@ instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: nil, Op2: $2}
 			}
-			| Z80_INST2 '(' indirect ')' ',' expr
+			| Z80_INST2 '(' expr ')' ',' expr
 			{
 				$$ = &Z80Instruction{
 					OpCode: $1.Op, Line: $1.Line, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
 			}
-			| Z80_INST2 expr ',' '(' indirect ')'
+			| Z80_INST2 expr ',' '(' expr ')'
 			{
 				$$ = &Z80Instruction{
 					OpCode: $1.Op, Line: $1.Line, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
 			}
-			| Z80_INST2 '(' indirect ')' ',' '(' indirect ')'
+			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
 			{
 				yylex.Error("両方のオペランドを間接指定にすることはできません")
 				$$ = nil
@@ -100,7 +100,7 @@ instruction	: Z80_INST0
 			}
 			;
 
-indirect	: NUMBER
+expr		: NUMBER
 	 		{
 				n, err := parseInt($1.Literal)
 				if err == nil {
@@ -113,22 +113,15 @@ indirect	: NUMBER
 			| Z80_REG8 			{ $$ = &RegisterLiteral{TokenType: $1.Op}}
 			| Z80_REG16 		{ $$ = &FlagLiteral{TokenType: $1.Op}}
 			| Z80_FLAG 			{ $$ = &FlagLiteral{TokenType: $1.Op}}
-			| indirect ADDSUB expr
-			{ 
-				$$ = &InfixExpression{OpCode: $2.Op, Op1: $1, Op2: $3}
-			}
-			;
-
-expr		: indirect { $$ = $1}
 			| '(' expr ')'	{ $$ = $2}
 			| expr ADDSUB expr
 			{
 				$$ = &InfixExpression{OpCode: $2.Op, Op1: $1, Op2: $3}
 			}
-//			| expr '+' expr { $$ = $1 + $3 }
-//			| expr '-' expr { $$ = $1 - $3 }
-//			| expr '*' expr { $$ = $1 * $3 }
-//			| expr '/' expr { $$ = $1 / $3 }
+			| expr MULDIV expr
+			{ 	
+				$$ = &InfixExpression{OpCode: $2.Op, Op1: $1, Op2: $3}
+			}
 //			| '-' expr %prec UNARY_MINUS     { $$ = - $2 }
 			| error { fmt.Println("error[expr]", $1)}
 			;
