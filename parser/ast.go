@@ -110,3 +110,47 @@ func (f *FlagLiteral) Type() int {
 func (f *FlagLiteral) String() string {
 	return Z80Names(f.TokenType)
 }
+
+// レジスタ間接
+type RegisterIndirectExpression struct {
+	Expression Node
+}
+
+func (r *RegisterIndirectExpression) expressionNode() {}
+func (r *RegisterIndirectExpression) Type() int {
+	return r.Expression.Type()
+}
+func (r *RegisterIndirectExpression) String() string {
+	expr := r.Expression.String()
+	if expr[0] != '(' {
+		expr = "(" + expr + ")"
+	}
+	return expr
+}
+
+// 中置演算子式
+type InfixExpression struct {
+	OpCode int
+	Op1    Node
+	Op2    Node
+}
+
+func (i *InfixExpression) expressionNode() {}
+func (i *InfixExpression) Type() int {
+	return i.OpCode
+}
+func (i *InfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteRune('(')
+	out.WriteString(i.Op1.String() + " ")
+
+	if i.OpCode < 0x7f {
+		out.WriteRune(rune(i.OpCode))
+	} else {
+		out.WriteString(fmt.Sprintf("<infix:%d>", i.OpCode))
+	}
+	out.WriteString(" " + i.Op2.String() + ")")
+
+	return out.String()
+}

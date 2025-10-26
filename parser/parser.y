@@ -20,7 +20,7 @@ var _ = __yyfmt__.Sprintf
 
 // プログラムの構成要素を指定
 %type<num> program
-%type<node> expr
+%type<node> expr reg_expr
 %type<node> instruction
 
 %token<token> NUMBER IDENT
@@ -59,6 +59,11 @@ instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line} 
 			}
+			| Z80_INST1 '(' reg_expr ')'
+			{
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: &RegisterIndirectExpression{Expression: $3}}
+				fmt.Println($$)
+			}
 			| Z80_INST1 expr
 			{
 				fmt.Printf("$2 %T(%#v)\n", $2, $2)
@@ -66,6 +71,11 @@ instruction	: Z80_INST0
 			}
 			;
 
+reg_expr	: Z80_REG16 { $$ = &RegisterLiteral{TokenType: $1.Op}}
+			| reg_expr '+' expr
+			{
+				$$ = &InfixExpression{OpCode: '+', Op1: $1, Op2: $3}
+			}
 
 expr		: NUMBER
 	 		{
@@ -77,10 +87,10 @@ expr		: NUMBER
 					$$ = nil
 				}
 			}
-			| Z80_REG8 		{ $$ = &FlagLiteral{TokenType: $1.Op}}
+			| Z80_REG8 		{ $$ = &RegisterLiteral{TokenType: $1.Op}}
 			| Z80_REG16 	{ $$ = &FlagLiteral{TokenType: $1.Op}}
 			| Z80_FLAG 		{ $$ = &FlagLiteral{TokenType: $1.Op}}
-//			| '(' expr ')' 	{ $$ = $2 }
+			| '(' expr ')' 	{ $$ = $2 }
 //			| expr '+' expr { $$ = $1 + $3 }
 //			| expr '-' expr { $$ = $1 - $3 }
 //			| expr '*' expr { $$ = $1 * $3 }
