@@ -101,5 +101,6 @@ expr		: NUMBER
 %%
 
 func Parse(l yyLexer) int {
+	Root = Program{}
 	return yyParse(l)
 }
