@@ -37,7 +37,6 @@ func main() {
 	if ret != 0 {
 		fmt.Printf("parse error: %d\n", ret)
 	} else {
-		fmt.Println("result: ", parser.Result)
 		fmt.Printf("%d Statements\n", len(parser.Root.Statements))
 		fmt.Println("----------")
 		fmt.Println(parser.Root.String())

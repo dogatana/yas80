@@ -7,13 +7,10 @@ type Token struct {
 	Type    int
 	Literal string
 	Op      int
-	Line    int
-	Column  int
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("Token{Type: %s, Literal: %q, Line: %d, Column: %d}",
-		tokenType(t.Type), t.Literal, t.Line, t.Column)
+	return fmt.Sprintf("Token{Type: %s, Literal: %q}", tokenType(t.Type), t.Literal)
 }
 
 func tokenType(t int) string {

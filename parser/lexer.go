@@ -10,19 +10,15 @@ const EOF = 0
 
 // 最低限必要な構造体を定義
 type Lexer struct {
-	scanner *bufio.Scanner
-	isEOF   bool
-	text    []rune
-	index   int
-	curChar rune
+	scanner    *bufio.Scanner
+	isEOF      bool
+	text       []rune
+	index      int
+	curChar    rune
+	lineNumber int
 }
 
-func NewLexer(r *bufio.Reader) *Lexer {
-	l := &Lexer{scanner: bufio.NewScanner(r), index: 0, isEOF: false, curChar: 0}
-	l.nextChar()
-	return l
-}
-
+// yyLexer インターフェースメソッド
 func (l *Lexer) Lex(lval *yySymType) int {
 	tok := l.NextToken()
 	lval.token = tok
@@ -34,9 +30,16 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	}
 }
 
+// yyLexer インターフェースメソッド
 func (l *Lexer) Error(s string) {
 	msg := strings.Replace(s, "unexpected", "ここでは使用不可", 1)
 	fmt.Println("[error]", msg)
+}
+
+func NewLexer(r *bufio.Reader) *Lexer {
+	l := &Lexer{scanner: bufio.NewScanner(r)}
+	l.nextChar()
+	return l
 }
 
 func (l *Lexer) NextToken() Token {

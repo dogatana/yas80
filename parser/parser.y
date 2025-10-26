@@ -6,7 +6,8 @@ import (
 )
 
 var Root Program
-var Result int
+var lexerInstance *Lexer
+
 // goyacc が __yyfmt__ を勝手に import することの対策
 var _ = __yyfmt__.Sprintf
 %}
@@ -60,34 +61,34 @@ program		: { }
 
 instruction	: Z80_INST0
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line} 
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber} 
 			}
 			| Z80_INST1 '(' expr ')'
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: &IndirectExpression{Expression: $3}}
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST1 expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: $2}
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: $2}
 			}
 			| Z80_INST2 '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, Line: $1.Line, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
+					OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST2 expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: nil, Op2: $2}
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: nil, Op2: $2}
 			}
 			| Z80_INST2 '(' expr ')' ',' expr
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, Line: $1.Line, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
+					OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
 			}
 			| Z80_INST2 expr ',' '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, Line: $1.Line, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
+					OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
 			}
 			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
 			{
@@ -96,7 +97,7 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST2 expr ',' expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: $2, Op2: $4}
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: lexerInstance.lineNumber, Op1: $2, Op2: $4}
 			}
 			;
 
@@ -127,7 +128,8 @@ expr		: NUMBER
 			;
 %%
 
-func Parse(l yyLexer) int {
+func Parse(l *Lexer) int {
+	lexerInstance = l
 	Root = Program{}
 	return yyParse(l)
 }
