@@ -20,12 +20,12 @@ var _ = __yyfmt__.Sprintf
 
 // プログラムの構成要素を指定
 %type<num> program
-%type<node> expr reg_expr
+%type<node> expr indirect
 %type<node> instruction
 
 %token<token> NUMBER IDENT
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
-%token '+' '-' '*' '/' '(' ')'
+%token '+' '-' '*' '/' '(' ')' ','
 %token INVALID EOL
 %token<token> error
 
@@ -45,7 +45,9 @@ program		: { }
 //			}
 			| program instruction EOL
 			{
-				Root.Statements = append(Root.Statements, $2)
+				if $2 != nil {
+					Root.Statements = append(Root.Statements, $2)
+				}
 			}
 			| program error EOL
 			{
@@ -59,25 +61,45 @@ instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line} 
 			}
-			| Z80_INST1 '(' reg_expr ')'
+			| Z80_INST1 '(' indirect ')'
 			{
 				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: &RegisterIndirectExpression{Expression: $3}}
-				fmt.Println($$)
 			}
 			| Z80_INST1 expr
 			{
-				fmt.Printf("$2 %T(%#v)\n", $2, $2)
 				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: $2}
+			}
+			| Z80_INST2 '(' indirect ')'
+			{
+				$$ = &Z80Instruction{
+					OpCode: $1.Op, Line: $1.Line, Op1: nil, Op2: &RegisterIndirectExpression{Expression: $3}}
+			}
+			| Z80_INST2 expr
+			{
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: nil, Op2: $2}
+			}
+			| Z80_INST2 '(' indirect ')' ',' expr
+			{
+				$$ = &Z80Instruction{
+					OpCode: $1.Op, Line: $1.Line, Op1: &RegisterIndirectExpression{Expression: $3}, Op2: $6}
+			}
+			| Z80_INST2 expr ',' '(' indirect ')'
+			{
+				$$ = &Z80Instruction{
+					OpCode: $1.Op, Line: $1.Line, Op1: $2, Op2: &RegisterIndirectExpression{Expression: $5}}
+			}
+			| Z80_INST2 '(' indirect ')' ',' '(' indirect ')'
+			{
+				yylex.Error("両方のオペランドを間接指定にすることはできません")
+				$$ = nil
+			}
+			| Z80_INST2 expr ',' expr
+			{
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: $2, Op2: $4}
 			}
 			;
 
-reg_expr	: Z80_REG16 { $$ = &RegisterLiteral{TokenType: $1.Op}}
-			| reg_expr '+' expr
-			{
-				$$ = &InfixExpression{OpCode: '+', Op1: $1, Op2: $3}
-			}
-
-expr		: NUMBER
+indirect	: NUMBER
 	 		{
 				n, err := parseInt($1.Literal)
 				if err == nil {
@@ -87,10 +109,18 @@ expr		: NUMBER
 					$$ = nil
 				}
 			}
-			| Z80_REG8 		{ $$ = &RegisterLiteral{TokenType: $1.Op}}
-			| Z80_REG16 	{ $$ = &FlagLiteral{TokenType: $1.Op}}
-			| Z80_FLAG 		{ $$ = &FlagLiteral{TokenType: $1.Op}}
-			| '(' expr ')' 	{ $$ = $2 }
+			| Z80_REG8 			{ $$ = &RegisterLiteral{TokenType: $1.Op}}
+			| Z80_REG16 		{ $$ = &FlagLiteral{TokenType: $1.Op}}
+			| Z80_FLAG 			{ $$ = &FlagLiteral{TokenType: $1.Op}}
+			| indirect '+' expr { $$ = &InfixExpression{OpCode: '+', Op1: $1, Op2: $3}}
+			;
+
+expr		: indirect { $$ = $1}
+			| '(' expr ')'	{ $$ = $2}
+			| expr '+' expr
+			{
+				$$ = &InfixExpression{OpCode: '+', Op1: $1, Op2: $3}
+			}
 //			| expr '+' expr { $$ = $1 + $3 }
 //			| expr '-' expr { $$ = $1 - $3 }
 //			| expr '*' expr { $$ = $1 * $3 }

@@ -205,5 +205,5 @@ func (l *Lexer) isWordChar(ch rune) bool {
 }
 
 func (l *Lexer) isOneCharToken(ch rune) bool {
-	return ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '(' || ch == ')' || ch == ':'
+	return ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '(' || ch == ')' || ch == ':' || ch == ','
 }

@@ -1,6 +1,7 @@
 package parser
 
 import (
+	__yyfmt__ "fmt"
 	"strconv"
 	"strings"
 )
@@ -18,6 +19,23 @@ func parseInt(s string) (int64, error) {
 	default:
 		return strconv.ParseInt(str, 0, 0)
 	}
+}
+
+func opString(e Node) string {
+	indirect, ok := e.(*RegisterIndirectExpression)
+	if ok {
+		return indirect.String()
+	}
+	s := e.String()
+	return trimParen(s)
+}
+func trimParen(s string) string {
+	__yyfmt__.Printf("trim %q", s)
+	if s[0] == '(' {
+		s = s[1 : len(s)-1]
+	}
+	__yyfmt__.Printf("to %q\n", s)
+	return s
 }
 
 func SetYYDebug(v int) {

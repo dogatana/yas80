@@ -73,8 +73,6 @@ SRA 14
 SRL 15
 DJNZ 16
 RST 17
-INC HL
-INC (IX + 3)
 `
 	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
 	ret := Parse(l)
@@ -87,5 +85,26 @@ INC (IX + 3)
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
+	}
+}
+
+func TestIndirect(t *testing.T) {
+	input := `
+LD A, (HL)
+LD (HL), A
+LD A, (IX + 1)
+LD (IX + 1), A
+`
+	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	ret := Parse(l)
+	if ret != 0 {
+		t.Errorf("Parse returns %d", ret)
+	}
+	expected := strings.Trim(input, " \n\t")
+	text := strings.ReplaceAll(Root.String(), "\t", " ")
+	if text != expected {
+		t.Errorf("program differs. exptected %d chars. got %d chars",
+			len(expected), len(text))
+		fmt.Println(text)
 	}
 }

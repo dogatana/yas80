@@ -61,11 +61,16 @@ func (z *Z80Instruction) String() string {
 	var out bytes.Buffer
 
 	out.WriteString(Z80Names(z.OpCode))
-	if z.Op1 != nil {
-		out.WriteString("\t" + z.Op1.String())
-	}
-	if z.Op2 != nil {
-		out.WriteString(", " + z.Op2.String())
+	switch {
+	case z.Op1 == nil && z.Op2 == nil:
+		break
+	case z.Op1 != nil && z.Op2 != nil:
+		out.WriteString("\t" + opString(z.Op1))
+		out.WriteString(", " + opString(z.Op2))
+	case z.Op1 != nil:
+		out.WriteString("\t" + opString(z.Op1))
+	default:
+		out.WriteString("\t" + opString(z.Op2))
 	}
 
 	return out.String()
@@ -121,11 +126,8 @@ func (r *RegisterIndirectExpression) Type() int {
 	return r.Expression.Type()
 }
 func (r *RegisterIndirectExpression) String() string {
-	expr := r.Expression.String()
-	if expr[0] != '(' {
-		expr = "(" + expr + ")"
-	}
-	return expr
+	expr := trimParen(r.Expression.String())
+	return "(" + expr + ")"
 }
 
 // 中置演算子式
