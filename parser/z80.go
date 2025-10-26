@@ -91,7 +91,7 @@ const (
 	Z80_INST_RET
 	Z80_INST_RETI
 	Z80_INST_RETN
-	Z80_INST_REST
+	Z80_INST_RST
 	Z80_INST_IN
 	Z80_INST_INI
 	Z80_INST_INIR
@@ -190,7 +190,7 @@ var Z80OpCodes map[string]Token = map[string]Token{
 	"RET":  {Type: Z80_INST0, Literal: "RET", Op: Z80_INST_RET},   // cc 有無により OPCODE0, OPCODE1 両方あり
 	"RETI": {Type: Z80_INST0, Literal: "RETI", Op: Z80_INST_RETI},
 	"RETN": {Type: Z80_INST0, Literal: "RETN", Op: Z80_INST_RETN},
-	"RST":  {Type: Z80_INST1, Literal: "RST", Op: Z80_INST_REST},
+	"RST":  {Type: Z80_INST1, Literal: "RST", Op: Z80_INST_RST},
 	"IN":   {Type: Z80_INST2, Literal: "IN", Op: Z80_INST_IN},
 	"INI":  {Type: Z80_INST0, Literal: "INI", Op: Z80_INST_INI},
 	"INIR": {Type: Z80_INST0, Literal: "INIR", Op: Z80_INST_INIR},
