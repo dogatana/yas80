@@ -25,13 +25,14 @@ var _ = __yyfmt__.Sprintf
 
 %token<token> NUMBER IDENT
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
-%token '+' '-' '*' '/' '(' ')' ','
+%token<token> ADDSUB MULDIV
+%token  '(' ')' ','
 %token INVALID EOL
 %token<token> error
 
 // 演算の優先度の指定
-%left '+','-'
-%left '*','/'
+%left ADDSUB
+%left MULDIV
 %right UNARY_MINUS
 
 %%
@@ -63,7 +64,7 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST1 '(' indirect ')'
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: &RegisterIndirectExpression{Expression: $3}}
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST1 expr
 			{
@@ -72,7 +73,7 @@ instruction	: Z80_INST0
 			| Z80_INST2 '(' indirect ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, Line: $1.Line, Op1: nil, Op2: &RegisterIndirectExpression{Expression: $3}}
+					OpCode: $1.Op, Line: $1.Line, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST2 expr
 			{
@@ -81,12 +82,12 @@ instruction	: Z80_INST0
 			| Z80_INST2 '(' indirect ')' ',' expr
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, Line: $1.Line, Op1: &RegisterIndirectExpression{Expression: $3}, Op2: $6}
+					OpCode: $1.Op, Line: $1.Line, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
 			}
 			| Z80_INST2 expr ',' '(' indirect ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, Line: $1.Line, Op1: $2, Op2: &RegisterIndirectExpression{Expression: $5}}
+					OpCode: $1.Op, Line: $1.Line, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
 			}
 			| Z80_INST2 '(' indirect ')' ',' '(' indirect ')'
 			{
@@ -112,14 +113,17 @@ indirect	: NUMBER
 			| Z80_REG8 			{ $$ = &RegisterLiteral{TokenType: $1.Op}}
 			| Z80_REG16 		{ $$ = &FlagLiteral{TokenType: $1.Op}}
 			| Z80_FLAG 			{ $$ = &FlagLiteral{TokenType: $1.Op}}
-			| indirect '+' expr { $$ = &InfixExpression{OpCode: '+', Op1: $1, Op2: $3}}
+			| indirect ADDSUB expr
+			{ 
+				$$ = &InfixExpression{OpCode: $2.Op, Op1: $1, Op2: $3}
+			}
 			;
 
 expr		: indirect { $$ = $1}
 			| '(' expr ')'	{ $$ = $2}
-			| expr '+' expr
+			| expr ADDSUB expr
 			{
-				$$ = &InfixExpression{OpCode: '+', Op1: $1, Op2: $3}
+				$$ = &InfixExpression{OpCode: $2.Op, Op1: $1, Op2: $3}
 			}
 //			| expr '+' expr { $$ = $1 + $3 }
 //			| expr '-' expr { $$ = $1 - $3 }

@@ -81,7 +81,6 @@ RST 17
 	}
 	expected := strings.Trim(input, " \n\t")
 	text := strings.ReplaceAll(Root.String(), "\t", " ")
-	fmt.Println(text)
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))

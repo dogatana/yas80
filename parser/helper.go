@@ -1,7 +1,6 @@
 package parser
 
 import (
-	__yyfmt__ "fmt"
 	"strconv"
 	"strings"
 )
@@ -30,11 +29,9 @@ func opString(e Node) string {
 	return trimParen(s)
 }
 func trimParen(s string) string {
-	__yyfmt__.Printf("trim %q", s)
 	if s[0] == '(' {
 		s = s[1 : len(s)-1]
 	}
-	__yyfmt__.Printf("to %q\n", s)
 	return s
 }
 

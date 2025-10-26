@@ -38,12 +38,8 @@ func testNextTokens(t *testing.T) {
 }
 
 func TestLexerOneCharacter(t *testing.T) {
-	input := " + - * / ( ) "
+	input := " ( ) "
 	expected_tokens := []int{
-		'+',
-		'-',
-		'*',
-		'/',
 		'(',
 		')',
 		EOL,
@@ -59,6 +55,31 @@ func TestLexerOneCharacter(t *testing.T) {
 		}
 		if tok.Type != expected {
 			t.Errorf("expected=%d, got=%#v", expected, tok)
+		}
+	}
+}
+
+func TestGroupedToken(t *testing.T) {
+	input := " + - * / "
+	expected_tokens := []struct {
+		Type int
+		Op   int
+	}{
+		{ADDSUB, '+'},
+		{ADDSUB, '-'},
+		{MULDIV, '*'},
+		{MULDIV, '/'},
+	}
+
+	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+
+	for _, expected := range expected_tokens {
+		tok := l.NextToken()
+		if tok.Type != expected.Type {
+			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		}
+		if tok.Op != expected.Op {
+			t.Errorf("expected Token.Op %d. got %#v", tok.Op, tok)
 		}
 	}
 }
@@ -142,7 +163,7 @@ func TestLexInterface(t *testing.T) {
 
 	expected_tokens := []int{
 		NUMBER,
-		'+',
+		ADDSUB,
 		NUMBER,
 		EOL,
 	}

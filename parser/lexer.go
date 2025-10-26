@@ -53,6 +53,14 @@ func (l *Lexer) NextToken() Token {
 		// EOL
 		l.nextChar()
 		return Token{Type: int(EOL), Literal: "\\n"}
+	case l.curChar == '+' || l.curChar == '-':
+		ch := l.curChar
+		l.nextChar()
+		return Token{Type: ADDSUB, Literal: string(ch), Op: int(ch)}
+	case l.curChar == '*' || l.curChar == '/':
+		ch := l.curChar
+		l.nextChar()
+		return Token{Type: MULDIV, Literal: string(ch), Op: int(ch)}
 	case l.isOneCharToken(l.curChar):
 		// 1文字トークン
 		literal = string(l.curChar)
@@ -205,5 +213,5 @@ func (l *Lexer) isWordChar(ch rune) bool {
 }
 
 func (l *Lexer) isOneCharToken(ch rune) bool {
-	return ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '(' || ch == ')' || ch == ':' || ch == ','
+	return ch == '(' || ch == ')' || ch == ','
 }
