@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 )
 
@@ -68,4 +69,18 @@ func (z *Z80Instruction) String() string {
 	}
 
 	return out.String()
+}
+
+// 数値リテラル
+type NumberLiteral struct {
+	TokenType int
+	Value     int
+}
+
+func (n *NumberLiteral) expressionNode() {}
+func (n *NumberLiteral) Type() int {
+	return n.TokenType
+}
+func (n *NumberLiteral) String() string {
+	return fmt.Sprintf("%d", n.Value)
 }
