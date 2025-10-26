@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"strings"
 )
 
 // interface
@@ -35,12 +36,12 @@ func (p *Program) TokenType() int {
 }
 
 func (p *Program) String() string {
-	var out bytes.Buffer
-
+	var lines []string
 	for _, s := range p.Statements {
-		out.WriteString(s.String() + "\n")
+		lines = append(lines, s.String())
 	}
-	return out.String()
+	return strings.Join(lines, "\n")
+
 }
 
 // Z80Instruction

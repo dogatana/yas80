@@ -44,7 +44,6 @@ program		: { $$ = 0}
 			}
 			| program instruction EOL
 			{
-				__yyfmt__.Println("instruction", $2.String())
 				Root.Statements = append(Root.Statements, $2)
 			}
 			| program error EOL
@@ -55,7 +54,10 @@ program		: { $$ = 0}
 			}
 			;
 
-instruction	: Z80_INST0	{ $$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line} }
+instruction	: Z80_INST0
+			{
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line} 
+			}
 			;
 
 expr		: NUMBER
