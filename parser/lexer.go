@@ -94,7 +94,7 @@ func (l *Lexer) NextToken() Token {
 			l.nextChar()
 		}
 		tok, ok := l.checkZ80ReservedWord(literal)
-		fmt.Println("search", literal, tok, ok)
+		// fmt.Println("search", literal, tok, ok)
 		if ok {
 			return tok
 		}

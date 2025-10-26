@@ -38,5 +38,19 @@ func main() {
 		fmt.Printf("parse error: %d\n", ret)
 	} else {
 		fmt.Println("result: ", parser.Result)
+		fmt.Println("----------")
+		printProgram(parser.Root)
+	}
+}
+
+func printProgram(root parser.Program) {
+	fmt.Printf("%d Statements\n", len(root.Statements))
+	for _, node := range root.Statements {
+		stmt, ok := node.(*parser.Z80Instruction)
+		if !ok {
+			fmt.Printf("stmt is not Z80Instruction. got %T\n", node)
+		} else {
+			fmt.Println(stmt.String())
+		}
 	}
 }

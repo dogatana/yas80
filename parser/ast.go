@@ -1,4 +1,4 @@
-package ast
+package parser
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 
 // interface
 type Node interface {
-	TokenType() int
+	Type() int
 	String() string
 }
 
@@ -19,17 +19,17 @@ type Statement interface {
 // 式
 type Expression interface {
 	Node
-	ExpressionNode()
+	expressionNode()
 }
 
 // Program
 type Program struct {
-	Statements []Statement
+	Statements []Node
 }
 
 func (p *Program) TokenType() int {
 	if len(p.Statements) > 0 {
-		return p.Statements[0].TokenType()
+		return p.Statements[0].Type()
 	}
 	return 0
 }
@@ -45,7 +45,6 @@ func (p *Program) String() string {
 
 // Z80Instruction
 type Z80Instruction struct {
-	Statement
 	OpCode int
 	Op1    Expression
 	Op2    Expression
@@ -53,15 +52,19 @@ type Z80Instruction struct {
 }
 
 func (z *Z80Instruction) statementNode() {}
-func (z *Z80Instruction) TokenType() int {
+func (z *Z80Instruction) Type() int {
 	return z.OpCode
 }
-func (z *Z80Instruction) Strig() string {
+func (z *Z80Instruction) String() string {
 	var out bytes.Buffer
 
-	// out.WriteString(parser.Z80Names(z.OpCode) + "\t")
-	out.WriteString(z.Op1.String() + ", ")
-	out.WriteString(z.Op2.String())
+	out.WriteString(Z80Names(z.OpCode))
+	if z.Op1 != nil {
+		out.WriteString("\t" + z.Op1.String())
+	}
+	if z.Op2 != nil {
+		out.WriteString(", " + z.Op2.String())
+	}
 
 	return out.String()
 }
