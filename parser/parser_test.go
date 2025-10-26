@@ -73,6 +73,8 @@ SRA 14
 SRL 15
 DJNZ 16
 RST 17
+INC HL
+INC (IX + 3)
 `
 	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
 	ret := Parse(l)
