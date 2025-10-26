@@ -2,46 +2,44 @@ package parser
 
 const (
 	// 8bit Register
-	Z80_REG_A   = 'A'
-	Z80_REG_B   = 'B'
-	Z80_REG_C   = 'C'
-	Z80_REG_D   = 'D'
-	Z80_REG_E   = 'E'
-	Z80_REG_H   = 'H'
-	Z80_REG_L   = 'L'
-	Z80_REG_IXH = 'X'
-	Z80_REG_IXL = 'x'
-	Z80_REG_IYH = 'Y'
-	Z80_REG_IYL = 'y'
-	Z80_REG_I   = 'I'
-	Z80_REG_R   = 'R'
+	Z80_REG_A = iota + 256
+	Z80_REG_B
+	Z80_REG_C
+	Z80_REG_D
+	Z80_REG_E
+	Z80_REG_H
+	Z80_REG_L
+	Z80_REG_IXH
+	Z80_REG_IXL
+	Z80_REG_IYH
+	Z80_REG_IYL
+	Z80_REG_I
+	Z80_REG_R
 
 	// 16bit Register
-	Z80_REG_SP = 'S'
-	Z80_REG_IX = 'X'
-	Z80_REG_IY = 'Y'
+	Z80_REG_SP
+	Z80_REG_IX
+	Z80_REG_IY
 
 	// Register Pair,
-	Z80_REG_AF   = 'A'
-	Z80_REG_AFEX = 'F' // AF'
-	Z80_REG_BC   = 'B'
-	Z80_REG_DE   = 'D'
-	Z80_REG_HL   = 'H'
+	Z80_REG_AF
+	Z80_REG_AFEX
+	Z80_REG_BC
+	Z80_REG_DE
+	Z80_REG_HL
 
 	// Flag
-	Z80_FLAG_C  = 'C'
-	Z80_FLAG_NC = 'c'
-	Z80_FLAG_Z  = 'Z'
-	Z80_FLAG_NZ = 'z'
-	Z80_FLAG_PO = 'O'
-	Z80_FLAG_PE = 'E'
-	Z80_FLAG_P  = 'P'
-	Z80_FLAG_M  = 'M'
-)
+	Z80_FLAG_C
+	Z80_FLAG_NC
+	Z80_FLAG_Z
+	Z80_FLAG_NZ
+	Z80_FLAG_PO
+	Z80_FLAG_PE
+	Z80_FLAG_P
+	Z80_FLAG_M
 
-const (
 	// Instruction
-	Z80_INST_LD = iota + 256
+	Z80_INST_LD
 	Z80_INST_PUSH
 	Z80_INST_POP
 	Z80_INST_EX
@@ -213,6 +211,36 @@ func Z80Names(opcode int) string {
 	for _, v := range Z80OpCodes {
 		if v.Op == opcode {
 			return v.Literal
+		}
+	}
+	switch opcode {
+	case Z80_FLAG_NC:
+		{
+			return "NC"
+		}
+	case Z80_FLAG_Z:
+		{
+			return "Z"
+		}
+	case Z80_FLAG_NZ:
+		{
+			return "NZ"
+		}
+	case Z80_FLAG_PO:
+		{
+			return "PO"
+		}
+	case Z80_FLAG_PE:
+		{
+			return "PE"
+		}
+	case Z80_FLAG_P:
+		{
+			return "P"
+		}
+	case Z80_FLAG_M:
+		{
+			return "M"
 		}
 	}
 	return "UNKNOWN"

@@ -48,8 +48,8 @@ func (p *Program) String() string {
 // Z80Instruction
 type Z80Instruction struct {
 	OpCode int
-	Op1    Expression
-	Op2    Expression
+	Op1    Node
+	Op2    Node
 	Line   int
 }
 
@@ -83,4 +83,30 @@ func (n *NumberLiteral) Type() int {
 }
 func (n *NumberLiteral) String() string {
 	return fmt.Sprintf("%d", n.Value)
+}
+
+// レジスタリテラル
+type RegisterLiteral struct {
+	TokenType int
+}
+
+func (r *RegisterLiteral) expressionNode() {}
+func (r *RegisterLiteral) Type() int {
+	return r.TokenType
+}
+func (r *RegisterLiteral) String() string {
+	return Z80Names(r.TokenType)
+}
+
+// フラグリテラル
+type FlagLiteral struct {
+	TokenType int
+}
+
+func (f *FlagLiteral) expressionNode() {}
+func (f *FlagLiteral) Type() int {
+	return f.TokenType
+}
+func (f *FlagLiteral) String() string {
+	return Z80Names(f.TokenType)
 }

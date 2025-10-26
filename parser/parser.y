@@ -12,14 +12,15 @@ var _ = __yyfmt__.Sprintf
 %}
 %union {
 	token Token
-	num int
+	num Node
 	node Node
 	err any
 }
 
 
 // プログラムの構成要素を指定
-%type<num> expr program
+%type<num> program
+%type<node> expr
 %type<node> instruction
 
 %token<token> NUMBER IDENT
@@ -35,13 +36,13 @@ var _ = __yyfmt__.Sprintf
 
 %%
 // 文法規則を指定
-program		: { $$ = 0}
+program		: { }
 			| program EOL
-			| program expr EOL
-			{
-				Result = $2
-				__yyfmt__.Println("Result", $2)
-			}
+//			| program expr EOL
+//			{
+//				Result = $2
+//				__yyfmt__.Println("Result", $2)
+//			}
 			| program instruction EOL
 			{
 				Root.Statements = append(Root.Statements, $2)
@@ -58,24 +59,33 @@ instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line} 
 			}
+			| Z80_INST1 expr
+			{
+				fmt.Printf("$2 %T(%#v)\n", $2, $2)
+				$$ = &Z80Instruction{OpCode: $1.Op, Line: $1.Line, Op1: $2}
+			}
 			;
+
 
 expr		: NUMBER
 	 		{
 				n, err := parseInt($1.Literal)
 				if err == nil {
-					$$ = int(n)
+					$$ = &NumberLiteral{TokenType: NUMBER, Value: int(n)}
 				} else {
 					yylex.Error(fmt.Sprintf("invalid NUMBER literal '%s'", $1.Literal))
-					$$ = 0
+					$$ = nil
 				}
 			}
-			| '(' expr ')' 	{ $$ = $2 }
-			| expr '+' expr { $$ = $1 + $3 }
-			| expr '-' expr { $$ = $1 - $3 }
-			| expr '*' expr { $$ = $1 * $3 }
-			| expr '/' expr { $$ = $1 / $3 }
-			| '-' expr %prec UNARY_MINUS     { $$ = - $2 }
+			| Z80_REG8 		{ $$ = &FlagLiteral{TokenType: $1.Op}}
+			| Z80_REG16 	{ $$ = &FlagLiteral{TokenType: $1.Op}}
+			| Z80_FLAG 		{ $$ = &FlagLiteral{TokenType: $1.Op}}
+//			| '(' expr ')' 	{ $$ = $2 }
+//			| expr '+' expr { $$ = $1 + $3 }
+//			| expr '-' expr { $$ = $1 - $3 }
+//			| expr '*' expr { $$ = $1 * $3 }
+//			| expr '/' expr { $$ = $1 / $3 }
+//			| '-' expr %prec UNARY_MINUS     { $$ = - $2 }
 			| error { fmt.Println("error[expr]", $1)}
 			;
 %%
