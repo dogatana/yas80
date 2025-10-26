@@ -192,7 +192,7 @@ var Z80OpCodes map[string]Token = map[string]Token{
 	"RET":  {Type: Z80_INST0, Literal: "RET", Op: Z80_INST_RET},   // cc 有無により OPCODE0, OPCODE1 両方あり
 	"RETI": {Type: Z80_INST0, Literal: "RETI", Op: Z80_INST_RETI},
 	"RETN": {Type: Z80_INST0, Literal: "RETN", Op: Z80_INST_RETN},
-	"REST": {Type: Z80_INST1, Literal: "REST", Op: Z80_INST_REST},
+	"RST":  {Type: Z80_INST1, Literal: "RST", Op: Z80_INST_REST},
 	"IN":   {Type: Z80_INST2, Literal: "IN", Op: Z80_INST_IN},
 	"INI":  {Type: Z80_INST0, Literal: "INI", Op: Z80_INST_INI},
 	"INIR": {Type: Z80_INST0, Literal: "INIR", Op: Z80_INST_INIR},
