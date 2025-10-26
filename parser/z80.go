@@ -140,7 +140,7 @@ var Z80Registers map[string]Token = map[string]Token{
 }
 
 var Z80OpCodes map[string]Token = map[string]Token{
-	"LD":   {Type: Z80_INST0, Literal: "LD", Op: Z80_INST_LD},
+	"LD":   {Type: Z80_INST2, Literal: "LD", Op: Z80_INST_LD},
 	"PUSH": {Type: Z80_INST1, Literal: "PUSH", Op: Z80_INST_PUSH},
 	"POP":  {Type: Z80_INST1, Literal: "POP", Op: Z80_INST_POP},
 	"EX":   {Type: Z80_INST2, Literal: "EX", Op: Z80_INST_EX},
