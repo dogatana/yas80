@@ -22,7 +22,7 @@ func parseInt(s string) (int64, error) {
 }
 
 func opString(e Node) string {
-	indirect, ok := e.(*RegisterIndirectExpression)
+	indirect, ok := e.(*IndirectExpression)
 	if ok {
 		return indirect.String()
 	}

@@ -116,16 +116,16 @@ func (f *FlagLiteral) String() string {
 	return Z80Names(f.TokenType)
 }
 
-// レジスタ間接
-type RegisterIndirectExpression struct {
+// 間接
+type IndirectExpression struct {
 	Expression Node
 }
 
-func (r *RegisterIndirectExpression) expressionNode() {}
-func (r *RegisterIndirectExpression) Type() int {
+func (r *IndirectExpression) expressionNode() {}
+func (r *IndirectExpression) Type() int {
 	return r.Expression.Type()
 }
-func (r *RegisterIndirectExpression) String() string {
+func (r *IndirectExpression) String() string {
 	expr := trimParen(r.Expression.String())
 	return "(" + expr + ")"
 }
