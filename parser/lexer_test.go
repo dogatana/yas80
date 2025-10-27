@@ -323,7 +323,7 @@ func TestZ80Instructions(t *testing.T) {
 			break
 		}
 
-		expectedToken, ok := Z80OpCodes[tok.Literal]
+		expectedToken, ok := z80ReservedWords[tok.Literal]
 		if !ok {
 			t.Errorf("instruction %q not found", tok.Literal)
 			continue

@@ -15,7 +15,6 @@ type Node interface {
 // 文
 type Statement interface {
 	Node
-	LineNumber() int
 	statementNode()
 }
 
@@ -25,16 +24,9 @@ type Expression interface {
 	expressionNode()
 }
 
-// Program
+// Program - これは Node interface を実装していない
 type Program struct {
 	Statements []Node
-}
-
-func (p *Program) TokenType() int {
-	if len(p.Statements) > 0 {
-		return p.Statements[0].Type()
-	}
-	return 0
 }
 
 func (p *Program) String() string {
@@ -43,7 +35,6 @@ func (p *Program) String() string {
 		lines = append(lines, s.String())
 	}
 	return strings.Join(lines, "\n")
-
 }
 
 // Expression Statement
@@ -52,7 +43,7 @@ type ExpressionStatement struct {
 }
 
 func (e *ExpressionStatement) statementNode() {}
-func (e *ExpressionStatement) Type() int      { return 0 }
+func (e *ExpressionStatement) Type() int      { return -1 } // ダミー
 func (e *ExpressionStatement) String() string { return e.Value.String() }
 
 // Z80Instruction Statement
@@ -67,11 +58,10 @@ func (z *Z80Instruction) statementNode() {}
 func (z *Z80Instruction) Type() int {
 	return z.OpCode
 }
-func (z *Z80Instruction) LineNumber() int { return z.lineNumber }
 func (z *Z80Instruction) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(Z80Names(z.OpCode))
+	out.WriteString(z80OpCode2Name(z.OpCode))
 	switch {
 	case z.Op1 == nil && z.Op2 == nil:
 		break
@@ -111,7 +101,7 @@ func (r *RegisterLiteral) Type() int {
 	return r.TokenType
 }
 func (r *RegisterLiteral) String() string {
-	return Z80Names(r.TokenType)
+	return z80OpCode2Name(r.TokenType)
 }
 
 // フラグリテラル
@@ -124,7 +114,7 @@ func (f *FlagLiteral) Type() int {
 	return f.TokenType
 }
 func (f *FlagLiteral) String() string {
-	return Z80Names(f.TokenType)
+	return z80OpCode2Name(f.TokenType)
 }
 
 // 間接

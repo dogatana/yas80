@@ -62,12 +62,14 @@ func tokenLiteral(t int) string {
 		return name
 	}
 	name = yySymNames[yyXLAT[t]]
+	// 1 文字トークンは 'x' のように ' で囲まれているのでそれをはずす
 	if name[0] == '\'' {
 		return name[1 : len(name)-1]
 	}
 	return name
 }
 
+// 数値リテラルの畳み込み(中置演算子)
 type infixFuncType func(x, y int) int
 
 var infixFuncs map[int]infixFuncType = map[int]infixFuncType{
@@ -154,7 +156,7 @@ func buildInfixExpression(opcode int, op1, op2 Node) Expression {
 		if ok {
 			v = fn(num1.Value, num2.Value)
 		} else {
-			lexerInstance.Error(fmt.Sprintf("UNKNOW infix %s", yySymNames[yyXLAT[opcode]]))
+			lexerInstance.Error(fmt.Sprintf("UNKNOWN infix %s", yySymNames[yyXLAT[opcode]]))
 			v = 0
 		}
 		return &NumberLiteral{TokenType: NUMBER, Value: v}
@@ -162,6 +164,7 @@ func buildInfixExpression(opcode int, op1, op2 Node) Expression {
 	return &InfixExpression{OpCode: opcode, Op1: op1, Op2: op2}
 }
 
+// 数値リテラルの畳み込み(前置演算子)
 type prefixFuncType func(x int) int
 
 var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
@@ -184,7 +187,7 @@ func buildPrefixExpression(opcode int, op Node) Expression {
 		if ok {
 			v = fn(num.Value)
 		} else {
-			lexerInstance.Error(fmt.Sprintf("UNKNOW prefix %s", yySymNames[yyXLAT[opcode]]))
+			lexerInstance.Error(fmt.Sprintf("UNKNOWN prefix %s", yySymNames[yyXLAT[opcode]]))
 			v = 0
 		}
 		return &NumberLiteral{TokenType: NUMBER, Value: v}
