@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bufio"
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -28,7 +27,7 @@ func TestLexerOneCharacter(t *testing.T) {
 
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
-		fmt.Println("[tok]", tok.String())
+		// fmt.Println("[tok]", tok.String())
 		if tok.Type != expected.Type {
 			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
 		}

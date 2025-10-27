@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -63,4 +64,128 @@ func tokenLiteral(t int) string {
 		return name[1 : len(name)-1]
 	}
 	return name
+}
+
+type infixFuncType func(x, y int) int
+
+var infixFuncs map[int]infixFuncType = map[int]infixFuncType{
+	'+': func(x, y int) int { return x + y },
+	'-': func(x, y int) int { return x - y },
+	'*': func(x, y int) int { return x * y },
+	'/': func(x, y int) int {
+		if y != 0 {
+			return x / y
+		} else {
+			lexerInstance.Error("division by 0")
+			return 0
+		}
+	},
+	'&': func(x, y int) int { return x & y },
+	'|': func(x, y int) int { return x | y },
+	'^': func(x, y int) int { return x ^ y },
+	SL:  func(x, y int) int { return x << y },
+	SR:  func(x, y int) int { return x >> y },
+	'<': func(x, y int) int {
+		if x < y {
+			return 1
+		} else {
+			return 0
+		}
+	},
+	'>': func(x, y int) int {
+		if x > y {
+			return 1
+		} else {
+			return 0
+		}
+	},
+	LE: func(x, y int) int {
+		if x <= y {
+			return 1
+		} else {
+			return 0
+		}
+	},
+	GE: func(x, y int) int {
+		if x >= y {
+			return 1
+		} else {
+			return 0
+		}
+	},
+	EQ: func(x, y int) int {
+		if x == y {
+			return 1
+		} else {
+			return 0
+		}
+	},
+	NEQ: func(x, y int) int {
+		if x != y {
+			return 1
+		} else {
+			return 0
+		}
+	},
+	OR: func(x, y int) int {
+		if x != 0 || y != 0 {
+			return 1
+		} else {
+			return 0
+		}
+	},
+	AND: func(x, y int) int {
+		if x != 0 && y != 0 {
+			return 1
+		} else {
+			return 0
+		}
+	},
+}
+
+func buildInfixExpression(opcode int, op1, op2 Node) Expression {
+	num1, ok1 := op1.(*NumberLiteral)
+	num2, ok2 := op2.(*NumberLiteral)
+	if ok1 && ok2 {
+		fn, ok := infixFuncs[opcode]
+		var v int
+		if ok {
+			v = fn(num1.Value, num2.Value)
+		} else {
+			lexerInstance.Error(fmt.Sprintf("UNKNOW infix %s", yySymNames[yyXLAT[opcode]]))
+			v = 0
+		}
+		return &NumberLiteral{TokenType: NUMBER, Value: v}
+	}
+	return &InfixExpression{OpCode: opcode, Op1: op1, Op2: op2}
+}
+
+type prefixFuncType func(x int) int
+
+var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
+	'-': func(x int) int { return -x },
+	'~': func(x int) int { return -1 ^ x },
+	'!': func(x int) int {
+		if x != 0 {
+			return 0
+		} else {
+			return 1
+		}
+	},
+}
+
+func buildPrefixExpression(opcode int, op Node) Expression {
+	num, ok := op.(*NumberLiteral)
+	if ok {
+		fn, ok := prefixFuncs[opcode]
+		var v int
+		if ok {
+			v = fn(num.Value)
+		} else {
+			lexerInstance.Error(fmt.Sprintf("UNKNOW prefix %s", yySymNames[yyXLAT[opcode]]))
+			v = 0
+		}
+		return &NumberLiteral{TokenType: NUMBER, Value: v}
+	}
+	return &PrefixExpression{OpCode: opcode, Op: op}
 }

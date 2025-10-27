@@ -165,7 +165,7 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	case ch1 == '!' && ch2 == '=':
 		tok = Token{Type: COMP, SubType: NEQ, Literal: "!="}
 	case ch1 == '!':
-		tok = Token{Type: UNARY, SubType: int(ch1), Literal: string(ch1)}
+		return Token{Type: UNARY, SubType: int(ch1), Literal: string(ch1)}
 	case ch1 == '&' && ch2 == '&':
 		tok = Token{Type: AND, SubType: 0, Literal: "&&"}
 	case ch1 == '&':

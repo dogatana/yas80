@@ -122,39 +122,39 @@ expr		: NUMBER
 			| '(' expr ')'	{ $$ = $2}
 			| expr ADD expr
 			{
-				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
+				$$ = buildInfixExpression($2.SubType, $1, $3)
 			}
 			| expr '-' expr
 			{
-				$$ = &InfixExpression{OpCode: '-', Op1: $1, Op2: $3}
+				$$ = buildInfixExpression('-', $1, $3)
 			}
 			| expr MULDIV expr
 			{ 	
-				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
+				$$ = buildInfixExpression($2.SubType, $1, $3)
 			}
 			| expr COMP expr
 			{ 	
-				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
+				$$ = buildInfixExpression($2.SubType, $1, $3)
 			}
 			| expr SHIFT expr
 			{ 	
-				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
+				$$ = buildInfixExpression($2.SubType, $1, $3)
 			}
 			| expr OR expr
 			{ 	
-				$$ = &InfixExpression{OpCode: OR, Op1: $1, Op2: $3}
+				$$ = buildInfixExpression(OR, $1, $3)
 			}
 			| expr AND expr
 			{ 	
-				$$ = &InfixExpression{OpCode: AND, Op1: $1, Op2: $3}
+				$$ = buildInfixExpression(AND, $1, $3)
 			}
 			| '-' expr %prec UNARY
 			{
-				$$ = &PrefixExpression{OpCode: '-', Op: $2}
+				$$ = buildPrefixExpression('-', $2)
 			}
 			| UNARY expr
 			{
-				$$ = &PrefixExpression{OpCode: $1.SubType, Op: $2}
+				$$ = buildPrefixExpression($1.SubType, $2)
 			}
 			| error 
 			{ 
