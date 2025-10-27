@@ -94,8 +94,9 @@ func (l *Lexer) NextToken() Token {
 		return Token{Type: NUMBER, Literal: literal}
 	case l.curChar == '$' || l.curChar == '%':
 		// 16進数リテラル($) or 2進数リテラル
+		literal = string(l.curChar)
 		l.nextChar() // '$'をスキップ
-		literal = "$" + l.readWord()
+		literal += l.readWord()
 		l.nextChar()
 		return Token{Type: NUMBER, Literal: literal}
 	case l.isDigit(l.curChar):

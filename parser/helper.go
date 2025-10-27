@@ -16,6 +16,8 @@ func parseInt(s string) (int64, error) {
 		return strconv.ParseInt("0x"+str[1:length], 0, 0)
 	case length >= 2 && (str[length-1] == 'h' || str[length-1] == 'H'):
 		return strconv.ParseInt(str[0:length-1], 16, 0)
+	case length >= 2 && str[0] == '%':
+		return strconv.ParseInt(str[1:length], 2, 0)
 	default:
 		return strconv.ParseInt(str, 0, 0)
 	}
