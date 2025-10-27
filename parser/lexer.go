@@ -59,11 +59,11 @@ func (l *Lexer) NextToken() Token {
 	case l.curChar == '+' || l.curChar == '-':
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: ADDSUB, Literal: string(ch), Op: int(ch)}
+		return Token{Type: ADDSUB, Literal: string(ch), SubType: int(ch)}
 	case l.curChar == '*' || l.curChar == '/':
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: MULDIV, Literal: string(ch), Op: int(ch)}
+		return Token{Type: MULDIV, Literal: string(ch), SubType: int(ch)}
 	case l.isTowCharToken(l.curChar):
 		return l.checkTwoCharToken(l.curChar)
 	case l.isOneCharToken(l.curChar):
@@ -138,21 +138,21 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	switch {
 	// COMP
 	case ch1 == '<' && ch2 == '=':
-		tok = Token{Type: COMP, Op: LE, Literal: "<="}
+		tok = Token{Type: COMP, SubType: LE, Literal: "<="}
 	case ch1 == '>' && ch2 == '=':
-		tok = Token{Type: COMP, Op: GE, Literal: ">="}
+		tok = Token{Type: COMP, SubType: GE, Literal: ">="}
 	case ch1 == '=' && ch2 == '=':
-		tok = Token{Type: COMP, Op: EQ, Literal: "=="}
+		tok = Token{Type: COMP, SubType: EQ, Literal: "=="}
 	case ch1 == '!' && ch2 == '=':
-		tok = Token{Type: COMP, Op: NEQ, Literal: "!="}
+		tok = Token{Type: COMP, SubType: NEQ, Literal: "!="}
 	case ch1 == '<' && ch2 == '<':
-		tok = Token{Type: SHIFT, Op: SL, Literal: "<<"}
+		tok = Token{Type: SHIFT, SubType: SL, Literal: "<<"}
 	case ch1 == '>' && ch2 == '>':
-		tok = Token{Type: SHIFT, Op: SR, Literal: ">>"}
+		tok = Token{Type: SHIFT, SubType: SR, Literal: ">>"}
 	case ch1 == '&' && ch2 == '&':
-		tok = Token{Type: AND, Op: SR, Literal: "&&"}
+		tok = Token{Type: AND, SubType: SR, Literal: "&&"}
 	case ch1 == '|' && ch2 == '|':
-		tok = Token{Type: OR, Op: SR, Literal: "||"}
+		tok = Token{Type: OR, SubType: SR, Literal: "||"}
 	default:
 		// 1文字トークンを返す
 		l.nextChar()

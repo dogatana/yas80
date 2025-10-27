@@ -28,6 +28,38 @@ func TestLexerOneCharacter(t *testing.T) {
 	}
 }
 
+func TestTwoCharToken(t *testing.T) {
+	input := "<= >= == != << >> && ||"
+	expected_tokens := []struct {
+		Type    int
+		SubType int
+		Literal string
+	}{
+		{COMP, LE, "<="},
+		{COMP, GE, ">="},
+		{COMP, EQ, "=="},
+		{COMP, NEQ, "!="},
+		{SHIFT, SL, "<<"},
+		{SHIFT, SR, ">>"},
+		{AND, 0, "&&"},
+		{OR, 0, "||"},
+	}
+
+	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+
+	for _, expected := range expected_tokens {
+		tok := l.NextToken()
+		if tok.Type != expected.Type {
+			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		}
+		if expected.SubType != 0 && tok.SubType != expected.SubType {
+			t.Errorf("expected Token.SubType %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		}
+		if tok.Literal != expected.Literal {
+			t.Errorf("expected Token.Literal %s. got %#v", tok.Literal, tok)
+		}
+	}
+}
 func TestGroupedToken(t *testing.T) {
 	input := " + - * / "
 	expected_tokens := []struct {
@@ -47,8 +79,8 @@ func TestGroupedToken(t *testing.T) {
 		if tok.Type != expected.Type {
 			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
 		}
-		if tok.Op != expected.Op {
-			t.Errorf("expected Token.Op %d. got %#v", tok.Op, tok)
+		if tok.SubType != expected.Op {
+			t.Errorf("expected Token.Op %d. got %#v", tok.SubType, tok)
 		}
 	}
 }
@@ -199,8 +231,8 @@ func TestZ80REG8(t *testing.T) {
 		if tok.Literal != tt.input {
 			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
 		}
-		if tok.Op != tt.op {
-			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.Op)
+		if tok.SubType != tt.op {
+			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.SubType)
 		}
 	}
 }
@@ -228,8 +260,8 @@ func TestZ80REG16(t *testing.T) {
 		if tok.Literal != tt.input {
 			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
 		}
-		if tok.Op != tt.op {
-			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.Op)
+		if tok.SubType != tt.op {
+			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.SubType)
 		}
 	}
 }
@@ -258,8 +290,8 @@ func TestZ80FLAG(t *testing.T) {
 		if tok.Literal != tt.input {
 			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
 		}
-		if tok.Op != tt.op {
-			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.Op)
+		if tok.SubType != tt.op {
+			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.SubType)
 		}
 	}
 }
@@ -289,8 +321,8 @@ func TestZ80Instructions(t *testing.T) {
 		if tok.Literal != expectedToken.Literal {
 			t.Errorf("expected Literal %q. got %#v", expectedToken.Literal, tok)
 		}
-		if tok.Op != expectedToken.Op {
-			t.Errorf("expected Op '%d'. got %#v", expectedToken.Op, tok)
+		if tok.SubType != expectedToken.SubType {
+			t.Errorf("expected Op '%d'. got %#v", expectedToken.SubType, tok)
 		}
 
 	}

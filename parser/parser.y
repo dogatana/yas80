@@ -65,34 +65,34 @@ program		: { }
 
 instruction	: Z80_INST0
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber} 
+				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber} 
 			}
 			| Z80_INST1 '(' expr ')'
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}}
+				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST1 expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: $2}
+				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: $2}
 			}
 			| Z80_INST2 '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
+					OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST2 expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: nil, Op2: $2}
+				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: nil, Op2: $2}
 			}
 			| Z80_INST2 '(' expr ')' ',' expr
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
+					OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
 			}
 			| Z80_INST2 expr ',' '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
+					OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
 			}
 			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
 			{
@@ -101,7 +101,7 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST2 expr ',' expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.Op, lineNumber: lexerInstance.lineNumber, Op1: $2, Op2: $4}
+				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: $2, Op2: $4}
 			}
 			;
 
@@ -115,17 +115,33 @@ expr		: NUMBER
 					$$ = nil
 				}
 			}
-			| Z80_REG8 			{ $$ = &RegisterLiteral{TokenType: $1.Op}}
-			| Z80_REG16 		{ $$ = &FlagLiteral{TokenType: $1.Op}}
-			| Z80_FLAG 			{ $$ = &FlagLiteral{TokenType: $1.Op}}
+			| Z80_REG8 			{ $$ = &RegisterLiteral{TokenType: $1.SubType}}
+			| Z80_REG16 		{ $$ = &FlagLiteral{TokenType: $1.SubType}}
+			| Z80_FLAG 			{ $$ = &FlagLiteral{TokenType: $1.SubType}}
 			| '(' expr ')'	{ $$ = $2}
 			| expr ADDSUB expr
 			{
-				$$ = &InfixExpression{OpCode: $2.Op, Op1: $1, Op2: $3}
+				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
 			}
 			| expr MULDIV expr
 			{ 	
-				$$ = &InfixExpression{OpCode: $2.Op, Op1: $1, Op2: $3}
+				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
+			}
+			| expr COMP expr
+			{ 	
+				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
+			}
+			| expr SHIFT expr
+			{ 	
+				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
+			}
+			| expr OR expr
+			{ 	
+				$$ = &InfixExpression{OpCode: OR, Op1: $1, Op2: $3}
+			}
+			| expr AND expr
+			{ 	
+				$$ = &InfixExpression{OpCode: AND, Op1: $1, Op2: $3}
 			}
 //			| '-' expr %prec UNARY     { $$ = - $2 }
 			| error { fmt.Println("error[expr]", $1)}
