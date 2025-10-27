@@ -139,16 +139,18 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	// COMP
 	case ch1 == '<' && ch2 == '=':
 		tok = Token{Type: COMP, SubType: LE, Literal: "<="}
+	case ch1 == '<' && ch2 == '<':
+		tok = Token{Type: SHIFT, SubType: SL, Literal: "<<"}
 	case ch1 == '>' && ch2 == '=':
 		tok = Token{Type: COMP, SubType: GE, Literal: ">="}
+	case ch1 == '>' && ch2 == '>':
+		tok = Token{Type: SHIFT, SubType: SR, Literal: ">>"}
+	case ch1 == '<' || ch1 == '>':
+		tok = Token{Type: COMP, SubType: int(ch1), Literal: string(ch1)}
 	case ch1 == '=' && ch2 == '=':
 		tok = Token{Type: COMP, SubType: EQ, Literal: "=="}
 	case ch1 == '!' && ch2 == '=':
 		tok = Token{Type: COMP, SubType: NEQ, Literal: "!="}
-	case ch1 == '<' && ch2 == '<':
-		tok = Token{Type: SHIFT, SubType: SL, Literal: "<<"}
-	case ch1 == '>' && ch2 == '>':
-		tok = Token{Type: SHIFT, SubType: SR, Literal: ">>"}
 	case ch1 == '&' && ch2 == '&':
 		tok = Token{Type: AND, SubType: SR, Literal: "&&"}
 	case ch1 == '|' && ch2 == '|':
