@@ -47,7 +47,8 @@ func (l *Lexer) NextToken() Token {
 	l.skipWhitespace()
 
 	var literal string
-	var tokType int
+	var ch rune
+	// var tokType int
 	switch {
 	case l.curChar == EOF:
 		// EOF
@@ -56,22 +57,29 @@ func (l *Lexer) NextToken() Token {
 		// EOL
 		l.nextChar()
 		return Token{Type: int(EOL), Literal: "\\n"}
-	case l.curChar == '+' || l.curChar == '-':
+	case l.curChar == '+' || l.curChar == '-' || l.curChar == '^':
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: ADDSUB, Literal: string(ch), SubType: int(ch)}
+		return Token{Type: ADDSUB, SubType: int(ch), Literal: string(ch)}
 	case l.curChar == '*' || l.curChar == '/':
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: MULDIV, Literal: string(ch), SubType: int(ch)}
-	case l.isTowCharToken(l.curChar):
+		return Token{Type: MULDIV, SubType: int(ch), Literal: string(ch)}
+	case l.isTowCharTokenStart(l.curChar):
 		return l.checkTwoCharToken(l.curChar)
-	case l.isOneCharToken(l.curChar):
+	case l.curChar == '(' || l.curChar == ')':
 		// 1文字トークン
-		literal = string(l.curChar)
-		tokType = int(l.curChar)
+		ch = l.curChar
 		l.nextChar()
-		return Token{Type: tokType, Literal: literal}
+		return Token{Type: int(ch), Literal: string(ch)}
+	case l.curChar == '&':
+		ch = l.curChar
+		l.nextChar()
+		return Token{Type: MULDIV, SubType: int(ch), Literal: string(ch)}
+	case l.curChar == '~':
+		ch = l.curChar
+		l.nextChar()
+		return Token{Type: UNARY, SubType: int(ch), Literal: string(ch)}
 	case l.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
 		// 16進数リテラル(0x)
 		l.nextChar() // '0'をスキップ
@@ -126,13 +134,14 @@ func (l *Lexer) NextToken() Token {
 }
 
 // 2文字トークンの最初の文字か
-func (l *Lexer) isTowCharToken(c rune) bool {
+func (l *Lexer) isTowCharTokenStart(c rune) bool {
 	return c == '=' || c == '<' || c == '>' || c == '!' || c == '|' || c == '&'
 }
 
 // 2文字トークンのチェック
 func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	ch2 := l.peekChar()
+	l.nextChar()
 
 	var tok Token
 	switch {
@@ -151,16 +160,20 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 		tok = Token{Type: COMP, SubType: EQ, Literal: "=="}
 	case ch1 == '!' && ch2 == '=':
 		tok = Token{Type: COMP, SubType: NEQ, Literal: "!="}
+	case ch1 == '!':
+		tok = Token{Type: UNARY, SubType: int(ch1), Literal: string(ch1)}
 	case ch1 == '&' && ch2 == '&':
 		tok = Token{Type: AND, SubType: 0, Literal: "&&"}
+	case ch1 == '&':
+		return Token{Type: MULDIV, SubType: int(ch1), Literal: string(ch1)}
 	case ch1 == '|' && ch2 == '|':
 		tok = Token{Type: OR, SubType: 0, Literal: "||"}
+	case ch1 == '|':
+		return Token{Type: ADDSUB, SubType: int(ch1), Literal: string(ch1)}
 	default:
 		// 1文字トークンを返す
-		l.nextChar()
 		return Token{Type: int(ch1), Literal: string(rune(ch1))}
 	}
-	l.nextChar()
 	l.nextChar()
 	return tok
 }

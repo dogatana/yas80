@@ -2,28 +2,40 @@ package parser
 
 import (
 	"bufio"
+	"fmt"
 	"strings"
 	"testing"
 )
 
 func TestLexerOneCharacter(t *testing.T) {
-	input := " ( ) "
-	expected_tokens := []int{
-		'(',
-		')',
-		EOL,
-		EOF,
+	input := " ( ) ! ~ & | ^"
+	expected_tokens := []struct {
+		Type    int
+		SubType int
+		Literal string
+	}{
+		{'(', 0, "("},
+		{')', 0, ")"},
+		{UNARY, '!', "!"},
+		{UNARY, '~', "~"},
+		{MULDIV, '&', "&"},
+		{ADDSUB, '|', "|"},
+		{ADDSUB, '^', "^"},
 	}
 
 	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
 
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
-		if tok.Type == EOF {
-			break
+		fmt.Println("[tok]", tok.String())
+		if tok.Type != expected.Type {
+			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
 		}
-		if tok.Type != expected {
-			t.Errorf("expected=%d, got=%#v", expected, tok)
+		if expected.SubType != 0 && tok.SubType != expected.SubType {
+			t.Errorf("expected Token.SubType %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		}
+		if tok.Literal != expected.Literal {
+			t.Errorf("expected Token.Literal %s. got %#v", tok.Literal, tok)
 		}
 	}
 }

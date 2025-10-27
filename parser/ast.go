@@ -157,10 +157,30 @@ func (i *InfixExpression) String() string {
 	}
 	var out bytes.Buffer
 
-	fmt.Println()
 	out.WriteString("(" + op1 + " ")
 	out.WriteString(tokenLiteral(i.OpCode))
 	out.WriteString(" " + op2 + ")")
 
 	return out.String()
+}
+
+// 前置演算子式
+type PrefixExpression struct {
+	OpCode int
+	Op     Node
+}
+
+func (p *PrefixExpression) expressionNode() {}
+func (p *PrefixExpression) Type() int {
+	return p.OpCode
+}
+func (p *PrefixExpression) String() string {
+	var op string
+	if p.Op == nil {
+		op = "<nil>"
+	} else {
+		op = p.Op.String()
+	}
+
+	return tokenLiteral(p.OpCode) + op
 }
