@@ -119,11 +119,12 @@ func (l *Lexer) NextToken() Token {
 			literal += "'"
 			l.nextChar()
 		}
-		tok, ok := l.checkZ80ReservedWord(literal)
-		// fmt.Println("search", literal, tok, ok)
+		// z80 予約語
+		tok, ok := z80ReservedWords[strings.ToUpper(literal)]
 		if ok {
 			return tok
 		}
+		// これ以外は識別子
 		return Token{Type: IDENT, Literal: literal}
 	case l.curChar == '@' || l.curChar == '.':
 		literal = string(l.curChar)
@@ -181,30 +182,6 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	}
 	l.nextChar()
 	return tok
-}
-
-func (l *Lexer) checkZ80ReservedWord(literal string) (Token, bool) {
-	var (
-		tok Token
-		ok  bool
-	)
-
-	// 大文字化して検索
-	word := strings.ToUpper(literal)
-
-	// Z80 レジスタ、フラグ
-	tok, ok = Z80Registers[word]
-	if ok {
-		tok.Literal = literal
-		return tok, ok
-	}
-	// Z80 命令
-	tok, ok = Z80OpCodes[word]
-	if ok {
-		tok.Literal = literal
-		return tok, ok
-	}
-	return Token{}, false
 }
 
 func (l *Lexer) nextChar() {
