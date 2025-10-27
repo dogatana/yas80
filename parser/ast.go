@@ -46,7 +46,16 @@ func (p *Program) String() string {
 
 }
 
-// Z80Instruction
+// Expression Statement
+type ExpressionStatement struct {
+	Value Node
+}
+
+func (e *ExpressionStatement) statementNode() {}
+func (e *ExpressionStatement) Type() int      { return 0 }
+func (e *ExpressionStatement) String() string { return e.Value.String() }
+
+// Z80Instruction Statement
 type Z80Instruction struct {
 	OpCode     int
 	Op1        Node

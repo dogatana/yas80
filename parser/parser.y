@@ -44,12 +44,13 @@ var _ = __yyfmt__.Sprintf
 // 文法規則を指定
 program		: { }
 			| program EOL
-//			| program expr EOL
-//			{
-//				Result = $2
-//				__yyfmt__.Println("Result", $2)
-//			}
 			| program instruction EOL
+			{
+				if $2 != nil {
+					Root.Statements = append(Root.Statements, $2)
+				}
+			}
+			| program expr EOL
 			{
 				if $2 != nil {
 					Root.Statements = append(Root.Statements, $2)
