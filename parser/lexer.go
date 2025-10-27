@@ -31,7 +31,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 }
 
 // yyLexer インターフェースメソッド
-func (l *Lexer) Error(s string) {
+func (l *Lexer) Error(s string, args ...any) {
 	msg := strings.Replace(s, "unexpected", "ここでは使用不可", 1)
 	fmt.Println("[error]", msg)
 }
