@@ -53,7 +53,7 @@ program		: { }
 			| program expr EOL
 			{
 				if $2 != nil {
-					Root.Statements = append(Root.Statements, $2)
+					Root.Statements = append(Root.Statements, &ExpressionStatement{Value: $2})
 				}
 			}
 			| program error EOL
