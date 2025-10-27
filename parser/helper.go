@@ -38,3 +38,25 @@ func trimParen(s string) string {
 func SetYYDebug(v int) {
 	yyDebug = v
 }
+
+var twoCharTokenNames map[int]string = map[int]string{
+	LE:  "<=",
+	GE:  ">=",
+	EQ:  "==",
+	NEQ: "!=",
+	SL:  "<<",
+	SR:  ">>",
+	AND: "&&",
+	OR:  "||",
+}
+
+func tokenLiteral(t int) string {
+	if t == '\n' {
+		return "EOL"
+	}
+	name, ok := twoCharTokenNames[t]
+	if ok {
+		return name
+	}
+	return yySymNames[yyXLAT[t]]
+}

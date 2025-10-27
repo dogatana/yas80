@@ -148,12 +148,7 @@ func (i *InfixExpression) String() string {
 
 	out.WriteRune('(')
 	out.WriteString(i.Op1.String() + " ")
-
-	if i.OpCode < 0x7f {
-		out.WriteRune(rune(i.OpCode))
-	} else {
-		out.WriteString(fmt.Sprintf("<infix:%d>", i.OpCode))
-	}
+	out.WriteString(tokenLiteral(i.OpCode))
 	out.WriteString(" " + i.Op2.String() + ")")
 
 	return out.String()

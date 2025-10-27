@@ -13,10 +13,3 @@ func (t Token) String() string {
 	return fmt.Sprintf("Token{Type: %s, SubType: %s, Literal: %s}",
 		tokenLiteral(t.Type), tokenLiteral(t.SubType), t.Literal)
 }
-
-func tokenLiteral(t int) string {
-	if t == '\n' {
-		return "EOL"
-	}
-	return yySymNames[yyXLAT[t]]
-}
