@@ -8,7 +8,7 @@ import (
 )
 
 func TestLexerOneCharacter(t *testing.T) {
-	input := " ( ) ! ~ & | ^"
+	input := " ( ) - ! ~ & | ^"
 	expected_tokens := []struct {
 		Type    int
 		SubType int
@@ -16,6 +16,7 @@ func TestLexerOneCharacter(t *testing.T) {
 	}{
 		{'(', 0, "("},
 		{')', 0, ")"},
+		{'-', 0, "-"},
 		{UNARY, '!', "!"},
 		{UNARY, '~', "~"},
 		{MULDIV, '&', "&"},
@@ -73,15 +74,16 @@ func TestTwoCharToken(t *testing.T) {
 	}
 }
 func TestGroupedToken(t *testing.T) {
-	input := " + - * / "
+	input := " + | * / & "
 	expected_tokens := []struct {
 		Type int
 		Op   int
 	}{
 		{ADDSUB, '+'},
-		{ADDSUB, '-'},
+		{ADDSUB, '|'},
 		{MULDIV, '*'},
 		{MULDIV, '/'},
+		{MULDIV, '&'},
 	}
 
 	l := NewLexer(bufio.NewReader(strings.NewReader(input)))

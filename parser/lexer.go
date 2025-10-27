@@ -57,7 +57,11 @@ func (l *Lexer) NextToken() Token {
 		// EOL
 		l.nextChar()
 		return Token{Type: int(EOL), Literal: "\\n"}
-	case l.curChar == '+' || l.curChar == '-' || l.curChar == '^':
+	case l.curChar == '-': // 単項、2項の両方あるので個別トークンとする
+		ch := l.curChar
+		l.nextChar()
+		return Token{Type: int(ch), Literal: string(ch)}
+	case l.curChar == '+' || l.curChar == '^':
 		ch := l.curChar
 		l.nextChar()
 		return Token{Type: ADDSUB, SubType: int(ch), Literal: string(ch)}

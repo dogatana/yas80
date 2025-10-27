@@ -36,7 +36,7 @@ var _ = __yyfmt__.Sprintf
 %left OR
 %left AND
 %left COMP
-%left ADDSUB '|' '^'
+%left ADDSUB '|' '^' '-'
 %left MULDIV SHIFT
 %right UNARY 
 
@@ -122,6 +122,10 @@ expr		: NUMBER
 			| expr ADDSUB expr
 			{
 				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
+			}
+			| expr '-' expr
+			{
+				$$ = &InfixExpression{OpCode: '-', Op1: $1, Op2: $3}
 			}
 			| expr MULDIV expr
 			{ 	
