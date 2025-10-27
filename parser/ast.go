@@ -182,5 +182,5 @@ func (p *PrefixExpression) String() string {
 		op = p.Op.String()
 	}
 
-	return tokenLiteral(p.OpCode) + op
+	return "(" + tokenLiteral(p.OpCode) + op + ")"
 }
