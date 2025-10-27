@@ -64,6 +64,8 @@ func (l *Lexer) NextToken() Token {
 		ch := l.curChar
 		l.nextChar()
 		return Token{Type: MULDIV, Literal: string(ch), Op: int(ch)}
+	case l.isTowCharToken(l.curChar):
+		return l.checkTwoCharToken(l.curChar)
 	case l.isOneCharToken(l.curChar):
 		// 1文字トークン
 		literal = string(l.curChar)
@@ -121,6 +123,44 @@ func (l *Lexer) NextToken() Token {
 		l.nextChar()
 		return Token{Type: INVALID, Literal: literal}
 	}
+}
+
+// 2文字トークンの最初の文字か
+func (l *Lexer) isTowCharToken(c rune) bool {
+	return c == '=' || c == '<' || c == '>' || c == '!' || c == '|' || c == '&'
+}
+
+// 2文字トークンのチェック
+func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
+	ch2 := l.peekChar()
+
+	var tok Token
+	switch {
+	// COMP
+	case ch1 == '<' && ch2 == '=':
+		tok = Token{Type: COMP, Op: LE, Literal: "<="}
+	case ch1 == '>' && ch2 == '=':
+		tok = Token{Type: COMP, Op: GE, Literal: ">="}
+	case ch1 == '=' && ch2 == '=':
+		tok = Token{Type: COMP, Op: EQ, Literal: "=="}
+	case ch1 == '!' && ch2 == '=':
+		tok = Token{Type: COMP, Op: NEQ, Literal: "!="}
+	case ch1 == '<' && ch2 == '<':
+		tok = Token{Type: SHIFT, Op: SL, Literal: "<<"}
+	case ch1 == '>' && ch2 == '>':
+		tok = Token{Type: SHIFT, Op: SR, Literal: ">>"}
+	case ch1 == '&' && ch2 == '&':
+		tok = Token{Type: AND, Op: SR, Literal: "&&"}
+	case ch1 == '|' && ch2 == '|':
+		tok = Token{Type: OR, Op: SR, Literal: "||"}
+	default:
+		// 1文字トークンを返す
+		l.nextChar()
+		return Token{Type: int(ch1), Literal: string(rune(ch1))}
+	}
+	l.nextChar()
+	l.nextChar()
+	return tok
 }
 
 func (l *Lexer) checkZ80ReservedWord(literal string) (Token, bool) {

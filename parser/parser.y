@@ -26,15 +26,19 @@ var _ = __yyfmt__.Sprintf
 
 %token<token> NUMBER IDENT
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
-%token<token> ADDSUB MULDIV
-%token  '(' ')' ','
-%token INVALID EOL
+%token<token> ADDSUB MULDIV COMP SHIFT
+%token SL SR EQ NEQ GE LE OR AND
+%token  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' ':'
+%token INVALID EOL 
 %token<token> error
 
 // 演算の優先度の指定
-%left ADDSUB
-%left MULDIV
-%right UNARY_MINUS
+%left OR
+%left AND
+%left COMP
+%left ADDSUB '|' '^'
+%left MULDIV SHIFT
+%right UNARY
 
 %%
 // 文法規則を指定
@@ -123,7 +127,7 @@ expr		: NUMBER
 			{ 	
 				$$ = &InfixExpression{OpCode: $2.Op, Op1: $1, Op2: $3}
 			}
-//			| '-' expr %prec UNARY_MINUS     { $$ = - $2 }
+//			| '-' expr %prec UNARY     { $$ = - $2 }
 			| error { fmt.Println("error[expr]", $1)}
 			;
 %%
