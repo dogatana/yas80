@@ -144,7 +144,11 @@ expr		: NUMBER
 				$$ = &InfixExpression{OpCode: AND, Op1: $1, Op2: $3}
 			}
 //			| '-' expr %prec UNARY     { $$ = - $2 }
-			| error { fmt.Println("error[expr]", $1)}
+			| error 
+			{ 
+				fmt.Println("error[expr]", $1)
+				$$ = nil
+			}
 			;
 %%
 

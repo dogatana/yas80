@@ -144,12 +144,23 @@ func (i *InfixExpression) Type() int {
 	return i.OpCode
 }
 func (i *InfixExpression) String() string {
+	var op1, op2 string
+	if i.Op1 == nil {
+		op1 = "<nil>"
+	} else {
+		op1 = i.Op1.String()
+	}
+	if i.Op2 == nil {
+		op2 = "<nil>"
+	} else {
+		op2 = i.Op2.String()
+	}
 	var out bytes.Buffer
 
-	out.WriteRune('(')
-	out.WriteString(i.Op1.String() + " ")
+	fmt.Println()
+	out.WriteString("(" + op1 + " ")
 	out.WriteString(tokenLiteral(i.OpCode))
-	out.WriteString(" " + i.Op2.String() + ")")
+	out.WriteString(" " + op2 + ")")
 
 	return out.String()
 }
