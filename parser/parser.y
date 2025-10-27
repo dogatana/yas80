@@ -26,7 +26,7 @@ var _ = __yyfmt__.Sprintf
 
 %token<token> NUMBER IDENT
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
-%token<token> ADDSUB MULDIV COMP SHIFT UNARY
+%token<token> ADD MULDIV COMP SHIFT UNARY
 %token SL SR EQ NEQ GE LE OR AND
 %token  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':'
 %token INVALID EOL 
@@ -36,7 +36,7 @@ var _ = __yyfmt__.Sprintf
 %left OR
 %left AND
 %left COMP
-%left ADDSUB '|' '^' '-'
+%left ADD '|' '^' '-'
 %left MULDIV SHIFT
 %right UNARY 
 
@@ -119,7 +119,7 @@ expr		: NUMBER
 			| Z80_REG16 		{ $$ = &FlagLiteral{TokenType: $1.SubType}}
 			| Z80_FLAG 			{ $$ = &FlagLiteral{TokenType: $1.SubType}}
 			| '(' expr ')'	{ $$ = $2}
-			| expr ADDSUB expr
+			| expr ADD expr
 			{
 				$$ = &InfixExpression{OpCode: $2.SubType, Op1: $1, Op2: $3}
 			}

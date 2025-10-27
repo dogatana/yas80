@@ -20,8 +20,8 @@ func TestLexerOneCharacter(t *testing.T) {
 		{UNARY, '!', "!"},
 		{UNARY, '~', "~"},
 		{MULDIV, '&', "&"},
-		{ADDSUB, '|', "|"},
-		{ADDSUB, '^', "^"},
+		{ADD, '|', "|"},
+		{ADD, '^', "^"},
 	}
 
 	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
@@ -79,8 +79,8 @@ func TestGroupedToken(t *testing.T) {
 		Type int
 		Op   int
 	}{
-		{ADDSUB, '+'},
-		{ADDSUB, '|'},
+		{ADD, '+'},
+		{ADD, '|'},
 		{MULDIV, '*'},
 		{MULDIV, '/'},
 		{MULDIV, '&'},
@@ -178,7 +178,7 @@ func TestLexInterface(t *testing.T) {
 
 	expected_tokens := []int{
 		NUMBER,
-		ADDSUB,
+		ADD,
 		NUMBER,
 		EOL,
 	}

@@ -64,7 +64,7 @@ func (l *Lexer) NextToken() Token {
 	case l.curChar == '+' || l.curChar == '^':
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: ADDSUB, SubType: int(ch), Literal: string(ch)}
+		return Token{Type: ADD, SubType: int(ch), Literal: string(ch)}
 	case l.curChar == '*' || l.curChar == '/':
 		ch := l.curChar
 		l.nextChar()
@@ -173,7 +173,7 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	case ch1 == '|' && ch2 == '|':
 		tok = Token{Type: OR, SubType: 0, Literal: "||"}
 	case ch1 == '|':
-		return Token{Type: ADDSUB, SubType: int(ch1), Literal: string(ch1)}
+		return Token{Type: ADD, SubType: int(ch1), Literal: string(ch1)}
 	default:
 		// 1文字トークンを返す
 		return Token{Type: int(ch1), Literal: string(rune(ch1))}
