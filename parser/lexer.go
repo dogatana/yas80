@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"strings"
+	"yas80/errorstore"
 )
 
 const EOF = 0
@@ -16,6 +17,8 @@ type Lexer struct {
 	index      int
 	curChar    rune
 	lineNumber int
+	fileNmae   string
+	Errors     *errorstore.ErrorStore
 }
 
 // yyLexer インターフェースメソッド
@@ -32,13 +35,33 @@ func (l *Lexer) Lex(lval *yySymType) int {
 
 // yyLexer インターフェースメソッド
 func (l *Lexer) Error(s string, args ...any) {
-	msg := strings.Replace(s, "unexpected", "ここでは使用不可", 1)
-	fmt.Println("[error]", msg)
+	var line int
+
+	switch len(args) {
+	case 0:
+		line = l.lineNumber
+	case 1:
+		n, ok := args[0].(int)
+		if !ok {
+			panic(fmt.Sprintf("invalid argument for Lexer.Error(string, %T)", args[0]))
+		}
+		line = n
+	default:
+		panic(fmt.Sprintf("too much args for Lexer.Error() %#v", args))
+	}
+
+	if strings.HasPrefix(s, "[W]") {
+		l.Errors.AddWarning(l.fileNmae, line, s[3:])
+	} else {
+		l.Errors.AddError(l.fileNmae, line, s)
+	}
 }
 
-func NewLexer(r *bufio.Reader) *Lexer {
+func NewLexer(r *bufio.Reader, filename string, es *errorstore.ErrorStore) *Lexer {
 	l := &Lexer{scanner: bufio.NewScanner(r)}
 	l.nextChar()
+	l.fileNmae = filename
+	l.Errors = es
 	return l
 }
 

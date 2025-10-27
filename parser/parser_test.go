@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bufio"
 	"fmt"
 	"strings"
 	"testing"
@@ -41,7 +40,7 @@ OTIR
 OUTD
 OTDR
 `
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 	ret := Parse(l)
 	if ret != 0 {
 		t.Errorf("Parse returns %d", ret)
@@ -74,7 +73,7 @@ SRL 15
 DJNZ 16
 RST 17
 `
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 	ret := Parse(l)
 	if ret != 0 {
 		t.Errorf("Parse returns %d", ret)
@@ -107,7 +106,7 @@ IN B, (C)
 OUT (2), A
 OUT (C), B
 `
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 	ret := Parse(l)
 	if ret != 0 {
 		t.Errorf("Parse returns %d", ret)
@@ -127,7 +126,7 @@ LD (HL), A
 LD A, (IX + 1)
 LD (IX + 1), A
 `
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 	ret := Parse(l)
 	if ret != 0 {
 		t.Errorf("Parse returns %d", ret)

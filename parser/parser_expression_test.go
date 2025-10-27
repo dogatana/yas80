@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"bufio"
-	"strings"
 	"testing"
 )
 
@@ -46,7 +44,7 @@ func TestExpression(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		l := newLexerForTest(tt.input)
 		_ = Parse(l)
 		if len(Root.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(Root.Statements))

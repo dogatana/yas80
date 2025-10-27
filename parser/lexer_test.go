@@ -4,7 +4,13 @@ import (
 	"bufio"
 	"strings"
 	"testing"
+	"yas80/errorstore"
 )
+
+func newLexerForTest(input string) *Lexer {
+	es := errorstore.New()
+	return NewLexer(bufio.NewReader(strings.NewReader(input)), "<string>", es)
+}
 
 func TestLexerOneCharacter(t *testing.T) {
 	input := " ( ) - ! ~ & | ^"
@@ -23,7 +29,7 @@ func TestLexerOneCharacter(t *testing.T) {
 		{ADD, '^', "^"},
 	}
 
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
@@ -57,7 +63,7 @@ func TestTwoCharToken(t *testing.T) {
 		{OR, 0, "||"},
 	}
 
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
@@ -85,7 +91,7 @@ func TestGroupedToken(t *testing.T) {
 		{MULDIV, '&'},
 	}
 
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
@@ -110,7 +116,7 @@ func TestBlankInput(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		l := newLexerForTest(tt.input)
 		for _, expected := range tt.expected_tokens {
 			tok := l.NextToken()
 			if tok.Type != expected {
@@ -123,7 +129,7 @@ func TestBlankInput(t *testing.T) {
 func TestInvalidCharacter(t *testing.T) {
 	input := " あ "
 
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 	tok := l.NextToken()
 	if tok.Type != INVALID || tok.Literal != "あ" {
 		t.Errorf("expected=INVALID literal 'あ', got=%#v", tok)
@@ -144,7 +150,7 @@ func TestNumber(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Type != NUMBER || tok.Literal != tt.expected_literal {
 			t.Errorf("ze %q, expected=NUMBER with literal %q, got=%#v",
@@ -158,7 +164,7 @@ func TestHexNumbers(t *testing.T) {
 	input := "  0x19af  0XABCD $12_34_56_78"
 	expected_literals := []string{"0x19af", "0XABCD", "$12_34_56_78"}
 
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 	for _, expected := range expected_literals {
 		tok := l.NextToken()
 		if tok.Type != NUMBER {
@@ -173,7 +179,7 @@ func TestHexNumbers(t *testing.T) {
 func TestLexInterface(t *testing.T) {
 	input := " 123 + 456 \n"
 
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 
 	expected_tokens := []int{
 		NUMBER,
@@ -202,7 +208,7 @@ func TestIDENT(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		l := newLexerForTest(tt.input)
 		for _, expected := range tt.expected_literals {
 			tok := l.NextToken()
 			if tok.Type != IDENT {
@@ -236,7 +242,7 @@ func TestZ80REG8(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Type != Z80_REG8 {
 			t.Errorf("tokenize %q. expected Type Z80_REG8. got %#v", tt.input, yySymNames[yyXLAT[tok.Type]])
@@ -265,7 +271,7 @@ func TestZ80REG16(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Type != Z80_REG16 {
 			t.Errorf("tokenize %q. expected Type Z80_REG16. got %#v", tt.input, yySymNames[yyXLAT[tok.Type]])
@@ -295,7 +301,7 @@ func TestZ80FLAG(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		l := NewLexer(bufio.NewReader(strings.NewReader(tt.input)))
+		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Type != Z80_FLAG {
 			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, yySymNames[yyXLAT[tok.Type]])
@@ -316,7 +322,7 @@ func TestZ80Instructions(t *testing.T) {
 		"BIT SET RES JP JR DJNZ CALL RET RETI RETN RST " +
 		"IN INI INIR INDR OUT OUTI OTIR OUTD OTDR"
 
-	l := NewLexer(bufio.NewReader(strings.NewReader(input)))
+	l := newLexerForTest(input)
 	for {
 		tok := l.NextToken()
 		if tok.Type == EOL {

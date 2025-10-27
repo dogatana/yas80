@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"yas80/errorstore"
 	"yas80/parser"
 )
 
@@ -29,16 +30,22 @@ func main() {
 	input := os.Args[1]
 
 	parser.SetYYDebug(getYYDebugEnv())
-	l := parser.NewLexer(bufio.NewReader(strings.NewReader(input)))
+
+	es := errorstore.New()
+	l := parser.NewLexer(bufio.NewReader(strings.NewReader(input)), "<string>", es)
 	ret := parser.Parse(l)
 
-	// error トークンを使うと 0 が返ってくるので注意
+	// error トークンを使うと 0 が返ってくる
+	fmt.Printf("Parse returns %d\n", ret)
+
 	fmt.Printf("parser.Parse() returned: %d\n", ret)
-	if ret != 0 {
-		fmt.Printf("parse error: %d\n", ret)
-	} else {
-		fmt.Printf("%d Statements\n", len(parser.Root.Statements))
-		fmt.Println("----------")
-		fmt.Println(parser.Root.String())
+	ec, wc := es.Count()
+	fmt.Printf("%d errors\n", ec)
+	for _, e := range es.Errors {
+		fmt.Println(e.String())
+	}
+	fmt.Printf("%d warnings\n", wc)
+	for _, e := range es.Warnings {
+		fmt.Println(e.String())
 	}
 }
