@@ -58,5 +58,9 @@ func tokenLiteral(t int) string {
 	if ok {
 		return name
 	}
-	return yySymNames[yyXLAT[t]]
+	name = yySymNames[yyXLAT[t]]
+	if name[0] == '\'' {
+		return name[1 : len(name)-1]
+	}
+	return name
 }
