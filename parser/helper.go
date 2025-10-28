@@ -161,7 +161,7 @@ func buildInfixExpression(opcode int, op1, op2 Node, errFn errorFunc) Expression
 			errFn(fmt.Sprintf("UNKNOWN infix %s", yySymNames[yyXLAT[opcode]]))
 			v = 0
 		}
-		return &NumberLiteral{TokenType: NUMBER, Value: v}
+		return &NumberLiteral{Value: v}
 	}
 	return &InfixExpression{OpCode: opcode, Op1: op1, Op2: op2}
 }
@@ -192,7 +192,7 @@ func buildPrefixExpression(opcode int, op Node, errFn errorFunc) Expression {
 			errFn(fmt.Sprintf("UNKNOWN prefix %s", yySymNames[yyXLAT[opcode]]))
 			v = 0
 		}
-		return &NumberLiteral{TokenType: NUMBER, Value: v}
+		return &NumberLiteral{Value: v}
 	}
 	return &PrefixExpression{OpCode: opcode, Op: op}
 }

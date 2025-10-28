@@ -26,10 +26,10 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	tok := l.NextToken()
 	lval.token = tok
 	// fmt.Println("[token]", tok.String())
-	if tok.Type == INVALID {
+	if tok.TokenType == INVALID {
 		return int([]rune(tok.Literal)[0])
 	} else {
-		return tok.Type
+		return int(tok.TokenType)
 	}
 }
 
@@ -75,23 +75,23 @@ func (l *Lexer) NextToken() Token {
 	switch {
 	case l.curChar == EOF:
 		// EOF
-		return Token{Type: 0, Literal: "[EOF]", LineNumber: l.lineNumber}
+		return Token{TokenType: 0, Literal: "[EOF]", LineNumber: l.lineNumber}
 	case l.curChar == '\n':
 		// EOL
 		l.nextChar()
-		return Token{Type: int(EOL), Literal: "\\n", LineNumber: l.lineNumber}
+		return Token{TokenType: EOL, Literal: "\\n", LineNumber: l.lineNumber}
 	case l.curChar == '-': // 単項、2項の両方あるので個別トークンとする
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
+		return Token{TokenType: TokenType(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '+' || l.curChar == '^':
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: ADD, SubType: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
+		return Token{TokenType: ADD, TokenSubType: TokenSubType(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '*' || l.curChar == '/':
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: MULDIV, SubType: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.isTowCharTokenStart(l.curChar):
 		tok := l.checkTwoCharToken(l.curChar)
 		tok.LineNumber = l.lineNumber
@@ -100,15 +100,15 @@ func (l *Lexer) NextToken() Token {
 		// 1文字トークン
 		ch = l.curChar
 		l.nextChar()
-		return Token{Type: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
+		return Token{TokenType: TokenType(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '&':
 		ch = l.curChar
 		l.nextChar()
-		return Token{Type: MULDIV, SubType: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '~':
 		ch = l.curChar
 		l.nextChar()
-		return Token{Type: UNARY, SubType: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
+		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
 		// 16進数リテラル(0x)
 		l.nextChar() // '0'をスキップ
@@ -116,19 +116,19 @@ func (l *Lexer) NextToken() Token {
 		l.nextChar() // 'x'または'X'をスキップ
 		literal += l.readWord()
 		l.nextChar()
-		return Token{Type: NUMBER, Literal: literal, LineNumber: l.lineNumber}
+		return Token{TokenType: NUMBER, Literal: literal, LineNumber: l.lineNumber}
 	case l.curChar == '$' || l.curChar == '%':
 		// 16進数リテラル($) or 2進数リテラル
 		literal = string(l.curChar)
 		l.nextChar() // '$'をスキップ
 		literal += l.readWord()
 		l.nextChar()
-		return Token{Type: NUMBER, Literal: literal, LineNumber: l.lineNumber}
+		return Token{TokenType: NUMBER, Literal: literal, LineNumber: l.lineNumber}
 	case l.isDigit(l.curChar):
 		// 10進、16進(0x)、2進(0b)、8進（0o)リテラル
 		literal = l.readWord()
 		l.nextChar()
-		return Token{Type: NUMBER, Literal: literal, LineNumber: l.lineNumber}
+		return Token{TokenType: NUMBER, Literal: literal, LineNumber: l.lineNumber}
 	case l.isAlpha(l.curChar):
 		// IDENT、予約語
 		literal = l.readWord()
@@ -151,17 +151,17 @@ func (l *Lexer) NextToken() Token {
 			return tok
 		}
 		// これ以外は識別子
-		return Token{Type: IDENT, Literal: literal}
+		return Token{TokenType: IDENT, Literal: literal}
 	case l.curChar == '@' || l.curChar == '.':
 		literal = string(l.curChar)
 		l.nextChar()
 		literal += l.readWord()
 		l.nextChar()
-		return Token{Type: IDENT, Literal: literal, LineNumber: l.lineNumber}
+		return Token{TokenType: IDENT, Literal: literal, LineNumber: l.lineNumber}
 	default:
 		literal = string(l.curChar)
 		l.nextChar()
-		return Token{Type: INVALID, Literal: literal, LineNumber: l.lineNumber}
+		return Token{TokenType: INVALID, Literal: literal, LineNumber: l.lineNumber}
 	}
 }
 
@@ -179,32 +179,32 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	switch {
 	// COMP
 	case ch1 == '<' && ch2 == '=':
-		tok = Token{Type: COMP, SubType: LE, Literal: "<="}
+		tok = Token{TokenType: COMP, TokenSubType: LE, Literal: "<="}
 	case ch1 == '<' && ch2 == '<':
-		tok = Token{Type: SHIFT, SubType: SL, Literal: "<<"}
+		tok = Token{TokenType: SHIFT, TokenSubType: SL, Literal: "<<"}
 	case ch1 == '>' && ch2 == '=':
-		tok = Token{Type: COMP, SubType: GE, Literal: ">="}
+		tok = Token{TokenType: COMP, TokenSubType: GE, Literal: ">="}
 	case ch1 == '>' && ch2 == '>':
-		tok = Token{Type: SHIFT, SubType: SR, Literal: ">>"}
+		tok = Token{TokenType: SHIFT, TokenSubType: SR, Literal: ">>"}
 	case ch1 == '<' || ch1 == '>':
-		tok = Token{Type: COMP, SubType: int(ch1), Literal: string(ch1)}
+		tok = Token{TokenType: COMP, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
 	case ch1 == '=' && ch2 == '=':
-		tok = Token{Type: COMP, SubType: EQ, Literal: "=="}
+		tok = Token{TokenType: COMP, TokenSubType: EQ, Literal: "=="}
 	case ch1 == '!' && ch2 == '=':
-		tok = Token{Type: COMP, SubType: NEQ, Literal: "!="}
+		tok = Token{TokenType: COMP, TokenSubType: NEQ, Literal: "!="}
 	case ch1 == '!':
-		return Token{Type: UNARY, SubType: int(ch1), Literal: string(ch1)}
+		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
 	case ch1 == '&' && ch2 == '&':
-		tok = Token{Type: AND, SubType: 0, Literal: "&&"}
+		tok = Token{TokenType: AND, TokenSubType: 0, Literal: "&&"}
 	case ch1 == '&':
-		return Token{Type: MULDIV, SubType: int(ch1), Literal: string(ch1)}
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
 	case ch1 == '|' && ch2 == '|':
-		tok = Token{Type: OR, SubType: 0, Literal: "||"}
+		tok = Token{TokenType: OR, TokenSubType: 0, Literal: "||"}
 	case ch1 == '|':
-		return Token{Type: ADD, SubType: int(ch1), Literal: string(ch1)}
+		return Token{TokenType: ADD, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
 	default:
 		// 1文字トークンを返す
-		return Token{Type: int(ch1), Literal: string(rune(ch1))}
+		return Token{TokenType: TokenType(ch1), Literal: string(rune(ch1))}
 	}
 	l.nextChar()
 	return tok

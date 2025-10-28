@@ -6,9 +6,24 @@ import (
 	"strings"
 )
 
+const (
+	NODE_NODE = iota + 1
+	NODE_STMT
+	NODE_EXPR_STMT
+	NODE_EXPR
+	NODE_NUMBER
+	NODE_INDIRECT
+	NODE_INFIX_EXPR
+	NODE_PREFIX_EXPR
+)
+
+type NodeType int
+type NodeSubType int
+
 // interface
 type Node interface {
-	Type() int
+	NodeType() NodeType
+	NodeSubType() NodeSubType
 	String() string
 }
 
@@ -42,12 +57,14 @@ type ExpressionStatement struct {
 	Value Node
 }
 
-func (e *ExpressionStatement) statementNode() {}
-func (e *ExpressionStatement) Type() int      { return -1 } // ダミー
-func (e *ExpressionStatement) String() string { return e.Value.String() }
+func (e *ExpressionStatement) statementNode()           {}
+func (e *ExpressionStatement) NodeType() NodeType       { return NODE_EXPR_STMT }
+func (e *ExpressionStatement) NodeSubType() NodeSubType { return 0 }
+func (e *ExpressionStatement) String() string           { return e.Value.String() }
 
 // Z80Instruction Statement
 type Z80Instruction struct {
+	InstType   int
 	OpCode     int
 	Op1        Node
 	Op2        Node
@@ -55,8 +72,11 @@ type Z80Instruction struct {
 }
 
 func (z *Z80Instruction) statementNode() {}
-func (z *Z80Instruction) Type() int {
-	return z.OpCode
+func (z *Z80Instruction) NodeType() NodeType {
+	return NodeType(z.InstType)
+}
+func (z *Z80Instruction) NodeSubType() NodeSubType {
+	return NodeSubType(z.OpCode)
 }
 func (z *Z80Instruction) String() string {
 	var out bytes.Buffer
@@ -79,42 +99,39 @@ func (z *Z80Instruction) String() string {
 
 // 数値リテラル
 type NumberLiteral struct {
-	TokenType int
-	Value     int
+	Value int
 }
 
-func (n *NumberLiteral) expressionNode() {}
-func (n *NumberLiteral) Type() int {
-	return n.TokenType
-}
+func (n *NumberLiteral) expressionNode()          {}
+func (n *NumberLiteral) NodeType() NodeType       { return NUMBER }
+func (n *NumberLiteral) NodeSubType() NodeSubType { return 0 }
 func (n *NumberLiteral) String() string {
 	return fmt.Sprintf("%d", n.Value)
 }
 
 // レジスタリテラル
 type RegisterLiteral struct {
-	TokenType int
+	RegisterType int
+	Register     int
 }
 
-func (r *RegisterLiteral) expressionNode() {}
-func (r *RegisterLiteral) Type() int {
-	return r.TokenType
-}
+func (r *RegisterLiteral) expressionNode()          {}
+func (r *RegisterLiteral) NodeType() NodeType       { return NodeType(r.RegisterType) }
+func (r *RegisterLiteral) NodeSubType() NodeSubType { return NodeSubType(r.Register) }
 func (r *RegisterLiteral) String() string {
-	return z80OpCode2Name(r.TokenType)
+	return z80OpCode2Name(r.Register)
 }
 
 // フラグリテラル
 type FlagLiteral struct {
-	TokenType int
+	Flag int
 }
 
-func (f *FlagLiteral) expressionNode() {}
-func (f *FlagLiteral) Type() int {
-	return f.TokenType
-}
+func (f *FlagLiteral) expressionNode()          {}
+func (f *FlagLiteral) NodeType() NodeType       { return Z80_FLAG }
+func (f *FlagLiteral) NodeSubType() NodeSubType { return NodeSubType(f.Flag) }
 func (f *FlagLiteral) String() string {
-	return z80OpCode2Name(f.TokenType)
+	return z80OpCode2Name(f.Flag)
 }
 
 // 間接
@@ -122,10 +139,9 @@ type IndirectExpression struct {
 	Expression Node
 }
 
-func (r *IndirectExpression) expressionNode() {}
-func (r *IndirectExpression) Type() int {
-	return r.Expression.Type()
-}
+func (r *IndirectExpression) expressionNode()          {}
+func (r *IndirectExpression) NodeType() NodeType       { return NODE_INDIRECT }
+func (r *IndirectExpression) NodeSubType() NodeSubType { return 0 }
 func (r *IndirectExpression) String() string {
 	expr := trimParen(r.Expression.String())
 	return "(" + expr + ")"
@@ -138,10 +154,9 @@ type InfixExpression struct {
 	Op2    Node
 }
 
-func (i *InfixExpression) expressionNode() {}
-func (i *InfixExpression) Type() int {
-	return i.OpCode
-}
+func (i *InfixExpression) expressionNode()          {}
+func (i *InfixExpression) NodeType() NodeType       { return NODE_INFIX_EXPR }
+func (i *InfixExpression) NodeSubType() NodeSubType { return NodeSubType(i.OpCode) }
 func (i *InfixExpression) String() string {
 	var op1, op2 string
 	if i.Op1 == nil {
@@ -169,10 +184,9 @@ type PrefixExpression struct {
 	Op     Node
 }
 
-func (p *PrefixExpression) expressionNode() {}
-func (p *PrefixExpression) Type() int {
-	return p.OpCode
-}
+func (p *PrefixExpression) expressionNode()          {}
+func (p *PrefixExpression) NodeType() NodeType       { return NodeType(NODE_PREFIX_EXPR) }
+func (p *PrefixExpression) NodeSubType() NodeSubType { return NodeSubType(p.OpCode) }
 func (p *PrefixExpression) String() string {
 	var op string
 	if p.Op == nil {

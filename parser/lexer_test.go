@@ -26,11 +26,11 @@ func TestLexerOneCharacter(t *testing.T) {
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
 		// fmt.Println("[tok]", tok.String())
-		if tok.Type != expected.Type {
-			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		if tok.TokenType != TokenType(expected.Type) {
+			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
 		}
-		if expected.SubType != 0 && tok.SubType != expected.SubType {
-			t.Errorf("expected Token.SubType %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		if expected.SubType != 0 && tok.TokenSubType != TokenSubType(expected.SubType) {
+			t.Errorf("expected Token.SubType %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
 		}
 		if tok.Literal != expected.Literal {
 			t.Errorf("expected Token.Literal %s. got %#v", tok.Literal, tok)
@@ -59,11 +59,11 @@ func TestTwoCharToken(t *testing.T) {
 
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
-		if tok.Type != expected.Type {
-			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		if tok.TokenType != TokenType(expected.Type) {
+			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
 		}
-		if expected.SubType != 0 && tok.SubType != expected.SubType {
-			t.Errorf("expected Token.SubType %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		if expected.SubType != 0 && tok.TokenSubType != TokenSubType(expected.SubType) {
+			t.Errorf("expected Token.SubType %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
 		}
 		if tok.Literal != expected.Literal {
 			t.Errorf("expected Token.Literal %s. got %#v", tok.Literal, tok)
@@ -87,11 +87,11 @@ func TestGroupedToken(t *testing.T) {
 
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
-		if tok.Type != expected.Type {
-			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		if tok.TokenType != TokenType(expected.Type) {
+			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
 		}
-		if tok.SubType != expected.Op {
-			t.Errorf("expected Token.Op %d. got %#v", tok.SubType, tok)
+		if tok.TokenSubType != TokenSubType(expected.Op) {
+			t.Errorf("expected Token.Op %d. got %#v", int(tok.TokenSubType), tok)
 		}
 	}
 }
@@ -111,7 +111,7 @@ func TestBlankInput(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		for _, expected := range tt.expected_tokens {
 			tok := l.NextToken()
-			if tok.Type != expected {
+			if tok.TokenType != TokenType(expected) {
 				t.Fatalf("tokenize %q, expected=%d, got=%#v", tt.input, expected, tok)
 			}
 		}
@@ -123,7 +123,7 @@ func TestInvalidCharacter(t *testing.T) {
 
 	l := newLexerForTest(input)
 	tok := l.NextToken()
-	if tok.Type != INVALID || tok.Literal != "あ" {
+	if tok.TokenType != INVALID || tok.Literal != "あ" {
 		t.Errorf("expected=INVALID literal 'あ', got=%#v", tok)
 	}
 }
@@ -144,7 +144,7 @@ func TestNumber(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.Type != NUMBER || tok.Literal != tt.expected_literal {
+		if tok.TokenType != NUMBER || tok.Literal != tt.expected_literal {
 			t.Errorf("ze %q, expected=NUMBER with literal %q, got=%#v",
 				tt.input, tt.expected_literal, tok)
 		}
@@ -159,10 +159,10 @@ func TestHexNumbers(t *testing.T) {
 	l := newLexerForTest(input)
 	for _, expected := range expected_literals {
 		tok := l.NextToken()
-		if tok.Type != NUMBER {
+		if tok.TokenType != NUMBER {
 			t.Errorf("expected=NUMBER, got=%#v", tok)
 		}
-		if tok.Type != NUMBER || tok.Literal != expected {
+		if tok.TokenType != NUMBER || tok.Literal != expected {
 			t.Errorf("expected=%q, got=%q", expected, tok.Literal)
 		}
 	}
@@ -184,8 +184,8 @@ func TestLexInterface(t *testing.T) {
 	for _, expected := range expected_tokens {
 		ret := l.Lex(&lval)
 		// fmt.Printf("ret=%d, lval=%#v\n", ret, lval)
-		if ret != expected || lval.token.Type != expected {
-			t.Errorf("expected=%d, got=%d", expected, lval.token.Type)
+		if ret != expected || lval.token.TokenType != TokenType(expected) {
+			t.Errorf("expected=%d, got=%d", expected, lval.token.TokenType)
 		}
 	}
 }
@@ -203,7 +203,7 @@ func TestIDENT(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		for _, expected := range tt.expected_literals {
 			tok := l.NextToken()
-			if tok.Type != IDENT {
+			if tok.TokenType != IDENT {
 				t.Errorf("expected=IDENT, got=%#v", tok)
 			}
 			if tok.Literal != expected {
@@ -236,14 +236,14 @@ func TestZ80REG8(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.Type != Z80_REG8 {
-			t.Errorf("tokenize %q. expected Type Z80_REG8. got %#v", tt.input, yySymNames[yyXLAT[tok.Type]])
+		if tok.TokenType != Z80_REG8 {
+			t.Errorf("tokenize %q. expected Type Z80_REG8. got %#v", tt.input, yySymNames[yyXLAT[int(tok.TokenType)]])
 		}
 		if tok.Literal != tt.input {
 			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
 		}
-		if tok.SubType != tt.op {
-			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.SubType)
+		if tok.TokenSubType != TokenSubType(tt.op) {
+			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.TokenSubType)
 		}
 	}
 }
@@ -265,14 +265,14 @@ func TestZ80REG16(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.Type != Z80_REG16 {
-			t.Errorf("tokenize %q. expected Type Z80_REG16. got %#v", tt.input, yySymNames[yyXLAT[tok.Type]])
+		if tok.TokenType != Z80_REG16 {
+			t.Errorf("tokenize %q. expected Type Z80_REG16. got %#v", tt.input, yySymNames[yyXLAT[int(tok.TokenType)]])
 		}
 		if tok.Literal != tt.input {
 			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
 		}
-		if tok.SubType != tt.op {
-			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.SubType)
+		if tok.TokenSubType != TokenSubType(tt.op) {
+			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.TokenSubType)
 		}
 	}
 }
@@ -295,14 +295,14 @@ func TestZ80FLAG(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.Type != Z80_FLAG {
-			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, yySymNames[yyXLAT[tok.Type]])
+		if tok.TokenType != Z80_FLAG {
+			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, yySymNames[yyXLAT[int(tok.TokenType)]])
 		}
 		if tok.Literal != tt.input {
 			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
 		}
-		if tok.SubType != tt.op {
-			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.SubType)
+		if tok.TokenSubType != TokenSubType(tt.op) {
+			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.TokenSubType)
 		}
 	}
 }
@@ -317,7 +317,7 @@ func TestZ80Instructions(t *testing.T) {
 	l := newLexerForTest(input)
 	for {
 		tok := l.NextToken()
-		if tok.Type == EOL {
+		if tok.TokenType == EOL {
 			break
 		}
 
@@ -326,14 +326,14 @@ func TestZ80Instructions(t *testing.T) {
 			t.Errorf("instruction %q not found", tok.Literal)
 			continue
 		}
-		if tok.Type != expectedToken.Type {
-			t.Errorf("expected Type %s. got %#v", yySymNames[yyXLAT[tok.Type]], tok)
+		if tok.TokenType != expectedToken.TokenType {
+			t.Errorf("expected Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
 		}
 		if tok.Literal != expectedToken.Literal {
 			t.Errorf("expected Literal %q. got %#v", expectedToken.Literal, tok)
 		}
-		if tok.SubType != expectedToken.SubType {
-			t.Errorf("expected Op '%d'. got %#v", expectedToken.SubType, tok)
+		if tok.TokenSubType != expectedToken.TokenSubType {
+			t.Errorf("expected Op '%d'. got %#v", expectedToken.TokenSubType, tok)
 		}
 
 	}
