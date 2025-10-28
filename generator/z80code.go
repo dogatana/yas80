@@ -9,7 +9,7 @@ type Z80Code struct {
 	Value  int
 }
 
-var Z80CodeTable0 map[int]Z80Code = map[int]Z80Code{
+var Z80CodeTable0 map[int]*Z80Code = map[int]*Z80Code{
 	parser.Z80_INST_EXX:  {Bytes: []byte{0xd9}, Cycle: 0},
 	parser.Z80_INST_LDI:  {Bytes: []byte{0xed, 0xa0}, Cycle: 0},
 	parser.Z80_INST_LDIR: {Bytes: []byte{0xed, 0xb0}, Cycle: 0},
