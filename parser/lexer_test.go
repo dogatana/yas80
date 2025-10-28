@@ -109,7 +109,9 @@ func TestBlankInput(t *testing.T) {
 		{"  ", []int{EOL, EOF}},
 		{" \n ", []int{EOL, EOL, EOF}},
 		{" \n \n", []int{EOL, EOL, EOF}},
-		{" ; \n ; \n", []int{EOL, EOL, EOF}},
+		{" ; comment \n ;  comment \n", []int{EOL, EOL, EOF}},
+		{" \\ ", []int{EOL, EOL, EOF}},
+		{" ; comment \\ ; comment ", []int{EOL, EOF}},
 	}
 
 	for _, tt := range tests {

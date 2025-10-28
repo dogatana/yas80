@@ -83,6 +83,11 @@ func (l *Lexer) NextToken() Token {
 		}
 		l.nextChar()
 		return Token{TokenType: EOL, Literal: "\\n", LineNumber: l.lineNumber}
+	case l.curChar == '\\':
+		// マルチステートメント
+		tok := Token{TokenType: EOL, Literal: "\\", LineNumber: l.lineNumber}
+		l.nextChar()
+		return tok
 	case l.curChar == '\n':
 		// EOL
 		l.nextChar()
