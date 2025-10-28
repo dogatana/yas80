@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"yas80/errorstore"
+	"yas80/generator"
 	"yas80/parser"
 )
 
@@ -61,4 +62,12 @@ func main() {
 			fmt.Println(e.String())
 		}
 	}
+
+	if ec == 0 && wc == 0 {
+		prog := &parser.Root
+		fmt.Println(prog.String())
+		g := &generator.Generator{}
+		g.Generate(prog)
+	}
+
 }
