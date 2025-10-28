@@ -51,7 +51,7 @@ type Z80Instruction struct {
 	OpCode     int
 	Op1        Node
 	Op2        Node
-	lineNumber int
+	LineNumber int
 }
 
 func (z *Z80Instruction) statementNode() {}

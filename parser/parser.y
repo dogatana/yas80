@@ -6,7 +6,6 @@ import (
 )
 
 var Root Program
-var lexerInstance *Lexer
 
 // goyacc が __yyfmt__ を勝手に import することの対策
 var _ = __yyfmt__.Sprintf
@@ -56,7 +55,7 @@ program		: { }
 					Root.Statements = append(Root.Statements, &ExpressionStatement{Value: $2})
 				}
 			}
-			| program error EOL
+			| program error
 			{
 				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2))
 				yyerrok()
@@ -65,43 +64,43 @@ program		: { }
 
 instruction	: Z80_INST0
 			{
-				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber} 
+				$$ = &Z80Instruction{OpCode: $1.SubType, LineNumber: $1.LineNumber} 
 			}
 			| Z80_INST1 '(' expr ')'
 			{
-				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}}
+				$$ = &Z80Instruction{OpCode: $1.SubType, LineNumber: $1.LineNumber, Op1: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST1 expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: $2}
+				$$ = &Z80Instruction{OpCode: $1.SubType, LineNumber: $1.LineNumber, Op1: $2}
 			}
 			| Z80_INST2 '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
+					OpCode: $1.SubType, LineNumber: $1.LineNumber, Op1: nil, Op2: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST2 expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: nil, Op2: $2}
+				$$ = &Z80Instruction{OpCode: $1.SubType, LineNumber: $1.LineNumber, Op1: nil, Op2: $2}
 			}
 			| Z80_INST2 '(' expr ')' ',' expr
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
+					OpCode: $1.SubType, LineNumber: $1.LineNumber, Op1: &IndirectExpression{Expression: $3}, Op2: $6}
 			}
 			| Z80_INST2 expr ',' '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-					OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
+					OpCode: $1.SubType, LineNumber: $1.LineNumber, Op1: $2, Op2: &IndirectExpression{Expression: $5}}
 			}
 			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
 			{
-				yylex.Error("両方のオペランドを間接指定にすることはできません")
+				yylex.Error("両方のオペランドを間接指定にすることはできません", $1.LineNumber)
 				$$ = nil
 			}
 			| Z80_INST2 expr ',' expr
 			{
-				$$ = &Z80Instruction{OpCode: $1.SubType, lineNumber: lexerInstance.lineNumber, Op1: $2, Op2: $4}
+				$$ = &Z80Instruction{OpCode: $1.SubType, LineNumber: $1.LineNumber, Op1: $2, Op2: $4}
 			}
 			;
 
@@ -164,7 +163,6 @@ expr		: NUMBER
 %%
 
 func Parse(l *Lexer) (int, int) {
-	lexerInstance = l
 	Root = Program{}
 	// error トークンでリカバリすると yyParse() は 0 を返す
 	yyParse(l)

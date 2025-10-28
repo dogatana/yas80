@@ -75,38 +75,40 @@ func (l *Lexer) NextToken() Token {
 	switch {
 	case l.curChar == EOF:
 		// EOF
-		return Token{Type: 0, Literal: "[EOF]"}
+		return Token{Type: 0, Literal: "[EOF]", LineNumber: l.lineNumber}
 	case l.curChar == '\n':
 		// EOL
 		l.nextChar()
-		return Token{Type: int(EOL), Literal: "\\n"}
+		return Token{Type: int(EOL), Literal: "\\n", LineNumber: l.lineNumber}
 	case l.curChar == '-': // 単項、2項の両方あるので個別トークンとする
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: int(ch), Literal: string(ch)}
+		return Token{Type: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '+' || l.curChar == '^':
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: ADD, SubType: int(ch), Literal: string(ch)}
+		return Token{Type: ADD, SubType: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '*' || l.curChar == '/':
 		ch := l.curChar
 		l.nextChar()
-		return Token{Type: MULDIV, SubType: int(ch), Literal: string(ch)}
+		return Token{Type: MULDIV, SubType: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.isTowCharTokenStart(l.curChar):
-		return l.checkTwoCharToken(l.curChar)
+		tok := l.checkTwoCharToken(l.curChar)
+		tok.LineNumber = l.lineNumber
+		return tok
 	case l.curChar == '(' || l.curChar == ')':
 		// 1文字トークン
 		ch = l.curChar
 		l.nextChar()
-		return Token{Type: int(ch), Literal: string(ch)}
+		return Token{Type: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '&':
 		ch = l.curChar
 		l.nextChar()
-		return Token{Type: MULDIV, SubType: int(ch), Literal: string(ch)}
+		return Token{Type: MULDIV, SubType: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '~':
 		ch = l.curChar
 		l.nextChar()
-		return Token{Type: UNARY, SubType: int(ch), Literal: string(ch)}
+		return Token{Type: UNARY, SubType: int(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
 		// 16進数リテラル(0x)
 		l.nextChar() // '0'をスキップ
@@ -114,19 +116,19 @@ func (l *Lexer) NextToken() Token {
 		l.nextChar() // 'x'または'X'をスキップ
 		literal += l.readWord()
 		l.nextChar()
-		return Token{Type: NUMBER, Literal: literal}
+		return Token{Type: NUMBER, Literal: literal, LineNumber: l.lineNumber}
 	case l.curChar == '$' || l.curChar == '%':
 		// 16進数リテラル($) or 2進数リテラル
 		literal = string(l.curChar)
 		l.nextChar() // '$'をスキップ
 		literal += l.readWord()
 		l.nextChar()
-		return Token{Type: NUMBER, Literal: literal}
+		return Token{Type: NUMBER, Literal: literal, LineNumber: l.lineNumber}
 	case l.isDigit(l.curChar):
 		// 10進、16進(0x)、2進(0b)、8進（0o)リテラル
 		literal = l.readWord()
 		l.nextChar()
-		return Token{Type: NUMBER, Literal: literal}
+		return Token{Type: NUMBER, Literal: literal, LineNumber: l.lineNumber}
 	case l.isAlpha(l.curChar):
 		// IDENT、予約語
 		literal = l.readWord()
@@ -145,6 +147,7 @@ func (l *Lexer) NextToken() Token {
 		// z80 予約語
 		tok, ok := z80ReservedWords[strings.ToUpper(literal)]
 		if ok {
+			tok.LineNumber = l.lineNumber
 			return tok
 		}
 		// これ以外は識別子
@@ -154,11 +157,11 @@ func (l *Lexer) NextToken() Token {
 		l.nextChar()
 		literal += l.readWord()
 		l.nextChar()
-		return Token{Type: IDENT, Literal: literal}
+		return Token{Type: IDENT, Literal: literal, LineNumber: l.lineNumber}
 	default:
 		literal = string(l.curChar)
 		l.nextChar()
-		return Token{Type: INVALID, Literal: literal}
+		return Token{Type: INVALID, Literal: literal, LineNumber: l.lineNumber}
 	}
 }
 
