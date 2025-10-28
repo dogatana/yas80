@@ -1,16 +1,8 @@
 package parser
 
 import (
-	"bufio"
-	"strings"
 	"testing"
-	"yas80/errorstore"
 )
-
-func newLexerForTest(input string) *Lexer {
-	es := errorstore.New()
-	return NewLexer(bufio.NewReader(strings.NewReader(input)), "<string>", es)
-}
 
 func TestLexerOneCharacter(t *testing.T) {
 	input := " ( ) - ! ~ & | ^"
