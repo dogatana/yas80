@@ -65,6 +65,10 @@ func main() {
 
 	if ec == 0 && wc == 0 {
 		prog := &parser.Root
+		fmt.Printf("%d statements\n", len(prog.Statements))
+		if len(prog.Statements) == 0 {
+			os.Exit(0)
+		}
 		fmt.Println(prog.String())
 
 		g := generator.New(prog, es)
