@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -24,28 +25,40 @@ func getYYDebugEnv() int {
 
 // メイン関数
 func main() {
-	if len(os.Args) != 2 {
-		return
+	var (
+		file  string
+		input io.Reader
+	)
+
+	switch len(os.Args) {
+
+	case 1:
+		file = "stdin"
+		input = os.Stdin
+	case 2:
+		file = "arg"
+		input = strings.NewReader(os.Args[1])
+	case 3:
+		fmt.Println("usage: main | main text")
+		os.Exit(1)
 	}
-	input := os.Args[1]
 
 	parser.SetYYDebug(getYYDebugEnv())
 
 	es := errorstore.New()
-	l := parser.NewLexer(bufio.NewReader(strings.NewReader(input)), "<string>", es)
-	ret := parser.Parse(l)
+	l := parser.NewLexer(bufio.NewReader(input), file, es)
+	ec, wc := parser.Parse(l)
 
-	// error トークンを使うと 0 が返ってくる
-	fmt.Printf("Parse returns %d\n", ret)
-
-	fmt.Printf("parser.Parse() returned: %d\n", ret)
-	ec, wc := es.Count()
-	fmt.Printf("%d errors\n", ec)
-	for _, e := range es.Errors {
-		fmt.Println(e.String())
+	fmt.Printf("%d errros\n", ec)
+	if ec > 0 {
+		for _, e := range es.Errors {
+			fmt.Println(e.String())
+		}
 	}
 	fmt.Printf("%d warnings\n", wc)
-	for _, e := range es.Warnings {
-		fmt.Println(e.String())
+	if wc > 0 {
+		for _, e := range es.Errors {
+			fmt.Println(e.String())
+		}
 	}
 }
