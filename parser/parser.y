@@ -58,8 +58,7 @@ program		: { }
 			}
 			| program error EOL
 			{
-				yylex.Error(
-					__yyfmt__.Sprintf("%q の後に誤りがあります", $2.Literal))
+				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2))
 				yyerrok()
 			}
 			;
@@ -158,14 +157,16 @@ expr		: NUMBER
 			}
 			| error 
 			{ 
-				fmt.Println("error[expr]", $1)
+				yylex.Error(__yyfmt__.Sprintf("[expr error] %s", $1.String()))
 				$$ = nil
 			}
 			;
 %%
 
-func Parse(l *Lexer) int {
+func Parse(l *Lexer) (int, int) {
 	lexerInstance = l
 	Root = Program{}
-	return yyParse(l)
+	// error トークンでリカバリすると yyParse() は 0 を返す
+	yyParse(l)
+	return l.Errors.Count()
 }
