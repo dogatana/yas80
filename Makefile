@@ -6,3 +6,9 @@ parser/parser.go: parser/parser.txt parser/patch_parser.py
 
 parser/parser.txt: parser/parser.y
 	goyacc -xegen parser/error.txt -v parser/y.output -o $@ $<
+
+test:
+	go test ./parser
+
+testv:
+	go test -v ./parser
