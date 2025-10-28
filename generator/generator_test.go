@@ -43,11 +43,9 @@ func TestZ80Inst0(t *testing.T) {
 		}
 		t.Fatalf("%d errors", ec)
 	}
-	// fmt.Printf("%#v\n", parser.Root)
 
-	g := New()
-	g.Generate(&parser.Root)
-	// g.Dump()
+	g := New(&parser.Root, es)
+	g.Generate()
 
 	result := g.MergeCode()
 

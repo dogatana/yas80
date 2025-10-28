@@ -66,8 +66,9 @@ func main() {
 	if ec == 0 && wc == 0 {
 		prog := &parser.Root
 		fmt.Println(prog.String())
-		g := &generator.Generator{}
-		g.Generate(prog)
+
+		g := generator.New(prog, es)
+		g.Generate()
 		g.Dump()
 	}
 

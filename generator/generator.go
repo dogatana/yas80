@@ -2,20 +2,23 @@ package generator
 
 import (
 	"fmt"
+	"yas80/errorstore"
 	"yas80/object"
 	"yas80/parser"
 )
 
 type Generator struct {
+	program *parser.Program
+	es      *errorstore.ErrorStore
 	objects []object.Object
 }
 
-func New() *Generator {
-	return &Generator{}
+func New(p *parser.Program, es *errorstore.ErrorStore) *Generator {
+	return &Generator{program: p, es: es}
 }
 
-func (g *Generator) Generate(prg *parser.Program) {
-	for _, node := range prg.Statements {
+func (g *Generator) Generate() {
+	for _, node := range g.program.Statements {
 		switch node.NodeType() {
 		case parser.Z80_INST0:
 			inst := node.(*parser.Z80Instruction)
