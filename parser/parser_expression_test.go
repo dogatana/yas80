@@ -45,7 +45,10 @@ func TestExpression(t *testing.T) {
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		_ = Parse(l)
+		ec, wc := Parse(l)
+		if ec > 0 || wc > 0 {
+			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
+		}
 		if len(Root.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(Root.Statements))
 		}

@@ -41,9 +41,9 @@ OUTD
 OTDR
 `
 	l := newLexerForTest(input)
-	ret := Parse(l)
-	if ret != 0 {
-		t.Errorf("Parse returns %d", ret)
+	ec, wc := Parse(l)
+	if ec > 0 || wc > 0 {
+		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
 	text := Root.String()
@@ -74,9 +74,9 @@ DJNZ 16
 RST 17
 `
 	l := newLexerForTest(input)
-	ret := Parse(l)
-	if ret != 0 {
-		t.Errorf("Parse returns %d", ret)
+	ec, wc := Parse(l)
+	if ec > 0 || wc > 0 {
+		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
 	text := strings.ReplaceAll(Root.String(), "\t", " ")
@@ -107,9 +107,9 @@ OUT (2), A
 OUT (C), B
 `
 	l := newLexerForTest(input)
-	ret := Parse(l)
-	if ret != 0 {
-		t.Errorf("Parse returns %d", ret)
+	ec, wc := Parse(l)
+	if ec > 0 || wc > 0 {
+		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
 	text := strings.ReplaceAll(Root.String(), "\t", " ")
@@ -127,9 +127,9 @@ LD A, (IX + 1)
 LD (IX + 1), A
 `
 	l := newLexerForTest(input)
-	ret := Parse(l)
-	if ret != 0 {
-		t.Errorf("Parse returns %d", ret)
+	ec, wc := Parse(l)
+	if ec > 0 || wc > 0 {
+		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
 	text := strings.ReplaceAll(Root.String(), "\t", " ")
