@@ -68,6 +68,7 @@ func main() {
 		fmt.Println(prog.String())
 		g := &generator.Generator{}
 		g.Generate(prog)
+		g.Dump()
 	}
 
 }
