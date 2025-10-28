@@ -102,9 +102,14 @@ func TestBlankInput(t *testing.T) {
 		expected_tokens []int
 	}{
 		{"", []int{EOL, EOF}},
+		{";", []int{EOL, EOF}},
+		{" ;", []int{EOL, EOF}},
+		{"; ", []int{EOL, EOF}},
+		{" ; comment", []int{EOL, EOF}},
 		{"  ", []int{EOL, EOF}},
 		{" \n ", []int{EOL, EOL, EOF}},
 		{" \n \n", []int{EOL, EOL, EOF}},
+		{" ; \n ; \n", []int{EOL, EOL, EOF}},
 	}
 
 	for _, tt := range tests {

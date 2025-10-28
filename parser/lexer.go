@@ -76,6 +76,13 @@ func (l *Lexer) NextToken() Token {
 	case l.curChar == EOF:
 		// EOF
 		return Token{TokenType: 0, Literal: "[EOF]", LineNumber: l.lineNumber}
+	case l.curChar == ';':
+		// コメント
+		for l.curChar != '\n' && l.curChar != EOF {
+			l.nextChar()
+		}
+		l.nextChar()
+		return Token{TokenType: EOL, Literal: "\\n", LineNumber: l.lineNumber}
 	case l.curChar == '\n':
 		// EOL
 		l.nextChar()
