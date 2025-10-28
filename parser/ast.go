@@ -20,41 +20,23 @@ const (
 func NodeTypeNames(t NodeType) string {
 	switch t {
 	case NODE_NODE:
-		{
-			return "NODE_NODE"
-		}
+		return "NODE_NODE"
 	case NODE_STMT:
-		{
-			return "NODE_STMT"
-		}
+		return "NODE_STMT"
 	case NODE_EXPR_STMT:
-		{
-			return "NODE_EXPR_STMT"
-		}
+		return "NODE_EXPR_STMT"
 	case NODE_EXPR:
-		{
-			return "NODE_EXPR"
-		}
+		return "NODE_EXPR"
 	case NODE_NUMBER:
-		{
-			return "NODE_NUMBER"
-		}
+		return "NODE_NUMBER"
 	case NODE_INDIRECT:
-		{
-			return "NODE_INDIRECT"
-		}
+		return "NODE_INDIRECT"
 	case NODE_INFIX_EXPR:
-		{
-			return "NODE_INFIX_EXPR"
-		}
+		return "NODE_INFIX_EXPR"
 	case NODE_PREFIX_EXPR:
-		{
-			return "NODE_PREFIX_EXPR"
-		}
+		return "NODE_PREFIX_EXPR"
 	default:
-		{
-			return yySymNames[yyXLAT[int(t)]]
-		}
+		return yySymNames[yyXLAT[int(t)]]
 	}
 }
 
