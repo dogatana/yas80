@@ -49,31 +49,27 @@ func main() {
 	es := errorstore.New()
 	l := parser.NewLexer(bufio.NewReader(input), file, es)
 	ec, wc := parser.Parse(l)
-
-	fmt.Printf("%d errros\n", ec)
-	if ec > 0 {
-		for _, e := range es.Errors {
-			fmt.Println(e.String())
-		}
-	}
-	fmt.Printf("%d warnings\n", wc)
-	if wc > 0 {
-		for _, e := range es.Errors {
-			fmt.Println(e.String())
-		}
+	es.Print()
+	if ec != 0 || wc != 0 {
+		os.Exit(1)
 	}
 
-	if ec == 0 && wc == 0 {
-		prog := &parser.Root
-		fmt.Printf("%d statements\n", len(prog.Statements))
-		if len(prog.Statements) == 0 {
-			os.Exit(0)
-		}
-		fmt.Println(prog.String())
-
-		g := generator.New(prog, es)
-		g.Generate()
-		g.Dump()
+	prog := &parser.Root
+	fmt.Printf("%d statements\n", len(prog.Statements))
+	if len(prog.Statements) == 0 {
+		os.Exit(0)
 	}
+	fmt.Println(prog.String())
+
+	g := generator.New(prog, es)
+	g.Generate()
+	ec, wc = es.Count()
+	es.Print()
+	if ec != 0 || wc != 0 {
+		os.Exit(1)
+	}
+
+	fmt.Println("generated code")
+	g.Dump()
 
 }
