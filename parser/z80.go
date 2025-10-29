@@ -47,9 +47,11 @@ const (
 	Z80_INST_EXX
 	Z80_INST_LDI
 	Z80_INST_LDIR
+	Z80_INST_LDD
 	Z80_INST_LDDR
 	Z80_INST_CPI
 	Z80_INST_CPIR
+	Z80_INST_CPD
 	Z80_INST_CPDR
 	Z80_INST_ADD
 	Z80_INST_ADC
@@ -145,9 +147,11 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"EXX":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_EXX, Literal: "EXX"},
 	"LDI":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_LDI, Literal: "LDI"},
 	"LDIR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_LDIR, Literal: "LDIR"},
+	"LDD":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_LDD, Literal: "LDD"},
 	"LDDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_LDDR, Literal: "LDDR"},
 	"CPI":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_CPI, Literal: "CPI"},
 	"CPIR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_CPIR, Literal: "CPIR"},
+	"CPD":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_CPD, Literal: "CPD"},
 	"CPDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_CPDR, Literal: "CPDR"},
 	"ADD":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_ADD, Literal: "ADD"},
 	"ADC":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_ADC, Literal: "ADC"},
@@ -187,7 +191,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"JR":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_JR, Literal: "JR"}, // cc 有無によりOPCODE1, OPCODE2 両方あり
 	"DJNZ": {TokenType: Z80_INST1, TokenSubType: Z80_INST_DJNZ, Literal: "DJNZ"},
 	"CALL": {TokenType: Z80_INST2, TokenSubType: Z80_INST_CALL, Literal: "CALL"}, // cc 有無によりOPCODE1, OPCODE2 両方あり
-	"RET":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_RET, Literal: "RET"},   // cc 有無により OPCODE0, OPCODE1 両方あり
+	"RET":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_RET, Literal: "RET"},   // cc 有無により OPCODE0, OPCODE1 両方あり
 	"RETI": {TokenType: Z80_INST0, TokenSubType: Z80_INST_RETI, Literal: "RETI"},
 	"RETN": {TokenType: Z80_INST0, TokenSubType: Z80_INST_RETN, Literal: "RETN"},
 	"RST":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_RST, Literal: "RST"},

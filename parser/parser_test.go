@@ -10,9 +10,11 @@ func TestINST0(t *testing.T) {
 	input := `EXX
 LDI
 LDIR
+LDD
 LDDR
 CPI
 CPIR
+CPD
 CPDR
 DAA
 CPL
@@ -29,7 +31,6 @@ RRCA
 RRA
 RLD
 RRD
-RET
 RETI
 RETN
 INI
@@ -43,6 +44,12 @@ OTDR
 	l := newLexerForTest(input)
 	ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
+		for _, e := range l.Errors.Errors {
+			fmt.Println(e.String())
+		}
+		for _, e := range l.Errors.Warnings {
+			fmt.Println(e.String())
+		}
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
@@ -50,6 +57,7 @@ OTDR
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
+		fmt.Println(text)
 	}
 }
 
@@ -78,13 +86,20 @@ RET 18
 	l := newLexerForTest(input)
 	ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
+		for _, e := range l.Errors.Errors {
+			fmt.Println(e.String())
+		}
+		for _, e := range l.Errors.Warnings {
+			fmt.Println(e.String())
+		}
+		t.Fatalf("Parser returns %d errors and %d warnigs", ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
 	text := strings.ReplaceAll(Root.String(), "\t", " ")
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
+		fmt.Println(text)
 	}
 }
 
