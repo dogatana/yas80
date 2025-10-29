@@ -162,6 +162,12 @@ func (l *Lexer) NextToken() Token {
 			tok.LineNumber = l.lineNumber
 			return tok
 		}
+		// yas80 予約語
+		tok, ok = reservedWords[strings.ToUpper(literal)]
+		if ok {
+			tok.LineNumber = l.lineNumber
+			return tok
+		}
 		// これ以外は識別子
 		return Token{TokenType: IDENT, Literal: literal}
 	case l.curChar == '@' || l.curChar == '.':

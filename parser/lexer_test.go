@@ -345,3 +345,30 @@ func TestZ80Instructions(t *testing.T) {
 
 	}
 }
+
+func TestReservedWords(t *testing.T) {
+	input := "CONST VAR EQU FUNC IF ELSE ELIF ENDIF END_IF MACRO ENDMACRO END_MACRO ENDM " +
+		"REPEAT ENDREPEAT END_REPEAT ENDR FUNCTION ENDFUNCTION END_FUNCTION ENDF " +
+		"PROC ENDPROC END_PROC ENDP BLOCK ENDBLOCK END_BLOCK ENDB"
+	l := newLexerForTest(input)
+
+	for {
+		tok := l.NextToken()
+		if tok.TokenType == EOL {
+			break
+		}
+		expected, ok := reservedWords[tok.Literal]
+		if !ok {
+			t.Fatalf("word %q is not registered", tok.Literal)
+		}
+		if tok.TokenType != expected.TokenType {
+			t.Errorf("expected Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
+		}
+		if tok.Literal != expected.Literal {
+			t.Errorf("expected Literal %q. got %#v", expected.Literal, tok)
+		}
+		if tok.TokenSubType != expected.TokenSubType {
+			t.Errorf("expected Op '%d'. got %#v", expected.TokenSubType, tok)
+		}
+	}
+}
