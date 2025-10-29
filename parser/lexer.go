@@ -108,7 +108,7 @@ func (l *Lexer) NextToken() Token {
 		tok := l.checkTwoCharToken(l.curChar)
 		tok.LineNumber = l.lineNumber
 		return tok
-	case l.curChar == '(' || l.curChar == ')':
+	case l.isOneCharToken(l.curChar):
 		// 1文字トークン
 		ch = l.curChar
 		l.nextChar()
