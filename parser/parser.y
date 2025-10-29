@@ -26,6 +26,7 @@ var _ = __yyfmt__.Sprintf
 %token<token> NUMBER IDENT
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
 %token<token> ADD MULDIV COMP SHIFT UNARY
+%token CONST VAR EQU
 %token SL SR EQ NEQ GE LE OR AND
 %token  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':'
 %token INVALID EOL 
