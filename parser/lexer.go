@@ -263,14 +263,6 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func (l *Lexer) readNumber() string {
-	startIndex := l.index - 1
-	for l.index < len(l.text) && l.isWordChar(l.text[l.index]) {
-		l.index++
-	}
-	return string(l.text[startIndex:l.index])
-}
-
 func (l *Lexer) readWord() string {
 	startIndex := l.index - 1
 	for l.index < len(l.text) && l.isWordChar(l.text[l.index]) {
