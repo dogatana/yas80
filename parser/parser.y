@@ -21,7 +21,7 @@ var _ = __yyfmt__.Sprintf
 // プログラムの構成要素を指定
 %type<num> program
 %type<node> expr 
-%type<node> instruction
+%type<node> instruction statement
 
 %token<token> NUMBER IDENT
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
@@ -50,7 +50,7 @@ var _ = __yyfmt__.Sprintf
 // 文法規則を指定
 program		: { }
 			| program EOL
-			| program instruction EOL
+			| program statement EOL
 			{
 				if $2 != nil {
 					Root.Statements = append(Root.Statements, $2)
@@ -69,6 +69,16 @@ program		: { }
 			}
 			;
 
+statement   : instruction			{ $$ = $1}
+			| CONST IDENT '=' expr
+			{ 
+				$$ = &ConstStatement{Name: &Ident{Name: $2.Literal}, Value: $4}
+			}
+			| IDENT EQU expr		
+			{ 
+				$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3}
+			}
+			;
 instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{
@@ -140,6 +150,10 @@ expr		: NUMBER
 					yylex.Error(fmt.Sprintf("invalid NUMBER literal '%s'", $1.Literal))
 					$$ = nil
 				}
+			}
+			| IDENT
+			{
+				$$ = &Ident{Name: $1.Literal}
 			}
 			| Z80_REG8 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
 			| Z80_REG16 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}

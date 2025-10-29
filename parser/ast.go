@@ -10,6 +10,8 @@ const (
 	NODE_NODE = iota + 1
 	NODE_STMT
 	NODE_EXPR_STMT
+	NODE_CONST_STMT
+	NODE_VAR_STMT
 	NODE_EXPR
 	NODE_NUMBER
 	NODE_INDIRECT
@@ -25,6 +27,10 @@ func NodeTypeNames(t NodeType) string {
 		return "NODE_STMT"
 	case NODE_EXPR_STMT:
 		return "NODE_EXPR_STMT"
+	case NODE_CONST_STMT:
+		return "NODE_CONST_STMT"
+	case NODE_VAR_STMT:
+		return "NODE_VAR_STMT"
 	case NODE_EXPR:
 		return "NODE_EXPR"
 	case NODE_NUMBER:
@@ -84,6 +90,19 @@ func (e *ExpressionStatement) statementNode()           {}
 func (e *ExpressionStatement) NodeType() NodeType       { return NODE_EXPR_STMT }
 func (e *ExpressionStatement) NodeSubType() NodeSubType { return 0 }
 func (e *ExpressionStatement) String() string           { return e.Value.String() }
+
+// CONST, EQU Statement
+type ConstStatement struct {
+	Name  *Ident
+	Value Node
+}
+
+func (c *ConstStatement) statementNode()           {}
+func (c *ConstStatement) NodeType() NodeType       { return NODE_CONST_STMT }
+func (c *ConstStatement) NodeSubType() NodeSubType { return 0 }
+func (c *ConstStatement) String() string {
+	return "CONST " + c.Name.String() + " = " + c.Value.String()
+}
 
 // Z80Instruction Statement
 type Z80Instruction struct {
@@ -156,6 +175,17 @@ func (f *FlagLiteral) NodeSubType() NodeSubType { return NodeSubType(f.Flag) }
 func (f *FlagLiteral) String() string {
 	return z80OpCode2Name(f.Flag)
 }
+
+// 識別子
+type Ident struct {
+	Name  string
+	Value Node
+}
+
+func (i *Ident) expressionNode()          {}
+func (i *Ident) NodeType() NodeType       { return IDENT }
+func (i *Ident) NodeSubType() NodeSubType { return 0 }
+func (i *Ident) String() string           { return i.Name }
 
 // 間接
 type IndirectExpression struct {
