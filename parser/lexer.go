@@ -18,7 +18,7 @@ type Lexer struct {
 	curChar    rune
 	lineNumber int
 	fileNmae   string
-	Errors     *errorstore.ErrorStore
+	ErrorStore *errorstore.ErrorStore
 }
 
 // yyLexer インターフェースメソッド
@@ -51,9 +51,9 @@ func (l *Lexer) Error(s string, args ...any) {
 	}
 
 	if strings.HasPrefix(s, "[W]") {
-		l.Errors.AddWarning(l.fileNmae, line, s[3:])
+		l.ErrorStore.AddWarning(l.fileNmae, line, s[3:])
 	} else {
-		l.Errors.AddError(l.fileNmae, line, s)
+		l.ErrorStore.AddError(l.fileNmae, line, s)
 	}
 }
 
@@ -61,7 +61,7 @@ func NewLexer(r *bufio.Reader, filename string, es *errorstore.ErrorStore) *Lexe
 	l := &Lexer{scanner: bufio.NewScanner(r)}
 	l.nextChar()
 	l.fileNmae = filename
-	l.Errors = es
+	l.ErrorStore = es
 	return l
 }
 

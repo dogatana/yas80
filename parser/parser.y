@@ -186,5 +186,5 @@ func Parse(l *Lexer) (int, int) {
 	Root = Program{}
 	// error トークンでリカバリすると yyParse() は 0 を返す
 	yyParse(l)
-	return l.Errors.Count()
+	return l.ErrorStore.Count()
 }
