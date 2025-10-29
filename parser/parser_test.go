@@ -72,6 +72,8 @@ SRA 14
 SRL 15
 DJNZ 16
 RST 17
+RET
+RET 18
 `
 	l := newLexerForTest(input)
 	ec, wc := Parse(l)

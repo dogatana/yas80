@@ -73,6 +73,11 @@ instruction	: Z80_INST0
 						InstType: Z80_INST1, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber,
 						Op1: &IndirectExpression{Expression: $3}}
 			}
+			| Z80_INST1
+			{
+				$$ = &Z80Instruction{
+						InstType: Z80_INST1, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber}
+			}
 			| Z80_INST1 expr
 			{
 				$$ = &Z80Instruction{
