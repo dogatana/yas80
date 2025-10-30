@@ -61,7 +61,7 @@ program		: { }
 					prog.Statements = append(prog.Statements, &ExpressionStatement{Value: $2})
 				}
 			}
-			| program error
+			| program error EOL
 			{
 				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2))
 				yyerrok()
