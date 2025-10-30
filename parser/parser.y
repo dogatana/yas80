@@ -5,8 +5,6 @@ import (
 	"fmt"
 )
 
-var Root Program
-
 // goyacc が __yyfmt__ を勝手に import することの対策
 var _ = __yyfmt__.Sprintf
 %}
@@ -19,7 +17,6 @@ var _ = __yyfmt__.Sprintf
 
 
 // プログラムの構成要素を指定
-%type<num> program
 %type<node> expr 
 %type<node> instruction statement
 
@@ -53,13 +50,15 @@ program		: { }
 			| program statement EOL
 			{
 				if $2 != nil {
-					Root.Statements = append(Root.Statements, $2)
+					prog := yylex.(*Lexer).program
+					prog.Statements = append(prog.Statements, $2)
 				}
 			}
 			| program expr EOL
 			{
 				if $2 != nil {
-					Root.Statements = append(Root.Statements, &ExpressionStatement{Value: $2})
+					prog := yylex.(*Lexer).program
+					prog.Statements = append(prog.Statements, &ExpressionStatement{Value: $2})
 				}
 			}
 			| program error
@@ -203,9 +202,9 @@ expr		: NUMBER
 			;
 %%
 
-func Parse(l *Lexer) (int, int) {
-	Root = Program{}
+func Parse(l *Lexer) (*Program, int, int) {
 	// error トークンでリカバリすると yyParse() は 0 を返す
 	yyParse(l)
-	return l.ErrorStore.Count()
+	ec, wc := l.ErrorStore.Count()
+	return l.program, ec, wc
 }

@@ -42,7 +42,7 @@ OUTD
 OTDR
 `
 	l := newLexerForTest(input)
-	ec, wc := Parse(l)
+	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
 		for _, e := range l.ErrorStore.Errors {
 			fmt.Println(e.String())
@@ -53,7 +53,7 @@ OTDR
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
-	text := Root.String()
+	text := prog.String()
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
@@ -84,7 +84,7 @@ RET
 RET 18
 `
 	l := newLexerForTest(input)
-	ec, wc := Parse(l)
+	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
 		for _, e := range l.ErrorStore.Errors {
 			fmt.Println(e.String())
@@ -95,7 +95,7 @@ RET 18
 		t.Fatalf("Parser returns %d errors and %d warnigs", ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
-	text := strings.ReplaceAll(Root.String(), "\t", " ")
+	text := strings.ReplaceAll(prog.String(), "\t", " ")
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
@@ -124,12 +124,12 @@ OUT (2), A
 OUT (C), B
 `
 	l := newLexerForTest(input)
-	ec, wc := Parse(l)
+	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
-	text := strings.ReplaceAll(Root.String(), "\t", " ")
+	text := strings.ReplaceAll(prog.String(), "\t", " ")
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
@@ -144,12 +144,12 @@ LD A, (IX + 1)
 LD (IX + 1), A
 `
 	l := newLexerForTest(input)
-	ec, wc := Parse(l)
+	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")
-	text := strings.ReplaceAll(Root.String(), "\t", " ")
+	text := strings.ReplaceAll(prog.String(), "\t", " ")
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))

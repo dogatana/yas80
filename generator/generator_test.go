@@ -36,7 +36,7 @@ func TestZ80Inst0(t *testing.T) {
 
 	es := errorstore.New()
 	l := parser.NewLexer(bufio.NewReader(input), "inst0.asm", es)
-	ec, _ := parser.Parse(l)
+	root, ec, _ := parser.Parse(l)
 	if ec != 0 {
 		for _, e := range es.Errors {
 			fmt.Println(e.String())
@@ -44,7 +44,7 @@ func TestZ80Inst0(t *testing.T) {
 		t.Fatalf("%d errors", ec)
 	}
 
-	g := New(&parser.Root, es)
+	g := New(root, es)
 	g.Generate()
 
 	result := g.MergeCode()

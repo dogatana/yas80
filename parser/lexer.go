@@ -19,6 +19,7 @@ type Lexer struct {
 	lineNumber int
 	fileNmae   string
 	ErrorStore *errorstore.ErrorStore
+	program    *Program
 }
 
 // yyLexer インターフェースメソッド
@@ -58,7 +59,7 @@ func (l *Lexer) Error(s string, args ...any) {
 }
 
 func NewLexer(r *bufio.Reader, filename string, es *errorstore.ErrorStore) *Lexer {
-	l := &Lexer{scanner: bufio.NewScanner(r)}
+	l := &Lexer{scanner: bufio.NewScanner(r), program: &Program{}}
 	l.nextChar()
 	l.fileNmae = filename
 	l.ErrorStore = es

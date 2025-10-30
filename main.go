@@ -48,13 +48,12 @@ func main() {
 
 	es := errorstore.New()
 	l := parser.NewLexer(bufio.NewReader(input), file, es)
-	ec, wc := parser.Parse(l)
+	prog, ec, wc := parser.Parse(l)
 	es.Print()
 	if ec != 0 || wc != 0 {
 		os.Exit(1)
 	}
 
-	prog := &parser.Root
 	fmt.Printf("%d statements\n", len(prog.Statements))
 	if len(prog.Statements) == 0 {
 		os.Exit(0)
