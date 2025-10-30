@@ -8,6 +8,7 @@ import (
 
 const (
 	NODE_NODE = iota + 1
+	NODE_PROGRAM
 	NODE_STMT
 	NODE_EXPR_STMT
 	NODE_CONST_STMT
@@ -73,6 +74,8 @@ type Program struct {
 	Statements []Node
 }
 
+func (p *Program) NodeType() NodeType       { return NODE_PROGRAM }
+func (p *Program) NodeSubType() NodeSubType { return 0 }
 func (p *Program) String() string {
 	var lines []string
 	for _, s := range p.Statements {
@@ -83,7 +86,8 @@ func (p *Program) String() string {
 
 // Expression Statement
 type ExpressionStatement struct {
-	Value Node
+	Value      Node
+	LineNumber int
 }
 
 func (e *ExpressionStatement) statementNode()           {}

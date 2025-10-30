@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"yas80/errorstore"
-	"yas80/generator"
+	"yas80/evaluator"
 	"yas80/parser"
 )
 
@@ -60,15 +60,22 @@ func main() {
 	}
 	fmt.Println(prog.String())
 
-	g := generator.New(prog, es)
-	g.Generate()
-	ec, wc = es.Count()
-	es.Print()
-	if ec != 0 || wc != 0 {
-		os.Exit(1)
-	}
+	es = errorstore.New()
+	g := evaluator.New(es)
+	result := g.Eval(prog)
 
-	fmt.Println("generated code")
-	g.Dump()
+	fmt.Printf("result: %T(%#v)\n", result, result)
+	es.Print()
+
+	// g := generator.New(prog, es)
+	// g.Generate()
+	// ec, wc = es.Count()
+	// es.Print()
+	// if ec != 0 || wc != 0 {
+	// 	os.Exit(1)
+	// }
+
+	// fmt.Println("generated code")
+	// g.Dump()
 
 }
