@@ -21,6 +21,9 @@ var _ = __yyfmt__.Sprintf
 %type<node> instruction statement
 
 %token<token> NUMBER IDENT
+%token<token> AT_IDENT    // @def 
+%token<token> LOCAL_IDENT // .def 
+%token<token> DOT_IDENT   // abc.def ラベル, enum
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
 %token<token> ADDSUB MULDIV COMP SHIFT UNARY
 %token SL SR EQ NEQ GE LE OR AND
@@ -31,6 +34,7 @@ var _ = __yyfmt__.Sprintf
 %token FUNCTION END_FUNCTION
 %token PROC END_PROC
 %token BLOCK END_BLOCK
+%token ENUM ENUM_END
 %token  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':'
 %token INVALID EOL 
 %token<token> error

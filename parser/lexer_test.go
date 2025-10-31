@@ -203,7 +203,8 @@ func TestIDENT(t *testing.T) {
 		expected_literals []string
 	}{
 		{" abc _abc ab_c abc_ ", []string{"abc", "_abc", "ab_c", "abc_"}},
-		{".abc @abc abc.def abc@def", []string{".abc", "@abc", "abc.def", "abc@def"}},
+		// testLABEL へ移動
+		// {".abc @abc abc.def abc@def", []string{".abc", "@abc", "abc.def", "abc@def"}},
 	}
 
 	for _, tt := range tests {
@@ -220,6 +221,24 @@ func TestIDENT(t *testing.T) {
 	}
 }
 
+func TestLabel(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected TokenType
+	}{
+		{" abc.def:", DOT_IDENT},
+		{" .def:", LOCAL_IDENT},
+		{" @def:", AT_IDENT},
+	}
+
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		tok := l.NextToken()
+		if tok.TokenType != tt.expected {
+			t.Errorf("expected Type %s. got %#v", yySymNames[yyXLAT[int(tt.expected)]], tok)
+		}
+	}
+}
 func TestZ80REG8(t *testing.T) {
 	tests := []struct {
 		input string

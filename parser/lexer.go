@@ -146,11 +146,12 @@ func (l *Lexer) NextToken() Token {
 	case l.isAlpha(l.curChar):
 		// IDENT、予約語
 		literal = l.readWord()
-		peek := l.peekChar()
-		if peek == '@' || peek == '.' {
+		if l.peekChar() == '.' {
+			// LABEL abc.def
 			l.nextChar()
+			literal += "." + l.readWord()
 			l.nextChar()
-			literal += string(peek) + l.readWord()
+			return Token{TokenType: DOT_IDENT, Literal: literal, LineNumber: l.lineNumber}
 		}
 		l.nextChar()
 		// AF’の対処
@@ -173,11 +174,17 @@ func (l *Lexer) NextToken() Token {
 		// これ以外は識別子
 		return Token{TokenType: IDENT, Literal: literal}
 	case l.curChar == '@' || l.curChar == '.':
+		prefix := l.curChar
 		literal = string(l.curChar)
 		l.nextChar()
 		literal += l.readWord()
 		l.nextChar()
-		return Token{TokenType: IDENT, Literal: literal, LineNumber: l.lineNumber}
+		if prefix == '@' {
+			return Token{TokenType: AT_IDENT, Literal: literal, LineNumber: l.lineNumber}
+		} else {
+			return Token{TokenType: LOCAL_IDENT, Literal: literal, LineNumber: l.lineNumber}
+		}
+
 	default:
 		literal = string(l.curChar)
 		l.nextChar()
@@ -293,4 +300,13 @@ func (l *Lexer) isWordChar(ch rune) bool {
 
 func (l *Lexer) isOneCharToken(ch rune) bool {
 	return ch == '(' || ch == ')' || ch == ',' || ch == ':'
+}
+
+func (l *Lexer) cotains(ch rune) bool {
+	for _, c := range l.text {
+		if c == ch {
+			return true
+		}
+	}
+	return false
 }
