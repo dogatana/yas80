@@ -13,7 +13,7 @@ parser/parser.txt: parser/parser.y
 	goyacc -xe parser/error.txt -v parser/y.output -o $@ $<
 
 test:
-	go test ./parser ./generator
+	go test ./parser ./evaluator
 
 testv:
-	go test -v ./parser ./generator
+	go test -v ./parser ./evaluator
