@@ -69,7 +69,9 @@ type Expression interface {
 	expressionNode()
 }
 
-// Program - これは Node interface を実装していない
+// これ以降実装 (struct)
+
+// Program
 type Program struct {
 	Statements []Node
 }
@@ -84,7 +86,7 @@ func (p *Program) String() string {
 	return strings.Join(lines, "\n")
 }
 
-// Expression Statement
+// 式文 - Expression Statement
 type ExpressionStatement struct {
 	Value      Node
 	LineNumber int
@@ -95,7 +97,7 @@ func (e *ExpressionStatement) NodeType() NodeType       { return NODE_EXPR_STMT 
 func (e *ExpressionStatement) NodeSubType() NodeSubType { return 0 }
 func (e *ExpressionStatement) String() string           { return e.Value.String() }
 
-// CONST, EQU Statement
+// 定数定義文 - CONST, EQU Statement
 type ConstStatement struct {
 	Name  *Ident
 	Value Node
@@ -108,7 +110,7 @@ func (c *ConstStatement) String() string {
 	return "CONST " + c.Name.String() + " = " + c.Value.String()
 }
 
-// Z80Instruction Statement
+// Z80 命令文 - Z80Instruction Statement
 type Z80Instruction struct {
 	InstType   int
 	OpCode     int
@@ -143,7 +145,9 @@ func (z *Z80Instruction) String() string {
 	return out.String()
 }
 
-// 数値リテラル
+// これ以降は 式 (Exspression)
+
+// 数値
 type NumberLiteral struct {
 	Value int
 }
@@ -155,7 +159,7 @@ func (n *NumberLiteral) String() string {
 	return fmt.Sprintf("%d", n.Value)
 }
 
-// レジスタリテラル
+// レジスタ
 type RegisterLiteral struct {
 	RegisterType int
 	Register     int
@@ -168,7 +172,7 @@ func (r *RegisterLiteral) String() string {
 	return z80OpCode2Name(r.Register)
 }
 
-// フラグリテラル
+// フラグ
 type FlagLiteral struct {
 	Flag int
 }
@@ -191,7 +195,7 @@ func (i *Ident) NodeType() NodeType       { return IDENT }
 func (i *Ident) NodeSubType() NodeSubType { return 0 }
 func (i *Ident) String() string           { return i.Name }
 
-// 間接
+// 間接指定
 type IndirectExpression struct {
 	Expression Node
 }

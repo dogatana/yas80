@@ -7,10 +7,12 @@ import (
 )
 
 func parseInt(s string) (int64, error) {
+	// 数値リテラルの途中の _ を無視
 	str := strings.ReplaceAll(s, "_", "")
 	length := len(str)
 	switch {
 	case length >= 3 && str[0] == '0':
+		// 0x 0o 0b
 		return strconv.ParseInt(str, 0, 0)
 	case length >= 2 && str[0] == '$':
 		return strconv.ParseInt("0x"+str[1:length], 0, 0)
