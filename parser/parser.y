@@ -22,7 +22,7 @@ var _ = __yyfmt__.Sprintf
 
 %token<token> NUMBER IDENT
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
-%token<token> ADD MULDIV COMP SHIFT UNARY
+%token<token> ADDSUB MULDIV COMP SHIFT UNARY
 %token SL SR EQ NEQ GE LE OR AND
 %token CONST VAR EQU FUNC
 %token IF ELSE ELIF END_IF
@@ -39,7 +39,7 @@ var _ = __yyfmt__.Sprintf
 %left OR
 %left AND
 %left COMP
-%left ADD '|' '^' '-'
+%left ADDSUB '|' '^' '-'
 %left MULDIV SHIFT
 %right UNARY 
 
@@ -158,7 +158,7 @@ expr		: NUMBER
 			| Z80_REG16 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
 			| Z80_FLAG 			{ $$ = &FlagLiteral{Flag: int($1.TokenSubType)}}
 			| '(' expr ')'		{ $$ = $2}
-			| expr ADD expr
+			| expr ADDSUB expr
 			{
 				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3, yylex.Error)
 			}

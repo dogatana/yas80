@@ -93,15 +93,16 @@ func (l *Lexer) NextToken() Token {
 		// EOL
 		l.nextChar()
 		return Token{TokenType: EOL, Literal: "\\n", LineNumber: l.lineNumber}
-	case l.curChar == '-': // 単項、2項の両方あるので個別トークンとする
+
+	case l.curChar == '-': // 単項・2項両方あるので1文字トークンとする
 		ch := l.curChar
 		l.nextChar()
 		return Token{TokenType: TokenType(ch), Literal: string(ch), LineNumber: l.lineNumber}
-	case l.curChar == '+' || l.curChar == '^':
+	case l.curChar == '+' || l.curChar == '^': // ADDSUB
 		ch := l.curChar
 		l.nextChar()
-		return Token{TokenType: ADD, TokenSubType: TokenSubType(ch), Literal: string(ch), LineNumber: l.lineNumber}
-	case l.curChar == '*' || l.curChar == '/':
+		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), LineNumber: l.lineNumber}
+	case l.curChar == '*' || l.curChar == '/': // MULDIV
 		ch := l.curChar
 		l.nextChar()
 		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), LineNumber: l.lineNumber}
@@ -220,7 +221,7 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	case ch1 == '|' && ch2 == '|':
 		tok = Token{TokenType: OR, TokenSubType: 0, Literal: "||"}
 	case ch1 == '|':
-		return Token{TokenType: ADD, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
+		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
 	default:
 		// 1文字トークンを返す
 		return Token{TokenType: TokenType(ch1), Literal: string(rune(ch1))}
@@ -291,5 +292,5 @@ func (l *Lexer) isWordChar(ch rune) bool {
 }
 
 func (l *Lexer) isOneCharToken(ch rune) bool {
-	return ch == '(' || ch == ')' || ch == ','
+	return ch == '(' || ch == ')' || ch == ',' || ch == ':'
 }

@@ -17,8 +17,8 @@ func TestLexerOneCharacter(t *testing.T) {
 		{UNARY, '!', "!"},
 		{UNARY, '~', "~"},
 		{MULDIV, '&', "&"},
-		{ADD, '|', "|"},
-		{ADD, '^', "^"},
+		{ADDSUB, '|', "|"},
+		{ADDSUB, '^', "^"},
 	}
 
 	l := newLexerForTest(input)
@@ -76,8 +76,8 @@ func TestGroupedToken(t *testing.T) {
 		Type int
 		Op   int
 	}{
-		{ADD, '+'},
-		{ADD, '|'},
+		{ADDSUB, '+'},
+		{ADDSUB, '|'},
 		{MULDIV, '*'},
 		{MULDIV, '/'},
 		{MULDIV, '&'},
@@ -182,7 +182,7 @@ func TestLexInterface(t *testing.T) {
 
 	expected_tokens := []int{
 		NUMBER,
-		ADD,
+		ADDSUB,
 		NUMBER,
 		EOL,
 	}
