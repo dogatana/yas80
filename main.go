@@ -9,6 +9,7 @@ import (
 	"strings"
 	"yas80/errorstore"
 	"yas80/evaluator"
+	"yas80/object"
 	"yas80/parser"
 )
 
@@ -46,6 +47,7 @@ func main() {
 
 	parser.SetYYDebug(getYYDebugEnv())
 
+	fmt.Println("-- parser")
 	es := errorstore.New()
 	l := parser.NewLexer(bufio.NewReader(input), file, es)
 	prog, ec, wc := parser.Parse(l)
@@ -61,14 +63,28 @@ func main() {
 	fmt.Println(prog.String())
 
 	es = errorstore.New()
-	g := evaluator.New(es)
-	result := g.Eval(prog)
+	eval := evaluator.New(es)
+	env := object.NewEnvironment(nil)
 
-	fmt.Printf("result: %T(%#v)\n", result, result)
-	es.Print()
+	eval.ResolveConst(prog, env)
+	fmt.Println("-- global env")
+	env.Print()
 
-	// g := generator.New(prog, es)
-	// g.Generate()
+	fmt.Println("-- evaluator")
+	result := eval.Eval(prog, env).(*object.Program)
+	for _, o := range result.Objects {
+		if o == nil {
+			fmt.Println("<nil>")
+		} else {
+			fmt.Println(o.String())
+		}
+	}
+
+	// es.Print()
+
+	// fmt.Println("-- generator")
+	// gen := generator.New(prog, env, es)
+	// gen.Generate()
 	// ec, wc = es.Count()
 	// es.Print()
 	// if ec != 0 || wc != 0 {

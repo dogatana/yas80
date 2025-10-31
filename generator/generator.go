@@ -10,11 +10,12 @@ import (
 type Generator struct {
 	program *parser.Program
 	es      *errorstore.ErrorStore
+	env     *object.Environment
 	objects []object.Object
 }
 
-func New(p *parser.Program, es *errorstore.ErrorStore) *Generator {
-	return &Generator{program: p, es: es}
+func New(p *parser.Program, env *object.Environment, es *errorstore.ErrorStore) *Generator {
+	return &Generator{program: p, env: env, es: es}
 }
 
 func (g *Generator) Generate() {

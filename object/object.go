@@ -12,6 +12,8 @@ const (
 	IDENT_OBJ
 	FIXEDCODE_OBJ
 	CODE_OBJ
+	PROGRAM_OBJ
+	NODE_OBJ
 )
 
 var (
@@ -28,6 +30,7 @@ type Object interface {
 var objectTypeNames map[ObjectType]string = map[ObjectType]string{
 	FIXEDCODE_OBJ: "FIXEDCODE_OBJ",
 	CODE_OBJ:      "CODE_OBJ",
+	NODE_OBJ:      "NODE_OBJ",
 }
 
 func (o ObjectType) String() string {
@@ -37,6 +40,13 @@ func (o ObjectType) String() string {
 	}
 	return "UNKNOWN_OBJ"
 }
+
+type Program struct {
+	Objects []Object
+}
+
+func (p *Program) Type() ObjectType { return PROGRAM_OBJ }
+func (p *Program) String() string   { return "PROGRAM_OBJ" }
 
 // 固定コード
 type FixedCode struct {
@@ -94,3 +104,11 @@ type IdentObject struct {
 	Name  string
 	Value Object
 }
+
+// Node
+type NodeObject struct {
+	Value parser.Node
+}
+
+func (n *NodeObject) Type() ObjectType { return NODE_OBJ }
+func (n *NodeObject) String() string   { return n.Value.String() }
