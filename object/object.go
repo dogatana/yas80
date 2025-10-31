@@ -10,7 +10,7 @@ const (
 	NUMBER_OBJ
 	STRING_OBJ
 	IDENT_OBJ
-	FIXEDCODE_OBJ
+	REGISTER_OBJ
 	CODE_OBJ
 	PROGRAM_OBJ
 	NODE_OBJ
@@ -18,7 +18,33 @@ const (
 
 var (
 	NULL = &NullObject{}
+
+	Z80_REG_A   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_A}
+	Z80_REG_B   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_B}
+	Z80_REG_C   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_C}
+	Z80_REG_D   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_D}
+	Z80_REG_E   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_E}
+	Z80_REG_H   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_H}
+	Z80_REG_L   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_L}
+	Z80_REG_IXH = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_IXH}
+	Z80_REG_IXL = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_IXL}
+	Z80_REG_IYH = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_IYH}
+	Z80_REG_IYL = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_IYL}
 )
+
+var Z80RgisterObjects map[int]Object = map[int]Object{
+	parser.Z80_REG_A:   Z80_REG_A,
+	parser.Z80_REG_B:   Z80_REG_B,
+	parser.Z80_REG_C:   Z80_REG_C,
+	parser.Z80_REG_D:   Z80_REG_D,
+	parser.Z80_REG_E:   Z80_REG_E,
+	parser.Z80_REG_H:   Z80_REG_H,
+	parser.Z80_REG_L:   Z80_REG_L,
+	parser.Z80_REG_IXH: Z80_REG_IXH,
+	parser.Z80_REG_IXL: Z80_REG_IXL,
+	parser.Z80_REG_IYH: Z80_REG_IYH,
+	parser.Z80_REG_IYL: Z80_REG_IYL,
+}
 
 type ObjectType int
 
@@ -28,9 +54,8 @@ type Object interface {
 }
 
 var objectTypeNames map[ObjectType]string = map[ObjectType]string{
-	FIXEDCODE_OBJ: "FIXEDCODE_OBJ",
-	CODE_OBJ:      "CODE_OBJ",
-	NODE_OBJ:      "NODE_OBJ",
+	CODE_OBJ: "CODE_OBJ",
+	NODE_OBJ: "NODE_OBJ",
 }
 
 func (o ObjectType) String() string {
@@ -41,6 +66,7 @@ func (o ObjectType) String() string {
 	return "UNKNOWN_OBJ"
 }
 
+// program
 type Program struct {
 	Objects []Object
 }
@@ -48,34 +74,20 @@ type Program struct {
 func (p *Program) Type() ObjectType { return PROGRAM_OBJ }
 func (p *Program) String() string   { return "PROGRAM_OBJ" }
 
-// 固定コード
-type FixedCode struct {
+// code
+type Code struct {
 	Line int
 	Code []byte
 }
 
-func (f *FixedCode) Type() ObjectType { return FIXEDCODE_OBJ }
-func (f *FixedCode) String() string {
+func (f *Code) Type() ObjectType { return CODE_OBJ }
+func (f *Code) String() string {
 	text := fmt.Sprintf("%d: ", f.Line)
 	for _, b := range f.Code {
 		text += fmt.Sprintf("%02x", b)
 	}
 	return text
 }
-
-// Fixed 付きコード
-type FixUp struct {
-	Offset     int
-	Expression parser.Expression
-}
-
-type Code struct {
-	LineNumber int
-	Code       []byte
-	Fixups     []FixUp
-}
-
-func (c *Code) Type() ObjectType { return CODE_OBJ }
 
 // NULL
 type NullObject struct{}
@@ -104,6 +116,15 @@ type IdentObject struct {
 	Name  string
 	Value Object
 }
+
+// レジスタ
+type RegisterObject struct {
+	RegisterType int
+	Register     int
+}
+
+func (r *RegisterObject) Type() ObjectType { return REGISTER_OBJ }
+func (r *RegisterObject) String() string   { return parser.Z80OpCode2Name(r.Register) }
 
 // Node
 type NodeObject struct {

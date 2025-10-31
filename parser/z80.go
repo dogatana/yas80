@@ -3,13 +3,14 @@ package parser
 // Token.SubType 用
 const (
 	// 8bit Register
-	Z80_REG_A = iota + 256
-	Z80_REG_B
+	Z80_REG_B = iota + 256
 	Z80_REG_C
 	Z80_REG_D
 	Z80_REG_E
 	Z80_REG_H
 	Z80_REG_L
+	_
+	Z80_REG_A
 	Z80_REG_IXH
 	Z80_REG_IXL
 	Z80_REG_IYH
@@ -206,7 +207,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"OTDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OTDR, Literal: "OTDR"},
 }
 
-func z80OpCode2Name(opcode int) string {
+func Z80OpCode2Name(opcode int) string {
 	for _, v := range z80ReservedWords {
 		if int(v.TokenSubType) == opcode {
 			return v.Literal

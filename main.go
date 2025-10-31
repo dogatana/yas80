@@ -33,7 +33,6 @@ func main() {
 	)
 
 	switch len(os.Args) {
-
 	case 1:
 		file = "stdin"
 		input = os.Stdin
@@ -80,18 +79,6 @@ func main() {
 		}
 	}
 
-	// es.Print()
-
-	// fmt.Println("-- generator")
-	// gen := generator.New(prog, env, es)
-	// gen.Generate()
-	// ec, wc = es.Count()
-	// es.Print()
-	// if ec != 0 || wc != 0 {
-	// 	os.Exit(1)
-	// }
-
-	// fmt.Println("generated code")
-	// g.Dump()
+	es.Print()
 
 }

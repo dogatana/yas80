@@ -129,7 +129,7 @@ func (z *Z80Instruction) NodeSubType() NodeSubType {
 func (z *Z80Instruction) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(z80OpCode2Name(z.OpCode))
+	out.WriteString(Z80OpCode2Name(z.OpCode))
 	switch {
 	case z.Op1 == nil && z.Op2 == nil:
 		break
@@ -153,7 +153,7 @@ type NumberLiteral struct {
 }
 
 func (n *NumberLiteral) expressionNode()          {}
-func (n *NumberLiteral) NodeType() NodeType       { return NUMBER }
+func (n *NumberLiteral) NodeType() NodeType       { return NODE_NUMBER }
 func (n *NumberLiteral) NodeSubType() NodeSubType { return 0 }
 func (n *NumberLiteral) String() string {
 	return fmt.Sprintf("%d", n.Value)
@@ -169,7 +169,7 @@ func (r *RegisterLiteral) expressionNode()          {}
 func (r *RegisterLiteral) NodeType() NodeType       { return NodeType(r.RegisterType) }
 func (r *RegisterLiteral) NodeSubType() NodeSubType { return NodeSubType(r.Register) }
 func (r *RegisterLiteral) String() string {
-	return z80OpCode2Name(r.Register)
+	return Z80OpCode2Name(r.Register)
 }
 
 // フラグ
@@ -181,7 +181,7 @@ func (f *FlagLiteral) expressionNode()          {}
 func (f *FlagLiteral) NodeType() NodeType       { return Z80_FLAG }
 func (f *FlagLiteral) NodeSubType() NodeSubType { return NodeSubType(f.Flag) }
 func (f *FlagLiteral) String() string {
-	return z80OpCode2Name(f.Flag)
+	return Z80OpCode2Name(f.Flag)
 }
 
 // 識別子
