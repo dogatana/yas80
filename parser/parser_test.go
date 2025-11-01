@@ -168,6 +168,12 @@ func TestLableStatement(t *testing.T) {
 		{" abc:ld a,a ", "abc"},
 		{" abc :ld a, a", "abc"},
 		{"abc: ld a, a", "abc"},
+		{" .def: ", ".def"},
+		{" .def : ", ".def"},
+		{".def:", ".def"},
+		{" .def:ld a,a ", ".def"},
+		{" .def :ld a, a", ".def"},
+		{".def: ld a, a", ".def"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
