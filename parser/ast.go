@@ -8,16 +8,24 @@ import (
 
 const (
 	NODE_NODE = iota + 1
+	// program
 	NODE_PROGRAM
+	// statement
 	NODE_STMT
+	NODE_LABEL_STMT
 	NODE_EXPR_STMT
 	NODE_CONST_STMT
 	NODE_VAR_STMT
+	// expression
 	NODE_EXPR
 	NODE_NUMBER
+	NODE_IDENT
+	NODE_DOT_IDENT
 	NODE_INDIRECT
 	NODE_INFIX_EXPR
 	NODE_PREFIX_EXPR
+	NODE_LABEL
+	NODE_LOCAL_LABEL
 )
 
 func NodeTypeNames(t NodeType) string {
@@ -86,6 +94,23 @@ func (p *Program) String() string {
 	return strings.Join(lines, "\n")
 }
 
+// ラベルは独立した文として生成
+type LabelStatement struct {
+	Value      Node
+	LineNumber int
+}
+
+func (l *LabelStatement) statementNode()           {}
+func (l *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
+func (l *LabelStatement) NodeSubType() NodeSubType { return 0 }
+func (l *LabelStatement) String() string {
+	out := l.Value.(*Label).Name
+	if out[0] != '.' {
+		out += ":"
+	}
+	return out
+}
+
 // 式文 - Expression Statement
 type ExpressionStatement struct {
 	Value      Node
@@ -147,6 +172,17 @@ func (z *Z80Instruction) String() string {
 
 // これ以降は 式 (Exspression)
 
+// ラベル
+type Label struct {
+	nodeType NodeType
+	Name     string
+}
+
+func (l *Label) expressionNode()          {}
+func (l *Label) NodeType() NodeType       { return l.nodeType }
+func (l *Label) NodeSubType() NodeSubType { return 0 }
+func (l *Label) String() string           { return l.Name }
+
 // 数値
 type NumberLiteral struct {
 	Value int
@@ -191,9 +227,21 @@ type Ident struct {
 }
 
 func (i *Ident) expressionNode()          {}
-func (i *Ident) NodeType() NodeType       { return IDENT }
+func (i *Ident) NodeType() NodeType       { return NODE_IDENT }
 func (i *Ident) NodeSubType() NodeSubType { return 0 }
 func (i *Ident) String() string           { return i.Name }
+
+// ドット識別子
+type DotIdent struct {
+	Left  string
+	Right string
+	Value Node
+}
+
+func (di *DotIdent) expressionNode()          {}
+func (di *DotIdent) NodeType() NodeType       { return NODE_DOT_IDENT }
+func (di *DotIdent) NodeSubType() NodeSubType { return 0 }
+func (di *DotIdent) String() string           { return di.Left + "." + di.Right }
 
 // 間接指定
 type IndirectExpression struct {
