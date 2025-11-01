@@ -6,11 +6,12 @@ ERR = parser/error.txt
 TEMP = parser/temp.go
 YACC = parser/parser.y
 PARSER = parser/parser.go
+PATCH = parser/patch_parser.py
 	  
 main.exe: ${SRC}
 	go build -o $@
 
-${PARSER}: ${YACC} ${ERR}
+${PARSER}: ${YACC} ${ERR} ${PATCH}
 	goyacc -xe ${ERR} -v parser/y.output -o $@ ${YACC}
 	python parser/patch_parser.py $@ $@
 

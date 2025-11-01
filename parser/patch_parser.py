@@ -2,6 +2,7 @@ import sys
 import typing
 
 
+# 特定誤り防止のため、\t \n で囲まれた str で定義する
 class PatchData(typing.NamedTuple):
     old: str
     new: str
@@ -14,6 +15,15 @@ patch_data: list[PatchData] = [
     PatchData(
         '\treturn __yyfmt__.Sprintf("%d", c)\n',
         '\treturn __yyfmt__.Sprintf("%q", rune(c))\n',
+    ),
+    # yyParse 内部のエラー発生時にトークン情報を追加
+    PatchData(
+        '\tmsg = __yyfmt__.Sprintf("unexpected %s", ls)\n',
+        '\tmsg = __yyfmt__.Sprintf("unexpected %s\\n  yyLVAR.token: %s\\n  yylvar.token: %s", ls, yyVAL.token.String(), yylval.token.String())\n',
+    ),
+    PatchData(
+        '\tmsg = __yyfmt__.Sprintf("unexpected %s, %s", ls, msg)\n',
+        '\tmsg = __yyfmt__.Sprintf("unexpected %s, %s\\n  yyLVAR: %s\\n  yylvar: %s", ls, msg, yyVAL.token.String(), yylval.token.String())\n',
     ),
 ]
 
