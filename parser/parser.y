@@ -102,6 +102,10 @@ label		: IDENT ':'
 			{
 				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal}
 			}
+			| LOCAL_IDENT
+			{
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal}
+			}
 			;
 
 
