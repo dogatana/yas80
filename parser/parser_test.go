@@ -156,3 +156,35 @@ LD (IX + 1), A
 		fmt.Println(text)
 	}
 }
+
+func TestLableStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{" abc: ", "abc"},
+		{" abc : ", "abc"},
+		{"abc:", "abc"},
+		{" abc:ld a,a ", "abc"},
+		{" abc :ld a, a", "abc"},
+		{"abc: ld a, a", "abc"},
+	}
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog, ec, wc := Parse(l)
+		if ec > 0 || wc > 0 {
+			t.Fatalf("parsing %s. returns %d errors and %d warnigs", tt.input, ec, wc)
+		}
+		if len(prog.Statements) == 0 {
+			t.Fatalf("parsing %s. statements empty", tt.input)
+		}
+		stmt, ok := prog.Statements[0].(*LabelStatement)
+		if !ok {
+			t.Errorf("parsing %s. prog.Statemtes[0] is not LabelStatement. got %T", tt.input, prog.Statements[0])
+		}
+		name := stmt.Value.(*Label).Name
+		if name != tt.expected {
+			t.Errorf("parsing %s. Label.Name is not %q. got %q", tt.input, tt.expected, name)
+		}
+	}
+}

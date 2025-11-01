@@ -17,8 +17,7 @@ var _ = __yyfmt__.Sprintf
 
 
 // プログラムの構成要素を指定
-%type<node> expr 
-%type<node> instruction statement
+%type<node> instruction statement label expr
 
 %token<token> NUMBER IDENT
 %token<token> AT_IDENT    // @def 
@@ -51,6 +50,18 @@ var _ = __yyfmt__.Sprintf
 // 文法規則を指定
 program		: { }
 			| program EOL
+			| program label EOL
+			{
+				stmt := &LabelStatement{Value: $2, LineNumber: yylex.(*Lexer).lineNumber}
+				prog := yylex.(*Lexer).program
+				prog.Statements = append(prog.Statements, stmt)
+			}
+			| program label statement EOL
+			{
+				prog := yylex.(*Lexer).program
+				stmt := &LabelStatement{Value: $2, LineNumber: yylex.(*Lexer).lineNumber}
+				prog.Statements = append(prog.Statements, stmt, $3)
+			}
 			| program statement EOL
 			{
 				if $2 != nil {
@@ -82,6 +93,18 @@ statement   : instruction			{ $$ = $1}
 				$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3}
 			}
 			;
+
+label		: IDENT ':'
+			{
+				$$ = &Label{nodeType: NODE_LABEL, Name: $1.Literal}
+			}
+			| LOCAL_IDENT ':'
+			{
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal}
+			}
+			;
+
+
 instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{
@@ -154,9 +177,13 @@ expr		: NUMBER
 					$$ = nil
 				}
 			}
-			| IDENT
+			| IDENT 		{ $$ = &Ident{Name: $1.Literal} }
+			| DOT_IDENT
 			{
-				$$ = &Ident{Name: $1.Literal}
+				
+
+
+
 			}
 			| Z80_REG8 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
 			| Z80_REG16 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
