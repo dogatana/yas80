@@ -124,8 +124,9 @@ func (e *ExpressionStatement) String() string           { return e.Value.String(
 
 // 定数定義文 - CONST, EQU Statement
 type ConstStatement struct {
-	Name  *Ident
-	Value Node
+	Name       *Ident
+	Value      Node
+	LineNumber int
 }
 
 func (c *ConstStatement) statementNode()           {}

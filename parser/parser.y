@@ -86,11 +86,11 @@ program		: { }
 statement   : instruction			{ $$ = $1}
 			| CONST IDENT '=' expr
 			{ 
-				$$ = &ConstStatement{Name: &Ident{Name: $2.Literal}, Value: $4}
+				$$ = &ConstStatement{Name: &Ident{Name: $2.Literal}, Value: $4, LineNumber: $2.LineNumber}
 			}
 			| IDENT EQU expr		
 			{ 
-				$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3}
+				$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3, LineNumber: $1.LineNumber}
 			}
 			;
 
