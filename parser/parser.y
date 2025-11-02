@@ -13,12 +13,15 @@ var _ = __yyfmt__.Sprintf
 	num Node
 	node Node
 	err any
+	enum_element *EnumElement
+	enum_elements *EnumElements
 }
 
 
 // プログラムの構成要素を指定
 %type<node> instruction statement label expr
-
+%type<enum_elements> enum_elements
+%type<enum_element> enum_element
 %token<token> NUMBER IDENT
 %token<token> AT_IDENT    // @def 
 %token<token> LOCAL_IDENT // .def 
@@ -33,7 +36,7 @@ var _ = __yyfmt__.Sprintf
 %token FUNCTION END_FUNCTION
 %token PROC END_PROC
 %token BLOCK END_BLOCK
-%token ENUM ENUM_END
+%token ENUM END_ENUM
 %token  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':'
 %token INVALID EOL 
 %token<token> error
@@ -92,6 +95,23 @@ statement   : instruction			{ $$ = $1}
 			{ 
 				$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3, LineNumber: $1.LineNumber}
 			}
+			| IDENT ENUM enum_elements END_ENUM
+			{
+				$$ = &EnumStatement{Name: $1.Literal, Elements: $3, LineNumber: $1.LineNumber}
+			}
+			;
+	
+enum_elements : EOL 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
+			| enum_element EOL	{ $$ = &EnumElements{Elements: []*EnumElement{$1}} }
+			| enum_elements enum_element EOL
+			{
+				$1.Elements = append($1.Elements, $2)
+				$$ = $1
+			}
+			;
+
+enum_element : IDENT 			{ $$ = &EnumElement{Name: $1.Literal, Value: nil} }
+			| IDENT '=' expr	{ $$ = &EnumElement{Name: $1.Literal, Value: $3} }
 			;
 
 label		: IDENT ':'

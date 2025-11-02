@@ -48,4 +48,7 @@ var reservedWords map[string]Token = map[string]Token{
 	"ENDBLOCK":     {TokenType: END_BLOCK, Literal: "ENDBLOCK"},
 	"END_BLOCK":    {TokenType: END_BLOCK, Literal: "END_BLOCK"},
 	"ENDB":         {TokenType: END_BLOCK, Literal: "ENDB"},
+	"ENUM":         {TokenType: ENUM, Literal: "ENDBLOCK"},
+	"END_ENUM":     {TokenType: END_ENUM, Literal: "END_ENUM"},
+	"ENDE":         {TokenType: END_ENUM, Literal: "ENDE"},
 }
