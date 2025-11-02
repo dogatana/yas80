@@ -16,8 +16,12 @@ const (
 	NODE_EXPR_STMT
 	NODE_CONST_STMT
 	NODE_VAR_STMT
+	NODE_ENUM_STMT
+	NODE_ENUM_ELEMENTS_STMT
+
 	// expression
 	NODE_EXPR
+	NODE_ENUM_ELEMENT
 	NODE_NUMBER
 	NODE_IDENT
 	NODE_DOT_IDENT
@@ -121,6 +125,59 @@ func (e *ExpressionStatement) statementNode()           {}
 func (e *ExpressionStatement) NodeType() NodeType       { return NODE_EXPR_STMT }
 func (e *ExpressionStatement) NodeSubType() NodeSubType { return 0 }
 func (e *ExpressionStatement) String() string           { return e.Value.String() }
+
+// enum 定義
+type EnumStatement struct {
+	Name       string
+	Elements   *EnumElements
+	LineNumber int
+}
+
+func (e *EnumStatement) statementNode()           {}
+func (e *EnumStatement) NodeType() NodeType       { return NODE_ENUM_STMT }
+func (e *EnumStatement) NodeSubType() NodeSubType { return 0 }
+func (e *EnumStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("ENUM " + e.Name + "\n")
+	out.WriteString(e.Elements.String() + "\n")
+	out.WriteString("END_ENUM")
+
+	return out.String()
+}
+
+// enum 要素定義文
+type EnumElements struct {
+	Elements []*EnumElement
+}
+
+func (e *EnumElements) statementNode()        {}
+func (e *EnumElements) NodeType() NodeType    { return NODE_ENUM_ELEMENTS_STMT }
+func (e *EnumElements) NodeSubType() NodeType { return 0 }
+func (e *EnumElements) String() string {
+	stmts := []string{}
+	for _, e := range e.Elements {
+		stmts = append(stmts, e.String())
+	}
+	return strings.Join(stmts, "\n")
+}
+
+// enum 要素
+type EnumElement struct {
+	Name  string
+	Value Node
+}
+
+func (e *EnumElement) expressionNode()       {}
+func (e *EnumElement) NodeType() NodeType    { return NODE_ENUM_ELEMENT }
+func (e *EnumElement) NodeSubType() NodeType { return 0 }
+func (e *EnumElement) String() string {
+	if e.Value == nil {
+		return e.Name
+	} else {
+		return e.Name + " = " + e.Value.String()
+	}
+}
 
 // 定数定義文 - CONST, EQU Statement
 type ConstStatement struct {
