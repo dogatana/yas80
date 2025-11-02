@@ -139,7 +139,7 @@ func (e *EnumStatement) NodeSubType() NodeSubType { return 0 }
 func (e *EnumStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("ENUM " + e.Name + "\n")
+	out.WriteString(e.Name + " ENUM\n")
 	out.WriteString(e.Elements.String() + "\n")
 	out.WriteString("END_ENUM")
 

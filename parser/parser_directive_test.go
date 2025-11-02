@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -33,5 +34,34 @@ func TestConstStatement(t *testing.T) {
 		if v.Value != expected[i].Value {
 			t.Errorf("Value is not %d. got %d", expected[i].Value, v.Value)
 		}
+	}
+}
+
+func TestEnumStatement(t *testing.T) {
+	input := `test ENUM
+abc
+def = 1
+xyz
+END_ENUM`
+	l := newLexerForTest(input)
+	prog, ec, wc := Parse(l)
+	if ec > 0 || wc > 0 {
+		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
+	}
+	if len(prog.Statements) != 1 {
+		t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+	}
+	stmt := prog.Statements[0]
+	enum, ok := stmt.(*EnumStatement)
+	if !ok {
+		t.Errorf("prog.Statements[0] not *EnumStatement. got %T", stmt)
+	}
+	text := enum.String()
+	if text != input {
+		t.Errorf("expected %d chars. got %d chars", len(input), len(text))
+		fmt.Printf("expected\n%s\n", input)
+		fmt.Println([]byte(input))
+		fmt.Printf("got\n%s\n", text)
+		fmt.Println([]byte(text))
 	}
 }
