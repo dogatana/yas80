@@ -95,13 +95,14 @@ statement   : instruction			{ $$ = $1}
 			{ 
 				$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3, LineNumber: $1.LineNumber}
 			}
-			| IDENT ENUM enum_elements END_ENUM
+			| IDENT ENUM EOL enum_elements END_ENUM
 			{
-				$$ = &EnumStatement{Name: $1.Literal, Elements: $3, LineNumber: $1.LineNumber}
+				$$ = &EnumStatement{Name: $1.Literal, Elements: $4, LineNumber: $1.LineNumber}
 			}
 			;
 	
 enum_elements : EOL 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
+			| enum_elements EOL { $$ = $1 }
 			| enum_element EOL	{ $$ = &EnumElements{Elements: []*EnumElement{$1}} }
 			| enum_elements enum_element EOL
 			{
