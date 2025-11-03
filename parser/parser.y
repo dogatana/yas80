@@ -223,39 +223,39 @@ expr		: NUMBER
 			| '(' expr ')'		{ $$ = $2}
 			| expr ADDSUB expr
 			{
-				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3, yylex.Error)
+				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3)
 			}
 			| expr '-' expr
 			{
-				$$ = buildInfixExpression('-', $1, $3, yylex.Error)
+				$$ = buildInfixExpression('-', $1, $3)
 			}
 			| expr MULDIV expr
 			{ 	
-				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3, yylex.Error)
+				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3)
 			}
 			| expr COMP expr
 			{ 	
-				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3, yylex.Error)
+				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3)
 			}
 			| expr SHIFT expr
 			{ 	
-				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3, yylex.Error)
+				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3)
 			}
 			| expr OR expr
 			{ 	
-				$$ = buildInfixExpression(OR, $1, $3, yylex.Error)
+				$$ = buildInfixExpression(OR, $1, $3)
 			}
 			| expr AND expr
 			{ 	
-				$$ = buildInfixExpression(AND, $1, $3, yylex.Error)
+				$$ = buildInfixExpression(AND, $1, $3)
 			}
 			| '-' expr %prec UNARY
 			{
-				$$ = buildPrefixExpression('-', $2, yylex.Error)
+				$$ = buildPrefixExpression('-', $2)
 			}
 			| UNARY expr
 			{
-				$$ = buildPrefixExpression(int($1.TokenSubType), $2, yylex.Error)
+				$$ = buildPrefixExpression(int($1.TokenSubType), $2)
 			}
 			| error 
 			{ 

@@ -100,11 +100,12 @@ func (p *Program) String() string {
 	return strings.Join(lines, "\n")
 }
 
-// Error
+// Error(Expression)
 type ParseError struct {
 	Message string
 }
 
+func (e *ParseError) expressionNode()          {}
 func (e *ParseError) NodeType() NodeType       { return NODE_ERROR }
 func (e *ParseError) NodeSubType() NodeSubType { return 0 }
 func (e *ParseError) String() string           { return e.Message }
@@ -137,7 +138,7 @@ func (e *ExpressionStatement) NodeType() NodeType       { return NODE_EXPR_STMT 
 func (e *ExpressionStatement) NodeSubType() NodeSubType { return 0 }
 func (e *ExpressionStatement) String() string           { return e.Value.String() }
 
-// enum 定義
+// enum 定義文
 type EnumStatement struct {
 	Name       string
 	Elements   *EnumElements
