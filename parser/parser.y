@@ -16,11 +16,13 @@ var _ = __yyfmt__.Sprintf
 	err any
 	enum_element *EnumElement
 	enum_elements *EnumElements
+	block *BlockStatement
 }
 
 
 // プログラムの構成要素を指定
-%type<node> instruction statement label expr
+%type<node> statement instruction directive label expr
+%type<block> block_statement
 %type<enum_elements> enum_elements
 %type<enum_element> enum_element
 %token<token> EOL
@@ -34,7 +36,8 @@ var _ = __yyfmt__.Sprintf
 %token CONST VAR EQU FUNC
 %token IF ELSE ELIF END_IF
 %token MACRO END_MACRO
-%token REPEAT END_REPEAT
+%token<token> REPEAT
+%token END_REPEAT
 %token FUNCTION END_FUNCTION
 %token PROC END_PROC
 %token BLOCK END_BLOCK
@@ -80,15 +83,6 @@ program		: { }
 					prog.Statements = append(prog.Statements, $2)
 				}
 			}
-			| program expr EOL
-			{
-				if $2.NodeType() == NODE_ERROR {
-					yylex.Error($2.(*ParseError).Message, $3.LineNumber)
-				} else {
-					prog := yylex.(*Lexer).program
-					prog.Statements = append(prog.Statements, &ExpressionStatement{Value: $2, LineNumber: $3.LineNumber})
-				}
-			}
 			| program error EOL
 			{
 				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2), $3.LineNumber)
@@ -96,8 +90,12 @@ program		: { }
 			}
 			;
 
-statement   : instruction			{ $$ = $1}
-			| CONST IDENT '=' expr
+statement   : expr					{ $$ = $1}
+			| instruction			{ $$ = $1}
+			| directive				{ $$ = $1}
+			;
+
+directive	: CONST IDENT '=' expr
 			{ 
 				$$ = &ConstStatement{Name: &Ident{Name: $2.Literal}, Value: $4, LineNumber: $2.LineNumber}
 			}
@@ -108,6 +106,31 @@ statement   : instruction			{ $$ = $1}
 			| IDENT ENUM EOL enum_elements END_ENUM
 			{
 				$$ = &EnumStatement{Name: $1.Literal, Elements: $4, LineNumber: $1.LineNumber}
+			}
+			| REPEAT expr EOL block_statement END_REPEAT
+			{
+				__yyfmt__.Println("block_statement", $4.String())
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				}
+				if $4.NodeType() == NODE_ERROR {
+					$$ = $4
+				}
+				$$ = &RepeatStatement{MaxCount: $2, Block: $4.Block, LineNumber: $1.LineNumber}
+			}
+			;
+
+block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
+			| block_statement EOL 	{ $$ = $1}
+			| block_statement statement EOL
+			{ 
+				fmt.Printf("got %T(%#v)\n", $2, $2)
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2.(*BlockStatement)
+				} else {
+					$1.Block = append($1.Block, $2)
+					$$ = $1
+				}
 			}
 			;
 	

@@ -20,6 +20,8 @@ const (
 	NODE_VAR_STMT
 	NODE_ENUM_STMT
 	NODE_ENUM_ELEMENTS_STMT
+	NODE_REPEAT_STMT
+	NODE_BLOCK_STMT
 
 	// expression
 	NODE_EXPR
@@ -189,6 +191,51 @@ func (e *EnumElement) String() string {
 	} else {
 		return e.Name + " = " + e.Value.String()
 	}
+}
+
+// repeat statment
+type RepeatStatement struct {
+	MaxCount   Node
+	Block      []Node
+	LineNumber int
+}
+
+func (r *RepeatStatement) statementNode()           {}
+func (r *RepeatStatement) NodeType() NodeType       { return NODE_REPEAT_STMT }
+func (r *RepeatStatement) NodeSubType() NodeSubType { return 0 }
+func (r *RepeatStatement) String() string {
+	var out bytes.Buffer
+
+	stmts := []string{}
+	for _, s := range r.Block {
+		stmts = append(stmts, s.String())
+	}
+
+	out.WriteString("REPEAT ")
+	out.WriteString(r.MaxCount.String() + "\n")
+	if len(stmts) > 0 {
+		out.WriteString(strings.Join(stmts, "\n") + "\n")
+	}
+	out.WriteString("END_REPEAT")
+
+	return out.String()
+}
+
+// block statement
+type BlockStatement struct {
+	Block []Node
+}
+
+func (b *BlockStatement) statementNode()           {}
+func (b *BlockStatement) NodeType() NodeType       { return NODE_BLOCK_STMT }
+func (b *BlockStatement) NodeSubType() NodeSubType { return 0 }
+func (b *BlockStatement) String() string {
+	stmts := []string{}
+
+	for _, s := range b.Block {
+		stmts = append(stmts, s.String())
+	}
+	return strings.Join(stmts, "\n")
 }
 
 // 定数定義文 - CONST, EQU Statement
