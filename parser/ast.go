@@ -8,6 +8,8 @@ import (
 
 const (
 	NODE_NODE = iota + 1
+	// eror
+	NODE_ERROR
 	// program
 	NODE_PROGRAM
 	// statement
@@ -97,6 +99,15 @@ func (p *Program) String() string {
 	}
 	return strings.Join(lines, "\n")
 }
+
+// Error
+type ParseError struct {
+	Message string
+}
+
+func (e *ParseError) NodeType() NodeType       { return NODE_ERROR }
+func (e *ParseError) NodeSubType() NodeSubType { return 0 }
+func (e *ParseError) String() string           { return e.Message }
 
 // ラベルは独立した文として生成
 type LabelStatement struct {

@@ -63,27 +63,35 @@ program		: { }
 			}
 			| program label statement EOL
 			{
-				prog := yylex.(*Lexer).program
-				stmt := &LabelStatement{Value: $2, LineNumber: yylex.(*Lexer).lineNumber}
-				prog.Statements = append(prog.Statements, stmt, $3)
+				if $3.NodeType() == NODE_ERROR {
+					yylex.Error($3.(*ParseError).Message, $4.LineNumber)
+				} else {
+					prog := yylex.(*Lexer).program
+					stmt := &LabelStatement{Value: $2, LineNumber: yylex.(*Lexer).lineNumber}
+					prog.Statements = append(prog.Statements, stmt, $3)
+				}
 			}
 			| program statement EOL
 			{
-				if $2 != nil {
+				if $2.NodeType() == NODE_ERROR {
+					yylex.Error($2.(*ParseError).Message, $3.LineNumber)
+				} else {
 					prog := yylex.(*Lexer).program
 					prog.Statements = append(prog.Statements, $2)
 				}
 			}
 			| program expr EOL
 			{
-				if $2 != nil {
+				if $2.NodeType() == NODE_ERROR {
+					yylex.Error($2.(*ParseError).Message, $3.LineNumber)
+				} else {
 					prog := yylex.(*Lexer).program
 					prog.Statements = append(prog.Statements, &ExpressionStatement{Value: $2, LineNumber: $3.LineNumber})
 				}
 			}
 			| program error EOL
 			{
-				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2))
+				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2), $3.LineNumber)
 				yyerrok()
 			}
 			;
@@ -182,8 +190,8 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
 			{
-				yylex.Error("両方のオペランドを間接指定にすることはできません", $1.LineNumber)
-				$$ = nil
+		
+				$$ = &ParseError{Message: "両方のオペランドを間接指定にすることはできません"}
 			}
 			| Z80_INST2 expr ',' expr
 			{
@@ -200,8 +208,7 @@ expr		: NUMBER
 				if err == nil {
 					$$ = &NumberLiteral{Value: int(n)}
 				} else {
-					yylex.Error(fmt.Sprintf("invalid NUMBER literal '%s'", $1.Literal))
-					$$ = nil
+					$$ = &ParseError{Message: fmt.Sprintf("数値リテラルに誤りがあります: '%s'", $1.Literal)}
 				}
 			}
 			| IDENT 		{ $$ = &Ident{Name: $1.Literal} }
@@ -252,8 +259,7 @@ expr		: NUMBER
 			}
 			| error 
 			{ 
-				yylex.Error(__yyfmt__.Sprintf("[expr error] %s", $1.String()))
-				$$ = nil
+				$$ = &ParseError{Message: __yyfmt__.Sprintf("[expr error] %s", $1.String())}
 			}
 			;
 %%
