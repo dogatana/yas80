@@ -9,7 +9,7 @@ type ErrorMessage struct {
 }
 
 func (e ErrorMessage) String() string {
-	return fmt.Sprintf("%s:%d:%s", e.Filename, e.LineNumber, e.Message)
+	return fmt.Sprintf("%q:%d:%s", e.Filename, e.LineNumber, e.Message)
 }
 
 type ErrorStore struct {
