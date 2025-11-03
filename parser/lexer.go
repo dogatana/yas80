@@ -149,7 +149,7 @@ func (l *Lexer) NextToken() Token {
 		if l.peekChar() == '.' {
 			// LABEL abc.def
 			l.nextChar()
-			literal += "." + l.readWord()
+			literal += l.readWord()
 			l.nextChar()
 			return Token{TokenType: DOT_IDENT, Literal: literal, LineNumber: l.lineNumber}
 		}

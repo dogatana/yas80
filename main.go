@@ -78,7 +78,7 @@ func main() {
 			fmt.Println(o.String())
 		}
 	}
-
+	env.Print()
 	es.Print()
 
 }

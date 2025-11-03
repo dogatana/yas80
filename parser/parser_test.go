@@ -194,3 +194,27 @@ func TestLableStatement(t *testing.T) {
 		}
 	}
 }
+
+func TestDotIdent(t *testing.T) {
+	input := "abc.def"
+
+	l := newLexerForTest(input)
+	prog, ec, wc := Parse(l)
+	if ec > 0 || wc > 0 {
+		t.Fatalf("parsing %s. returns %d errors and %d warnigs", input, ec, wc)
+	}
+	if len(prog.Statements) == 0 {
+		t.Fatalf("parsing %s. statements empty", input)
+	}
+	stmt, ok := prog.Statements[0].(*ExpressionStatement)
+	if !ok {
+		t.Errorf("parsing %s. prog.Statemtes[0] is not ExpressionStatement. got %T", input, prog.Statements[0])
+	}
+	ident, ok := stmt.Value.(*DotIdent)
+	if !ok {
+		t.Errorf("parsing %s. not Expression got %T", input, stmt.Value)
+	}
+	if ident.Left != "ABC" || ident.Right != "DEF" {
+		t.Errorf("parsing %s. not ABC.DEF. got %q", input, ident.String())
+	}
+}

@@ -3,6 +3,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 )
 
 // goyacc が __yyfmt__ を勝手に import することの対策
@@ -205,10 +206,8 @@ expr		: NUMBER
 			| IDENT 		{ $$ = &Ident{Name: $1.Literal} }
 			| DOT_IDENT
 			{
-				
-
-
-
+				names := strings.Split(strings.ToUpper($1.Literal), ".")
+				$$ = &DotIdent{Left: names[0], Right: names[1]}
 			}
 			| Z80_REG8 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
 			| Z80_REG16 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}

@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"fmt"
+	"strings"
 	"yas80/errorstore"
 	"yas80/object"
 	"yas80/parser"
@@ -53,7 +54,9 @@ func (e *Evaluator) updateEnv(env *object.Environment) {
 	}
 }
 
+// Eval
 func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Object {
+	fmt.Printf("eval %T(%#v)\n", node, node)
 	switch node := node.(type) {
 	case *parser.Program:
 		return e.evalStatements(node.Statements, env)
@@ -69,6 +72,23 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		v := e.Eval(node.Value, env)
 		env.Set(node.Name.Name, v)
 		return object.NULL
+	case *parser.EnumStatement:
+		name := strings.ToUpper(node.Name)
+		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
+		if ok {
+			e.es.AddError(fmt.Sprintf("定義済み: %s", node.Name), "", node.LineNumber)
+			return object.ERROR
+		}
+		v := e.evalEnumStatement(node, env)
+		switch v.Type() {
+		case object.ENUM_OBJ:
+			env.GlobalSet(v.(*object.EnumObject).Name, v)
+			return object.NULL
+		case object.NULL_OBJ:
+			return &object.NodeObject{Value: node}
+		default:
+			return object.ERROR
+		}
 
 	// Expression
 	case *parser.NumberLiteral:
@@ -85,6 +105,17 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 			return obj
 		}
 		return object.NULL
+	case *parser.DotIdent:
+		fmt.Println("DotIdent", node.String())
+		enum, ok := env.Get(node.Left)
+		if !ok {
+			return &object.ErrorObject{Message: fmt.Sprintf("未定義 '%s'", node.Left)}
+		}
+		v, ok := enum.(*object.EnumObject).Get(node.Right)
+		if !ok {
+			return &object.ErrorObject{Message: fmt.Sprintf("未定義 '%s.%s'", node.Left, node.Right)}
+		}
+		return v
 	case *parser.RegisterLiteral:
 		return object.Z80RgisterObjects[int(node.NodeSubType())]
 	}
@@ -100,6 +131,37 @@ func (e *Evaluator) evalStatements(stmts []parser.Node, env *object.Environment)
 		// }
 	}
 	return p
+}
+
+func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.Environment) object.Object {
+	enum := map[string]object.Object{}
+	value := 0
+	for _, ele := range node.Elements.Elements {
+		eleName := strings.ToUpper(ele.Name)
+		if _, ok := enum[eleName]; ok {
+			e.es.AddError(fmt.Sprintf("[E] 定義済みの名前: %s (ENUM %s)", eleName, node.Name), "", 0)
+			return object.ERROR
+		}
+		if ele.Value == nil {
+			enum[eleName] = &object.NumberObject{Value: value}
+			value += 1
+			continue
+		}
+		v := e.Eval(ele.Value, env)
+		switch v.Type() {
+		case object.NULL_OBJ:
+			enum[eleName] = &object.NodeObject{Value: ele.Value}
+		case object.NUMBER_OBJ:
+			enum[eleName] = v
+			value = v.(*object.NumberObject).Value + 1
+		case object.STRING_OBJ:
+			enum[eleName] = v
+		default:
+			e.es.AddError(fmt.Sprintf("[E] enum 要素に使用できない型 %T", v), "", 0)
+			return object.ERROR
+		}
+	}
+	return &object.EnumObject{Name: strings.ToUpper(node.Name), Value: enum}
 }
 
 func (e *Evaluator) evalInfixExpression(opCode int, op1, op2 object.Object, env *object.Environment) object.Object {
@@ -126,7 +188,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 		return &object.NumberObject{Value: v1 * v2}
 	case '/':
 		if v2 == 0 {
-			e.es.AddError("", e.lineNumber, "division by 0")
+			e.es.AddError("division by 0", "", e.lineNumber)
 			return object.NULL
 		}
 		return &object.NumberObject{Value: v1 + v2}
@@ -189,8 +251,9 @@ func (e *Evaluator) generateRET(node *parser.Z80Instruction, env *object.Environ
 		b := byte(0xc0 | flag<<3)
 		return &object.Code{Line: node.LineNumber, Code: []byte{b}}
 	}
-	e.es.AddError("", node.LineNumber,
-		fmt.Sprintf("第1オペランドがフラグではありません '%s'", node.Op1.String()))
+	e.es.AddError(
+		fmt.Sprintf("第1オペランドがフラグではありません '%s'", node.Op1.String()),
+		"", node.LineNumber)
 	return object.NULL
 }
 
@@ -227,14 +290,14 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 				v := op2.(*object.NumberObject).Value
 				bv, ok := e.toByte(v)
 				if !ok {
-					e.es.AddError("", 0, fmt.Sprintf("1バイトの範囲を超えていいます: %d", v))
+					e.es.AddError(fmt.Sprintf("1バイトの範囲を超えていいます: %d", v), "", 0)
 					return object.NULL
 				}
 				b := 0x06
 				b |= (r1 - parser.Z80_REG_B) << 3
 				return &object.Code{Line: node.LineNumber, Code: []byte{byte(b), bv}}
 			} else if op2.Type() == object.NULL_OBJ {
-				e.es.AddError("", 0, fmt.Sprintf("error expr: %s", node.Op2.String()))
+				e.es.AddError(fmt.Sprintf("error expr: %s", node.Op2.String()), "", 0)
 
 			}
 		}

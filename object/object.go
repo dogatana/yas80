@@ -7,9 +7,11 @@ import (
 
 const (
 	NULL_OBJ = iota + 1
+	ERROR_OBJ
 	NUMBER_OBJ
 	STRING_OBJ
 	IDENT_OBJ
+	ENUM_OBJ
 	REGISTER_OBJ
 	CODE_OBJ
 	PROGRAM_OBJ
@@ -17,7 +19,8 @@ const (
 )
 
 var (
-	NULL = &NullObject{}
+	NULL  = &NullObject{}
+	ERROR = &ErrorObject{}
 
 	Z80_REG_A   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_A}
 	Z80_REG_B   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_B}
@@ -95,6 +98,14 @@ type NullObject struct{}
 func (n *NullObject) Type() ObjectType { return NULL_OBJ }
 func (n *NullObject) String() string   { return "NULL" }
 
+// Error
+type ErrorObject struct {
+	Message string
+}
+
+func (e *ErrorObject) Type() ObjectType { return ERROR_OBJ }
+func (e *ErrorObject) String() string   { return "ERROR " + e.Message }
+
 // 数値
 type NumberObject struct {
 	Value int
@@ -133,3 +144,16 @@ type NodeObject struct {
 
 func (n *NodeObject) Type() ObjectType { return NODE_OBJ }
 func (n *NodeObject) String() string   { return n.Value.String() }
+
+// ENUM
+type EnumObject struct {
+	Name  string
+	Value map[string]Object
+}
+
+func (e *EnumObject) Type() ObjectType { return ENUM_OBJ }
+func (e *EnumObject) String() string   { return "ENUM " + e.Name }
+func (e *EnumObject) Get(key string) (Object, bool) {
+	v, ok := e.Value[key]
+	return v, ok
+}
