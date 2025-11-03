@@ -52,9 +52,9 @@ func (l *Lexer) Error(s string, args ...any) {
 	}
 
 	if strings.HasPrefix(s, "[W]") {
-		l.ErrorStore.AddWarning(s[3:], l.fileNmae, line)
+		l.ErrorStore.AddWarning(s[3:], line)
 	} else {
-		l.ErrorStore.AddError(s, l.fileNmae, line)
+		l.ErrorStore.AddError(s, line)
 	}
 }
 

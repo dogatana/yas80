@@ -7,6 +7,7 @@ import (
 )
 
 func newLexerForTest(input string) *Lexer {
-	es := errorstore.New()
-	return NewLexer(bufio.NewReader(strings.NewReader(input)), "<string>", es)
+	file := "<string>"
+	es := errorstore.New(file)
+	return NewLexer(bufio.NewReader(strings.NewReader(input)), file, es)
 }

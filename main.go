@@ -47,7 +47,7 @@ func main() {
 	parser.SetYYDebug(getYYDebugEnv())
 
 	fmt.Println("-- parser")
-	es := errorstore.New()
+	es := errorstore.New(file)
 	l := parser.NewLexer(bufio.NewReader(input), file, es)
 	prog, ec, wc := parser.Parse(l)
 	es.Print()
@@ -61,7 +61,7 @@ func main() {
 	}
 	fmt.Println(prog.String())
 
-	es = errorstore.New()
+	es = errorstore.New("eavaluate")
 	eval := evaluator.New(es)
 	env := object.NewEnvironment(nil)
 

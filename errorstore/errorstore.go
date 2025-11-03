@@ -15,18 +15,19 @@ func (e ErrorMessage) String() string {
 type ErrorStore struct {
 	Errors   []ErrorMessage
 	Warnings []ErrorMessage
+	Filename string
 }
 
-func New() *ErrorStore {
-	return &ErrorStore{}
+func New(filename string) *ErrorStore {
+	return &ErrorStore{Filename: filename}
 }
 
-func (es *ErrorStore) AddError(msg string, file string, line int) {
-	es.Errors = append(es.Errors, ErrorMessage{file, msg, line})
+func (es *ErrorStore) AddError(msg string, line int) {
+	es.Errors = append(es.Errors, ErrorMessage{msg, es.Filename, line})
 }
 
-func (es *ErrorStore) AddWarning(msg string, file string, line int) {
-	es.Errors = append(es.Errors, ErrorMessage{msg, file, line})
+func (es *ErrorStore) AddWarning(msg string, line int) {
+	es.Errors = append(es.Errors, ErrorMessage{msg, es.Filename, line})
 }
 
 func (es *ErrorStore) Count() (int, int) {
