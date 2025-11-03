@@ -63,10 +63,10 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 
 	// Statement
 	case *parser.ExpressionStatement:
-		e.lineNumber = node.LineNumber
+		e.lineNumber = node.LineNumber()
 		return e.Eval(node.Value, env)
 	case *parser.Z80Instruction:
-		e.lineNumber = node.LineNumber
+		e.lineNumber = node.LineNumber()
 		return e.evalZ80Instruction(node, env)
 	case *parser.ConstStatement:
 		v := e.Eval(node.Value, env)
@@ -76,7 +76,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		name := strings.ToUpper(node.Name)
 		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
 		if ok {
-			e.es.AddError(fmt.Sprintf("定義済み: %s", node.Name), node.LineNumber)
+			e.es.AddError(fmt.Sprintf("定義済み: %s", node.Name), node.LineNumber())
 			return object.ERROR
 		}
 		v := e.evalEnumStatement(node, env)
@@ -227,7 +227,7 @@ func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env *object.
 	switch node.NodeType() {
 	case parser.Z80_INST0:
 		info := Z80CodeTable0[int(node.OpCode)]
-		obj := &object.Code{Line: node.LineNumber, Code: make([]byte, len(info.Bytes))}
+		obj := &object.Code{Line: node.LineNumber(), Code: make([]byte, len(info.Bytes))}
 		copy(obj.Code, info.Bytes)
 		return obj
 	case parser.Z80_INST1:
@@ -244,15 +244,15 @@ func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env *object.
 
 func (e *Evaluator) generateRET(node *parser.Z80Instruction, env *object.Environment) object.Object {
 	if node.Op1 == nil {
-		return &object.Code{Line: node.LineNumber, Code: []byte{0xc9}}
+		return &object.Code{Line: node.LineNumber(), Code: []byte{0xc9}}
 	}
 	if node.Op1.NodeType() == parser.Z80_FLAG {
 		flag := int(node.Op1.NodeSubType()) - parser.Z80_FLAG_NZ
 		b := byte(0xc0 | flag<<3)
-		return &object.Code{Line: node.LineNumber, Code: []byte{b}}
+		return &object.Code{Line: node.LineNumber(), Code: []byte{b}}
 	}
 	e.es.AddError(
-		fmt.Sprintf("第1オペランドがフラグではありません '%s'", node.Op1.String()), node.LineNumber)
+		fmt.Sprintf("第1オペランドがフラグではありません '%s'", node.Op1.String()), node.LineNumber())
 	return object.NULL
 }
 
@@ -281,7 +281,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 			}
 			b := 0xc0
 			b |= ((r1 - parser.Z80_REG_B) << 3) | (r2 - parser.Z80_REG_B)
-			return &object.Code{Line: node.LineNumber, Code: []byte{byte(b)}}
+			return &object.Code{Line: node.LineNumber(), Code: []byte{byte(b)}}
 		default:
 			op2 := e.Eval(node.Op2, env)
 			if op2.Type() == object.NUMBER_OBJ {
@@ -294,7 +294,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 				}
 				b := 0x06
 				b |= (r1 - parser.Z80_REG_B) << 3
-				return &object.Code{Line: node.LineNumber, Code: []byte{byte(b), bv}}
+				return &object.Code{Line: node.LineNumber(), Code: []byte{byte(b), bv}}
 			} else if op2.Type() == object.NULL_OBJ {
 				e.es.AddError(fmt.Sprintf("error expr: %s", node.Op2.String()), 0)
 

@@ -2,6 +2,7 @@ package object
 
 import (
 	"fmt"
+	"strings"
 	"yas80/parser"
 )
 
@@ -152,7 +153,19 @@ type EnumObject struct {
 }
 
 func (e *EnumObject) Type() ObjectType { return ENUM_OBJ }
-func (e *EnumObject) String() string   { return "ENUM " + e.Name }
+func (e *EnumObject) String() string {
+
+	stmts := []string{"ENUM " + e.Name}
+
+	for k, v := range e.Value {
+		s := fmt.Sprintf("  %s = %s", k, v.String())
+		stmts = append(stmts, s)
+	}
+	stmts = append(stmts, "END_ENUM")
+
+	return strings.Join(stmts, "\n")
+}
+
 func (e *EnumObject) Get(key string) (Object, bool) {
 	v, ok := e.Value[key]
 	return v, ok
