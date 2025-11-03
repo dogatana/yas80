@@ -23,6 +23,7 @@ var _ = __yyfmt__.Sprintf
 %type<node> instruction statement label expr
 %type<enum_elements> enum_elements
 %type<enum_element> enum_element
+%token<token> EOL
 %token<token> NUMBER IDENT
 %token<token> AT_IDENT    // @def 
 %token<token> LOCAL_IDENT // .def 
@@ -39,7 +40,7 @@ var _ = __yyfmt__.Sprintf
 %token BLOCK END_BLOCK
 %token ENUM END_ENUM
 %token  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':'
-%token INVALID EOL 
+%token INVALID 
 %token<token> error
 
 // 演算の優先度の指定
@@ -77,7 +78,7 @@ program		: { }
 			{
 				if $2 != nil {
 					prog := yylex.(*Lexer).program
-					prog.Statements = append(prog.Statements, &ExpressionStatement{Value: $2})
+					prog.Statements = append(prog.Statements, &ExpressionStatement{Value: $2, LineNumber: $3.LineNumber})
 				}
 			}
 			| program error EOL
