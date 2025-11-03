@@ -19,6 +19,12 @@ xegen:
 	goyacc -xegen ${ERR} -v parser/y.output -o ${PARSER}  ${YACC}
 	python parser/patch_parser.py ${PARSER} ${PARSER}
 
+vet:
+	go vet ./parser ./evaluator
+
+check:
+	staticcheck ./parser ./evaluator
+
 test:
 	go test ./parser ./evaluator
 
