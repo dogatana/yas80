@@ -60,52 +60,65 @@ program		: { }
 			| program EOL
 			| program label EOL
 			{
-				stmt := &LabelStatement{Value: $2, LineNumber: yylex.(*Lexer).lineNumber}
+				stmt := &LabelStatement{Value: $2, lineNumber: $2.(*Label).LineNumber}
 				prog := yylex.(*Lexer).program
 				prog.Statements = append(prog.Statements, stmt)
 			}
-			| program label statement EOL
+			| program label statement
 			{
 				if $3.NodeType() == NODE_ERROR {
-					yylex.Error($3.(*ParseError).Message, $4.LineNumber)
+					yylex.Error($3.(*ParseError).Message, $3.(Statement).LineNumber())
 				} else {
 					prog := yylex.(*Lexer).program
-					stmt := &LabelStatement{Value: $2, LineNumber: yylex.(*Lexer).lineNumber}
+					stmt := &LabelStatement{Value: $2, lineNumber: $2.(*Label).LineNumber}
 					prog.Statements = append(prog.Statements, stmt, $3)
 				}
 			}
-			| program statement EOL
+			| program statement 
 			{
 				if $2.NodeType() == NODE_ERROR {
-					yylex.Error($2.(*ParseError).Message, $3.LineNumber)
+					yylex.Error($2.(*ParseError).Message, $2.(Statement).LineNumber())
 				} else {
 					prog := yylex.(*Lexer).program
 					prog.Statements = append(prog.Statements, $2)
 				}
 			}
-			| program error EOL
-			{
-				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2), $3.LineNumber)
-				yyerrok()
-			}
+//			| program error EOL
+//			{
+//				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2), $3.LineNumber)
+//				yyerrok()
+//			}
 			;
 
-statement   : expr					{ $$ = $1}
-			| instruction			{ $$ = $1}
-			| directive				{ $$ = $1}
+statement   : expr EOL			
+			{ 
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1
+				} else {
+					$$ = &ExpressionStatement{Value: $1, lineNumber: $2.LineNumber}
+				}
+			}
+			| instruction EOL	{ $$ = $1}
+			| directive	 EOL	{ $$ = $1}
+			| error EOL
+			{
+				yylex.Error(__yyfmt__.Sprintf("[statement error] %#v", $1), $2.LineNumber)
+				yyerrok()
+
+			}
 			;
 
 directive	: CONST IDENT '=' expr
 			{ 
-				$$ = &ConstStatement{Name: &Ident{Name: $2.Literal}, Value: $4, LineNumber: $2.LineNumber}
+				$$ = &ConstStatement{Name: &Ident{Name: $2.Literal}, Value: $4, lineNumber: $2.LineNumber}
 			}
 			| IDENT EQU expr		
 			{ 
-				$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3, LineNumber: $1.LineNumber}
+				$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3, lineNumber: $1.LineNumber}
 			}
 			| IDENT ENUM EOL enum_elements END_ENUM
 			{
-				$$ = &EnumStatement{Name: $1.Literal, Elements: $4, LineNumber: $1.LineNumber}
+				$$ = &EnumStatement{Name: $1.Literal, Elements: $4, lineNumber: $1.LineNumber}
 			}
 			| REPEAT expr EOL block_statement END_REPEAT
 			{
@@ -116,7 +129,7 @@ directive	: CONST IDENT '=' expr
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4
 				}
-				$$ = &RepeatStatement{MaxCount: $2, Block: $4.Block, LineNumber: $1.LineNumber}
+				$$ = &RepeatStatement{MaxCount: $2, Block: $4.Block, lineNumber: $1.LineNumber}
 			}
 			;
 
@@ -150,15 +163,15 @@ enum_element : IDENT 			{ $$ = &EnumElement{Name: $1.Literal, Value: nil} }
 
 label		: IDENT ':'
 			{
-				$$ = &Label{nodeType: NODE_LABEL, Name: $1.Literal}
+				$$ = &Label{nodeType: NODE_LABEL, Name: $1.Literal, LineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT ':'
 			{
-				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal}
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, LineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT
 			{
-				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal}
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, LineNumber: $1.LineNumber}
 			}
 			;
 
@@ -166,48 +179,48 @@ label		: IDENT ':'
 instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{
-					InstType: Z80_INST0, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber} 
+					InstType: Z80_INST0, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber} 
 			}
 			| Z80_INST1
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST1, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber}
+						InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber}
 			}
 			| Z80_INST1 '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST1, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber,
+						InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
 						Op1: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST1 expr
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST1, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber,
+						InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
 						Op1: $2}
 			}
 			| Z80_INST2 '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber,
+						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
 						Op2: &IndirectExpression{Expression: $3}}
 			}
 			| Z80_INST2 expr
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber,
+						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
 						Op2: $2}
 			}
 			| Z80_INST2 '(' expr ')' ',' expr
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber,
+						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
 						Op1: &IndirectExpression{Expression: $3},
 						Op2: $6}
 			}
 			| Z80_INST2 expr ',' '(' expr ')'
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber,
+						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
 						Op1: $2,
 						Op2: &IndirectExpression{Expression: $5}}
 			}
@@ -219,7 +232,7 @@ instruction	: Z80_INST0
 			| Z80_INST2 expr ',' expr
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), LineNumber: $1.LineNumber,
+						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
 						Op1: $2,
 						Op2: $4}
 			}

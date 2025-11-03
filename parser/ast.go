@@ -77,6 +77,7 @@ type Node interface {
 type Statement interface {
 	Node
 	statementNode()
+	LineNumber() int
 }
 
 // 式
@@ -115,12 +116,13 @@ func (e *ParseError) String() string           { return e.Message }
 // ラベルは独立した文として生成
 type LabelStatement struct {
 	Value      Node
-	LineNumber int
+	lineNumber int
 }
 
 func (l *LabelStatement) statementNode()           {}
 func (l *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
 func (l *LabelStatement) NodeSubType() NodeSubType { return 0 }
+func (l *LabelStatement) LineNumber() int          { return l.lineNumber }
 func (l *LabelStatement) String() string {
 	out := l.Value.(*Label).Name
 	if out[0] != '.' {
@@ -132,24 +134,26 @@ func (l *LabelStatement) String() string {
 // 式文 - Expression Statement
 type ExpressionStatement struct {
 	Value      Node
-	LineNumber int
+	lineNumber int
 }
 
 func (e *ExpressionStatement) statementNode()           {}
 func (e *ExpressionStatement) NodeType() NodeType       { return NODE_EXPR_STMT }
 func (e *ExpressionStatement) NodeSubType() NodeSubType { return 0 }
+func (e *ExpressionStatement) LineNumber() int          { return e.lineNumber }
 func (e *ExpressionStatement) String() string           { return e.Value.String() }
 
 // enum 定義文
 type EnumStatement struct {
 	Name       string
 	Elements   *EnumElements
-	LineNumber int
+	lineNumber int
 }
 
 func (e *EnumStatement) statementNode()           {}
 func (e *EnumStatement) NodeType() NodeType       { return NODE_ENUM_STMT }
 func (e *EnumStatement) NodeSubType() NodeSubType { return 0 }
+func (e *EnumStatement) LineNumber() int          { return e.lineNumber }
 func (e *EnumStatement) String() string {
 	var out bytes.Buffer
 
@@ -162,12 +166,14 @@ func (e *EnumStatement) String() string {
 
 // enum 要素定義文
 type EnumElements struct {
-	Elements []*EnumElement
+	Elements   []*EnumElement
+	lineNumber int
 }
 
 func (e *EnumElements) statementNode()        {}
 func (e *EnumElements) NodeType() NodeType    { return NODE_ENUM_ELEMENTS_STMT }
 func (e *EnumElements) NodeSubType() NodeType { return 0 }
+func (e *EnumElements) LineNumber() int       { return e.lineNumber }
 func (e *EnumElements) String() string {
 	stmts := []string{}
 	for _, e := range e.Elements {
@@ -197,12 +203,13 @@ func (e *EnumElement) String() string {
 type RepeatStatement struct {
 	MaxCount   Node
 	Block      []Node
-	LineNumber int
+	lineNumber int
 }
 
 func (r *RepeatStatement) statementNode()           {}
 func (r *RepeatStatement) NodeType() NodeType       { return NODE_REPEAT_STMT }
 func (r *RepeatStatement) NodeSubType() NodeSubType { return 0 }
+func (r *RepeatStatement) LineNumber() int          { return r.lineNumber }
 func (r *RepeatStatement) String() string {
 	var out bytes.Buffer
 
@@ -223,12 +230,14 @@ func (r *RepeatStatement) String() string {
 
 // block statement
 type BlockStatement struct {
-	Block []Node
+	Block      []Node
+	lineNumber int
 }
 
 func (b *BlockStatement) statementNode()           {}
 func (b *BlockStatement) NodeType() NodeType       { return NODE_BLOCK_STMT }
 func (b *BlockStatement) NodeSubType() NodeSubType { return 0 }
+func (b *BlockStatement) LineNumber() int          { return b.lineNumber }
 func (b *BlockStatement) String() string {
 	stmts := []string{}
 
@@ -242,12 +251,13 @@ func (b *BlockStatement) String() string {
 type ConstStatement struct {
 	Name       *Ident
 	Value      Node
-	LineNumber int
+	lineNumber int
 }
 
 func (c *ConstStatement) statementNode()           {}
 func (c *ConstStatement) NodeType() NodeType       { return NODE_CONST_STMT }
 func (c *ConstStatement) NodeSubType() NodeSubType { return 0 }
+func (c *ConstStatement) LineNumber() int          { return c.lineNumber }
 func (c *ConstStatement) String() string {
 	return "CONST " + c.Name.String() + " = " + c.Value.String()
 }
@@ -258,7 +268,7 @@ type Z80Instruction struct {
 	OpCode     int
 	Op1        Node
 	Op2        Node
-	LineNumber int
+	lineNumber int
 }
 
 func (z *Z80Instruction) statementNode() {}
@@ -268,6 +278,7 @@ func (z *Z80Instruction) NodeType() NodeType {
 func (z *Z80Instruction) NodeSubType() NodeSubType {
 	return NodeSubType(z.OpCode)
 }
+func (z *Z80Instruction) LineNumber() int { return z.lineNumber }
 func (z *Z80Instruction) String() string {
 	var out bytes.Buffer
 
@@ -291,8 +302,9 @@ func (z *Z80Instruction) String() string {
 
 // ラベル
 type Label struct {
-	nodeType NodeType
-	Name     string
+	nodeType   NodeType
+	Name       string
+	LineNumber int
 }
 
 func (l *Label) expressionNode()          {}

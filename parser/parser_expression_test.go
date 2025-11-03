@@ -47,7 +47,7 @@ func TestExpression(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {
-			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
+			t.Errorf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
