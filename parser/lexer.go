@@ -301,12 +301,3 @@ func (l *Lexer) isWordChar(ch rune) bool {
 func (l *Lexer) isOneCharToken(ch rune) bool {
 	return ch == '(' || ch == ')' || ch == ',' || ch == ':'
 }
-
-func (l *Lexer) cotains(ch rune) bool {
-	for _, c := range l.text {
-		if c == ch {
-			return true
-		}
-	}
-	return false
-}
