@@ -112,9 +112,15 @@ func TestIfStatement(t *testing.T) {
 	}{
 		{`if 1\ end_if`, "IF 1\nEND_IF"},
 		{`if 1 \ else \ end_if`, "IF 1\nELSE\nEND_IF"},
-		{` if 1 \ 100 \ end_if`, "IF 1\100\nEND_IF"},
-		{` if 1 \ 100 \ else \ end_if`, "IF 1\100\nELSE\nEND_IF"},
-		{` if 1 \ 100 \ else \ 200 \  end_if`, "IF 1\100\nELSE\n200\nEND_IF"},
+		{` if 1 \ 100 \ end_if`, "IF 1\n100\nEND_IF"},
+		{` if 1 \ 100 \ else \ end_if`, "IF 1\n100\nELSE\nEND_IF"},
+		{` if 1 \ 100 \ else \ 200 \  end_if`, "IF 1\n100\nELSE\n200\nEND_IF"},
+		{` if 1 \ 100 \ if 2 \ 200 \else \ 300 \ end_if \ endif`, "IF 1\n100\nIF 2\n200\nELSE\n300\nEND_IF\nEND_IF"},
+		{` if 1 \ 100 \ if 2 \ 200 \endif \ else \ 300 \ end_if`, "IF 1\n100\nIF 2\n200\nEND_IF\nELSE\n300\nEND_IF"},
+		{
+			` if 1 \ 100 \ if 2 \ 200 \else \ 300 \endif \ else \ if 3 \ 400 \ else \ 500 \endif\endif`,
+			"IF 1\n100\nIF 2\n200\nELSE\n300\nEND_IF\nELSE\nIF 3\n400\nELSE\n500\nEND_IF\nEND_IF",
+		},
 	}
 	for _, tt := range tests {
 		fmt.Println("test:", tt.input)
