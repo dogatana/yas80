@@ -33,7 +33,9 @@ var _ = __yyfmt__.Sprintf
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
 %token<token> ADDSUB MULDIV COMP SHIFT UNARY
 %token SL SR EQ NEQ GE LE OR AND
-%token CONST VAR EQU FUNC
+
+%token CONST VAR EQU FUNC ORG
+
 %token<token> IF 
 %token ELSE ELIF END_IF
 %token<token>ELIF
