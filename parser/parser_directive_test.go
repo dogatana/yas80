@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -38,14 +39,15 @@ func TestConstStatement(t *testing.T) {
 }
 
 func TestEnumStatement(t *testing.T) {
-	input := `test ENUM
-abc
-def = 1
-xyz
-END_ENUM`
+	input := ` test enum
+ abc
+def = 1  
+ xyz  
+  end_enum `
 	l := newLexerForTest(input)
 	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
+		l.ErrorStore.Print()
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	if len(prog.Statements) != 1 {
@@ -56,12 +58,49 @@ END_ENUM`
 	if !ok {
 		t.Errorf("prog.Statements[0] not *EnumStatement. got %T", stmt)
 	}
+	srcText := splitTrim(input)
 	text := enum.String()
-	if text != input {
-		t.Errorf("expected %d chars. got %d chars", len(input), len(text))
-		fmt.Printf("expected\n%s\n", input)
-		fmt.Println([]byte(input))
+	if !strings.EqualFold(text, srcText) {
+		t.Errorf("expected %d chars. got %d chars", len(srcText), len(text))
+		fmt.Printf("expected\n%s\n", srcText)
+		fmt.Println([]byte(srcText))
 		fmt.Printf("got\n%s\n", text)
 		fmt.Println([]byte(text))
+	}
+}
+
+func TestRepeatStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`repeat 1\ end_repeat`, "REPEAT 1\nEND_REPEAT"},
+		{` Repeat 2 \\\\ endRepeat`, "REPEAT 2\nEND_REPEAT"},
+		{` REPEAT 3 \\\\ EndR`, "REPEAT 3\nEND_REPEAT"},
+		{` REPEAT 4 \1\ 2\3 \ 4 \ EndR`, "REPEAT 4\n1\n2\n3\n4\nEND_REPEAT"},
+	}
+	for _, tt := range tests {
+		fmt.Println("test:", tt.input)
+		l := newLexerForTest(tt.input)
+		prog, ec, wc := Parse(l)
+		if ec > 0 || wc > 0 {
+			l.ErrorStore.Print()
+			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
+		}
+		if len(prog.Statements) != 1 {
+			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+		}
+		stmt := prog.Statements[0]
+		repeat, ok := stmt.(*RepeatStatement)
+		if !ok {
+			t.Errorf("prog.Statements[0] not *RepeatStatment. got %T", stmt)
+		}
+		text := repeat.String()
+		if !strings.EqualFold(text, tt.expected) {
+			fmt.Printf("expected\n%s\n", tt.expected)
+			fmt.Println([]byte(tt.expected))
+			fmt.Printf("got\n%s\n", text)
+			fmt.Println([]byte(text))
+		}
 	}
 }

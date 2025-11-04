@@ -135,7 +135,7 @@ directive	: CONST IDENT '=' expr
 
 block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
 			| block_statement EOL 	{ $$ = $1}
-			| block_statement statement EOL
+			| block_statement statement 
 			{ 
 				fmt.Printf("got %T(%#v)\n", $2, $2)
 				if $2.NodeType() == NODE_ERROR {
@@ -147,9 +147,8 @@ block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
 			}
 			;
 	
-enum_elements : EOL 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
+enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			| enum_elements EOL { $$ = $1 }
-			| enum_element EOL	{ $$ = &EnumElements{Elements: []*EnumElement{$1}} }
 			| enum_elements enum_element EOL
 			{
 				$1.Elements = append($1.Elements, $2)
