@@ -104,3 +104,40 @@ func TestRepeatStatement(t *testing.T) {
 		}
 	}
 }
+
+func TestIfStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`if 1\ end_if`, "IF 1\nEND_IF"},
+		{`if 1 \ else \ end_if`, "IF 1\nELSE\nEND_IF"},
+		{` if 1 \ 100 \ end_if`, "IF 1\100\nEND_IF"},
+		{` if 1 \ 100 \ else \ end_if`, "IF 1\100\nELSE\nEND_IF"},
+		{` if 1 \ 100 \ else \ 200 \  end_if`, "IF 1\100\nELSE\n200\nEND_IF"},
+	}
+	for _, tt := range tests {
+		fmt.Println("test:", tt.input)
+		l := newLexerForTest(tt.input)
+		prog, ec, wc := Parse(l)
+		if ec > 0 || wc > 0 {
+			l.ErrorStore.Print()
+			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
+		}
+		if len(prog.Statements) != 1 {
+			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+		}
+		stmt := prog.Statements[0]
+		repeat, ok := stmt.(*IfStatement)
+		if !ok {
+			t.Errorf("prog.Statements[0] not *IfStatment. got %T", stmt)
+		}
+		text := repeat.String()
+		if !strings.EqualFold(text, tt.expected) {
+			fmt.Printf("expected\n%s\n", tt.expected)
+			fmt.Println([]byte(tt.expected))
+			fmt.Printf("got\n%s\n", text)
+			fmt.Println([]byte(text))
+		}
+	}
+}

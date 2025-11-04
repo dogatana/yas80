@@ -228,8 +228,8 @@ func (r *RepeatStatement) String() string {
 // if statement
 type IfStatement struct {
 	Condition   Node
-	Consequence []Node
-	Alternative []Node
+	Consequence Node
+	Alternative Node
 	lineNumber  int
 }
 
@@ -241,7 +241,20 @@ func (i *IfStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("IF " + i.Condition.String() + "\n")
-	out.WriteString(i.Condition.String() + "\n")
+	block := i.Consequence.String()
+	if block != "" {
+		out.WriteString(block + "\n")
+	}
+	if i.Alternative != nil {
+		out.WriteString("ELSE\n")
+		block = i.Alternative.String()
+		if block != "" {
+			out.WriteString(block + "\n")
+		}
+	}
+	out.WriteString("END_IF")
+
+	return out.String()
 }
 
 // block statement

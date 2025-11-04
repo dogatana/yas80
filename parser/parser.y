@@ -34,7 +34,8 @@ var _ = __yyfmt__.Sprintf
 %token<token> ADDSUB MULDIV COMP SHIFT UNARY
 %token SL SR EQ NEQ GE LE OR AND
 %token CONST VAR EQU FUNC
-%token IF ELSE ELIF END_IF
+%token<token> IF 
+%token ELSE ELIF END_IF
 %token MACRO END_MACRO
 %token<token> REPEAT
 %token END_REPEAT
@@ -128,16 +129,30 @@ directive	: CONST IDENT '=' expr
 				} else if $4.NodeType() == NODE_ERROR {
 					$$ = $4
 				} else {
-					$$ = &RepeatStatement{MaxCount: $2, Block: $4.Block, lineNumber: $1.LineNumber}
+					$$ = &RepeatStatement{MaxCount: $2, Block: $4, lineNumber: $1.LineNumber}
 				}
 			}
-			| IF expr EOL block_statement elseifs END_IF
+			| IF expr EOL block_statement END_IF
 			{
-				$$ = nil
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else if $4.NodeType() == NODE_ERROR {
+					$$ = $4
+				} else {
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: nil, lineNumber: $1.LineNumber}
+				}
 			}
-			| IF expr EOL block_statement elseifs ELSE block_statement END_IF
+			| IF expr EOL block_statement ELSE block_statement END_IF
 			{
-				$$ = nil
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else if $4.NodeType() == NODE_ERROR {
+					$$ = $4
+				} else if $6.NodeType() == NODE_ERROR {
+					$$ = $6
+				} else {
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $6, lineNumber: $1.LineNumber}
+				}
 			}
 			;
 
@@ -155,11 +170,6 @@ block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
 			}
 			;
 	
-elseifs		: 
-			| ELIF EOL block_statement
-			| elseifs ELIF EOL block_statement
-			;
-
 enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			| enum_elements EOL { $$ = $1 }
 			| enum_elements enum_element EOL
