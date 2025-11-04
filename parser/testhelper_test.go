@@ -14,8 +14,12 @@ func newLexerForTest(input string) *Lexer {
 
 func splitTrim(input string) string {
 	strs := strings.Split(strings.ReplaceAll(input, "\\", "\n"), "\n")
-	for i, s := range strs {
-		strs[i] = strings.Trim(s, " ")
+	ret := []string{}
+	for _, s := range strs {
+		str := strings.Trim(s, " \n\t")
+		if str != "" {
+			ret = append(ret, str)
+		}
 	}
-	return strings.Join(strs, "\n")
+	return strings.Join(ret, "\n")
 }

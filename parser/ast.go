@@ -23,6 +23,7 @@ const (
 	NODE_REPEAT_STMT
 	NODE_IF_STMT
 	NODE_BLOCK_STMT
+	NODE_FUNCTION_STMT
 
 	// expression
 	NODE_EXPR
@@ -253,6 +254,27 @@ func (i *IfStatement) String() string {
 		}
 	}
 	out.WriteString("END_IF")
+
+	return out.String()
+}
+
+type FunctionStatement struct {
+	Name       string
+	Params     []string
+	Block      *BlockStatement
+	lineNumber int
+}
+
+func (f *FunctionStatement) statementNode()           {}
+func (f *FunctionStatement) NodeType() NodeType       { return NODE_FUNCTION_STMT }
+func (f *FunctionStatement) NodeSubType() NodeSubType { return 0 }
+func (f *FunctionStatement) LineNumber() int          { return f.lineNumber }
+func (f *FunctionStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(f.Name + " FUNCTION " + strings.Join(f.Params, ", ") + "\n")
+	out.WriteString(f.Block.String() + "\n")
+	out.WriteString("END_FUNCTION")
 
 	return out.String()
 }

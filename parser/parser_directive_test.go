@@ -97,10 +97,11 @@ func TestRepeatStatement(t *testing.T) {
 		}
 		text := repeat.String()
 		if !strings.EqualFold(text, tt.expected) {
+			t.Errorf("exptected len %d. got %d", len(tt.expected), len(text))
 			fmt.Printf("expected\n%s\n", tt.expected)
-			fmt.Println([]byte(tt.expected))
+			// fmt.Println([]byte(tt.expected))
 			fmt.Printf("got\n%s\n", text)
-			fmt.Println([]byte(text))
+			// fmt.Println([]byte(text))
 		}
 	}
 }
@@ -131,16 +132,16 @@ func TestIfStatement(t *testing.T) {
 			 ELSE
 			   IF 2
 			     300
-			   ENDIF
-			 ENDIF`,
+			   END_IF
+			 END_IF`,
 		},
 		{
 			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \endif`,
-			`IF 1\ELSE\IF 2\200\ELSE\IF 3\ELSE\IF 4\400\END_IF\END_IF\END_IF\END_IF`,
+			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\END_IF\END_IF\END_IF\END_IF`,
 		},
 		{
 			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \else\500\endif`,
-			`IF 1\ELSE\IF 2\200\ELSE\IF 3\ELSE\IF 4\400\ELSe\500\END_IF\END_IF\END_IF\END_IF`,
+			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\ELSE\500\END_IF\END_IF\END_IF\END_IF`,
 		},
 	}
 	for _, tt := range tests {
@@ -162,10 +163,55 @@ func TestIfStatement(t *testing.T) {
 		text := repeat.String()
 		expected := splitTrim(tt.expected)
 		if !strings.EqualFold(text, expected) {
+			t.Errorf("exptected len %d. got %d", len(expected), len(text))
 			fmt.Printf("expected\n%s\n", expected)
-			fmt.Println([]byte(expected))
+			// fmt.Println([]byte(expected))
 			fmt.Printf("got\n%s\n", text)
-			fmt.Println([]byte(text))
+			// fmt.Println([]byte(text))
 		}
+	}
+}
+
+func TestFunctionStatement(t *testing.T) {
+	input := `abs function x
+	if x > 0
+	  x
+	else
+	  -x
+	endif
+	end_function
+	`
+	expected := `
+	abs FUNCTION x
+	IF (x > 0)
+	X
+	ELSE
+	(-x)
+	END_IF
+	END_FUNCTION`
+
+	l := newLexerForTest(input)
+	prog, ec, wc := Parse(l)
+	if ec > 0 || wc > 0 {
+		l.ErrorStore.Print()
+		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
+	}
+	if len(prog.Statements) != 1 {
+		t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+	}
+	stmt := prog.Statements[0]
+	fn, ok := stmt.(*FunctionStatement)
+	if !ok {
+		t.Errorf("prog.Statements[0] not *FunctionStatment. got %T", stmt)
+	}
+
+	text := fn.String()
+	expectedText := splitTrim(expected)
+	if !strings.EqualFold(text, expectedText) {
+		t.Errorf("exptected len %d. got %d", len(expectedText), len(text))
+		fmt.Printf("expected\n%s\n", expectedText)
+		fmt.Println([]byte(expectedText))
+		fmt.Printf("got\n%s\n", text)
+		fmt.Println([]byte(text))
 	}
 }

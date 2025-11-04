@@ -17,6 +17,7 @@ var _ = __yyfmt__.Sprintf
 	enum_element *EnumElement
 	enum_elements *EnumElements
 	block *BlockStatement
+	params []string
 }
 
 
@@ -25,6 +26,7 @@ var _ = __yyfmt__.Sprintf
 %type<block> block_statement
 %type<enum_elements> enum_elements
 %type<enum_element> enum_element
+%type<params> param_list
 %token<token> EOL
 %token<token> NUMBER IDENT
 %token<token> AT_IDENT    // @def 
@@ -171,16 +173,25 @@ directive	: CONST IDENT '=' expr
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
 				}
 			}
+			| IDENT FUNCTION param_list EOL block_statement END_FUNCTION
+			{
+				$$ = &FunctionStatement{Name: $1.Literal, Params: $3, Block: $5, lineNumber: $1.LineNumber}
+			}
+			;
+	
+param_list	: 			{ $$ = []string{}}
+			| IDENT		{ $$ = []string{$1.Literal} }
+			| param_list ',' IDENT
+			{
+				$1 = append($1, $3.Literal)
+				$$ = $1
+				fmt.Printf("params: %T(%#v)\n", $$, $$)
+			}
 			;
 
 elseifs		: { $$ = nil }
 			| elseifs ELIF expr EOL block_statement 
 			{ 
-				if $1 == nil {
-					fmt.Printf("before: <nil>\n")
-				} else {
-					fmt.Printf("before: %s\n", $1.String())
-				}
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else if $5.NodeType() == NODE_ERROR {
@@ -196,7 +207,6 @@ elseifs		: { $$ = nil }
 
 					$$ = $1
 				}
-				fmt.Printf("after: %s\n\n", $$.String())
 			}
 			;
 			
@@ -205,7 +215,6 @@ block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
 			| block_statement EOL 	{ $$ = $1}
 			| block_statement statement 
 			{ 
-				fmt.Printf("got %T(%#v)\n", $2, $2)
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*BlockStatement)
 				} else {
