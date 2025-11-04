@@ -21,7 +21,7 @@ var _ = __yyfmt__.Sprintf
 
 
 // プログラムの構成要素を指定
-%type<node> statement instruction directive label expr
+%type<node> statement instruction directive label expr elseifs
 %type<block> block_statement
 %type<enum_elements> enum_elements
 %type<enum_element> enum_element
@@ -36,6 +36,7 @@ var _ = __yyfmt__.Sprintf
 %token CONST VAR EQU FUNC
 %token<token> IF 
 %token ELSE ELIF END_IF
+%token<token>ELIF
 %token MACRO END_MACRO
 %token<token> REPEAT
 %token END_REPEAT
@@ -132,29 +133,71 @@ directive	: CONST IDENT '=' expr
 					$$ = &RepeatStatement{MaxCount: $2, Block: $4, lineNumber: $1.LineNumber}
 				}
 			}
-			| IF expr EOL block_statement END_IF
+			| IF expr EOL block_statement elseifs END_IF
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else if $4.NodeType() == NODE_ERROR {
 					$$ = $4
+				} else if $5 == nil {
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
+				} else if $5.NodeType() == NODE_ERROR {
+					$$ = $5
 				} else {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: nil, lineNumber: $1.LineNumber}
-				}
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
+				} 
 			}
-			| IF expr EOL block_statement ELSE block_statement END_IF
+			| IF expr EOL block_statement elseifs ELSE block_statement END_IF
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else if $4.NodeType() == NODE_ERROR {
 					$$ = $4
-				} else if $6.NodeType() == NODE_ERROR {
-					$$ = $6
-				} else {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $6, lineNumber: $1.LineNumber}
+				} else if $7.NodeType() == NODE_ERROR {
+					$$ = $7
+				} else if $5 == nil {
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $7, lineNumber: $1.LineNumber}
+				} else if $5.NodeType() == NODE_ERROR {
+					$$ = $5
+				}  else {
+					s := $5.(*IfStatement)
+					for s.Alternative != nil {
+						s = s.Alternative.(*IfStatement)
+					}
+					s.Alternative = $7
+
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
 				}
 			}
 			;
+
+elseifs		: { $$ = nil }
+			| elseifs ELIF expr EOL block_statement 
+			{ 
+				if $1 == nil {
+					fmt.Printf("before: <nil>\n")
+				} else {
+					fmt.Printf("before: %s\n", $1.String())
+				}
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else if $5.NodeType() == NODE_ERROR {
+					$$ = $5
+				} else if $1 == nil {
+					$$ = &IfStatement{Condition: $3, Consequence: $5, lineNumber: $2.LineNumber}
+				} else {
+					s := $1.(*IfStatement)
+					for s.Alternative != nil {
+						s = s.Alternative.(*IfStatement)
+					}
+					s.Alternative = &IfStatement{Condition: $3, Consequence: $5, lineNumber: $2.LineNumber}
+
+					$$ = $1
+				}
+				fmt.Printf("after: %s\n\n", $$.String())
+			}
+			;
+			
 
 block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
 			| block_statement EOL 	{ $$ = $1}

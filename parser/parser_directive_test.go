@@ -121,6 +121,27 @@ func TestIfStatement(t *testing.T) {
 			` if 1 \ 100 \ if 2 \ 200 \else \ 300 \endif \ else \ if 3 \ 400 \ else \ 500 \endif\endif`,
 			"IF 1\n100\nIF 2\n200\nELSE\n300\nEND_IF\nELSE\nIF 3\n400\nELSE\n500\nEND_IF\nEND_IF",
 		},
+		{`	if 1
+			  200
+			elif 2
+			  300
+			endif`,
+			`IF 1
+			   200
+			 ELSE
+			   IF 2
+			     300
+			   ENDIF
+			 ENDIF`,
+		},
+		{
+			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \endif`,
+			`IF 1\ELSE\IF 2\200\ELSE\IF 3\ELSE\IF 4\400\END_IF\END_IF\END_IF\END_IF`,
+		},
+		{
+			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \else\500\endif`,
+			`IF 1\ELSE\IF 2\200\ELSE\IF 3\ELSE\IF 4\400\ELSe\500\END_IF\END_IF\END_IF\END_IF`,
+		},
 	}
 	for _, tt := range tests {
 		fmt.Println("test:", tt.input)
@@ -139,9 +160,10 @@ func TestIfStatement(t *testing.T) {
 			t.Errorf("prog.Statements[0] not *IfStatment. got %T", stmt)
 		}
 		text := repeat.String()
-		if !strings.EqualFold(text, tt.expected) {
-			fmt.Printf("expected\n%s\n", tt.expected)
-			fmt.Println([]byte(tt.expected))
+		expected := splitTrim(tt.expected)
+		if !strings.EqualFold(text, expected) {
+			fmt.Printf("expected\n%s\n", expected)
+			fmt.Println([]byte(expected))
 			fmt.Printf("got\n%s\n", text)
 			fmt.Println([]byte(text))
 		}
