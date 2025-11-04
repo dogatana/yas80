@@ -21,6 +21,7 @@ const (
 	NODE_ENUM_STMT
 	NODE_ENUM_ELEMENTS_STMT
 	NODE_REPEAT_STMT
+	NODE_IF_STMT
 	NODE_BLOCK_STMT
 
 	// expression
@@ -222,6 +223,25 @@ func (r *RepeatStatement) String() string {
 	out.WriteString("END_REPEAT")
 
 	return out.String()
+}
+
+// if statement
+type IfStatement struct {
+	Condition   Node
+	Consequence []Node
+	Alternative []Node
+	lineNumber  int
+}
+
+func (i *IfStatement) statementNode()           {}
+func (i *IfStatement) NodeType() NodeType       { return NODE_IF_STMT }
+func (i *IfStatement) NodeSubType() NodeSubType { return 0 }
+func (i *IfStatement) LineNumber() int          { return i.lineNumber }
+func (i *IfStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("IF " + i.Condition.String() + "\n")
+	out.WriteString(i.Condition.String() + "\n")
 }
 
 // block statement

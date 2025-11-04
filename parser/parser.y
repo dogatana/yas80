@@ -125,11 +125,19 @@ directive	: CONST IDENT '=' expr
 				__yyfmt__.Println("block_statement", $4.String())
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
-				}
-				if $4.NodeType() == NODE_ERROR {
+				} else if $4.NodeType() == NODE_ERROR {
 					$$ = $4
+				} else {
+					$$ = &RepeatStatement{MaxCount: $2, Block: $4.Block, lineNumber: $1.LineNumber}
 				}
-				$$ = &RepeatStatement{MaxCount: $2, Block: $4, lineNumber: $1.LineNumber}
+			}
+			| IF expr EOL block_statement elseifs END_IF
+			{
+				$$ = nil
+			}
+			| IF expr EOL block_statement elseifs ELSE block_statement END_IF
+			{
+				$$ = nil
 			}
 			;
 
@@ -147,6 +155,11 @@ block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
 			}
 			;
 	
+elseifs		: 
+			| ELIF EOL block_statement
+			| elseifs ELIF EOL block_statement
+			;
+
 enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			| enum_elements EOL { $$ = $1 }
 			| enum_elements enum_element EOL
