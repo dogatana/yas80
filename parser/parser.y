@@ -129,7 +129,7 @@ directive	: CONST IDENT '=' expr
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4
 				}
-				$$ = &RepeatStatement{MaxCount: $2, Block: $4.Block, lineNumber: $1.LineNumber}
+				$$ = &RepeatStatement{MaxCount: $2, Block: $4, lineNumber: $1.LineNumber}
 			}
 			;
 

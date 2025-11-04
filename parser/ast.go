@@ -202,7 +202,7 @@ func (e *EnumElement) String() string {
 // repeat statment
 type RepeatStatement struct {
 	MaxCount   Node
-	Block      []Node
+	Block      Node
 	lineNumber int
 }
 
@@ -213,15 +213,11 @@ func (r *RepeatStatement) LineNumber() int          { return r.lineNumber }
 func (r *RepeatStatement) String() string {
 	var out bytes.Buffer
 
-	stmts := []string{}
-	for _, s := range r.Block {
-		stmts = append(stmts, s.String())
-	}
-
 	out.WriteString("REPEAT ")
 	out.WriteString(r.MaxCount.String() + "\n")
-	if len(stmts) > 0 {
-		out.WriteString(strings.Join(stmts, "\n") + "\n")
+	block := r.Block.String()
+	if block != "" {
+		out.WriteString(block + "\n")
 	}
 	out.WriteString("END_REPEAT")
 
