@@ -34,6 +34,8 @@ const (
 	NODE_INDIRECT
 	NODE_INFIX_EXPR
 	NODE_PREFIX_EXPR
+	NODE_CALL
+	NODE_EXPR_LIST
 	NODE_LABEL
 	NODE_LOCAL_LABEL
 )
@@ -485,4 +487,42 @@ func (p *PrefixExpression) String() string {
 	}
 
 	return "(" + tokenLiteral(p.OpCode) + op + ")"
+}
+
+// 関数呼出し
+type CallExpression struct {
+	Function  Node
+	Arguments *ExpressionList
+}
+
+func (ce *CallExpression) expressionNode()          {}
+func (ce *CallExpression) NodeType() NodeType       { return NODE_CALL }
+func (ce *CallExpression) NodeSubType() NodeSubType { return 0 }
+func (ce *CallExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ce.Function.String())
+	out.WriteRune('(')
+	out.WriteString(ce.Arguments.String())
+	out.WriteRune(')')
+
+	return out.String()
+}
+
+// 式リスト
+type ExpressionList struct {
+	Expressions []Expression
+}
+
+func (el *ExpressionList) expressionNode()          {}
+func (el *ExpressionList) NodeType() NodeType       { return NODE_EXPR_LIST }
+func (el *ExpressionList) NodeSubType() NodeSubType { return 0 }
+func (el *ExpressionList) String() string {
+	list := []string{}
+
+	for _, e := range el.Expressions {
+		list = append(list, e.String())
+	}
+
+	return strings.Join(list, ", ")
 }

@@ -80,7 +80,6 @@ func TestRepeatStatement(t *testing.T) {
 		{` REPEAT 4 \1\ 2\3 \ 4 \ EndR`, "REPEAT 4\n1\n2\n3\n4\nEND_REPEAT"},
 	}
 	for _, tt := range tests {
-		fmt.Println("test:", tt.input)
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {

@@ -18,6 +18,7 @@ var _ = __yyfmt__.Sprintf
 	enum_elements *EnumElements
 	block *BlockStatement
 	params []string
+	expr_list *ExpressionList
 }
 
 
@@ -27,6 +28,8 @@ var _ = __yyfmt__.Sprintf
 %type<enum_elements> enum_elements
 %type<enum_element> enum_element
 %type<params> param_list
+%type<expr_list> expr_list
+
 %token<token> EOL
 %token<token> NUMBER IDENT
 %token<token> AT_IDENT    // @def 
@@ -313,6 +316,15 @@ instruction	: Z80_INST0
 						Op2: $4}
 			}
 			;
+	
+expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
+			| expr		{ $$ = &ExpressionList{Expressions: []Expression{$1.(Expression)}} }
+			| expr_list ',' expr
+			{
+				$1.Expressions = append($1.Expressions, $3.(Expression))
+				$$ = $1
+			}
+			;
 
 expr		: NUMBER
 	 		{
@@ -328,6 +340,16 @@ expr		: NUMBER
 			{
 				names := strings.Split(strings.ToUpper($1.Literal), ".")
 				$$ = &DotIdent{Left: names[0], Right: names[1]}
+			}
+			| expr '(' expr_list ')'
+			{
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1
+				} else if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					$$ = &CallExpression{Function: $1, Arguments: $3}
+				}
 			}
 			| Z80_REG8 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
 			| Z80_REG16 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
@@ -374,6 +396,7 @@ expr		: NUMBER
 				$$ = &ParseError{Message: __yyfmt__.Sprintf("[expr error] %s", $1.String())}
 			}
 			;
+
 %%
 
 func Parse(l *Lexer) (*Program, int, int) {
