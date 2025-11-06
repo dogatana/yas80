@@ -262,9 +262,9 @@ func (is *IfStatement) String() string {
 		out.WriteString(block + "\n")
 	}
 	if is.Alternative != nil {
-		out.WriteString("ELSE\n")
 		block = is.Alternative.String()
 		if block != "" {
+			out.WriteString("ELSE\n")
 			out.WriteString(block + "\n")
 		}
 	}

@@ -110,29 +110,41 @@ func TestIfStatement(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{`if 1\ end_if`, "IF 1\nEND_IF"},
-		{`if 1 \ else \ end_if`, "IF 1\nELSE\nEND_IF"},
-		{` if 1 \ 100 \ end_if`, "IF 1\n100\nEND_IF"},
-		{` if 1 \ 100 \ else \ end_if`, "IF 1\n100\nELSE\nEND_IF"},
-		{` if 1 \ 100 \ else \ 200 \  end_if`, "IF 1\n100\nELSE\n200\nEND_IF"},
-		{` if 1 \ 100 \ if 2 \ 200 \else \ 300 \ end_if \ endif`, "IF 1\n100\nIF 2\n200\nELSE\n300\nEND_IF\nEND_IF"},
-		{` if 1 \ 100 \ if 2 \ 200 \endif \ else \ 300 \ end_if`, "IF 1\n100\nIF 2\n200\nEND_IF\nELSE\n300\nEND_IF"},
+		{
+			`if 1\ end_if`,
+			"IF 1\nEND_IF",
+		},
+		{
+			`if 1 \ else \ end_if`,
+			"IF 1\nEND_IF",
+		},
+		{
+			`if 1 \ 100 \ end_if`,
+			"IF 1\n100\nEND_IF",
+		},
+		{
+			`if 1 \ 100 \ else \ end_if`,
+			"IF 1\n100\nEND_IF",
+		},
+		{
+			`if 1 \ 100 \ else \ 200 \  end_if`,
+			"IF 1\n100\nELSE\n200\nEND_IF",
+		},
+		{
+			`if 1 \ 100 \ if 2 \ 200 \else \ 300 \ end_if \ endif`,
+			"IF 1\n100\nIF 2\n200\nELSE\n300\nEND_IF\nEND_IF",
+		},
+		{
+			`if 1 \ 100 \ if 2 \ 200 \endif \ else \ 300 \ end_if`,
+			"IF 1\n100\nIF 2\n200\nEND_IF\nELSE\n300\nEND_IF",
+		},
 		{
 			` if 1 \ 100 \ if 2 \ 200 \else \ 300 \endif \ else \ if 3 \ 400 \ else \ 500 \endif\endif`,
 			"IF 1\n100\nIF 2\n200\nELSE\n300\nEND_IF\nELSE\nIF 3\n400\nELSE\n500\nEND_IF\nEND_IF",
 		},
-		{`	if 1
-			  200
-			elif 2
-			  300
-			endif`,
-			`IF 1
-			   200
-			 ELSE
-			   IF 2
-			     300
-			   END_IF
-			 END_IF`,
+		{
+			`if 1 \ 200 \ elif 2 \ 300 \ endif`,
+			"IF 1\n200\nELSE\nIF 2\n300\nEND_IF\nEND_IF",
 		},
 		{
 			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \endif`,
@@ -144,24 +156,27 @@ func TestIfStatement(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		fmt.Println("test:", tt.input)
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {
+			fmt.Println("test:", tt.input)
 			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
 		if len(prog.Statements) != 1 {
+			fmt.Println("test:", tt.input)
 			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
 		}
 		stmt := prog.Statements[0]
 		repeat, ok := stmt.(*IfStatement)
 		if !ok {
+			fmt.Println("test:", tt.input)
 			t.Errorf("prog.Statements[0] not *IfStatment. got %T", stmt)
 		}
 		text := repeat.String()
 		expected := splitTrim(tt.expected)
 		if !strings.EqualFold(text, expected) {
+			fmt.Println("test:", tt.input)
 			t.Errorf("exptected len %d. got %d", len(expected), len(text))
 			fmt.Printf("expected\n%s\n", expected)
 			// fmt.Println([]byte(expected))
