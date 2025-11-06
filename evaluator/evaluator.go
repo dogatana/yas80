@@ -3,17 +3,17 @@ package evaluator
 import (
 	"fmt"
 	"strings"
-	"yas80/errorstore"
+	"yas80/logger"
 	"yas80/object"
 	"yas80/parser"
 )
 
 type Evaluator struct {
-	errorStore *errorstore.ErrorStore
+	errorStore *logger.ErrorStore
 	lineNumber int
 }
 
-func New(es *errorstore.ErrorStore) *Evaluator {
+func New(es *logger.ErrorStore) *Evaluator {
 	return &Evaluator{errorStore: es}
 }
 

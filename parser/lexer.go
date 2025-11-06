@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"strings"
-	"yas80/errorstore"
+	"yas80/logger"
 )
 
 const EOF = 0
@@ -18,7 +18,7 @@ type Lexer struct {
 	curChar    rune
 	lineNumber int
 	fileNmae   string
-	ErrorStore *errorstore.ErrorStore
+	ErrorStore *logger.ErrorStore
 	program    *Program
 }
 
@@ -58,7 +58,7 @@ func (l *Lexer) Error(s string, args ...any) {
 	}
 }
 
-func NewLexer(r *bufio.Reader, filename string, es *errorstore.ErrorStore) *Lexer {
+func NewLexer(r *bufio.Reader, filename string, es *logger.ErrorStore) *Lexer {
 	l := &Lexer{scanner: bufio.NewScanner(r), program: &Program{}}
 	l.nextChar()
 	l.fileNmae = filename

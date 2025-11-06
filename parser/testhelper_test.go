@@ -3,12 +3,12 @@ package parser
 import (
 	"bufio"
 	"strings"
-	"yas80/errorstore"
+	"yas80/logger"
 )
 
 func newLexerForTest(input string) *Lexer {
 	file := "<string>"
-	es := errorstore.New(file)
+	es := logger.New(file)
 	return NewLexer(bufio.NewReader(strings.NewReader(input)), file, es)
 }
 

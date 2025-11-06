@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"yas80/errorstore"
 	"yas80/evaluator"
+	"yas80/logger"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -47,7 +47,7 @@ func main() {
 	parser.SetYYDebug(getYYDebugEnv())
 
 	fmt.Println("-- parser")
-	es := errorstore.New(file)
+	es := logger.New(file)
 	l := parser.NewLexer(bufio.NewReader(input), file, es)
 	prog, ec, wc := parser.Parse(l)
 	es.Print()
@@ -61,7 +61,7 @@ func main() {
 	}
 	fmt.Println(prog.String())
 
-	es = errorstore.New("eavaluate")
+	es = logger.New("eavaluate")
 	eval := evaluator.New(es)
 	env := object.NewEnvironment(nil)
 

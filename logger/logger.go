@@ -1,4 +1,4 @@
-package errorstore
+package logger
 
 import "fmt"
 
