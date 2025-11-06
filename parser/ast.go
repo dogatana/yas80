@@ -32,13 +32,16 @@ const (
 	NODE_NUMBER
 	NODE_IDENT
 	NODE_DOT_IDENT
-	NODE_INDIRECT
+	NODE_ARRAY
+	NODE_INDEXED_EXPR
 	NODE_INFIX_EXPR
 	NODE_PREFIX_EXPR
 	NODE_CALL
 	NODE_EXPR_LIST
 	NODE_LABEL
 	NODE_LOCAL_LABEL
+	// for Z80
+	NODE_INDIRECT
 )
 
 func NodeTypeNames(t NodeType) string {
@@ -348,7 +351,7 @@ func (v *VariableStatement) String() string {
 
 // 変数代入文
 type AsignStatement struct {
-	Name       *Ident
+	Left       Expression
 	Value      Node
 	lineNumber int
 }
@@ -359,7 +362,7 @@ func (a *AsignStatement) NodeSubType() NodeSubType { return 0 }
 func (a *AsignStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(a.Name.Name)
+	out.WriteString(a.Left.String())
 	out.WriteString(" = ")
 	out.WriteString(a.Value.String())
 
@@ -426,6 +429,44 @@ func (n *NumberLiteral) NodeType() NodeType       { return NODE_NUMBER }
 func (n *NumberLiteral) NodeSubType() NodeSubType { return 0 }
 func (n *NumberLiteral) String() string {
 	return fmt.Sprintf("%d", n.Value)
+}
+
+// 配列
+type ArrayLiteral struct {
+	Elements *ExpressionList
+}
+
+func (a *ArrayLiteral) expressionNode()          {}
+func (a *ArrayLiteral) NodeType() NodeType       { return NODE_ARRAY }
+func (a *ArrayLiteral) NodeSubType() NodeSubType { return 0 }
+func (a *ArrayLiteral) String() string {
+	elems := []string{}
+
+	for _, e := range a.Elements.Expressions {
+		elems = append(elems, e.String())
+	}
+	return "[" + strings.Join(elems, ", ") + "]"
+}
+
+// 添え字参照
+type IndexedExpression struct {
+	Ident      *Ident
+	Index      Expression
+	lineNumber int
+}
+
+func (i *IndexedExpression) expressionNode()          {}
+func (i *IndexedExpression) NodeType() NodeType       { return NODE_INDEXED_EXPR }
+func (i *IndexedExpression) NodeSubType() NodeSubType { return 0 }
+func (i *IndexedExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(i.Ident.Name)
+	out.WriteRune('[')
+	out.WriteString(i.Index.String())
+	out.WriteRune(']')
+
+	return out.String()
 }
 
 // レジスタ

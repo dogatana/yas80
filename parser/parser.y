@@ -19,16 +19,19 @@ var _ = __yyfmt__.Sprintf
 	block *BlockStatement
 	params []string
 	expr_list *ExpressionList
+	expr Expression
 }
 
 
 // プログラムの構成要素を指定
-%type<node> statement instruction directive label expr elseifs
+%type<node> statement instruction directive label elseifs
 %type<block> block_statement
 %type<enum_elements> enum_elements
 %type<enum_element> enum_element
 %type<params> param_list
 %type<expr_list> expr_list
+%type<expr> expr indexed_expr
+
 
 %token<token> EOL
 %token<token> NUMBER IDENT
@@ -51,7 +54,7 @@ var _ = __yyfmt__.Sprintf
 %token PROC END_PROC
 %token BLOCK END_BLOCK
 %token ENUM END_ENUM
-%token  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':'
+%token  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':' '[' ']'
 %token INVALID 
 %token<token> error
 
@@ -154,7 +157,15 @@ directive	: CONST IDENT '=' expr
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					$$ = &AsignStatement{Name: &Ident{Name: $1.Literal}, Value: $3, lineNumber: $1.LineNumber}
+					$$ = &AsignStatement{Left: &Ident{Name: $1.Literal}, Value: $3, lineNumber: $1.LineNumber}
+				}
+			}
+			| indexed_expr '=' expr
+			{
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1
+				} else {
+					$$ = &AsignStatement{Left: $1, Value: $3, lineNumber: $1.(*IndexedExpression).lineNumber}
 				}
 			}
 			| REPEAT expr EOL block_statement END_REPEAT
@@ -346,10 +357,10 @@ instruction	: Z80_INST0
 			;
 	
 expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
-			| expr		{ $$ = &ExpressionList{Expressions: []Expression{$1.(Expression)}} }
+			| expr		{ $$ = &ExpressionList{Expressions: []Expression{$1}} }
 			| expr_list ',' expr
 			{
-				$1.Expressions = append($1.Expressions, $3.(Expression))
+				$1.Expressions = append($1.Expressions, $3)
 				$$ = $1
 			}
 			;
@@ -379,49 +390,41 @@ expr		: NUMBER
 					$$ = &CallExpression{Function: $1, Arguments: $3}
 				}
 			}
-			| Z80_REG8 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
-			| Z80_REG16 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
-			| Z80_FLAG 			{ $$ = &FlagLiteral{Flag: int($1.TokenSubType)}}
-			| '(' expr ')'		{ $$ = $2}
-			| expr ADDSUB expr
+			| '[' expr_list ']'
 			{
-				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3)
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else {
+					$$ = &ArrayLiteral{Elements: $2}
+				}
 			}
-			| expr '-' expr
-			{
-				$$ = buildInfixExpression('-', $1, $3)
-			}
-			| expr MULDIV expr
-			{ 	
-				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3)
-			}
-			| expr COMP expr
-			{ 	
-				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3)
-			}
-			| expr SHIFT expr
-			{ 	
-				$$ = buildInfixExpression(int($2.TokenSubType), $1, $3)
-			}
-			| expr OR expr
-			{ 	
-				$$ = buildInfixExpression(OR, $1, $3)
-			}
-			| expr AND expr
-			{ 	
-				$$ = buildInfixExpression(AND, $1, $3)
-			}
-			| '-' expr %prec UNARY
-			{
-				$$ = buildPrefixExpression('-', $2)
-			}
-			| UNARY expr
-			{
-				$$ = buildPrefixExpression(int($1.TokenSubType), $2)
-			}
+			| indexed_expr 			{ $$ = $1}
+			| Z80_REG8 				{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
+			| Z80_REG16 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
+			| Z80_FLAG 				{ $$ = &FlagLiteral{Flag: int($1.TokenSubType)}}
+			| '(' expr ')'			{ $$ = $2}
+			| expr ADDSUB expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3) }
+			| expr '-' expr		 	{ $$ = buildInfixExpression('-', $1, $3) }
+			| expr MULDIV expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3) }
+			| expr COMP expr 		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3) }
+			| expr SHIFT expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3) }
+			| expr OR expr			{ $$ = buildInfixExpression(OR, $1, $3) }
+			| expr AND expr			{ $$ = buildInfixExpression(AND, $1, $3) }
+			| '-' expr %prec UNARY	{ $$ = buildPrefixExpression('-', $2) }
+			| UNARY expr { $$ = buildPrefixExpression(int($1.TokenSubType), $2) }
 			| error 
 			{ 
-				$$ = &ParseError{Message: __yyfmt__.Sprintf("[expr error] %s", $1.String())}
+				$$ = &ParseError{Message: __yyfmt__.Sprintf("[expr error] %s", $1.String())} 
+			}
+			;
+
+indexed_expr:IDENT '[' expr ']'
+			{
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					$$ = &IndexedExpression{Ident: &Ident{Name: $1.Literal}, Index: $3, lineNumber: $1.LineNumber}
+				}
 			}
 			;
 
