@@ -118,6 +118,8 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		return v
 	case *parser.RegisterLiteral:
 		return object.Z80RgisterObjects[int(node.NodeSubType())]
+	default:
+		return &object.ErrorObject{Message: fmt.Sprintf("未実装: %T(%#v)", node, node)}
 	}
 	return nil
 }
