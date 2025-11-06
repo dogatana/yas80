@@ -113,13 +113,16 @@ func (p *Program) String() string {
 
 // Error(Expression)
 type ParseError struct {
-	Message string
+	Message    string
+	lineNumber int
 }
 
-func (e *ParseError) expressionNode()          {}
-func (e *ParseError) NodeType() NodeType       { return NODE_ERROR }
-func (e *ParseError) NodeSubType() NodeSubType { return 0 }
-func (e *ParseError) String() string           { return e.Message }
+func (pe *ParseError) statementNode()           {}
+func (pe *ParseError) expressionNode()          {}
+func (pe *ParseError) NodeType() NodeType       { return NODE_ERROR }
+func (pe *ParseError) NodeSubType() NodeSubType { return 0 }
+func (pe *ParseError) LineNumber() int          { return pe.lineNumber }
+func (pe *ParseError) String() string           { return pe.Message }
 
 // ラベルは独立した文として生成
 type LabelStatement struct {
