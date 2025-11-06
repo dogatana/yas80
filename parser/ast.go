@@ -150,7 +150,7 @@ func (ls *LabelStatement) String() string {
 
 // 式文 - Expression Statement
 type ExpressionStatement struct {
-	Value      Node
+	Value      Expression
 	lineNumber int
 }
 
@@ -202,7 +202,7 @@ func (ee *EnumElements) String() string {
 // enum 要素
 type EnumElement struct {
 	Name  string
-	Value Node
+	Value Expression
 }
 
 func (ee *EnumElement) expressionNode()          {}
@@ -218,8 +218,8 @@ func (ee *EnumElement) String() string {
 
 // repeat statment
 type RepeatStatement struct {
-	MaxCount   Node
-	Block      Node
+	MaxCount   Expression
+	Block      Statement
 	lineNumber int
 }
 
@@ -243,7 +243,7 @@ func (rs *RepeatStatement) String() string {
 
 // if statement
 type IfStatement struct {
-	Condition   Node
+	Condition   Expression
 	Consequence Node
 	Alternative Node
 	lineNumber  int
@@ -297,7 +297,7 @@ func (fs *FunctionStatement) String() string {
 
 // block statement
 type BlockStatement struct {
-	Block      []Node
+	Block      []Statement
 	lineNumber int
 }
 
@@ -317,7 +317,7 @@ func (bs *BlockStatement) String() string {
 // 定数定義文 - CONST, EQU Statement
 type ConstStatement struct {
 	Name       *Ident
-	Value      Node
+	Value      Expression
 	lineNumber int
 }
 
@@ -339,7 +339,7 @@ func (cs *ConstStatement) String() string {
 // 変数定義文 - VAR
 type VariableStatement struct {
 	Name       *Ident
-	Value      Node
+	Value      Expression
 	lineNumber int
 }
 
@@ -361,7 +361,7 @@ func (vs *VariableStatement) String() string {
 // 変数代入文
 type AsignStatement struct {
 	Left       Expression
-	Value      Node
+	Value      Expression
 	lineNumber int
 }
 
@@ -382,8 +382,8 @@ func (as *AsignStatement) String() string {
 type Z80Instruction struct {
 	InstType   int
 	OpCode     int
-	Op1        Node
-	Op2        Node
+	Op1        Expression
+	Op2        Expression
 	lineNumber int
 }
 
@@ -508,7 +508,7 @@ func (fl *FlagLiteral) String() string {
 // 識別子
 type Ident struct {
 	Name  string
-	Value Node
+	Value Expression
 }
 
 func (i *Ident) expressionNode()          {}
@@ -520,7 +520,7 @@ func (i *Ident) String() string           { return i.Name }
 type DotIdent struct {
 	Left  string
 	Right string
-	Value Node
+	Value Expression
 }
 
 func (di *DotIdent) expressionNode()          {}
@@ -530,7 +530,7 @@ func (di *DotIdent) String() string           { return di.Left + "." + di.Right 
 
 // 間接指定
 type IndirectExpression struct {
-	Expression Node
+	Expression Expression
 }
 
 func (ie *IndirectExpression) expressionNode()          {}
@@ -544,8 +544,8 @@ func (ie *IndirectExpression) String() string {
 // 中置演算子式
 type InfixExpression struct {
 	OpCode int
-	Op1    Node
-	Op2    Node
+	Op1    Expression
+	Op2    Expression
 }
 
 func (ie *InfixExpression) expressionNode()          {}
@@ -575,7 +575,7 @@ func (ie *InfixExpression) String() string {
 // 前置演算子式
 type PrefixExpression struct {
 	OpCode int
-	Op     Node
+	Op     Expression
 }
 
 func (pe *PrefixExpression) expressionNode()          {}
@@ -594,7 +594,7 @@ func (pe *PrefixExpression) String() string {
 
 // 関数呼出し
 type CallExpression struct {
-	Function  Node
+	Function  Expression
 	Arguments *ExpressionList
 }
 

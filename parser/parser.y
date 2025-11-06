@@ -260,14 +260,14 @@ elseifs		: { $$ = nil }
 			;
 			
 
-block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
+block_statement	: 	 				{ $$ = &BlockStatement{Block: []Statement{}} }
 			| block_statement EOL 	{ $$ = $1}
 			| block_statement statement 
 			{ 
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*BlockStatement)
 				} else {
-					$1.Block = append($1.Block, $2)
+					$1.Block = append($1.Block, $2.(Statement))
 					$$ = $1
 				}
 			}

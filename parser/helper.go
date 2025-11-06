@@ -142,12 +142,12 @@ var infixFuncs map[int]infixFuncType = map[int]infixFuncType{
 	},
 }
 
-func buildInfixExpression(opcode int, op1, op2 Node) Expression {
+func buildInfixExpression(opcode int, op1, op2 Expression) Expression {
 	if op1.NodeType() == NODE_ERROR {
-		return op1.(Expression)
+		return op1
 	}
-	if op1.NodeType() == NODE_ERROR {
-		return op1.(Expression)
+	if op2.NodeType() == NODE_ERROR {
+		return op2
 	}
 	num1, ok1 := op1.(*NumberLiteral)
 	num2, ok2 := op2.(*NumberLiteral)
@@ -160,7 +160,7 @@ func buildInfixExpression(opcode int, op1, op2 Node) Expression {
 		if ok {
 			return &NumberLiteral{Value: fn(num1.Value, num2.Value)}
 		} else {
-			return &ParseError{Message: fmt.Sprintf("UNKNOWN infix %s", yySymNames[yyXLAT[opcode]])}
+			return &ParseError{Message: fmt.Sprintf("UNKNOWN infix op: '%s'", yySymNames[yyXLAT[opcode]])}
 		}
 	}
 	return &InfixExpression{OpCode: opcode, Op1: op1, Op2: op2}
@@ -181,9 +181,9 @@ var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
 	},
 }
 
-func buildPrefixExpression(opcode int, op Node) Expression {
+func buildPrefixExpression(opcode int, op Expression) Expression {
 	if op.NodeType() == NODE_ERROR {
-		return op.(Expression)
+		return op
 	}
 	num, ok := op.(*NumberLiteral)
 	if ok {
