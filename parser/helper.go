@@ -71,8 +71,6 @@ func tokenLiteral(t int) string {
 	return name
 }
 
-type errorFunc func(s string, args ...any)
-
 // 数値リテラルの畳み込み(中置演算子)
 type infixFuncType func(x, y int) int
 
