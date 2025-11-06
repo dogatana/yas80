@@ -149,6 +149,14 @@ directive	: CONST IDENT '=' expr
 					$$ = &VariableStatement{Name: &Ident{Name: $2.Literal}, Value: $4, lineNumber: $2.LineNumber}
 				}
 			}
+			| IDENT '=' expr
+			{
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					$$ = &AsignStatement{Name: &Ident{Name: $1.Literal}, Value: $3, lineNumber: $1.LineNumber}
+				}
+			}
 			| REPEAT expr EOL block_statement END_REPEAT
 			{
 				__yyfmt__.Println("block_statement", $4.String())

@@ -216,32 +216,77 @@ func TestFunctionStatement(t *testing.T) {
 }
 
 func TestVarStatement(t *testing.T) {
-	input := " var   xyz   =   123 "
-	expected := "VAR XYZ = 123"
-
-	l := newLexerForTest(input)
-	prog, ec, wc := Parse(l)
-	if ec > 0 || wc > 0 {
-		l.ErrorStore.Print()
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
-	}
-	if len(prog.Statements) != 1 {
-		t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
-	}
-	stmt := prog.Statements[0]
-	varStmt, ok := stmt.(*VariableStatement)
-	if !ok {
-		t.Errorf("prog.Statements[0] not *VariableStatement. got %T", stmt)
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"var abc = 1", "VAR ABC = 1"},
+		{" var   xyz   =   123  + 456", "VAR XYZ = 579"},
 	}
 
-	text := varStmt.String()
-	expectedText := splitTrim(expected)
-	if !strings.EqualFold(text, expectedText) {
-		t.Errorf("exptected len %d. got %d", len(expectedText), len(text))
-		fmt.Printf("expected\n%s\n", expectedText)
-		fmt.Println([]byte(expectedText))
-		fmt.Printf("got\n%s\n", text)
-		fmt.Println([]byte(text))
+	for _, tt := range tests {
+
+		l := newLexerForTest(tt.input)
+		prog, ec, wc := Parse(l)
+		if ec > 0 || wc > 0 {
+			l.ErrorStore.Print()
+			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
+		}
+		if len(prog.Statements) != 1 {
+			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+		}
+		stmt := prog.Statements[0]
+		varStmt, ok := stmt.(*VariableStatement)
+		if !ok {
+			t.Errorf("prog.Statements[0] not *VariableStatement. got %T", stmt)
+		}
+
+		text := varStmt.String()
+		expectedText := splitTrim(tt.expected)
+		if !strings.EqualFold(text, expectedText) {
+			t.Errorf("exptected len %d. got %d", len(expectedText), len(text))
+			fmt.Printf("expected\n%s\n", expectedText)
+			fmt.Println([]byte(expectedText))
+			fmt.Printf("got\n%s\n", text)
+			fmt.Println([]byte(text))
+		}
+	}
+}
+
+func TestAsignStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"abc = 1", "ABC = 1"},
+		{"def = 1 + 2 * 3", "DEF = 7"},
 	}
 
+	for _, tt := range tests {
+
+		l := newLexerForTest(tt.input)
+		prog, ec, wc := Parse(l)
+		if ec > 0 || wc > 0 {
+			l.ErrorStore.Print()
+			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
+		}
+		if len(prog.Statements) != 1 {
+			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+		}
+		stmt := prog.Statements[0]
+		varStmt, ok := stmt.(*AsignStatement)
+		if !ok {
+			t.Errorf("prog.Statements[0] not *AsignStatement. got %T", stmt)
+		}
+
+		text := varStmt.String()
+		expectedText := splitTrim(tt.expected)
+		if !strings.EqualFold(text, expectedText) {
+			t.Errorf("exptected len %d. got %d", len(expectedText), len(text))
+			fmt.Printf("expected\n%s\n", expectedText)
+			fmt.Println([]byte(expectedText))
+			fmt.Printf("got\n%s\n", text)
+			fmt.Println([]byte(text))
+		}
+	}
 }

@@ -18,6 +18,7 @@ const (
 	NODE_EXPR_STMT
 	NODE_CONST_STMT
 	NODE_VAR_STMT
+	NODE_ASIGN_STMT
 	NODE_ENUM_STMT
 	NODE_ENUM_ELEMENTS_STMT
 	NODE_REPEAT_STMT
@@ -260,6 +261,7 @@ func (i *IfStatement) String() string {
 	return out.String()
 }
 
+// function 文
 type FunctionStatement struct {
 	Name       string
 	Params     []string
@@ -340,6 +342,26 @@ func (v *VariableStatement) String() string {
 	out.WriteString(v.Name.Name)
 	out.WriteString(" = ")
 	out.WriteString(v.Value.String())
+
+	return out.String()
+}
+
+// 変数代入文
+type AsignStatement struct {
+	Name       *Ident
+	Value      Node
+	lineNumber int
+}
+
+func (a *AsignStatement) statementNode()           {}
+func (a *AsignStatement) NodeType() NodeType       { return NODE_ASIGN_STMT }
+func (a *AsignStatement) NodeSubType() NodeSubType { return 0 }
+func (a *AsignStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(a.Name.Name)
+	out.WriteString(" = ")
+	out.WriteString(a.Value.String())
 
 	return out.String()
 }
