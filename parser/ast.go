@@ -8,10 +8,13 @@ import (
 
 const (
 	NODE_NODE = iota + 1
-	// eror
-	NODE_ERROR
+
 	// program
 	NODE_PROGRAM
+
+	// eror
+	NODE_ERROR
+
 	// statement
 	NODE_STMT
 	NODE_LABEL_STMT
@@ -40,41 +43,42 @@ const (
 	NODE_EXPR_LIST
 	NODE_LABEL
 	NODE_LOCAL_LABEL
-	// for Z80
-	NODE_INDIRECT
+	NODE_INDIRECT // for Z80
 )
 
-func NodeTypeNames(t NodeType) string {
-	switch t {
-	case NODE_NODE:
-		return "NODE_NODE"
-	case NODE_STMT:
-		return "NODE_STMT"
-	case NODE_EXPR_STMT:
-		return "NODE_EXPR_STMT"
-	case NODE_CONST_STMT:
-		return "NODE_CONST_STMT"
-	case NODE_VAR_STMT:
-		return "NODE_VAR_STMT"
-	case NODE_EXPR:
-		return "NODE_EXPR"
-	case NODE_NUMBER:
-		return "NODE_NUMBER"
-	case NODE_INDIRECT:
-		return "NODE_INDIRECT"
-	case NODE_INFIX_EXPR:
-		return "NODE_INFIX_EXPR"
-	case NODE_PREFIX_EXPR:
-		return "NODE_PREFIX_EXPR"
-	default:
-		return yySymNames[yyXLAT[int(t)]]
-	}
-}
+// func NodeTypeNames(t NodeType) string {
+// 	switch t {
+// 	case NODE_NODE:
+// 		return "NODE_NODE"
+// 	case NODE_STMT:
+// 		return "NODE_STMT"
+// 	case NODE_EXPR_STMT:
+// 		return "NODE_EXPR_STMT"
+// 	case NODE_CONST_STMT:
+// 		return "NODE_CONST_STMT"
+// 	case NODE_VAR_STMT:
+// 		return "NODE_VAR_STMT"
+// 	case NODE_EXPR:
+// 		return "NODE_EXPR"
+// 	case NODE_NUMBER:
+// 		return "NODE_NUMBER"
+// 	case NODE_INDIRECT:
+// 		return "NODE_INDIRECT"
+// 	case NODE_INFIX_EXPR:
+// 		return "NODE_INFIX_EXPR"
+// 	case NODE_PREFIX_EXPR:
+// 		return "NODE_PREFIX_EXPR"
+// 	default:
+// 		return yySymNames[yyXLAT[int(t)]]
+// 	}
+// }
 
 type NodeType int
 type NodeSubType int
 
 // interface
+
+// Node
 type Node interface {
 	NodeType() NodeType
 	NodeSubType() NodeSubType
@@ -85,7 +89,7 @@ type Node interface {
 type Statement interface {
 	Node
 	statementNode()
-	LineNumber() int
+	LineNumber() int // エラー表示用
 }
 
 // 式
@@ -94,7 +98,7 @@ type Expression interface {
 	expressionNode()
 }
 
-// これ以降実装 (struct)
+// 実装 (struct)
 
 // Program
 type Program struct {
@@ -111,7 +115,7 @@ func (p *Program) String() string {
 	return strings.Join(lines, "\n")
 }
 
-// Error(Expression)
+// Error(Expression, Statement)
 type ParseError struct {
 	Message    string
 	lineNumber int
@@ -122,20 +126,22 @@ func (pe *ParseError) expressionNode()          {}
 func (pe *ParseError) NodeType() NodeType       { return NODE_ERROR }
 func (pe *ParseError) NodeSubType() NodeSubType { return 0 }
 func (pe *ParseError) LineNumber() int          { return pe.lineNumber }
-func (pe *ParseError) String() string           { return pe.Message }
+func (pe *ParseError) String() string {
+	return fmt.Sprintf("%s %d", pe.Message, pe.lineNumber)
+}
 
-// ラベルは独立した文として生成
+// ラベル - 独立した文として生成
 type LabelStatement struct {
 	Value      Node
 	lineNumber int
 }
 
-func (l *LabelStatement) statementNode()           {}
-func (l *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
-func (l *LabelStatement) NodeSubType() NodeSubType { return 0 }
-func (l *LabelStatement) LineNumber() int          { return l.lineNumber }
-func (l *LabelStatement) String() string {
-	out := l.Value.(*Label).Name
+func (ls *LabelStatement) statementNode()           {}
+func (ls *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
+func (ls *LabelStatement) NodeSubType() NodeSubType { return 0 }
+func (ls *LabelStatement) LineNumber() int          { return ls.lineNumber }
+func (ls *LabelStatement) String() string {
+	out := ls.Value.(*Label).Name
 	if out[0] != '.' {
 		out += ":"
 	}
@@ -148,11 +154,11 @@ type ExpressionStatement struct {
 	lineNumber int
 }
 
-func (e *ExpressionStatement) statementNode()           {}
-func (e *ExpressionStatement) NodeType() NodeType       { return NODE_EXPR_STMT }
-func (e *ExpressionStatement) NodeSubType() NodeSubType { return 0 }
-func (e *ExpressionStatement) LineNumber() int          { return e.lineNumber }
-func (e *ExpressionStatement) String() string           { return e.Value.String() }
+func (es *ExpressionStatement) statementNode()           {}
+func (es *ExpressionStatement) NodeType() NodeType       { return NODE_EXPR_STMT }
+func (es *ExpressionStatement) NodeSubType() NodeSubType { return 0 }
+func (es *ExpressionStatement) LineNumber() int          { return es.lineNumber }
+func (es *ExpressionStatement) String() string           { return es.Value.String() }
 
 // enum 定義文
 type EnumStatement struct {
@@ -161,15 +167,15 @@ type EnumStatement struct {
 	lineNumber int
 }
 
-func (e *EnumStatement) statementNode()           {}
-func (e *EnumStatement) NodeType() NodeType       { return NODE_ENUM_STMT }
-func (e *EnumStatement) NodeSubType() NodeSubType { return 0 }
-func (e *EnumStatement) LineNumber() int          { return e.lineNumber }
-func (e *EnumStatement) String() string {
+func (es *EnumStatement) statementNode()           {}
+func (es *EnumStatement) NodeType() NodeType       { return NODE_ENUM_STMT }
+func (es *EnumStatement) NodeSubType() NodeSubType { return 0 }
+func (es *EnumStatement) LineNumber() int          { return es.lineNumber }
+func (es *EnumStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(e.Name + " ENUM\n")
-	out.WriteString(e.Elements.String() + "\n")
+	out.WriteString(es.Name + " ENUM\n")
+	out.WriteString(es.Elements.String() + "\n")
 	out.WriteString("END_ENUM")
 
 	return out.String()
@@ -181,13 +187,13 @@ type EnumElements struct {
 	lineNumber int
 }
 
-func (e *EnumElements) statementNode()           {}
-func (e *EnumElements) NodeType() NodeType       { return NODE_ENUM_ELEMENTS_STMT }
-func (e *EnumElements) NodeSubType() NodeSubType { return 0 }
-func (e *EnumElements) LineNumber() int          { return e.lineNumber }
-func (e *EnumElements) String() string {
+func (ee *EnumElements) statementNode()           {}
+func (ee *EnumElements) NodeType() NodeType       { return NODE_ENUM_ELEMENTS_STMT }
+func (ee *EnumElements) NodeSubType() NodeSubType { return 0 }
+func (ee *EnumElements) LineNumber() int          { return ee.lineNumber }
+func (ee *EnumElements) String() string {
 	stmts := []string{}
-	for _, e := range e.Elements {
+	for _, e := range ee.Elements {
 		stmts = append(stmts, e.String())
 	}
 	return strings.Join(stmts, "\n")
@@ -199,14 +205,14 @@ type EnumElement struct {
 	Value Node
 }
 
-func (e *EnumElement) expressionNode()          {}
-func (e *EnumElement) NodeType() NodeType       { return NODE_ENUM_ELEMENT }
-func (e *EnumElement) NodeSubType() NodeSubType { return 0 }
-func (e *EnumElement) String() string {
-	if e.Value == nil {
-		return e.Name
+func (ee *EnumElement) expressionNode()          {}
+func (ee *EnumElement) NodeType() NodeType       { return NODE_ENUM_ELEMENT }
+func (ee *EnumElement) NodeSubType() NodeSubType { return 0 }
+func (ee *EnumElement) String() string {
+	if ee.Value == nil {
+		return ee.Name
 	} else {
-		return e.Name + " = " + e.Value.String()
+		return ee.Name + " = " + ee.Value.String()
 	}
 }
 
@@ -217,16 +223,16 @@ type RepeatStatement struct {
 	lineNumber int
 }
 
-func (r *RepeatStatement) statementNode()           {}
-func (r *RepeatStatement) NodeType() NodeType       { return NODE_REPEAT_STMT }
-func (r *RepeatStatement) NodeSubType() NodeSubType { return 0 }
-func (r *RepeatStatement) LineNumber() int          { return r.lineNumber }
-func (r *RepeatStatement) String() string {
+func (rs *RepeatStatement) statementNode()           {}
+func (rs *RepeatStatement) NodeType() NodeType       { return NODE_REPEAT_STMT }
+func (rs *RepeatStatement) NodeSubType() NodeSubType { return 0 }
+func (rs *RepeatStatement) LineNumber() int          { return rs.lineNumber }
+func (rs *RepeatStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("REPEAT ")
-	out.WriteString(r.MaxCount.String() + "\n")
-	block := r.Block.String()
+	out.WriteString(rs.MaxCount.String() + "\n")
+	block := rs.Block.String()
 	if block != "" {
 		out.WriteString(block + "\n")
 	}
@@ -243,21 +249,21 @@ type IfStatement struct {
 	lineNumber  int
 }
 
-func (i *IfStatement) statementNode()           {}
-func (i *IfStatement) NodeType() NodeType       { return NODE_IF_STMT }
-func (i *IfStatement) NodeSubType() NodeSubType { return 0 }
-func (i *IfStatement) LineNumber() int          { return i.lineNumber }
-func (i *IfStatement) String() string {
+func (is *IfStatement) statementNode()           {}
+func (is *IfStatement) NodeType() NodeType       { return NODE_IF_STMT }
+func (is *IfStatement) NodeSubType() NodeSubType { return 0 }
+func (is *IfStatement) LineNumber() int          { return is.lineNumber }
+func (is *IfStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("IF " + i.Condition.String() + "\n")
-	block := i.Consequence.String()
+	out.WriteString("IF " + is.Condition.String() + "\n")
+	block := is.Consequence.String()
 	if block != "" {
 		out.WriteString(block + "\n")
 	}
-	if i.Alternative != nil {
+	if is.Alternative != nil {
 		out.WriteString("ELSE\n")
-		block = i.Alternative.String()
+		block = is.Alternative.String()
 		if block != "" {
 			out.WriteString(block + "\n")
 		}
@@ -275,15 +281,15 @@ type FunctionStatement struct {
 	lineNumber int
 }
 
-func (f *FunctionStatement) statementNode()           {}
-func (f *FunctionStatement) NodeType() NodeType       { return NODE_FUNCTION_STMT }
-func (f *FunctionStatement) NodeSubType() NodeSubType { return 0 }
-func (f *FunctionStatement) LineNumber() int          { return f.lineNumber }
-func (f *FunctionStatement) String() string {
+func (fs *FunctionStatement) statementNode()           {}
+func (fs *FunctionStatement) NodeType() NodeType       { return NODE_FUNCTION_STMT }
+func (fs *FunctionStatement) NodeSubType() NodeSubType { return 0 }
+func (fs *FunctionStatement) LineNumber() int          { return fs.lineNumber }
+func (fs *FunctionStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(f.Name + " FUNCTION " + strings.Join(f.Params, ", ") + "\n")
-	out.WriteString(f.Block.String() + "\n")
+	out.WriteString(fs.Name + " FUNCTION " + strings.Join(fs.Params, ", ") + "\n")
+	out.WriteString(fs.Block.String() + "\n")
 	out.WriteString("END_FUNCTION")
 
 	return out.String()
@@ -295,14 +301,14 @@ type BlockStatement struct {
 	lineNumber int
 }
 
-func (b *BlockStatement) statementNode()           {}
-func (b *BlockStatement) NodeType() NodeType       { return NODE_BLOCK_STMT }
-func (b *BlockStatement) NodeSubType() NodeSubType { return 0 }
-func (b *BlockStatement) LineNumber() int          { return b.lineNumber }
-func (b *BlockStatement) String() string {
+func (bs *BlockStatement) statementNode()           {}
+func (bs *BlockStatement) NodeType() NodeType       { return NODE_BLOCK_STMT }
+func (bs *BlockStatement) NodeSubType() NodeSubType { return 0 }
+func (bs *BlockStatement) LineNumber() int          { return bs.lineNumber }
+func (bs *BlockStatement) String() string {
 	stmts := []string{}
 
-	for _, s := range b.Block {
+	for _, s := range bs.Block {
 		stmts = append(stmts, s.String())
 	}
 	return strings.Join(stmts, "\n")
@@ -315,17 +321,17 @@ type ConstStatement struct {
 	lineNumber int
 }
 
-func (c *ConstStatement) statementNode()           {}
-func (c *ConstStatement) NodeType() NodeType       { return NODE_CONST_STMT }
-func (c *ConstStatement) NodeSubType() NodeSubType { return 0 }
-func (c *ConstStatement) LineNumber() int          { return c.lineNumber }
-func (c *ConstStatement) String() string {
+func (cs *ConstStatement) statementNode()           {}
+func (cs *ConstStatement) NodeType() NodeType       { return NODE_CONST_STMT }
+func (cs *ConstStatement) NodeSubType() NodeSubType { return 0 }
+func (cs *ConstStatement) LineNumber() int          { return cs.lineNumber }
+func (cs *ConstStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("CONST ")
-	out.WriteString(c.Name.Name)
+	out.WriteString(cs.Name.Name)
 	out.WriteString(" = ")
-	out.WriteString(c.Value.String())
+	out.WriteString(cs.Value.String())
 
 	return out.String()
 }
@@ -337,17 +343,17 @@ type VariableStatement struct {
 	lineNumber int
 }
 
-func (v *VariableStatement) statementNode()           {}
-func (v *VariableStatement) NodeType() NodeType       { return NODE_VAR_STMT }
-func (v *VariableStatement) NodeSubType() NodeSubType { return 0 }
-func (v *VariableStatement) LineNumber() int          { return v.lineNumber }
-func (v *VariableStatement) String() string {
+func (vs *VariableStatement) statementNode()           {}
+func (vs *VariableStatement) NodeType() NodeType       { return NODE_VAR_STMT }
+func (vs *VariableStatement) NodeSubType() NodeSubType { return 0 }
+func (vs *VariableStatement) LineNumber() int          { return vs.lineNumber }
+func (vs *VariableStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("VAR ")
-	out.WriteString(v.Name.Name)
+	out.WriteString(vs.Name.Name)
 	out.WriteString(" = ")
-	out.WriteString(v.Value.String())
+	out.WriteString(vs.Value.String())
 
 	return out.String()
 }
@@ -359,15 +365,15 @@ type AsignStatement struct {
 	lineNumber int
 }
 
-func (a *AsignStatement) statementNode()           {}
-func (a *AsignStatement) NodeType() NodeType       { return NODE_ASIGN_STMT }
-func (a *AsignStatement) NodeSubType() NodeSubType { return 0 }
-func (a *AsignStatement) String() string {
+func (as *AsignStatement) statementNode()           {}
+func (as *AsignStatement) NodeType() NodeType       { return NODE_ASIGN_STMT }
+func (as *AsignStatement) NodeSubType() NodeSubType { return 0 }
+func (as *AsignStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(a.Left.String())
+	out.WriteString(as.Left.String())
 	out.WriteString(" = ")
-	out.WriteString(a.Value.String())
+	out.WriteString(as.Value.String())
 
 	return out.String()
 }
@@ -381,28 +387,28 @@ type Z80Instruction struct {
 	lineNumber int
 }
 
-func (z *Z80Instruction) statementNode() {}
-func (z *Z80Instruction) NodeType() NodeType {
-	return NodeType(z.InstType)
+func (zi *Z80Instruction) statementNode() {}
+func (zi *Z80Instruction) NodeType() NodeType {
+	return NodeType(zi.InstType)
 }
-func (z *Z80Instruction) NodeSubType() NodeSubType {
-	return NodeSubType(z.OpCode)
+func (zi *Z80Instruction) NodeSubType() NodeSubType {
+	return NodeSubType(zi.OpCode)
 }
-func (z *Z80Instruction) LineNumber() int { return z.lineNumber }
-func (z *Z80Instruction) String() string {
+func (zi *Z80Instruction) LineNumber() int { return zi.lineNumber }
+func (zi *Z80Instruction) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(Z80OpCode2Name(z.OpCode))
+	out.WriteString(Z80OpCode2Name(zi.OpCode))
 	switch {
-	case z.Op1 == nil && z.Op2 == nil:
+	case zi.Op1 == nil && zi.Op2 == nil:
 		break
-	case z.Op1 != nil && z.Op2 != nil:
-		out.WriteString("\t" + opString(z.Op1))
-		out.WriteString(", " + opString(z.Op2))
-	case z.Op1 != nil:
-		out.WriteString("\t" + opString(z.Op1))
+	case zi.Op1 != nil && zi.Op2 != nil:
+		out.WriteString("\t" + opString(zi.Op1))
+		out.WriteString(", " + opString(zi.Op2))
+	case zi.Op1 != nil:
+		out.WriteString("\t" + opString(zi.Op1))
 	default:
-		out.WriteString("\t" + opString(z.Op2))
+		out.WriteString("\t" + opString(zi.Op2))
 	}
 
 	return out.String()
@@ -417,21 +423,21 @@ type Label struct {
 	LineNumber int
 }
 
-func (l *Label) expressionNode()          {}
-func (l *Label) NodeType() NodeType       { return l.nodeType }
-func (l *Label) NodeSubType() NodeSubType { return 0 }
-func (l *Label) String() string           { return l.Name }
+func (le *Label) expressionNode()          {}
+func (le *Label) NodeType() NodeType       { return le.nodeType }
+func (le *Label) NodeSubType() NodeSubType { return 0 }
+func (le *Label) String() string           { return le.Name }
 
 // 数値
 type NumberLiteral struct {
 	Value int
 }
 
-func (n *NumberLiteral) expressionNode()          {}
-func (n *NumberLiteral) NodeType() NodeType       { return NODE_NUMBER }
-func (n *NumberLiteral) NodeSubType() NodeSubType { return 0 }
-func (n *NumberLiteral) String() string {
-	return fmt.Sprintf("%d", n.Value)
+func (nl *NumberLiteral) expressionNode()          {}
+func (nl *NumberLiteral) NodeType() NodeType       { return NODE_NUMBER }
+func (nl *NumberLiteral) NodeSubType() NodeSubType { return 0 }
+func (nl *NumberLiteral) String() string {
+	return fmt.Sprintf("%d", nl.Value)
 }
 
 // 配列
@@ -439,13 +445,13 @@ type ArrayLiteral struct {
 	Elements *ExpressionList
 }
 
-func (a *ArrayLiteral) expressionNode()          {}
-func (a *ArrayLiteral) NodeType() NodeType       { return NODE_ARRAY }
-func (a *ArrayLiteral) NodeSubType() NodeSubType { return 0 }
-func (a *ArrayLiteral) String() string {
+func (al *ArrayLiteral) expressionNode()          {}
+func (al *ArrayLiteral) NodeType() NodeType       { return NODE_ARRAY }
+func (al *ArrayLiteral) NodeSubType() NodeSubType { return 0 }
+func (al *ArrayLiteral) String() string {
 	elems := []string{}
 
-	for _, e := range a.Elements.Expressions {
+	for _, e := range al.Elements.Expressions {
 		elems = append(elems, e.String())
 	}
 	return "[" + strings.Join(elems, ", ") + "]"
@@ -458,16 +464,16 @@ type IndexedExpression struct {
 	lineNumber int
 }
 
-func (i *IndexedExpression) expressionNode()          {}
-func (i *IndexedExpression) NodeType() NodeType       { return NODE_INDEXED_EXPR }
-func (i *IndexedExpression) NodeSubType() NodeSubType { return 0 }
-func (i *IndexedExpression) String() string {
+func (ie *IndexedExpression) expressionNode()          {}
+func (ie *IndexedExpression) NodeType() NodeType       { return NODE_INDEXED_EXPR }
+func (ie *IndexedExpression) NodeSubType() NodeSubType { return 0 }
+func (ie *IndexedExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(i.Left.String())
+	out.WriteString(ie.Left.String())
 	out.WriteRune('[')
-	if i.Index != nil {
-		out.WriteString(i.Index.String())
+	if ie.Index != nil {
+		out.WriteString(ie.Index.String())
 	}
 	out.WriteRune(']')
 
@@ -480,11 +486,11 @@ type RegisterLiteral struct {
 	Register     int
 }
 
-func (r *RegisterLiteral) expressionNode()          {}
-func (r *RegisterLiteral) NodeType() NodeType       { return NodeType(r.RegisterType) }
-func (r *RegisterLiteral) NodeSubType() NodeSubType { return NodeSubType(r.Register) }
-func (r *RegisterLiteral) String() string {
-	return Z80OpCode2Name(r.Register)
+func (rl *RegisterLiteral) expressionNode()          {}
+func (rl *RegisterLiteral) NodeType() NodeType       { return NodeType(rl.RegisterType) }
+func (rl *RegisterLiteral) NodeSubType() NodeSubType { return NodeSubType(rl.Register) }
+func (rl *RegisterLiteral) String() string {
+	return Z80OpCode2Name(rl.Register)
 }
 
 // フラグ
@@ -492,11 +498,11 @@ type FlagLiteral struct {
 	Flag int
 }
 
-func (f *FlagLiteral) expressionNode()          {}
-func (f *FlagLiteral) NodeType() NodeType       { return Z80_FLAG }
-func (f *FlagLiteral) NodeSubType() NodeSubType { return NodeSubType(f.Flag) }
-func (f *FlagLiteral) String() string {
-	return Z80OpCode2Name(f.Flag)
+func (fl *FlagLiteral) expressionNode()          {}
+func (fl *FlagLiteral) NodeType() NodeType       { return Z80_FLAG }
+func (fl *FlagLiteral) NodeSubType() NodeSubType { return NodeSubType(fl.Flag) }
+func (fl *FlagLiteral) String() string {
+	return Z80OpCode2Name(fl.Flag)
 }
 
 // 識別子
@@ -527,11 +533,11 @@ type IndirectExpression struct {
 	Expression Node
 }
 
-func (r *IndirectExpression) expressionNode()          {}
-func (r *IndirectExpression) NodeType() NodeType       { return NODE_INDIRECT }
-func (r *IndirectExpression) NodeSubType() NodeSubType { return 0 }
-func (r *IndirectExpression) String() string {
-	expr := trimParen(r.Expression.String())
+func (ie *IndirectExpression) expressionNode()          {}
+func (ie *IndirectExpression) NodeType() NodeType       { return NODE_INDIRECT }
+func (ie *IndirectExpression) NodeSubType() NodeSubType { return 0 }
+func (ie *IndirectExpression) String() string {
+	expr := trimParen(ie.Expression.String())
 	return "(" + expr + ")"
 }
 
@@ -542,25 +548,25 @@ type InfixExpression struct {
 	Op2    Node
 }
 
-func (i *InfixExpression) expressionNode()          {}
-func (i *InfixExpression) NodeType() NodeType       { return NODE_INFIX_EXPR }
-func (i *InfixExpression) NodeSubType() NodeSubType { return NodeSubType(i.OpCode) }
-func (i *InfixExpression) String() string {
+func (ie *InfixExpression) expressionNode()          {}
+func (ie *InfixExpression) NodeType() NodeType       { return NODE_INFIX_EXPR }
+func (ie *InfixExpression) NodeSubType() NodeSubType { return NodeSubType(ie.OpCode) }
+func (ie *InfixExpression) String() string {
 	var op1, op2 string
-	if i.Op1 == nil {
+	if ie.Op1 == nil {
 		op1 = "<nil>"
 	} else {
-		op1 = i.Op1.String()
+		op1 = ie.Op1.String()
 	}
-	if i.Op2 == nil {
+	if ie.Op2 == nil {
 		op2 = "<nil>"
 	} else {
-		op2 = i.Op2.String()
+		op2 = ie.Op2.String()
 	}
 	var out bytes.Buffer
 
 	out.WriteString("(" + op1 + " ")
-	out.WriteString(tokenLiteral(i.OpCode))
+	out.WriteString(tokenLiteral(ie.OpCode))
 	out.WriteString(" " + op2 + ")")
 
 	return out.String()
@@ -572,18 +578,18 @@ type PrefixExpression struct {
 	Op     Node
 }
 
-func (p *PrefixExpression) expressionNode()          {}
-func (p *PrefixExpression) NodeType() NodeType       { return NodeType(NODE_PREFIX_EXPR) }
-func (p *PrefixExpression) NodeSubType() NodeSubType { return NodeSubType(p.OpCode) }
-func (p *PrefixExpression) String() string {
+func (pe *PrefixExpression) expressionNode()          {}
+func (pe *PrefixExpression) NodeType() NodeType       { return NodeType(NODE_PREFIX_EXPR) }
+func (pe *PrefixExpression) NodeSubType() NodeSubType { return NodeSubType(pe.OpCode) }
+func (pe *PrefixExpression) String() string {
 	var op string
-	if p.Op == nil {
+	if pe.Op == nil {
 		op = "<nil>"
 	} else {
-		op = p.Op.String()
+		op = pe.Op.String()
 	}
 
-	return "(" + tokenLiteral(p.OpCode) + op + ")"
+	return "(" + tokenLiteral(pe.OpCode) + op + ")"
 }
 
 // 関数呼出し
