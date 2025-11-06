@@ -453,7 +453,7 @@ func (a *ArrayLiteral) String() string {
 
 // 添え字参照
 type IndexedExpression struct {
-	Ident      *Ident
+	Left       Expression
 	Index      Expression
 	lineNumber int
 }
@@ -464,7 +464,7 @@ func (i *IndexedExpression) NodeSubType() NodeSubType { return 0 }
 func (i *IndexedExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(i.Ident.Name)
+	out.WriteString(i.Left.String())
 	out.WriteRune('[')
 	if i.Index != nil {
 		out.WriteString(i.Index.String())

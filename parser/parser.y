@@ -38,23 +38,24 @@ var _ = __yyfmt__.Sprintf
 %token<token> AT_IDENT    // @def 
 %token<token> LOCAL_IDENT // .def 
 %token<token> DOT_IDENT   // abc.def ラベル, enum
+
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
+
 %token<token> ADDSUB MULDIV COMP SHIFT UNARY
 %token SL SR EQ NEQ GE LE OR AND
 
-%token CONST VAR EQU FUNC ORG
+%token<token> CONST VAR EQU FUNC ORG
 
-%token<token> IF 
-%token ELSE ELIF END_IF
-%token<token>ELIF
-%token MACRO END_MACRO
-%token<token> REPEAT
-%token END_REPEAT
-%token FUNCTION END_FUNCTION
-%token PROC END_PROC
-%token BLOCK END_BLOCK
-%token ENUM END_ENUM
-%token  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':' '[' ']'
+%token<token> IF ELSE ELIF END_IF
+%token<token> MACRO END_MACRO
+%token<token> REPEAT END_REPEAT
+%token<token> FUNCTION END_FUNCTION
+%token<token> PROC END_PROC
+%token<token> ENUM END_ENUM
+%token<token> BLOCK END_BLOCK
+
+%token<token>  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':' '[' ']' '='
+
 %token INVALID 
 %token<token> error
 
@@ -156,12 +157,14 @@ directive	: CONST IDENT '=' expr
 					$$ = &VariableStatement{Name: &Ident{Name: $2.Literal}, Value: $4, lineNumber: $2.LineNumber}
 				}
 			}
-			| IDENT '=' expr
+			| expr '=' expr
 			{
-				if $3.NodeType() == NODE_ERROR {
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1
+				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					$$ = &AsignStatement{Left: &Ident{Name: $1.Literal}, Value: $3, lineNumber: $1.LineNumber}
+					$$ = &AsignStatement{Left: $1, Value: $3, lineNumber: $2.LineNumber}
 				}
 			}
 			| indexed_expr '=' expr
@@ -420,23 +423,29 @@ expr		: NUMBER
 			| expr AND expr			{ $$ = buildInfixExpression(AND, $1, $3) }
 			| '-' expr %prec UNARY	{ $$ = buildPrefixExpression('-', $2) }
 			| UNARY expr 			{ $$ = buildPrefixExpression(int($1.TokenSubType), $2) }
-			| error 
-			{ 
-				$$ = &ParseError{Message: __yyfmt__.Sprintf("[expr error] %s", $1.String())} 
-				yyerrok()
-			}
+//			| error 
+//			{ 
+//				$$ = &ParseError{Message: __yyfmt__.Sprintf("[expr error] %s", $1.String())} 
+//				yyerrok()
+//			}
 			;
 
-indexed_expr: IDENT '[' ']'
+indexed_expr: expr '[' ']'
 			{
-				$$ = &ParseError{Message: fmt.Sprintf("配列 %s のインデックス未指定", $1.Literal), lineNumber: $1.LineNumber}
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1
+				} else {
+					$$ = &ParseError{Message: "配列のインデックス未指定", lineNumber: $2.LineNumber}
+				}
 			}
-			| IDENT '[' expr ']'
+			| expr '[' expr ']'
 			{
-				if $3.NodeType() == NODE_ERROR {
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1
+				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					$$ = &IndexedExpression{Ident: &Ident{Name: $1.Literal}, Index: $3, lineNumber: $1.LineNumber}
+					$$ = &IndexedExpression{Left: $1, Index: $3, lineNumber: $2.LineNumber}
 				}
 			}
 			;
