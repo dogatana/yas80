@@ -364,8 +364,12 @@ expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
 			| expr		{ $$ = &ExpressionList{Expressions: []Expression{$1}} }
 			| expr_list ',' expr
 			{
-				$1.Expressions = append($1.Expressions, $3)
-				$$ = $1
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1
+				} else {
+					$1.Expressions = append($1.Expressions, $3)
+					$$ = $1
+				}
 			}
 			;
 
@@ -375,7 +379,7 @@ expr		: NUMBER
 				if err == nil {
 					$$ = &NumberLiteral{Value: int(n)}
 				} else {
-					$$ = &ParseError{Message: fmt.Sprintf("数値リテラルに誤りがあります: '%s'", $1.Literal)}
+					$$ = &ParseError{Message: fmt.Sprintf("数値リテラル誤り: '%s'", $1.Literal)}
 				}
 			}
 			| IDENT 		{ $$ = &Ident{Name: $1.Literal} }
@@ -415,7 +419,7 @@ expr		: NUMBER
 			| expr OR expr			{ $$ = buildInfixExpression(OR, $1, $3) }
 			| expr AND expr			{ $$ = buildInfixExpression(AND, $1, $3) }
 			| '-' expr %prec UNARY	{ $$ = buildPrefixExpression('-', $2) }
-			| UNARY expr { $$ = buildPrefixExpression(int($1.TokenSubType), $2) }
+			| UNARY expr 			{ $$ = buildPrefixExpression(int($1.TokenSubType), $2) }
 			| error 
 			{ 
 				$$ = &ParseError{Message: __yyfmt__.Sprintf("[expr error] %s", $1.String())} 
