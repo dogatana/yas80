@@ -420,7 +420,8 @@ expr		: NUMBER
 
 indexed_expr: IDENT '[' ']'
 			{
-				$$ = &IndexedExpression{Ident: &Ident{Name: $1.Literal}, Index: nil, lineNumber: $1.LineNumber}
+				$$ = &ParseError{Message: fmt.Sprintf("配列 %s のインデックス未指定", $1.Literal), lineNumber: $1.LineNumber}
+				//$$ = &IndexedExpression{Ident: &Ident{Name: $1.Literal}, Index: nil, lineNumber: $1.LineNumber}
 			}
 			| IDENT '[' expr ']'
 			{
