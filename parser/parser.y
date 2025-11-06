@@ -418,7 +418,11 @@ expr		: NUMBER
 			}
 			;
 
-indexed_expr:IDENT '[' expr ']'
+indexed_expr: IDENT '[' ']'
+			{
+				$$ = &IndexedExpression{Ident: &Ident{Name: $1.Literal}, Index: nil, lineNumber: $1.LineNumber}
+			}
+			| IDENT '[' expr ']'
 			{
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3

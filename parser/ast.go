@@ -466,7 +466,9 @@ func (i *IndexedExpression) String() string {
 
 	out.WriteString(i.Ident.Name)
 	out.WriteRune('[')
-	out.WriteString(i.Index.String())
+	if i.Index != nil {
+		out.WriteString(i.Index.String())
+	}
 	out.WriteRune(']')
 
 	return out.String()
