@@ -135,8 +135,8 @@ func TestArrayElement(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"a0 [ ]", "a0[]"},
-		{"a1 [ 123 ]", "a1[123]"},
+		{"a0 [ 123 ]", "a0[123]"},
+		{"a1 [ 1 + 2 * 3 ]", "a1[7]"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)

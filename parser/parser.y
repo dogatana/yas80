@@ -78,7 +78,9 @@ program		: { }
 			}
 			| program label statement
 			{
-				if $3.NodeType() == NODE_ERROR {
+				if $3 == nil {
+					// do nothing
+				} else if $3.NodeType() == NODE_ERROR {
 					yylex.Error($3.(*ParseError).Message, $3.(Statement).LineNumber())
 				} else {
 					prog := yylex.(*Lexer).program
@@ -88,18 +90,20 @@ program		: { }
 			}
 			| program statement 
 			{
-				if $2.NodeType() == NODE_ERROR {
+				if $2 == nil {
+					// do nothing
+				} else if $2.NodeType() == NODE_ERROR {
 					yylex.Error($2.(*ParseError).Message, $2.(Statement).LineNumber())
 				} else {
 					prog := yylex.(*Lexer).program
 					prog.Statements = append(prog.Statements, $2)
 				}
 			}
-//			| program error EOL
-//			{
-//				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2), $3.LineNumber)
-//				yyerrok()
-//			}
+			| program error EOL
+			{
+				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2), $3.LineNumber)
+				yyerrok()
+			}
 			;
 
 statement   : expr EOL			
@@ -415,13 +419,13 @@ expr		: NUMBER
 			| error 
 			{ 
 				$$ = &ParseError{Message: __yyfmt__.Sprintf("[expr error] %s", $1.String())} 
+				yyerrok()
 			}
 			;
 
 indexed_expr: IDENT '[' ']'
 			{
 				$$ = &ParseError{Message: fmt.Sprintf("配列 %s のインデックス未指定", $1.Literal), lineNumber: $1.LineNumber}
-				//$$ = &IndexedExpression{Ident: &Ident{Name: $1.Literal}, Index: nil, lineNumber: $1.LineNumber}
 			}
 			| IDENT '[' expr ']'
 			{
