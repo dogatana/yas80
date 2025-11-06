@@ -9,12 +9,12 @@ import (
 )
 
 type Evaluator struct {
-	es         *errorstore.ErrorStore
+	errorStore *errorstore.ErrorStore
 	lineNumber int
 }
 
 func New(es *errorstore.ErrorStore) *Evaluator {
-	return &Evaluator{es: es}
+	return &Evaluator{errorStore: es}
 }
 
 func (e *Evaluator) ResolveConst(prog *parser.Program, env *object.Environment) {
@@ -76,7 +76,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		name := strings.ToUpper(node.Name)
 		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
 		if ok {
-			e.es.AddError(fmt.Sprintf("定義済み: %s", node.Name), node.LineNumber())
+			e.errorStore.AddError(fmt.Sprintf("定義済み: %s", node.Name), node.LineNumber())
 			return object.ERROR
 		}
 		v := e.evalEnumStatement(node, env)
@@ -140,7 +140,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 	for _, ele := range node.Elements.Elements {
 		eleName := strings.ToUpper(ele.Name)
 		if _, ok := enum[eleName]; ok {
-			e.es.AddError(fmt.Sprintf("[E] 定義済みの名前: %s (ENUM %s)", eleName, node.Name), 0)
+			e.errorStore.AddError(fmt.Sprintf("[E] 定義済みの名前: %s (ENUM %s)", eleName, node.Name), 0)
 			return object.ERROR
 		}
 		if ele.Value == nil {
@@ -158,7 +158,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 		case object.STRING_OBJ:
 			enum[eleName] = v
 		default:
-			e.es.AddError(fmt.Sprintf("[E] enum 要素に使用できない型 %T", v), 0)
+			e.errorStore.AddError(fmt.Sprintf("[E] enum 要素に使用できない型 %T", v), 0)
 			return object.ERROR
 		}
 	}
@@ -189,7 +189,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 		return &object.NumberObject{Value: v1 * v2}
 	case '/':
 		if v2 == 0 {
-			e.es.AddError("division by 0", e.lineNumber)
+			e.errorStore.AddError("division by 0", e.lineNumber)
 			return object.NULL
 		}
 		return &object.NumberObject{Value: v1 + v2}
@@ -252,7 +252,7 @@ func (e *Evaluator) generateRET(node *parser.Z80Instruction, env *object.Environ
 		b := byte(0xc0 | flag<<3)
 		return &object.Code{Line: node.LineNumber(), Code: []byte{b}}
 	}
-	e.es.AddError(
+	e.errorStore.AddError(
 		fmt.Sprintf("第1オペランドがフラグではありません '%s'", node.Op1.String()), node.LineNumber())
 	return object.NULL
 }
@@ -290,14 +290,14 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 				v := op2.(*object.NumberObject).Value
 				bv, ok := e.toByte(v)
 				if !ok {
-					e.es.AddWarning(fmt.Sprintf("1バイトの範囲を超えていいます: %d", v), 0)
+					e.errorStore.AddWarning(fmt.Sprintf("1バイトの範囲を超えていいます: %d", v), 0)
 					return object.NULL
 				}
 				b := 0x06
 				b |= (r1 - parser.Z80_REG_B) << 3
 				return &object.Code{Line: node.LineNumber(), Code: []byte{byte(b), bv}}
 			} else if op2.Type() == object.NULL_OBJ {
-				e.es.AddError(fmt.Sprintf("error expr: %s", node.Op2.String()), 0)
+				e.errorStore.AddError(fmt.Sprintf("error expr: %s", node.Op2.String()), 0)
 
 			}
 		}
