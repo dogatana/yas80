@@ -19,11 +19,11 @@ patch_data: list[PatchData] = [
     # yyParse 内部のエラー発生時にトークン情報を追加
     PatchData(
         '\tmsg = __yyfmt__.Sprintf("unexpected %s", ls)\n',
-        '\tmsg = __yyfmt__.Sprintf("unexpected %s\\n  yyLVAR.token: %s\\n  yylvar.token: %s", ls, yyVAL.token.String(), yylval.token.String())\n',
+        '\tmsg = __yyfmt__.Sprintf("予期しないトークン %s\\n  yyLVAR.token: %s\\n  yylvar.token: %s", ls, yyVAL.token.String(), yylval.token.String())\n',
     ),
     PatchData(
         '\tmsg = __yyfmt__.Sprintf("unexpected %s, %s", ls, msg)\n',
-        '\tmsg = __yyfmt__.Sprintf("unexpected %s, %s\\n  yyLVAR: %s\\n  yylvar: %s", ls, msg, yyVAL.token.String(), yylval.token.String())\n',
+        '\tmsg = __yyfmt__.Sprintf("予期しないトークン %s, %s\\n  yyLVAR: %s\\n  yylvar: %s", ls, msg, yyVAL.token.String(), yylval.token.String())\n',
     ),
 ]
 
