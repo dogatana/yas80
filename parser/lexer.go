@@ -172,7 +172,7 @@ func (l *Lexer) NextToken() Token {
 			return tok
 		}
 		// これ以外は識別子
-		return Token{TokenType: IDENT, Literal: literal}
+		return Token{TokenType: IDENT, Literal: literal, LineNumber: l.lineNumber}
 	case l.curChar == '@' || l.curChar == '.':
 		prefix := l.curChar
 		literal = string(l.curChar)
