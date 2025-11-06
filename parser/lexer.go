@@ -44,11 +44,11 @@ func (l *Lexer) Error(s string, args ...any) {
 	case 1:
 		n, ok := args[0].(int)
 		if !ok {
-			panic(fmt.Sprintf("invalid argument for Lexer.Error(string, %T)", args[0]))
+			panic(fmt.Sprintf("[SYSTEM] invalid argument for Lexer.Error(string, %T)", args[0]))
 		}
 		line = n
 	default:
-		panic(fmt.Sprintf("too much args for Lexer.Error() %#v", args))
+		panic(fmt.Sprintf("[SYSTEM] too much args for Lexer.Error() %#v", args))
 	}
 
 	if strings.HasPrefix(s, "[W]") {
