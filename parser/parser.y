@@ -119,15 +119,35 @@ statement   : expr EOL
 
 directive	: CONST IDENT '=' expr
 			{ 
-				$$ = &ConstStatement{Name: &Ident{Name: $2.Literal}, Value: $4, lineNumber: $2.LineNumber}
+				if $4.NodeType() == NODE_ERROR {
+					$$ =  $4
+				} else {
+					$$ = &ConstStatement{Name: &Ident{Name: $2.Literal}, Value: $4, lineNumber: $2.LineNumber}
+				}
 			}
 			| IDENT EQU expr		
 			{ 
-				$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3, lineNumber: $1.LineNumber}
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3, lineNumber: $1.LineNumber}
+				}
 			}
 			| IDENT ENUM EOL enum_elements END_ENUM
 			{
-				$$ = &EnumStatement{Name: $1.Literal, Elements: $4, lineNumber: $1.LineNumber}
+				if $4.NodeType() == NODE_ERROR {
+					$$ =  $4
+				} else {
+					$$ = &EnumStatement{Name: $1.Literal, Elements: $4, lineNumber: $1.LineNumber}
+				}
+			}
+			| VAR IDENT '=' expr
+			{
+				if $4.NodeType() == NODE_ERROR {
+					$$ = $4
+				} else {
+					$$ = &VariableStatement{Name: &Ident{Name: $2.Literal}, Value: $4, lineNumber: $2.LineNumber}
+				}
 			}
 			| REPEAT expr EOL block_statement END_REPEAT
 			{

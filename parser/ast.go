@@ -174,10 +174,10 @@ type EnumElements struct {
 	lineNumber int
 }
 
-func (e *EnumElements) statementNode()        {}
-func (e *EnumElements) NodeType() NodeType    { return NODE_ENUM_ELEMENTS_STMT }
-func (e *EnumElements) NodeSubType() NodeType { return 0 }
-func (e *EnumElements) LineNumber() int       { return e.lineNumber }
+func (e *EnumElements) statementNode()           {}
+func (e *EnumElements) NodeType() NodeType       { return NODE_ENUM_ELEMENTS_STMT }
+func (e *EnumElements) NodeSubType() NodeSubType { return 0 }
+func (e *EnumElements) LineNumber() int          { return e.lineNumber }
 func (e *EnumElements) String() string {
 	stmts := []string{}
 	for _, e := range e.Elements {
@@ -192,9 +192,9 @@ type EnumElement struct {
 	Value Node
 }
 
-func (e *EnumElement) expressionNode()       {}
-func (e *EnumElement) NodeType() NodeType    { return NODE_ENUM_ELEMENT }
-func (e *EnumElement) NodeSubType() NodeType { return 0 }
+func (e *EnumElement) expressionNode()          {}
+func (e *EnumElement) NodeType() NodeType       { return NODE_ENUM_ELEMENT }
+func (e *EnumElement) NodeSubType() NodeSubType { return 0 }
 func (e *EnumElement) String() string {
 	if e.Value == nil {
 		return e.Name
@@ -312,7 +312,36 @@ func (c *ConstStatement) NodeType() NodeType       { return NODE_CONST_STMT }
 func (c *ConstStatement) NodeSubType() NodeSubType { return 0 }
 func (c *ConstStatement) LineNumber() int          { return c.lineNumber }
 func (c *ConstStatement) String() string {
-	return "CONST " + c.Name.String() + " = " + c.Value.String()
+	var out bytes.Buffer
+
+	out.WriteString("CONST ")
+	out.WriteString(c.Name.Name)
+	out.WriteString(" = ")
+	out.WriteString(c.Value.String())
+
+	return out.String()
+}
+
+// 変数定義文 - VAR
+type VariableStatement struct {
+	Name       *Ident
+	Value      Node
+	lineNumber int
+}
+
+func (v *VariableStatement) statementNode()           {}
+func (v *VariableStatement) NodeType() NodeType       { return NODE_VAR_STMT }
+func (v *VariableStatement) NodeSubType() NodeSubType { return 0 }
+func (v *VariableStatement) LineNumber() int          { return v.lineNumber }
+func (v *VariableStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("VAR ")
+	out.WriteString(v.Name.Name)
+	out.WriteString(" = ")
+	out.WriteString(v.Value.String())
+
+	return out.String()
 }
 
 // Z80 命令文 - Z80Instruction Statement
