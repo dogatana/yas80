@@ -381,7 +381,7 @@ expr		: NUMBER
 				if err == nil {
 					$$ = &NumberLiteral{Value: int(n)}
 				} else {
-					$$ = &ParseError{Message: fmt.Sprintf("数値リテラル誤り: '%s'", $1.Literal)}
+					$$ = &ParseError{Message: fmt.Sprintf("数値リテラル誤り: '%s'", $1.Literal), lineNumber: $1.LineNumber}
 				}
 			}
 			| IDENT 		{ $$ = &Ident{Name: $1.Literal} }
@@ -454,6 +454,6 @@ indexed_expr: expr '[' ']'
 func Parse(l *Lexer) (*Program, int, int) {
 	// error トークンでリカバリすると yyParse() は 0 を返す
 	yyParse(l)
-	ec, wc := l.ErrorStore.Count()
+	ec, wc := l.logger.Count()
 	return l.program, ec, wc
 }

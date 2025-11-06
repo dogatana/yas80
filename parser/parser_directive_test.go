@@ -47,7 +47,7 @@ def = 1
 	l := newLexerForTest(input)
 	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
-		l.ErrorStore.Print()
+		l.logger.Print()
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	if len(prog.Statements) != 1 {
@@ -83,7 +83,7 @@ func TestRepeatStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {
-			l.ErrorStore.Print()
+			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
 		if len(prog.Statements) != 1 {
@@ -148,7 +148,7 @@ func TestIfStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {
-			l.ErrorStore.Print()
+			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
 		if len(prog.Statements) != 1 {
@@ -192,7 +192,7 @@ func TestFunctionStatement(t *testing.T) {
 	l := newLexerForTest(input)
 	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
-		l.ErrorStore.Print()
+		l.logger.Print()
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	if len(prog.Statements) != 1 {
@@ -229,7 +229,7 @@ func TestVarStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {
-			l.ErrorStore.Print()
+			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
 		if len(prog.Statements) != 1 {
@@ -267,7 +267,7 @@ func TestAsignStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {
-			l.ErrorStore.Print()
+			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
 		if len(prog.Statements) != 1 {

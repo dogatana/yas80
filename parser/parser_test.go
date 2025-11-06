@@ -44,10 +44,10 @@ OTDR
 	l := newLexerForTest(input)
 	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
-		for _, e := range l.ErrorStore.Errors {
+		for _, e := range l.logger.Errors {
 			fmt.Println(e.String())
 		}
-		for _, e := range l.ErrorStore.Warnings {
+		for _, e := range l.logger.Warnings {
 			fmt.Println(e.String())
 		}
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
@@ -86,10 +86,10 @@ RET 18
 	l := newLexerForTest(input)
 	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
-		for _, e := range l.ErrorStore.Errors {
+		for _, e := range l.logger.Errors {
 			fmt.Println(e.String())
 		}
-		for _, e := range l.ErrorStore.Warnings {
+		for _, e := range l.logger.Warnings {
 			fmt.Println(e.String())
 		}
 		t.Fatalf("Parser returns %d errors and %d warnigs", ec, wc)

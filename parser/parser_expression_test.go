@@ -82,7 +82,7 @@ func TestCallFunction(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {
-			l.ErrorStore.Print()
+			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
 		if len(prog.Statements) != 1 {
@@ -114,7 +114,7 @@ func TestArrayVariable(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {
-			l.ErrorStore.Print()
+			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
 		if len(prog.Statements) != 1 {
@@ -142,7 +142,7 @@ func TestArrayElement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog, ec, wc := Parse(l)
 		if ec > 0 || wc > 0 {
-			l.ErrorStore.Print()
+			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
 		if len(prog.Statements) != 1 {

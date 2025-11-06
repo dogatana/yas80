@@ -18,7 +18,7 @@ type Lexer struct {
 	curChar    rune
 	lineNumber int
 	fileNmae   string
-	ErrorStore *logger.ErrorStore
+	logger     *logger.Logger
 	program    *Program
 }
 
@@ -52,17 +52,17 @@ func (l *Lexer) Error(s string, args ...any) {
 	}
 
 	if strings.HasPrefix(s, "[W]") {
-		l.ErrorStore.AddWarning(s[3:], line)
+		l.logger.Warning(s[3:], line)
 	} else {
-		l.ErrorStore.AddError(s, line)
+		l.logger.Error(s, line)
 	}
 }
 
-func NewLexer(r *bufio.Reader, filename string, es *logger.ErrorStore) *Lexer {
+func NewLexer(r *bufio.Reader, filename string, logger *logger.Logger) *Lexer {
 	l := &Lexer{scanner: bufio.NewScanner(r), program: &Program{}}
 	l.nextChar()
 	l.fileNmae = filename
-	l.ErrorStore = es
+	l.logger = logger
 	return l
 }
 
