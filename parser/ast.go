@@ -33,6 +33,7 @@ const (
 	NODE_EXPR
 	NODE_ENUM_ELEMENT
 	NODE_NUMBER
+	NODE_STRING
 	NODE_IDENT
 	NODE_DOT_IDENT
 	NODE_ARRAY
@@ -438,6 +439,18 @@ func (nl *NumberLiteral) NodeType() NodeType       { return NODE_NUMBER }
 func (nl *NumberLiteral) NodeSubType() NodeSubType { return 0 }
 func (nl *NumberLiteral) String() string {
 	return fmt.Sprintf("%d", nl.Value)
+}
+
+// 文字列
+type StringLiteral struct {
+	Value string
+}
+
+func (sl *StringLiteral) expressionNode()          {}
+func (sl *StringLiteral) NodeType() NodeType       { return NODE_STRING }
+func (sl *StringLiteral) NodeSubType() NodeSubType { return 0 }
+func (sl *StringLiteral) String() string {
+	return fmt.Sprintf("%q", sl.Value)
 }
 
 // 配列

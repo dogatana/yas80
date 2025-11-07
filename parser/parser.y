@@ -34,7 +34,7 @@ var _ = __yyfmt__.Sprintf
 
 
 %token<token> EOL
-%token<token> NUMBER IDENT
+%token<token> NUMBER IDENT STRING
 %token<token> AT_IDENT    // @def 
 %token<token> LOCAL_IDENT // .def 
 %token<token> DOT_IDENT   // abc.def ラベル, enum
@@ -386,6 +386,7 @@ expr		: NUMBER
 					$$ = &ParseError{Message: fmt.Sprintf("数値リテラル誤り: '%s'", $1.Literal), lineNumber: $1.LineNumber}
 				}
 			}
+			| STRING 		{ $$ = &StringLiteral{Value: $1.Literal} }
 			| IDENT 		{ $$ = &Ident{Name: $1.Literal} }
 			| DOT_IDENT
 			{

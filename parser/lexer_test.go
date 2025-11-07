@@ -1,9 +1,21 @@
 package parser
 
 import (
+	"fmt"
 	"testing"
 )
 
+func TestTokens(t *testing.T) {
+	input := `123 "abc" def 456`
+	l := newLexerForTest(input)
+	for {
+		tok := l.NextToken()
+		fmt.Println(tok.String())
+		if tok.TokenType == EOL {
+			break
+		}
+	}
+}
 func TestLexerOneCharacter(t *testing.T) {
 	input := " ( ) - ! ~ & | ^"
 	expected_tokens := []struct {
@@ -132,6 +144,26 @@ func TestInvalidCharacter(t *testing.T) {
 	tok := l.NextToken()
 	if tok.TokenType != INVALID || tok.Literal != "あ" {
 		t.Errorf("expected=INVALID literal 'あ', got=%#v", tok)
+	}
+}
+
+func TestString(t *testing.T) {
+	tests := []struct {
+		input            string
+		expected_literal string
+	}{
+		{`"abc"`, "abc"},
+		{` "abc def" `, "abc def"},
+		{`""`, ""},
+	}
+
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		tok := l.NextToken()
+		if tok.TokenType != STRING || tok.Literal != tt.expected_literal {
+			fmt.Printf("tokenize %q\n", tt.input)
+			t.Errorf("expected=STRING with literal %q, got=%#v", tt.expected_literal, tok)
+		}
 	}
 }
 

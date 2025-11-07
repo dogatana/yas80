@@ -105,7 +105,12 @@ func (l *Lexer) NextToken() Token {
 		// EOL
 		l.nextChar()
 		return Token{TokenType: EOL, Literal: "\\n", LineNumber: l.lineNumber}
-
+	case l.curChar == '"':
+		// 文字列リテラル
+		s := l.readString()
+		l.nextChar()
+		l.nextChar()
+		return Token{TokenType: STRING, Literal: s, LineNumber: l.lineNumber}
 	case l.curChar == '-': // 単項・2項両方あるので1文字トークンとする
 		ch := l.curChar
 		l.nextChar()
@@ -288,6 +293,14 @@ func (l *Lexer) skipWhitespace() {
 	for !l.isEOF && (l.curChar == ' ' || l.curChar == '\t') {
 		l.nextChar()
 	}
+}
+
+func (l *Lexer) readString() string {
+	startIndex := l.index
+	for l.index < len(l.text) && l.text[l.index] != '"' {
+		l.index++
+	}
+	return string(l.text[startIndex:l.index])
 }
 
 func (l *Lexer) readWord() string {
