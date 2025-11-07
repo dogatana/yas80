@@ -157,3 +157,36 @@ func TestArrayElement(t *testing.T) {
 		}
 	}
 }
+
+func TestStringExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{` "abc" `, "abc"},
+		{` "abc" + "def" `, "abcdef"},
+		{` "abc" + "@" + "def" `, "abc@def"},
+	}
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog, ec, wc := Parse(l)
+		if ec > 0 || wc > 0 {
+			l.logger.Print()
+			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
+		}
+		if len(prog.Statements) != 1 {
+			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
+		}
+		stmt, ok := prog.Statements[0].(*ExpressionStatement)
+		if !ok {
+			t.Fatalf("parsing %s Statements[0] is not ExpressionStatement . got %T", tt.input, prog.Statements[0])
+		}
+		str, ok := stmt.Value.(*StringLiteral)
+		if !ok {
+			t.Fatalf("Expression is not StringLiteral . got %T", stmt.Value)
+		}
+		if str.Value != tt.expected {
+			t.Errorf("StringLiteral.Value is not %q. got %q", tt.expected, str.Value)
+		}
+	}
+}
