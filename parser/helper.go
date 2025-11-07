@@ -149,6 +149,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression) Expression {
 	if op2.NodeType() == NODE_ERROR {
 		return op2
 	}
+	// 整数演算の畳み込み
 	num1, ok1 := op1.(*NumberLiteral)
 	num2, ok2 := op2.(*NumberLiteral)
 	if ok1 && ok2 {
@@ -162,6 +163,12 @@ func buildInfixExpression(opcode int, op1, op2 Expression) Expression {
 		} else {
 			return &ParseError{Message: fmt.Sprintf("UNKNOWN infix op: '%s'", yySymNames[yyXLAT[opcode]])}
 		}
+	}
+	// 文字列演算(+)の畳み込み
+	str1, ok1 := op1.(*StringLiteral)
+	str2, ok2 := op2.(*StringLiteral)
+	if ok1 && ok2 && opcode == '+' {
+		return &StringLiteral{Value: str1.Value + str2.Value}
 	}
 	return &InfixExpression{OpCode: opcode, Op1: op1, Op2: op2}
 }
