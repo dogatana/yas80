@@ -56,39 +56,40 @@ func (e *Evaluator) updateEnv(env *object.Environment) {
 
 // Eval
 func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Object {
-	fmt.Printf("eval %T(%#v)\n", node, node)
+	fmt.Printf("eval %#v\n", node)
 	switch node := node.(type) {
+	// Program
 	case *parser.Program:
-		return e.evalStatements(node.Statements, env)
+		return e.evalProgram(node, env)
 
 	// Statement
 	case *parser.ExpressionStatement:
 		e.lineNumber = node.LineNumber()
 		return e.Eval(node.Value, env)
-	case *parser.Z80Instruction:
-		e.lineNumber = node.LineNumber()
-		return e.evalZ80Instruction(node, env)
-	case *parser.ConstStatement:
-		v := e.Eval(node.Value, env)
-		env.Set(node.Name.Name, v)
-		return object.NULL
-	case *parser.EnumStatement:
-		name := strings.ToUpper(node.Name)
-		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
-		if ok {
-			e.logger.Error(fmt.Sprintf("定義済み: %s", node.Name), node.LineNumber())
-			return object.ERROR
-		}
-		v := e.evalEnumStatement(node, env)
-		switch v.Type() {
-		case object.ENUM_OBJ:
-			env.GlobalSet(v.(*object.EnumObject).Name, v)
-			return object.NULL
-		case object.NULL_OBJ:
-			return &object.NodeObject{Value: node}
-		default:
-			return object.ERROR
-		}
+	// case *parser.Z80Instruction:
+	// 	e.lineNumber = node.LineNumber()
+	// 	return e.evalZ80Instruction(node, env)
+	// case *parser.ConstStatement:
+	// 	v := e.Eval(node.Value, env)
+	// 	env.Set(node.Name.Name, v)
+	// 	return object.NULL
+	// case *parser.EnumStatement:
+	// 	name := strings.ToUpper(node.Name)
+	// 	_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
+	// 	if ok {
+	// 		e.logger.Error(fmt.Sprintf("定義済み: %s", node.Name), node.LineNumber())
+	// 		return object.ERROR
+	// 	}
+	// 	v := e.evalEnumStatement(node, env)
+	// 	switch v.Type() {
+	// 	case object.ENUM_OBJ:
+	// 		env.GlobalSet(v.(*object.EnumObject).Name, v)
+	// 		return object.NULL
+	// 	case object.NULL_OBJ:
+	// 		return &object.NodeObject{Value: node}
+	// 	default:
+	// 		return object.ERROR
+	// 	}
 
 	// Expression
 	case *parser.NumberLiteral:
@@ -123,8 +124,18 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	}
 }
 
+func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) object.Object {
+	results := &object.ProgramObject{}
+
+	for _, stmt := range prog.Statements {
+		obj := e.Eval(stmt, env)
+		results.Objects = append(results.Objects, obj)
+	}
+	return results
+}
+
 func (e *Evaluator) evalStatements(stmts []parser.Node, env *object.Environment) object.Object {
-	p := &object.Program{}
+	p := &object.ProgramObject{}
 	for _, stmt := range stmts {
 		obj := e.Eval(stmt, env)
 		// if obj != object.NULL {
@@ -165,6 +176,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 	return &object.EnumObject{Name: strings.ToUpper(node.Name), Value: enum}
 }
 
+// 中置演算子式
 func (e *Evaluator) evalInfixExpression(opCode int, op1, op2 object.Object, env *object.Environment) object.Object {
 	switch {
 	case op1.Type() == object.NUMBER_OBJ && op2.Type() == object.NUMBER_OBJ:

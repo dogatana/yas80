@@ -35,8 +35,9 @@ func (l *Lexer) Lex(lval *yySymType) int {
 }
 
 // yyLexer インターフェースメソッド
-func (l *Lexer) Error(s string, args ...any) {
+func (l *Lexer) Error(msg string, args ...any) {
 	var line int
+	var yyVAL, yylval *Token
 
 	switch len(args) {
 	case 0:
@@ -47,14 +48,25 @@ func (l *Lexer) Error(s string, args ...any) {
 			panic(fmt.Sprintf("[SYSTEM] invalid argument for Lexer.Error(string, %T)", args[0]))
 		}
 		line = n
+	case 2:
+		line = l.lineNumber
+		yyVAL = args[0].(*Token)
+		yylval = args[1].(*Token)
+		msg = modifyYaccError(msg, yyVAL, yylval)
 	default:
 		panic(fmt.Sprintf("[SYSTEM] too much args for Lexer.Error() %#v", args))
 	}
 
-	if strings.HasPrefix(s, "[W]") {
-		l.logger.Warning(s[3:], line)
+	if strings.HasPrefix(msg, "[I]") {
+		l.logger.Info(msg[3:], line)
+	} else if strings.HasPrefix(msg, "[W]") {
+		l.logger.Warning(msg[3:], line)
+	} else if strings.HasPrefix(msg, "[E]") {
+		l.logger.Error(msg[3:], line)
+	} else if msg[0] == '[' {
+		l.logger.Error(msg, line)
 	} else {
-		l.logger.Error(s, line)
+		l.logger.Error("[?]"+msg, line)
 	}
 }
 

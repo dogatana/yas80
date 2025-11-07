@@ -180,7 +180,6 @@ directive	: CONST IDENT '=' expr
 			}
 			| REPEAT expr EOL block_statement ENDR
 			{
-				__yyfmt__.Println("block_statement", $4.String())
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else if $4.NodeType() == NODE_ERROR {
