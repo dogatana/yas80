@@ -71,12 +71,19 @@ func (o ObjectType) String() string {
 }
 
 // program
-type Program struct {
+type ProgramObject struct {
 	Objects []Object
 }
 
-func (p *Program) Type() ObjectType { return PROGRAM_OBJ }
-func (p *Program) String() string   { return "PROGRAM_OBJ" }
+func (p *ProgramObject) Type() ObjectType { return PROGRAM_OBJ }
+func (p *ProgramObject) String() string {
+	results := []string{}
+
+	for _, result := range p.Objects {
+		results = append(results, result.String())
+	}
+	return strings.Join(results, "\n")
+}
 
 // code
 type Code struct {

@@ -73,7 +73,7 @@ func main() {
 	// fmt.Println("-- global env")
 	// env.Print()
 
-	result := eval.Eval(prog, env).(*object.Program)
+	result := eval.Eval(prog, env).(*object.ProgramObject)
 	logger.Print()
 	fmt.Println("--")
 
