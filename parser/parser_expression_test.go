@@ -71,11 +71,11 @@ func TestCallFunction(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"fn()", "fn()"},
-		{"  fn(   )  ", "fn()"},
-		{"fn(1)", "fn(1)"},
-		{"fn(1,2,3)", "fn(1, 2, 3)"},
-		{"fn(1,2+3,4*5)", "fn(1, 5, 20)"},
+		{"aFunc()", "aFunc()"},
+		{"  aFunc(   )  ", "aFunc()"},
+		{"aFunc(1)", "aFunc(1)"},
+		{"aFunc(1,2,3)", "aFunc(1, 2, 3)"},
+		{"aFunc(1,2+3,4*5)", "aFunc(1, 5, 20)"},
 	}
 
 	for _, tt := range tests {

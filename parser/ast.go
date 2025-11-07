@@ -176,7 +176,7 @@ func (es *EnumStatement) String() string {
 
 	out.WriteString(es.Name + " ENUM\n")
 	out.WriteString(es.Elements.String() + "\n")
-	out.WriteString("END_ENUM")
+	out.WriteString("ENDE")
 
 	return out.String()
 }
@@ -236,7 +236,7 @@ func (rs *RepeatStatement) String() string {
 	if block != "" {
 		out.WriteString(block + "\n")
 	}
-	out.WriteString("END_REPEAT")
+	out.WriteString("ENDR")
 
 	return out.String()
 }
@@ -268,7 +268,7 @@ func (is *IfStatement) String() string {
 			out.WriteString(block + "\n")
 		}
 	}
-	out.WriteString("END_IF")
+	out.WriteString("ENDIF")
 
 	return out.String()
 }
@@ -288,9 +288,9 @@ func (fs *FunctionStatement) LineNumber() int          { return fs.lineNumber }
 func (fs *FunctionStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(fs.Name + " FUNCTION " + strings.Join(fs.Params, ", ") + "\n")
+	out.WriteString(fs.Name + " FUNC " + strings.Join(fs.Params, ", ") + "\n")
 	out.WriteString(fs.Block.String() + "\n")
-	out.WriteString("END_FUNCTION")
+	out.WriteString("ENDF")
 
 	return out.String()
 }

@@ -43,7 +43,7 @@ func TestEnumStatement(t *testing.T) {
  abc
 def = 1  
  xyz  
-  end_enum `
+  ende`
 	l := newLexerForTest(input)
 	prog, ec, wc := Parse(l)
 	if ec > 0 || wc > 0 {
@@ -74,10 +74,10 @@ func TestRepeatStatement(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{`repeat 1\ end_repeat`, "REPEAT 1\nEND_REPEAT"},
-		{` Repeat 2 \\\\ endRepeat`, "REPEAT 2\nEND_REPEAT"},
-		{` REPEAT 3 \\\\ EndR`, "REPEAT 3\nEND_REPEAT"},
-		{` REPEAT 4 \1\ 2\3 \ 4 \ EndR`, "REPEAT 4\n1\n2\n3\n4\nEND_REPEAT"},
+		{`repeat 1\ endr`, "REPEAT 1\nENDR"},
+		{` Repeat 2 \\\\ endR`, "REPEAT 2\nENDR"},
+		{` REPEAT 3 \\\\ EndR`, "REPEAT 3\nENDR"},
+		{` REPEAT 4 \1\ 2\3 \ 4 \ EndR`, "REPEAT 4\n1\n2\n3\n4\nENDR"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
@@ -111,48 +111,48 @@ func TestIfStatement(t *testing.T) {
 		expected string
 	}{
 		{
-			`if 1\ end_if`,
-			"IF 1\nEND_IF",
+			`if 1\ endif`,
+			"IF 1\nENDIF",
 		},
 		{
-			`if 1 \ else \ end_if`,
-			"IF 1\nEND_IF",
+			`if 1 \ else \ endif`,
+			"IF 1\nENDIF",
 		},
 		{
-			`if 1 \ 100 \ end_if`,
-			"IF 1\n100\nEND_IF",
+			`if 1 \ 100 \ endif`,
+			"IF 1\n100\nENDIF",
 		},
 		{
-			`if 1 \ 100 \ else \ end_if`,
-			"IF 1\n100\nEND_IF",
+			`if 1 \ 100 \ else \ endif`,
+			"IF 1\n100\nENDIF",
 		},
 		{
-			`if 1 \ 100 \ else \ 200 \  end_if`,
-			"IF 1\n100\nELSE\n200\nEND_IF",
+			`if 1 \ 100 \ else \ 200 \  endif`,
+			"IF 1\n100\nELSE\n200\nENDIF",
 		},
 		{
-			`if 1 \ 100 \ if 2 \ 200 \else \ 300 \ end_if \ endif`,
-			"IF 1\n100\nIF 2\n200\nELSE\n300\nEND_IF\nEND_IF",
+			`if 1 \ 100 \ if 2 \ 200 \else \ 300 \ endif \ endif`,
+			"IF 1\n100\nIF 2\n200\nELSE\n300\nENDIF\nENDIF",
 		},
 		{
-			`if 1 \ 100 \ if 2 \ 200 \endif \ else \ 300 \ end_if`,
-			"IF 1\n100\nIF 2\n200\nEND_IF\nELSE\n300\nEND_IF",
+			`if 1 \ 100 \ if 2 \ 200 \endif \ else \ 300 \ endif`,
+			"IF 1\n100\nIF 2\n200\nENDIF\nELSE\n300\nENDIF",
 		},
 		{
 			` if 1 \ 100 \ if 2 \ 200 \else \ 300 \endif \ else \ if 3 \ 400 \ else \ 500 \endif\endif`,
-			"IF 1\n100\nIF 2\n200\nELSE\n300\nEND_IF\nELSE\nIF 3\n400\nELSE\n500\nEND_IF\nEND_IF",
+			"IF 1\n100\nIF 2\n200\nELSE\n300\nENDIF\nELSE\nIF 3\n400\nELSE\n500\nENDIF\nENDIF",
 		},
 		{
 			`if 1 \ 200 \ elif 2 \ 300 \ endif`,
-			"IF 1\n200\nELSE\nIF 2\n300\nEND_IF\nEND_IF",
+			"IF 1\n200\nELSE\nIF 2\n300\nENDif\nENDIF",
 		},
 		{
 			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \endif`,
-			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\END_IF\END_IF\END_IF\END_IF`,
+			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\ENDIF\ENDIF\ENDIF\ENDIF`,
 		},
 		{
 			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \else\500\endif`,
-			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\ELSE\500\END_IF\END_IF\END_IF\END_IF`,
+			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\ELSE\500\ENDIF\ENDIF\ENDIF\ENDIF`,
 		},
 	}
 	for _, tt := range tests {
@@ -187,22 +187,22 @@ func TestIfStatement(t *testing.T) {
 }
 
 func TestFunctionStatement(t *testing.T) {
-	input := `abs function x
+	input := `abs func x
 	if x > 0
 	  x
 	else
 	  -x
 	endif
-	end_function
+	endf
 	`
 	expected := `
-	abs FUNCTION x
+	abs FUNC x
 	IF (x > 0)
 	X
 	ELSE
 	(-x)
-	END_IF
-	END_FUNCTION`
+	ENDIF
+	ENDF`
 
 	l := newLexerForTest(input)
 	prog, ec, wc := Parse(l)

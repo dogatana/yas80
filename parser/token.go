@@ -23,42 +23,33 @@ var reservedWords map[string]Token = map[string]Token{
 	"EQU":   {TokenType: EQU, Literal: "EQU"},
 	"CONST": {TokenType: CONST, Literal: "CONST"},
 	"VAR":   {TokenType: VAR, Literal: "VAR"},
-	"FUNC":  {TokenType: FUNC, Literal: "FUNC"},
+	"FN":    {TokenType: FN, Literal: "FN"},
 	"ORG":   {TokenType: ORG, Literal: "ORG"},
 
 	// 複数行構文
-	"IF":     {TokenType: IF, Literal: "IF"},
-	"ELSE":   {TokenType: ELSE, Literal: "ELSE"},
-	"ELIF":   {TokenType: ELIF, Literal: "ELIF"},
-	"ENDIF":  {TokenType: END_IF, Literal: "ENDIF"},
-	"END_IF": {TokenType: END_IF, Literal: "END_IF"},
+	"IF":    {TokenType: IF, Literal: "IF"},
+	"ELSE":  {TokenType: ELSE, Literal: "ELSE"},
+	"ELIF":  {TokenType: ELIF, Literal: "ELIF"},
+	"ENDIF": {TokenType: ENDIF, Literal: "ENDIF"},
 
-	"MACRO":     {TokenType: MACRO, Literal: "MACRO"},
-	"ENDMACRO":  {TokenType: END_MACRO, Literal: "ENDMACRO"},
-	"END_MACRO": {TokenType: END_MACRO, Literal: "END_MACRO"},
-	"ENDM":      {TokenType: END_MACRO, Literal: "ENDM"},
+	"MACRO": {TokenType: MACRO, Literal: "MACRO"},
+	"ENDM":  {TokenType: ENDM, Literal: "ENDM"},
 
-	"REPEAT":     {TokenType: REPEAT, Literal: "REPEAT"},
-	"ENDREPEAT":  {TokenType: END_REPEAT, Literal: "ENDREPEAT"},
-	"END_REPEAT": {TokenType: END_REPEAT, Literal: "END_REPEAT"},
-	"ENDR":       {TokenType: END_REPEAT, Literal: "ENDR"},
+	"REPEAT": {TokenType: REPEAT, Literal: "REPEAT"},
+	"ENDR":   {TokenType: ENDR, Literal: "ENDR"},
 
-	"PROC":     {TokenType: PROC, Literal: "PROC"},
-	"ENDPROC":  {TokenType: END_PROC, Literal: "ENDPROC"},
-	"END_PROC": {TokenType: END_PROC, Literal: "END_PROC"},
-	"ENDP":     {TokenType: END_PROC, Literal: "ENDP"},
+	"PROC": {TokenType: PROC, Literal: "PROC"},
+	"ENDP": {TokenType: ENDP, Literal: "ENDP"},
 
-	"FUNCTION":     {TokenType: FUNCTION, Literal: "FUNCTION"},
-	"ENDFUNCTION":  {TokenType: END_FUNCTION, Literal: "ENDFUNCTION"},
-	"END_FUNCTION": {TokenType: END_FUNCTION, Literal: "END_FUNCTION"},
-	"ENDF":         {TokenType: END_FUNCTION, Literal: "ENDF"},
+	"FUNC": {TokenType: FUNC, Literal: "FUNC"},
+	"ENDF": {TokenType: ENDF, Literal: "ENDF"},
 
-	"BLOCK":     {TokenType: BLOCK, Literal: "BLOCK"},
-	"ENDBLOCK":  {TokenType: END_BLOCK, Literal: "ENDBLOCK"},
-	"END_BLOCK": {TokenType: END_BLOCK, Literal: "END_BLOCK"},
-	"ENDB":      {TokenType: END_BLOCK, Literal: "ENDB"},
+	"BLOCK": {TokenType: BLOCK, Literal: "BLOCK"},
+	"ENDB":  {TokenType: ENDB, Literal: "ENDB"},
 
-	"ENUM":     {TokenType: ENUM, Literal: "ENDBLOCK"},
-	"END_ENUM": {TokenType: END_ENUM, Literal: "END_ENUM"},
-	"ENDE":     {TokenType: END_ENUM, Literal: "ENDE"},
+	"ENUM": {TokenType: ENUM, Literal: "ENDBLOCK"},
+	"ENDE": {TokenType: ENDE, Literal: "ENDE"},
+
+	"FOR": {TokenType: FOR, Literal: "FOR"},
+	// "ENDFOR": {TokenType: ENDFOR, Literal: "ENDFOR"}, // ENDF とする
 }

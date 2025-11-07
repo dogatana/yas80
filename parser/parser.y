@@ -44,15 +44,18 @@ var _ = __yyfmt__.Sprintf
 %token<token> ADDSUB MULDIV COMP SHIFT UNARY
 %token SL SR EQ NEQ GE LE OR AND
 
-%token<token> CONST VAR EQU FUNC ORG
+%token<token> ORG
+%token<token> CONST VAR EQU
+%token<token> FN // 1行関数
 
-%token<token> IF ELSE ELIF END_IF
-%token<token> MACRO END_MACRO
-%token<token> REPEAT END_REPEAT
-%token<token> FUNCTION END_FUNCTION
-%token<token> PROC END_PROC
-%token<token> ENUM END_ENUM
-%token<token> BLOCK END_BLOCK
+%token<token> IF ELSE ELIF ENDIF
+%token<token> MACRO ENDM
+%token<token> REPEAT ENDR
+%token<token> FUNC ENDF
+%token<token> PROC ENDP
+%token<token> ENUM ENDE
+%token<token> BLOCK ENDB
+%token<token> FOR ENDFOR
 
 %token<token>  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':' '[' ']' '='
 
@@ -141,7 +144,7 @@ directive	: CONST IDENT '=' expr
 					$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3, lineNumber: $1.LineNumber}
 				}
 			}
-			| IDENT ENUM EOL enum_elements END_ENUM
+			| IDENT ENUM EOL enum_elements ENDE
 			{
 				if $4.NodeType() == NODE_ERROR {
 					$$ =  $4
@@ -175,7 +178,7 @@ directive	: CONST IDENT '=' expr
 					$$ = &AsignStatement{Left: $1, Value: $3, lineNumber: $1.(*IndexedExpression).lineNumber}
 				}
 			}
-			| REPEAT expr EOL block_statement END_REPEAT
+			| REPEAT expr EOL block_statement ENDR
 			{
 				__yyfmt__.Println("block_statement", $4.String())
 				if $2.NodeType() == NODE_ERROR {
@@ -186,7 +189,7 @@ directive	: CONST IDENT '=' expr
 					$$ = &RepeatStatement{MaxCount: $2, Block: $4, lineNumber: $1.LineNumber}
 				}
 			}
-			| IF expr EOL block_statement elseifs END_IF
+			| IF expr EOL block_statement elseifs ENDIF
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
@@ -200,7 +203,7 @@ directive	: CONST IDENT '=' expr
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
 				} 
 			}
-			| IF expr EOL block_statement elseifs ELSE block_statement END_IF
+			| IF expr EOL block_statement elseifs ELSE block_statement ENDIF
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
@@ -222,7 +225,7 @@ directive	: CONST IDENT '=' expr
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
 				}
 			}
-			| IDENT FUNCTION param_list EOL block_statement END_FUNCTION
+			| IDENT FUNC param_list EOL block_statement ENDF
 			{
 				$$ = &FunctionStatement{Name: $1.Literal, Params: $3, Block: $5, lineNumber: $1.LineNumber}
 			}

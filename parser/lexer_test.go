@@ -366,9 +366,14 @@ func TestZ80Instructions(t *testing.T) {
 }
 
 func TestReservedWords(t *testing.T) {
-	input := "CONST VAR EQU FUNC ORG IF ELSE ELIF ENDIF END_IF MACRO ENDMACRO END_MACRO ENDM " +
-		"REPEAT ENDREPEAT END_REPEAT ENDR FUNCTION ENDFUNCTION END_FUNCTION ENDF " +
-		"PROC ENDPROC END_PROC ENDP BLOCK ENDBLOCK END_BLOCK ENDB"
+	input := "CONST VAR EQU FN ORG " +
+		"IF ELSE ELIF ENDIF " +
+		"MACRO ENDM " +
+		"REPEAT ENDR " +
+		"FUNC ENDF " +
+		"PROC ENDP " +
+		"BLOCK ENDB " +
+		"FOR ENDF "
 	l := newLexerForTest(input)
 
 	for {
