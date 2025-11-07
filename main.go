@@ -46,39 +46,45 @@ func main() {
 
 	parser.SetYYDebug(getYYDebugEnv())
 
+	// 構文解析開始
 	fmt.Println("-- parser")
-	es := logger.New(file)
-	l := parser.NewLexer(bufio.NewReader(input), file, es)
+	logger := logger.New(file)
+	l := parser.NewLexer(bufio.NewReader(input), file, logger)
 	prog, ec, wc := parser.Parse(l)
-	es.Print()
+	logger.Print()
 	if ec != 0 || wc != 0 {
 		os.Exit(1)
 	}
 
+	// 構文解析結果
 	fmt.Printf("%d statements\n", len(prog.Statements))
+	fmt.Println("--")
 	if len(prog.Statements) == 0 {
 		os.Exit(0)
 	}
 	fmt.Println(prog.String())
 
-	es = logger.New("eavaluate")
-	eval := evaluator.New(es)
-	env := object.NewEnvironment(nil)
-
-	eval.ResolveConst(prog, env)
-	fmt.Println("-- global env")
-	env.Print()
-
+	// 評価開始
 	fmt.Println("-- evaluator")
+	eval := evaluator.New(logger)
+
+	env := object.NewEnvironment(nil)
+	// eval.ResolveConst(prog, env)
+	// fmt.Println("-- global env")
+	// env.Print()
+
 	result := eval.Eval(prog, env).(*object.Program)
-	for _, o := range result.Objects {
+	logger.Print()
+	fmt.Println("--")
+
+	for n, o := range result.Objects {
 		if o == nil {
-			fmt.Println("<nil>")
+			fmt.Printf("%d: <nil>\n", n+1)
 		} else {
-			fmt.Println(o.String())
+			fmt.Printf("%d: %s\n", n+1, o.String())
 		}
 	}
+	fmt.Println("-- env")
 	env.Print()
-	es.Print()
 
 }
