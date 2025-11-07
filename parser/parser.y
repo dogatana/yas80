@@ -103,11 +103,6 @@ program		: { }
 					prog.Statements = append(prog.Statements, $2)
 				}
 			}
-			| program error EOL
-			{
-				yylex.Error(__yyfmt__.Sprintf("[program error] %#v", $2), $3.LineNumber)
-				yyerrok()
-			}
 			;
 
 statement   : expr EOL			
