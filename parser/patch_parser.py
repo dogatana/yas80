@@ -11,17 +11,18 @@ class PatchData(typing.NamedTuple):
 patch_data: list[PatchData] = [
     # yyLexer.Error() の引数定義を修正
     PatchData("\tError(s string)\n", "\tError(s string, args ...any)\n"),
+    #  modernc.org/goyacc 用
     # yySymName() で 0x80 以上を数字でなく文字として扱う修正
-    PatchData(
-        '\treturn __yyfmt__.Sprintf("%d", c)\n',
-        '\treturn __yyfmt__.Sprintf("%q", rune(c))\n',
-    ),
-    # yyParse 内部のエラー発生時にトークン情報を追加
-    PatchData(
-        '\tyylex.Error(msg)\n',
-        '\tyylex.Error(msg, &yyVAL.token, &yylval.token)\n',
+    # PatchData(
+    #     '\treturn __yyfmt__.Sprintf("%d", c)\n',
+    #     '\treturn __yyfmt__.Sprintf("%q", rune(c))\n',
+    # ),
+    # yyParse 内部のエラー発生時にトークン情報を追加 
+    # PatchData(
+    #     '\tyylex.Error(msg)\n',
+    #     '\tyylex.Error(msg, &yyVAL.token, &yylval.token)\n',
 
-    ),
+    # ),
     # PatchData(
     #     '\tmsg = __yyfmt__.Sprintf("unexpected %s", ls)\n',
     #     '\tmsg = __yyfmt__.Sprintf("予期しないトークン %s\\n  yyLVAR.token: %s\\n  yylvar.token: %s", ls, yyVAL.token.String(), yylval.token.String())\n',
