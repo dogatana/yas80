@@ -50,11 +50,9 @@ func main() {
 	fmt.Println("-- parser")
 	logger := logger.New(file)
 	l := parser.NewLexer(bufio.NewReader(input), file, logger)
-	prog, ec, wc := parser.Parse(l)
+	prog, _, _ := parser.Parse(l)
+	fmt.Println("--")
 	logger.Print()
-	if ec != 0 || wc != 0 {
-		os.Exit(1)
-	}
 
 	// 構文解析結果
 	fmt.Printf("%d statements\n", len(prog.Statements))
