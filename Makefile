@@ -16,6 +16,9 @@ ${PARSER}: ${YACC} ${PATCH}
 	goyacc -v parser/y.output -o $@ ${YACC}
 	python parser/patch_parser.py $@ $@
 
+yacc:
+	goyacc -v parser/y.output -o ${PARSER} ${YACC}
+	python parser/patch_parser.py ${PARSER} ${PARSER}
 
 vet:
 	go vet ./parser ./evaluator
