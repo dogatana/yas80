@@ -117,9 +117,7 @@ statement   : expr EOL
 			| directive	 EOL	{ $$ = $1}
 			| error EOL
 			{
-				yylex.Error(__yyfmt__.Sprintf("[statement error] %#v", $1), $2.LineNumber)
-				yyerrok()
-
+				yylex.Error(__yyfmt__.Sprintf("[statement error] %s", $1.String()), $2.LineNumber)
 			}
 			;
 

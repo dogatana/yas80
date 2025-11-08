@@ -14,7 +14,8 @@ main.exe: ${SRC}
 	go build -o $@
 
 ${PARSER}: ${YACC} ${ERR} ${PATCH}
-	goyacc -xe ${ERR} -v parser/y.output -o $@ ${YACC}
+	# goyacc -xe ${ERR} -v parser/y.output -o $@ ${YACC}
+	goyacc -v parser/y.output -o $@ ${YACC}
 	python parser/patch_parser.py $@ $@
 
 xegen:

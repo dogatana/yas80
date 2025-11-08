@@ -42,6 +42,9 @@ func trimParen(s string) string {
 
 func SetYYDebug(v int) {
 	yyDebug = v
+	if v > 0 {
+		yyErrorVerbose = true
+	}
 }
 
 var twoCharTokenNames map[int]string = map[int]string{
@@ -55,20 +58,49 @@ var twoCharTokenNames map[int]string = map[int]string{
 	OR:  "||",
 }
 
-func tokenLiteral(t int) string {
-	if t == '\n' {
+func tokenLiteral(token int) string {
+	if token == '\n' {
 		return "EOL"
 	}
-	name, ok := twoCharTokenNames[t]
+	name, ok := twoCharTokenNames[token]
 	if ok {
 		return name
 	}
-	name = yySymNames[yyXLAT[t]]
+	pt := lexerTokenToParseToken((token))
+	if 256 <= pt && pt < yyPrivate {
+		return Z80OpCode2Name(pt)
+	}
+	name = yyTokname(pt)
 	// 1 文字トークンは 'x' のように ' で囲まれているのでそれをはずす
 	if name[0] == '\'' {
 		return name[1 : len(name)-1]
 	}
 	return name
+}
+
+// yylex1 の冒頭処理
+func lexerTokenToParseToken(char int) int {
+	token := 0
+	if char <= 0 {
+		return int(yyTok1[0])
+	}
+	if char < len(yyTok1) {
+		return int(yyTok1[char])
+	}
+	// Z80 Opcode
+	if 256 <= char && char < yyPrivate {
+		return char
+	}
+	if char >= yyPrivate && char < yyPrivate+len(yyTok2) {
+		return int(yyTok2[char-yyPrivate])
+	}
+	for i := 0; i < len(yyTok3); i += 2 {
+		token = int(yyTok3[i+0])
+		if token == char {
+			return int(yyTok3[i+1])
+		}
+	}
+	return 0
 }
 
 // 数値リテラルの畳み込み(中置演算子)
@@ -161,7 +193,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression) Expression {
 		if ok {
 			return &NumberLiteral{Value: fn(num1.Value, num2.Value)}
 		} else {
-			return &ParseError{Message: fmt.Sprintf("UNKNOWN infix op: '%s'", yySymNames[yyXLAT[opcode]])}
+			return &ParseError{Message: fmt.Sprintf("UNKNOWN infix op: '%s'", tokenLiteral(opcode))}
 		}
 	}
 	// 文字列演算(+)の畳み込み
@@ -198,7 +230,7 @@ func buildPrefixExpression(opcode int, op Expression) Expression {
 		if ok {
 			return &NumberLiteral{Value: fn(num.Value)}
 		} else {
-			return &ParseError{Message: fmt.Sprintf("UNKNOWN prefix %s", yySymNames[yyXLAT[opcode]])}
+			return &ParseError{Message: fmt.Sprintf("UNKNOWN prefix %s", tokenLiteral(opcode))}
 		}
 	}
 	return &PrefixExpression{OpCode: opcode, Op: op}

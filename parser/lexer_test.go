@@ -39,10 +39,10 @@ func TestLexerOneCharacter(t *testing.T) {
 		tok := l.NextToken()
 		// fmt.Println("[tok]", tok.String())
 		if tok.TokenType != TokenType(expected.Type) {
-			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
+			t.Errorf("expected Token.Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
 		}
 		if expected.SubType != 0 && tok.TokenSubType != TokenSubType(expected.SubType) {
-			t.Errorf("expected Token.SubType %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
+			t.Errorf("expected Token.SubType %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
 		}
 		if tok.Literal != expected.Literal {
 			t.Errorf("expected Token.Literal %s. got %#v", tok.Literal, tok)
@@ -72,10 +72,10 @@ func TestTwoCharToken(t *testing.T) {
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
 		if tok.TokenType != TokenType(expected.Type) {
-			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
+			t.Errorf("expected Token.Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
 		}
 		if expected.SubType != 0 && tok.TokenSubType != TokenSubType(expected.SubType) {
-			t.Errorf("expected Token.SubType %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
+			t.Errorf("expected Token.SubType %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
 		}
 		if tok.Literal != expected.Literal {
 			t.Errorf("expected Token.Literal %s. got %#v", tok.Literal, tok)
@@ -100,7 +100,7 @@ func TestGroupedToken(t *testing.T) {
 	for _, expected := range expected_tokens {
 		tok := l.NextToken()
 		if tok.TokenType != TokenType(expected.Type) {
-			t.Errorf("expected Token.Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
+			t.Errorf("expected Token.Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
 		}
 		if tok.TokenSubType != TokenSubType(expected.Op) {
 			t.Errorf("expected Token.Op %d. got %#v", int(tok.TokenSubType), tok)
@@ -267,7 +267,7 @@ func TestLabel(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.TokenType != tt.expected {
-			t.Errorf("expected Type %s. got %#v", yySymNames[yyXLAT[int(tt.expected)]], tok)
+			t.Errorf("expected Type %s. got %#v", tokenLiteral(int(tt.expected)), tok)
 		}
 	}
 }
@@ -295,7 +295,7 @@ func TestZ80REG8(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.TokenType != Z80_REG8 {
-			t.Errorf("tokenize %q. expected Type Z80_REG8. got %#v", tt.input, yySymNames[yyXLAT[int(tok.TokenType)]])
+			t.Errorf("tokenize %q. expected Type Z80_REG8. got %#v", tt.input, tokenLiteral(int(tok.TokenType)))
 		}
 		if tok.Literal != tt.input {
 			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
@@ -324,7 +324,7 @@ func TestZ80REG16(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.TokenType != Z80_REG16 {
-			t.Errorf("tokenize %q. expected Type Z80_REG16. got %#v", tt.input, yySymNames[yyXLAT[int(tok.TokenType)]])
+			t.Errorf("tokenize %q. expected Type Z80_REG16. got %#v", tt.input, tokenLiteral(int(tok.TokenType)))
 		}
 		if tok.Literal != tt.input {
 			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
@@ -354,7 +354,7 @@ func TestZ80FLAG(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.TokenType != Z80_FLAG {
-			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, yySymNames[yyXLAT[int(tok.TokenType)]])
+			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, tokenLiteral(int(tok.TokenType)))
 		}
 		if tok.Literal != tt.input {
 			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
@@ -385,7 +385,7 @@ func TestZ80Instructions(t *testing.T) {
 			continue
 		}
 		if tok.TokenType != expectedToken.TokenType {
-			t.Errorf("expected Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
+			t.Errorf("expected Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
 		}
 		if tok.Literal != expectedToken.Literal {
 			t.Errorf("expected Literal %q. got %#v", expectedToken.Literal, tok)
@@ -418,7 +418,7 @@ func TestReservedWords(t *testing.T) {
 			t.Fatalf("word %q is not registered", tok.Literal)
 		}
 		if tok.TokenType != expected.TokenType {
-			t.Errorf("expected Type %s. got %#v", yySymNames[yyXLAT[int(tok.TokenType)]], tok)
+			t.Errorf("expected Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
 		}
 		if tok.Literal != expected.Literal {
 			t.Errorf("expected Literal %q. got %#v", expected.Literal, tok)

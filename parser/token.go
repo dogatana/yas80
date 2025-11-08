@@ -14,8 +14,10 @@ type Token struct {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("Token{Type: %s, SubType: %s, Literal: %s, LineNumber: %d}",
-		yySymNames[yyXLAT[int(t.TokenType)]], tokenLiteral(int(t.TokenSubType)), t.Literal, t.LineNumber)
+	tt := int(t.TokenType)
+	tst := int(t.TokenSubType)
+	return fmt.Sprintf("Token{Type: %s(%d), SubType: %s(%d), Literal: %q, LineNumber: %d}",
+		tokenLiteral(tt), tt, tokenLiteral(tst), tst, t.Literal, t.LineNumber)
 }
 
 var reservedWords map[string]Token = map[string]Token{
