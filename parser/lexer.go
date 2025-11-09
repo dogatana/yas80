@@ -66,7 +66,7 @@ func (l *Lexer) Error(msg string, args ...any) {
 	} else if msg[0] == '[' {
 		l.logger.Error(msg, line)
 	} else {
-		l.logger.Error("[?]"+msg, line)
+		l.logger.Error(msg, line)
 	}
 }
 
