@@ -346,7 +346,7 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
 			{
-				$$ = &ParseError{Message: "両方のオペランドを間接指定にすることはできません"}
+				$$ = &ParseError{Message: "両方のオペランドを間接指定にすることはできません", lineNumber: $1.LineNumber}
 			}
 			| Z80_INST2 expr ',' expr
 			{
