@@ -174,7 +174,7 @@ var infixFuncs map[int]infixFuncType = map[int]infixFuncType{
 	},
 }
 
-func buildInfixExpression(opcode int, op1, op2 Expression) Expression {
+func buildInfixExpression(opcode int, op1, op2 Expression, lineNumber int) Expression {
 	if op1.NodeType() == NODE_ERROR {
 		return op1
 	}
@@ -186,14 +186,14 @@ func buildInfixExpression(opcode int, op1, op2 Expression) Expression {
 	num2, ok2 := op2.(*NumberLiteral)
 	if ok1 && ok2 {
 		if opcode == '/' && num2.Value == 0 {
-			return &ParseError{Message: "division by 0"}
+			return &ParseError{Message: "0 除算", lineNumber: lineNumber}
 		}
 
 		fn, ok := infixFuncs[opcode]
 		if ok {
-			return &NumberLiteral{Value: fn(num1.Value, num2.Value)}
+			return &NumberLiteral{Value: fn(num1.Value, num2.Value), lineNumber: lineNumber}
 		} else {
-			return &ParseError{Message: fmt.Sprintf("UNKNOWN infix op: '%s'", tokenLiteral(opcode))}
+			return &ParseError{Message: fmt.Sprintf("UNKNOWN infix op: '%s'", tokenLiteral(opcode)), lineNumber: lineNumber}
 		}
 	}
 	// 文字列演算(+)の畳み込み
@@ -220,7 +220,7 @@ var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
 	},
 }
 
-func buildPrefixExpression(opcode int, op Expression) Expression {
+func buildPrefixExpression(opcode int, op Expression, lineNumber int) Expression {
 	if op.NodeType() == NODE_ERROR {
 		return op
 	}
@@ -228,10 +228,10 @@ func buildPrefixExpression(opcode int, op Expression) Expression {
 	if ok {
 		fn, ok := prefixFuncs[opcode]
 		if ok {
-			return &NumberLiteral{Value: fn(num.Value)}
+			return &NumberLiteral{Value: fn(num.Value), lineNumber: lineNumber}
 		} else {
-			return &ParseError{Message: fmt.Sprintf("UNKNOWN prefix %s", tokenLiteral(opcode))}
+			return &ParseError{Message: fmt.Sprintf("UNKNOWN prefix %s", tokenLiteral(opcode)), lineNumber: lineNumber}
 		}
 	}
-	return &PrefixExpression{OpCode: opcode, Op: op}
+	return &PrefixExpression{OpCode: opcode, Op: op, lineNumber: lineNumber}
 }

@@ -43,7 +43,7 @@ var _ = __yyfmt__.Sprintf
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
 
 %token<token> ADDSUB MULDIV COMP SHIFT UNARY
-%token SL SR EQ NEQ GE LE OR AND
+%token<token> SL SR EQ NEQ GE LE OR AND
 
 %token<token> ORG
 %token<token> CONST VAR EQU
@@ -457,25 +457,26 @@ expr		: NUMBER
 				}
 			}
 			| indexed_expr 			{ $$ = $1}
-			| Z80_REG8 				{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
-			| Z80_REG16 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType)}}
-			| Z80_FLAG 				{ $$ = &FlagLiteral{Flag: int($1.TokenSubType)}}
+			| Z80_REG8 				{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
+			| Z80_REG16 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
+			| Z80_FLAG 				{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| '(' expr ')'			{ $$ = $2}
-			| expr ADDSUB expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3) }
-			| expr '-' expr		 	{ $$ = buildInfixExpression('-', $1, $3) }
-			| expr MULDIV expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3) }
-			| expr COMP expr 		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3) }
-			| expr SHIFT expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3) }
-			| expr OR expr			{ $$ = buildInfixExpression(OR, $1, $3) }
-			| expr AND expr			{ $$ = buildInfixExpression(AND, $1, $3) }
-			| '-' expr %prec UNARY	{ $$ = buildPrefixExpression('-', $2) }
-			| UNARY expr 			{ $$ = buildPrefixExpression(int($1.TokenSubType), $2) }
+			| expr ADDSUB expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
+			| expr '-' expr		 	{ $$ = buildInfixExpression('-', $1, $3, $2.LineNumber) }
+			| expr MULDIV expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
+			| expr COMP expr 		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
+			| expr SHIFT expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
+			| expr OR expr			{ $$ = buildInfixExpression(OR, $1, $3, $2.LineNumber) }
+			| expr AND expr			{ $$ = buildInfixExpression(AND, $1, $3, $2.LineNumber) }
+			| '-' expr %prec UNARY	{ $$ = buildPrefixExpression('-', $2, $1.LineNumber) }
+			| UNARY expr 			{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, $1.LineNumber) }
 			;
 
 indexed_expr: expr '[' ']'
 			{
 				if $1.NodeType() == NODE_ERROR {
 					$$ = $1
+					yylex.Error("[E]配列名の誤り", $2.LineNumber)
 				} else {
 					$$ = &ParseError{Message: "配列のインデックス未指定", lineNumber: $2.LineNumber}
 				}
@@ -484,8 +485,10 @@ indexed_expr: expr '[' ']'
 			{
 				if $1.NodeType() == NODE_ERROR {
 					$$ = $1
+					yylex.Error("[E]配列名の誤り", $2.LineNumber)
 				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3
+					yylex.Error("[E]配列インデックス誤り", $2.LineNumber)
 				} else {
 					$$ = &IndexedExpression{Left: $1, Index: $3, lineNumber: $2.LineNumber}
 				}
