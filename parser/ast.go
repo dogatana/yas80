@@ -56,6 +56,7 @@ type NodeSubType int
 type Node interface {
 	NodeType() NodeType
 	NodeSubType() NodeSubType
+	LineNumber() int // エラー表示用
 	String() string
 }
 
@@ -63,7 +64,6 @@ type Node interface {
 type Statement interface {
 	Node
 	statementNode()
-	LineNumber() int // エラー表示用
 }
 
 // 式
@@ -81,6 +81,7 @@ type Program struct {
 
 func (p *Program) NodeType() NodeType       { return NODE_PROGRAM }
 func (p *Program) NodeSubType() NodeSubType { return 0 }
+func (p *Program) LineNumber() int          { return 0 }
 func (p *Program) String() string {
 	var lines []string
 	for _, s := range p.Statements {
@@ -106,7 +107,7 @@ func (pe *ParseError) String() string {
 
 // ラベル - 独立した文として生成
 type LabelStatement struct {
-	Value      Node
+	Value      *Label
 	lineNumber int
 }
 
@@ -115,7 +116,7 @@ func (ls *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
 func (ls *LabelStatement) NodeSubType() NodeSubType { return 0 }
 func (ls *LabelStatement) LineNumber() int          { return ls.lineNumber }
 func (ls *LabelStatement) String() string {
-	out := ls.Value.(*Label).Name
+	out := ls.Value.Name
 	if out[0] != '.' {
 		out += ":"
 	}
@@ -155,16 +156,15 @@ func (es *EnumStatement) String() string {
 	return out.String()
 }
 
-// enum 要素定義文
+// enum 要素定義文の集合
 type EnumElements struct {
-	Elements   []*EnumElement
-	lineNumber int
+	Elements []*EnumElement
 }
 
 func (ee *EnumElements) statementNode()           {}
 func (ee *EnumElements) NodeType() NodeType       { return NODE_ENUM_ELEMENTS_STMT }
 func (ee *EnumElements) NodeSubType() NodeSubType { return 0 }
-func (ee *EnumElements) LineNumber() int          { return ee.lineNumber }
+func (ee *EnumElements) LineNumber() int          { return 0 }
 func (ee *EnumElements) String() string {
 	stmts := []string{}
 	for _, e := range ee.Elements {
@@ -173,15 +173,17 @@ func (ee *EnumElements) String() string {
 	return strings.Join(stmts, "\n")
 }
 
-// enum 要素
+// enum 要素定義文
 type EnumElement struct {
-	Name  string
-	Value Expression
+	Name       string
+	Value      Statement
+	lineNumber int
 }
 
-func (ee *EnumElement) expressionNode()          {}
+func (ee *EnumElement) statementNode()           {}
 func (ee *EnumElement) NodeType() NodeType       { return NODE_ENUM_ELEMENT }
 func (ee *EnumElement) NodeSubType() NodeSubType { return 0 }
+func (ee *EnumElement) LineNumber() int          { return ee.lineNumber }
 func (ee *EnumElement) String() string {
 	if ee.Value == nil {
 		return ee.Name
@@ -193,7 +195,7 @@ func (ee *EnumElement) String() string {
 // repeat statment
 type RepeatStatement struct {
 	MaxCount   Expression
-	Block      Statement
+	Block      *BlockStatement
 	lineNumber int
 }
 
@@ -271,14 +273,13 @@ func (fs *FunctionStatement) String() string {
 
 // block statement
 type BlockStatement struct {
-	Block      []Statement
-	lineNumber int
+	Block []Statement
 }
 
 func (bs *BlockStatement) statementNode()           {}
 func (bs *BlockStatement) NodeType() NodeType       { return NODE_BLOCK_STMT }
 func (bs *BlockStatement) NodeSubType() NodeSubType { return 0 }
-func (bs *BlockStatement) LineNumber() int          { return bs.lineNumber }
+func (bs *BlockStatement) LineNumber() int          { return 0 }
 func (bs *BlockStatement) String() string {
 	stmts := []string{}
 
@@ -342,6 +343,7 @@ type AsignStatement struct {
 func (as *AsignStatement) statementNode()           {}
 func (as *AsignStatement) NodeType() NodeType       { return NODE_ASIGN_STMT }
 func (as *AsignStatement) NodeSubType() NodeSubType { return 0 }
+func (as *AsignStatement) LineNumber() int          { return as.lineNumber }
 func (as *AsignStatement) String() string {
 	var out bytes.Buffer
 
@@ -394,46 +396,53 @@ func (zi *Z80Instruction) String() string {
 type Label struct {
 	nodeType   NodeType
 	Name       string
-	LineNumber int
+	lineNumber int
 }
 
 func (le *Label) expressionNode()          {}
 func (le *Label) NodeType() NodeType       { return le.nodeType }
 func (le *Label) NodeSubType() NodeSubType { return 0 }
+func (le *Label) LineNumber() int          { return le.lineNumber }
 func (le *Label) String() string           { return le.Name }
 
 // 数値
 type NumberLiteral struct {
-	Value int
+	Value      int
+	lineNumber int
 }
 
 func (nl *NumberLiteral) expressionNode()          {}
 func (nl *NumberLiteral) NodeType() NodeType       { return NODE_NUMBER }
 func (nl *NumberLiteral) NodeSubType() NodeSubType { return 0 }
+func (nl *NumberLiteral) LineNumber() int          { return nl.lineNumber }
 func (nl *NumberLiteral) String() string {
 	return fmt.Sprintf("%d", nl.Value)
 }
 
 // 文字列
 type StringLiteral struct {
-	Value string
+	Value      string
+	lineNumber int
 }
 
 func (sl *StringLiteral) expressionNode()          {}
 func (sl *StringLiteral) NodeType() NodeType       { return NODE_STRING }
 func (sl *StringLiteral) NodeSubType() NodeSubType { return 0 }
+func (sl *StringLiteral) LineNumber() int          { return sl.lineNumber }
 func (sl *StringLiteral) String() string {
 	return fmt.Sprintf("%q", sl.Value)
 }
 
 // 配列
 type ArrayLiteral struct {
-	Elements *ExpressionList
+	Elements   *ExpressionList
+	lineNumber int
 }
 
 func (al *ArrayLiteral) expressionNode()          {}
 func (al *ArrayLiteral) NodeType() NodeType       { return NODE_ARRAY }
 func (al *ArrayLiteral) NodeSubType() NodeSubType { return 0 }
+func (al *ArrayLiteral) LineNumber() int          { return al.lineNumber }
 func (al *ArrayLiteral) String() string {
 	elems := []string{}
 
@@ -453,6 +462,7 @@ type IndexedExpression struct {
 func (ie *IndexedExpression) expressionNode()          {}
 func (ie *IndexedExpression) NodeType() NodeType       { return NODE_INDEXED_EXPR }
 func (ie *IndexedExpression) NodeSubType() NodeSubType { return 0 }
+func (ie *IndexedExpression) LineNumber() int          { return ie.LineNumber() }
 func (ie *IndexedExpression) String() string {
 	var out bytes.Buffer
 
@@ -470,48 +480,56 @@ func (ie *IndexedExpression) String() string {
 type RegisterLiteral struct {
 	RegisterType int
 	Register     int
+	lineNumber   int
 }
 
 func (rl *RegisterLiteral) expressionNode()          {}
 func (rl *RegisterLiteral) NodeType() NodeType       { return NodeType(rl.RegisterType) }
 func (rl *RegisterLiteral) NodeSubType() NodeSubType { return NodeSubType(rl.Register) }
+func (rl *RegisterLiteral) LineNumber() int          { return rl.lineNumber }
 func (rl *RegisterLiteral) String() string {
 	return Z80OpCode2Name(rl.Register)
 }
 
 // フラグ
 type FlagLiteral struct {
-	Flag int
+	Flag       int
+	lineNumber int
 }
 
 func (fl *FlagLiteral) expressionNode()          {}
 func (fl *FlagLiteral) NodeType() NodeType       { return Z80_FLAG }
 func (fl *FlagLiteral) NodeSubType() NodeSubType { return NodeSubType(fl.Flag) }
+func (fl *FlagLiteral) LineNumber() int          { return fl.lineNumber }
 func (fl *FlagLiteral) String() string {
 	return Z80OpCode2Name(fl.Flag)
 }
 
 // 識別子
 type Ident struct {
-	Name  string
-	Value Expression
+	Name       string
+	Value      Expression
+	lineNumber int
 }
 
 func (i *Ident) expressionNode()          {}
 func (i *Ident) NodeType() NodeType       { return NODE_IDENT }
 func (i *Ident) NodeSubType() NodeSubType { return 0 }
+func (i *Ident) LineNumber() int          { return i.lineNumber }
 func (i *Ident) String() string           { return i.Name }
 
 // ドット識別子
 type DotIdent struct {
-	Left  string
-	Right string
-	Value Expression
+	Left       string
+	Right      string
+	Value      Expression
+	lineNumber int
 }
 
 func (di *DotIdent) expressionNode()          {}
 func (di *DotIdent) NodeType() NodeType       { return NODE_DOT_IDENT }
 func (di *DotIdent) NodeSubType() NodeSubType { return 0 }
+func (di *DotIdent) LineNumber() int          { return di.lineNumber }
 func (di *DotIdent) String() string           { return di.Left + "." + di.Right }
 
 // 間接指定
@@ -522,6 +540,7 @@ type IndirectExpression struct {
 func (ie *IndirectExpression) expressionNode()          {}
 func (ie *IndirectExpression) NodeType() NodeType       { return NODE_INDIRECT }
 func (ie *IndirectExpression) NodeSubType() NodeSubType { return 0 }
+func (ie *IndirectExpression) LineNumber() int          { return ie.Expression.LineNumber() }
 func (ie *IndirectExpression) String() string {
 	expr := trimParen(ie.Expression.String())
 	return "(" + expr + ")"
@@ -529,14 +548,16 @@ func (ie *IndirectExpression) String() string {
 
 // 中置演算子式
 type InfixExpression struct {
-	OpCode int
-	Op1    Expression
-	Op2    Expression
+	OpCode     int
+	Op1        Expression
+	Op2        Expression
+	lineNumber int
 }
 
 func (ie *InfixExpression) expressionNode()          {}
 func (ie *InfixExpression) NodeType() NodeType       { return NODE_INFIX_EXPR }
 func (ie *InfixExpression) NodeSubType() NodeSubType { return NodeSubType(ie.OpCode) }
+func (ie *InfixExpression) LineNumber() int          { return ie.lineNumber }
 func (ie *InfixExpression) String() string {
 	var op1, op2 string
 	if ie.Op1 == nil {
@@ -560,13 +581,15 @@ func (ie *InfixExpression) String() string {
 
 // 前置演算子式
 type PrefixExpression struct {
-	OpCode int
-	Op     Expression
+	OpCode     int
+	Op         Expression
+	lineNumber int
 }
 
 func (pe *PrefixExpression) expressionNode()          {}
 func (pe *PrefixExpression) NodeType() NodeType       { return NodeType(NODE_PREFIX_EXPR) }
 func (pe *PrefixExpression) NodeSubType() NodeSubType { return NodeSubType(pe.OpCode) }
+func (pe *PrefixExpression) LineNumber() int          { return pe.lineNumber }
 func (pe *PrefixExpression) String() string {
 	var op string
 	if pe.Op == nil {
@@ -580,13 +603,15 @@ func (pe *PrefixExpression) String() string {
 
 // 関数呼出し
 type CallExpression struct {
-	Function  Expression
-	Arguments *ExpressionList
+	Function   Expression
+	Arguments  *ExpressionList
+	lineNumber int
 }
 
 func (ce *CallExpression) expressionNode()          {}
 func (ce *CallExpression) NodeType() NodeType       { return NODE_CALL }
 func (ce *CallExpression) NodeSubType() NodeSubType { return 0 }
+func (ce *CallExpression) LineNumber() int          { return ce.lineNumber }
 func (ce *CallExpression) String() string {
 	var out bytes.Buffer
 
@@ -606,6 +631,7 @@ type ExpressionList struct {
 func (el *ExpressionList) expressionNode()          {}
 func (el *ExpressionList) NodeType() NodeType       { return NODE_EXPR_LIST }
 func (el *ExpressionList) NodeSubType() NodeSubType { return 0 }
+func (el *ExpressionList) LineNumber() int          { return 0 }
 func (el *ExpressionList) String() string {
 	list := []string{}
 

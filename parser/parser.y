@@ -14,6 +14,7 @@ var _ = __yyfmt__.Sprintf
 	num Node
 	node Node
 	err any
+	label *Label
 	enum_element *EnumElement
 	enum_elements *EnumElements
 	block *BlockStatement
@@ -24,10 +25,10 @@ var _ = __yyfmt__.Sprintf
 
 
 // プログラムの構成要素を指定
-%type<node> statement instruction directive label elseifs
+%type<node> statement instruction directive elseifs enum_element
+%type<label> label
 %type<block> block_statement
 %type<enum_elements> enum_elements
-%type<enum_element> enum_element
 %type<params> param_list
 %type<expr_list> expr_list
 %type<expr> expr indexed_expr
@@ -76,28 +77,24 @@ program		: { }
 			| program EOL
 			| program label EOL
 			{
-				stmt := &LabelStatement{Value: $2, lineNumber: $2.(*Label).LineNumber}
+				stmt := &LabelStatement{Value: $2, lineNumber: $3.LineNumber}
 				prog := yylex.(*Lexer).program
 				prog.Statements = append(prog.Statements, stmt)
 			}
 			| program label statement
 			{
-				if $3 == nil {
-					// do nothing
-				} else if $3.NodeType() == NODE_ERROR {
-					yylex.Error($3.(*ParseError).Message, $3.(Statement).LineNumber())
+				if $3.NodeType() == NODE_ERROR {
+					yylex.Error($3.(*ParseError).Message, $3.LineNumber())
 				} else {
 					prog := yylex.(*Lexer).program
-					stmt := &LabelStatement{Value: $2, lineNumber: $2.(*Label).LineNumber}
+					stmt := &LabelStatement{Value: $2, lineNumber: $2.LineNumber()}
 					prog.Statements = append(prog.Statements, stmt, $3)
 				}
 			}
 			| program statement 
 			{
-				if $2 == nil {
-					// do nothing
-				} else if $2.NodeType() == NODE_ERROR {
-					yylex.Error($2.(*ParseError).Message, $2.(Statement).LineNumber())
+				if $2.NodeType() == NODE_ERROR {
+					yylex.Error($2.(*ParseError).Message, $2.LineNumber())
 				} else {
 					prog := yylex.(*Lexer).program
 					prog.Statements = append(prog.Statements, $2)
@@ -113,8 +110,8 @@ statement   : expr EOL
 					$$ = &ExpressionStatement{Value: $1, lineNumber: $2.LineNumber}
 				}
 			}
-			| instruction EOL	{ $$ = $1}
-			| directive	 EOL	{ $$ = $1}
+			| instruction EOL	{ $$ = $1 }
+			| directive	 EOL	{ $$ = $1 }
 			| error EOL
 			{
 				yylex.Error(__yyfmt__.Sprintf("[statement error] %s", $1.String()), $2.LineNumber)
@@ -167,6 +164,8 @@ directive	: CONST IDENT '=' expr
 			{
 				if $1.NodeType() == NODE_ERROR {
 					$$ = $1
+				} else if $3.NodeType() == NODE_ERROR {
+					$3 = $3	
 				} else {
 					$$ = &AsignStatement{Left: $1, Value: $3, lineNumber: $1.(*IndexedExpression).lineNumber}
 				}
@@ -229,7 +228,6 @@ param_list	: 			{ $$ = []string{}}
 			{
 				$1 = append($1, $3.Literal)
 				$$ = $1
-				fmt.Printf("params: %T(%#v)\n", $$, $$)
 			}
 			;
 
@@ -238,8 +236,6 @@ elseifs		: { $$ = nil }
 			{ 
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
-				} else if $5.NodeType() == NODE_ERROR {
-					$$ = $5
 				} else if $1 == nil {
 					$$ = &IfStatement{Condition: $3, Consequence: $5, lineNumber: $2.LineNumber}
 				} else {
@@ -248,51 +244,64 @@ elseifs		: { $$ = nil }
 						s = s.Alternative.(*IfStatement)
 					}
 					s.Alternative = &IfStatement{Condition: $3, Consequence: $5, lineNumber: $2.LineNumber}
-
 					$$ = $1
 				}
 			}
 			;
-			
 
+	
+// statement エラー検出時は yylex.Err() を呼んで伝播を止める
 block_statement	: 	 				{ $$ = &BlockStatement{Block: []Statement{}} }
 			| block_statement EOL 	{ $$ = $1}
 			| block_statement statement 
 			{ 
 				if $2.NodeType() == NODE_ERROR {
-					$$ = $2.(*BlockStatement)
-				} else {
-					$1.Block = append($1.Block, $2.(Statement))
-					$$ = $1
+					err := $2.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber())
 				}
+				$1.Block = append($1.Block, $2.(Statement))
+				$$ = $1
 			}
 			;
 	
+// enum_element（実質 statement)エラー検出時は yylex.Err() を呼んで伝播を止める
 enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			| enum_elements EOL { $$ = $1 }
 			| enum_elements enum_element EOL
 			{
-				$1.Elements = append($1.Elements, $2)
+				if $2.NodeType() == NODE_ERROR {
+					err := $2.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber())
+				}
+				$1.Elements = append($1.Elements, $2.(*EnumElement))
 				$$ = $1
 			}
 			;
 
 enum_element : IDENT 			{ $$ = &EnumElement{Name: $1.Literal, Value: nil} }
-			| IDENT '=' expr	{ $$ = &EnumElement{Name: $1.Literal, Value: $3} }
+			| IDENT '=' expr	
+			{ 
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					stmt := &ExpressionStatement{Value:$3, lineNumber: $3.LineNumber()} 
+					$$ = &EnumElement{Name: $1.Literal, Value: stmt }
+				}
+			}
 			;
 
 label		: IDENT ':'
 			{
-				$$ = &Label{nodeType: NODE_LABEL, Name: $1.Literal, LineNumber: $1.LineNumber}
+				$$ = &Label{nodeType: NODE_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT ':'
 			{
 				yylex.Error("[I]ローカルラベルには ':' は不要です", $1.LineNumber)
-				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, LineNumber: $1.LineNumber}
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT
 			{
-				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, LineNumber: $1.LineNumber}
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
 			}
 			;
 
@@ -309,41 +318,70 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST1 '(' expr ')'
 			{
-				$$ = &Z80Instruction{
-						InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-						Op1: &IndirectExpression{Expression: $3}}
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					$$ = &Z80Instruction{
+							InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							Op1: &IndirectExpression{Expression: $3}}
+				}
 			}
 			| Z80_INST1 expr
 			{
-				$$ = &Z80Instruction{
-						InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-						Op1: $2}
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else {
+					$$ = &Z80Instruction{
+							InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							Op1: $2}
+				}
 			}
 			| Z80_INST2 '(' expr ')'
 			{
-				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-						Op2: &IndirectExpression{Expression: $3}}
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					$$ = &Z80Instruction{
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							Op2: &IndirectExpression{Expression: $3}}
+				}
 			}
 			| Z80_INST2 expr
 			{
-				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-						Op2: $2}
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else {
+					$$ = &Z80Instruction{
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							Op2: $2}
+				}
 			}
 			| Z80_INST2 '(' expr ')' ',' expr
 			{
-				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-						Op1: &IndirectExpression{Expression: $3},
-						Op2: $6}
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else if $6.NodeType() == NODE_ERROR {
+					$$ = $6
+				} else {
+
+					$$ = &Z80Instruction{
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							Op1: &IndirectExpression{Expression: $3},
+							Op2: $6}
+				}
 			}
 			| Z80_INST2 expr ',' '(' expr ')'
 			{
-				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-						Op1: $2,
-						Op2: &IndirectExpression{Expression: $5}}
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else if $5.NodeType() == NODE_ERROR {
+					$$ = $5
+				} else {
+					$$ = &Z80Instruction{
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							Op1: $2,
+							Op2: &IndirectExpression{Expression: $5}}
+				}
 			}
 			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
 			{
@@ -351,19 +389,32 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST2 expr ',' expr
 			{
-				$$ = &Z80Instruction{
-						InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-						Op1: $2,
-						Op2: $4}
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else if $4.NodeType() == NODE_ERROR {
+					$$ = $4
+				} else {
+					$$ = &Z80Instruction{
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							Op1: $2,
+							Op2: $4}
+				}
 			}
 			;
 	
 expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
-			| expr		{ $$ = &ExpressionList{Expressions: []Expression{$1}} }
+			| expr
+			{ 
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1.(*ExpressionList)
+				} else {
+					$$ = &ExpressionList{Expressions: []Expression{$1}} 
+				}
+			}
 			| expr_list ',' expr
 			{
-				if $1.NodeType() == NODE_ERROR {
-					$$ = $1
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3.(*ExpressionList)
 				} else {
 					$1.Expressions = append($1.Expressions, $3)
 					$$ = $1
@@ -419,11 +470,6 @@ expr		: NUMBER
 			| expr AND expr			{ $$ = buildInfixExpression(AND, $1, $3) }
 			| '-' expr %prec UNARY	{ $$ = buildPrefixExpression('-', $2) }
 			| UNARY expr 			{ $$ = buildPrefixExpression(int($1.TokenSubType), $2) }
-//			| error 
-//			{ 
-//				$$ = &ParseError{Message: __yyfmt__.Sprintf("[expr error] %s", $1.String())} 
-//				yyerrok()
-//			}
 			;
 
 indexed_expr: expr '[' ']'
