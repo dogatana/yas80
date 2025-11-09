@@ -105,7 +105,8 @@ def extract_rules(infile):
         print("", file=fp)
         print("var grammerRules map[int]string = map[int]string{", file=fp)
         for k, v in rules.items():
-            print(f'\t{k}: "{v}",', file=fp)
+            key = f"{k}:"
+            print(f'\t{key:4}"{v}",', file=fp)
         print("}", file=fp)
 
 def main(infile, outfile):
