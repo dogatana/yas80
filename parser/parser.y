@@ -296,7 +296,8 @@ label		: IDENT ':'
 			}
 			| LOCAL_IDENT ':'
 			{
-				yylex.Error("[I]ローカルラベルには ':' は不要です", $1.LineNumber)
+				// info のみ表示し、処理継続
+				yylex.Error("[I]ローカルラベルには ':' は不要", $1.LineNumber)
 				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT
@@ -402,23 +403,24 @@ instruction	: Z80_INST0
 			}
 			;
 	
+// expr エラー検出時は yylex.Error() を呼んで伝播を止める
 expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
 			| expr
 			{ 
 				if $1.NodeType() == NODE_ERROR {
-					$$ = $1.(*ExpressionList)
-				} else {
-					$$ = &ExpressionList{Expressions: []Expression{$1}} 
+					err := $1.(*ParseError)
+					yylex.Error("[E]" + err.Message, err.LineNumber())
 				}
+				$$ = &ExpressionList{Expressions: []Expression{$1}} 
 			}
 			| expr_list ',' expr
 			{
 				if $3.NodeType() == NODE_ERROR {
-					$$ = $3.(*ExpressionList)
-				} else {
-					$1.Expressions = append($1.Expressions, $3)
-					$$ = $1
+					err := $3.(*ParseError)
+					yylex.Error("[E]" + err.Message, err.LineNumber())
 				}
+				$1.Expressions = append($1.Expressions, $3)
+				$$ = $1
 			}
 			;
 
@@ -426,17 +428,17 @@ expr		: NUMBER
 	 		{
 				n, err := parseInt($1.Literal)
 				if err == nil {
-					$$ = &NumberLiteral{Value: int(n)}
+					$$ = &NumberLiteral{Value: int(n), lineNumber: $1.LineNumber}
 				} else {
 					$$ = &ParseError{Message: fmt.Sprintf("数値リテラル誤り: '%s'", $1.Literal), lineNumber: $1.LineNumber}
 				}
 			}
-			| STRING 		{ $$ = &StringLiteral{Value: $1.Literal} }
-			| IDENT 		{ $$ = &Ident{Name: $1.Literal} }
+			| STRING 		{ $$ = &StringLiteral{Value: $1.Literal, lineNumber: $1.LineNumber} }
+			| IDENT 		{ $$ = &Ident{Name: $1.Literal, lineNumber: $1.LineNumber} }
 			| DOT_IDENT
 			{
 				names := strings.Split(strings.ToUpper($1.Literal), ".")
-				$$ = &DotIdent{Left: names[0], Right: names[1]}
+				$$ = &DotIdent{Left: names[0], Right: names[1], lineNumber: $1.LineNumber}
 			}
 			| expr '(' expr_list ')'
 			{
@@ -445,7 +447,7 @@ expr		: NUMBER
 				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					$$ = &CallExpression{Function: $1, Arguments: $3}
+					$$ = &CallExpression{Function: $1, Arguments: $3, lineNumber: $1.LineNumber()}
 				}
 			}
 			| '[' expr_list ']'
@@ -453,7 +455,7 @@ expr		: NUMBER
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else {
-					$$ = &ArrayLiteral{Elements: $2}
+					$$ = &ArrayLiteral{Elements: $2, lineNumber: $1.LineNumber}
 				}
 			}
 			| indexed_expr 			{ $$ = $1}
