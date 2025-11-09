@@ -29,7 +29,7 @@ type InfoMessage struct {
 }
 
 func (im InfoMessage) String() string {
-	return fmt.Sprintf("%q:%d [WARN] %s", im.Filename, im.LineNumber, im.Message)
+	return fmt.Sprintf("%q:%d [INFO] %s", im.Filename, im.LineNumber, im.Message)
 }
 
 type Logger struct {

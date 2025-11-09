@@ -287,7 +287,7 @@ label		: IDENT ':'
 			}
 			| LOCAL_IDENT ':'
 			{
-				yylex.Error("[W]ローカルラベルには ':' は不要です", $1.LineNumber)
+				yylex.Error("[I]ローカルラベルには ':' は不要です", $1.LineNumber)
 				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, LineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT
