@@ -188,7 +188,7 @@ func TestLableStatement(t *testing.T) {
 		if !ok {
 			t.Errorf("parsing %s. prog.Statemtes[0] is not LabelStatement. got %T", tt.input, prog.Statements[0])
 		}
-		name := stmt.Value.(*Label).Name
+		name := stmt.Value.Name
 		if name != tt.expected {
 			t.Errorf("parsing %s. Label.Name is not %q. got %q", tt.input, tt.expected, name)
 		}
