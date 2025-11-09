@@ -32,6 +32,22 @@ patch_data: list[PatchData] = [
     #     '__yyfmt__.Printf("# %d: char %v (%#v)\\n", yystate, yyTokname(yytoken), yyVAL) // # changed'
     # ),
     PatchData(
+        'ret0:\n'
+        ,
+        'ret0:\n'
+        'if yyDebug >= 2 {\n'
+        '\t' '__yyfmt__.Println("# $end accept")\n'
+        '}\n'
+    ),
+    PatchData(
+        'ret1:\n'
+        ,
+        'ret1:\n'
+        'if yyDebug >= 2 {\n'
+        '\t' '__yyfmt__.Println("# abort")\n'
+        '}\n'
+    ),
+    PatchData(
         "\t\t" "if Errflag > 0 {\n"
         "\t\t" "\tErrflag--\n"
 		"\t\t"  "}\n"
@@ -40,7 +56,9 @@ patch_data: list[PatchData] = [
         "\t\t" "if Errflag > 0 {\n"
         "\t\t" "\tErrflag--\n"
 		"\t\t"  "}\n"
-		"\t\t"  '__yyfmt__.Printf("# %d: shift %d\\n", yySave, yystate) // # added\n'
+		"\t\t"  'if yyDebug >= 2 {\n'
+		"\t\t"  '\t__yyfmt__.Printf("# %d: shift %d\\n", yySave, yystate) // # added\n'
+		"\t\t"  "}\n"
 		"\t\t"  "goto yystack\n"
     ),
     PatchData(
@@ -59,14 +77,18 @@ patch_data: list[PatchData] = [
         'yyVAL = yyS[yyp+1]\n'
         ,
         "yyVAL = yyS[yyp+1]\n"
-        "\t" '__yyfmt__.Printf("# top %d\\n", yyS[yyp].yys) // # added\n'
+        "\t" 'if yyDebug >= 2 {\n'
+        "\t" '\t__yyfmt__.Printf("# top %d\\n", yyS[yyp].yys) // # added\n'
+        "\t" '}\n'
         "\t" "yySave = yyS[yyp].yys  // # added"
     ),
     PatchData(
-        '\t// dummy call; replaced with literal code\n'
+        '\t' '// dummy call; replaced with literal code\n'
         ,
-        '\t__yyfmt__.Printf("# %d: goto %d\\n", yySave, yystate) // # added\n\n'
-        '\t// dummy call; replaced with literal code\n',
+        '\t' 'if yyDebug >= 2 {\n'
+        '\t' '\t__yyfmt__.Printf("# %d: goto %d\\n", yySave, yystate) // # added\n\n'
+        '\t' '}\n'
+        '\t' '// dummy call; replaced with literal code\n',
     ),
     PatchData(
         'return "syntax error"',
