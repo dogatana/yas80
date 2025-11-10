@@ -279,14 +279,14 @@ enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			}
 			;
 
-enum_element : IDENT 			{ $$ = &EnumElement{Name: $1.Literal, Value: nil} }
+enum_element : IDENT 			{ $$ = &EnumElement{Name: $1.Literal, Value: nil, lineNumber: $1.LineNumber} }
 			| IDENT '=' expr	
 			{ 
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
 					stmt := &ExpressionStatement{Value:$3, lineNumber: $3.LineNumber()} 
-					$$ = &EnumElement{Name: $1.Literal, Value: stmt }
+					$$ = &EnumElement{Name: $1.Literal, Value: stmt, lineNumber: $1.LineNumber }
 				}
 			}
 			;
@@ -324,8 +324,9 @@ instruction	: Z80_INST0
 					$$ = $3
 				} else {
 					$$ = &Z80Instruction{
-							InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-							Op1: &IndirectExpression{Expression: $3}}
+							InstType: Z80_INST1, OpCode: int($1.TokenSubType), 
+							Op1: &IndirectExpression{Expression: $3},
+							lineNumber: $1.LineNumber }
 				}
 			}
 			| Z80_INST1 expr
@@ -334,8 +335,9 @@ instruction	: Z80_INST0
 					$$ = $2
 				} else {
 					$$ = &Z80Instruction{
-							InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-							Op1: $2}
+							InstType: Z80_INST1, OpCode: int($1.TokenSubType), 
+							Op1: $2,
+							lineNumber: $1.LineNumber }
 				}
 			}
 			| Z80_INST2 '(' expr ')'
@@ -344,8 +346,9 @@ instruction	: Z80_INST0
 					$$ = $3
 				} else {
 					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-							Op2: &IndirectExpression{Expression: $3}}
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
+							Op2: &IndirectExpression{Expression: $3},
+							lineNumber: $1.LineNumber }
 				}
 			}
 			| Z80_INST2 expr
@@ -354,8 +357,9 @@ instruction	: Z80_INST0
 					$$ = $2
 				} else {
 					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
-							Op2: $2}
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
+							Op2: $2,
+							lineNumber: $1.LineNumber }
 				}
 			}
 			| Z80_INST2 '(' expr ')' ',' expr
@@ -367,9 +371,10 @@ instruction	: Z80_INST0
 				} else {
 
 					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
 							Op1: &IndirectExpression{Expression: $3},
-							Op2: $6}
+							Op2: $6,
+							lineNumber: $1.LineNumber }
 				}
 			}
 			| Z80_INST2 expr ',' '(' expr ')'
@@ -380,9 +385,10 @@ instruction	: Z80_INST0
 					$$ = $5
 				} else {
 					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
 							Op1: $2,
-							Op2: &IndirectExpression{Expression: $5}}
+							Op2: &IndirectExpression{Expression: $5},
+							lineNumber: $1.LineNumber }
 				}
 			}
 			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
@@ -397,9 +403,10 @@ instruction	: Z80_INST0
 					$$ = $4
 				} else {
 					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber,
+							InstType: Z80_INST2, OpCode: int($1.TokenSubType),
 							Op1: $2,
-							Op2: $4}
+							Op2: $4,
+							lineNumber: $1.LineNumber}
 				}
 			}
 			;
@@ -412,7 +419,7 @@ expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
 					err := $1.(*ParseError)
 					yylex.Error("[E]" + err.Message, err.LineNumber())
 				}
-				$$ = &ExpressionList{Expressions: []Expression{$1}} 
+				$$ = &ExpressionList{Expressions: []Expression{$1}}
 			}
 			| expr_list ',' expr
 			{

@@ -1,8 +1,11 @@
 package logger
 
 const (
+	// system
 	E000 = "[E]system error"
 	E001 = "[E]syntax error"
+
+	// user
 	E002 = "[E]数値リテラル誤り: '%s'"
 	E003 = "[E]配列名誤り"
 	E004 = "[E]配列インデックス未指定"
