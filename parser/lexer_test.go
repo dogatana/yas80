@@ -214,8 +214,8 @@ func TestIdent(t *testing.T) {
 }
 func TestZ80REG8(t *testing.T) {
 	tests := []struct {
-		input string
-		op    int
+		input    string
+		expected TokenSubType
 	}{
 		{"A", Z80_REG_A},
 		{"B", Z80_REG_B},
@@ -236,21 +236,21 @@ func TestZ80REG8(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.TokenType != Z80_REG8 {
-			t.Errorf("tokenize %q. expected Type Z80_REG8. got %#v", tt.input, tokenLiteral(int(tok.TokenType)))
+			t.Errorf("expected Type Z80_REG8. got %s", tok.String())
+		}
+		if tok.TokenSubType != tt.expected {
+			t.Errorf("expected TokenSubtype %q. got %s", tokenLiteral(int(tt.expected)), tok.String())
 		}
 		if tok.Literal != tt.input {
-			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
-		}
-		if tok.TokenSubType != TokenSubType(tt.op) {
-			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.TokenSubType)
+			t.Errorf("expected Literal %q. got %s", tt.input, tok.String())
 		}
 	}
 }
 
 func TestZ80REG16(t *testing.T) {
 	tests := []struct {
-		input string
-		op    int
+		input    string
+		expected TokenSubType
 	}{
 		{"SP", Z80_REG_SP},
 		{"IX", Z80_REG_IX},
@@ -265,21 +265,21 @@ func TestZ80REG16(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.TokenType != Z80_REG16 {
-			t.Errorf("tokenize %q. expected Type Z80_REG16. got %#v", tt.input, tokenLiteral(int(tok.TokenType)))
+			t.Errorf("expected Type Z80_REG16. got %s", tok.String())
 		}
-		if tok.Literal != tt.input {
-			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
+		if tok.TokenSubType != TokenSubType(tt.expected) {
+			t.Errorf("expected TokenSubType %q. got %s", tokenLiteral(int(tt.expected)), tok.String())
 		}
-		if tok.TokenSubType != TokenSubType(tt.op) {
-			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.TokenSubType)
+		if tok.Literal != tokenLiteral(int(tt.expected)) {
+			t.Errorf("expected Literal %q. got %s", tt.input, tok.String())
 		}
 	}
 }
 
 func TestZ80FLAG(t *testing.T) {
 	tests := []struct {
-		input string
-		op    int
+		input    string
+		expected TokenSubType
 	}{
 		// C は Z80_REG8 トークンとなる
 		// {"C", Z80_FLAG_C},
@@ -288,7 +288,7 @@ func TestZ80FLAG(t *testing.T) {
 		{"NZ", Z80_FLAG_NZ},
 		{"PO", Z80_FLAG_PO},
 		{"PE", Z80_FLAG_PE},
-		{"P", Z80_FLAG_P},
+		{"p", Z80_FLAG_P},
 		{"M", Z80_FLAG_M},
 	}
 
@@ -298,11 +298,11 @@ func TestZ80FLAG(t *testing.T) {
 		if tok.TokenType != Z80_FLAG {
 			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, tokenLiteral(int(tok.TokenType)))
 		}
-		if tok.Literal != tt.input {
-			t.Errorf("tokenize %q. expected Literal %q. got %#v", tt.input, tt.input, tok)
+		if tok.TokenSubType != TokenSubType(tt.expected) {
+			t.Errorf("expected TokenSubType %q. got %s", tokenLiteral(int(tt.expected)), tok.String())
 		}
-		if tok.TokenSubType != TokenSubType(tt.op) {
-			t.Errorf("tokenize %q. expected Op '%c'. got '%c'", tt.input, tt.op, tok.TokenSubType)
+		if tok.Literal != tokenLiteral(int(tt.expected)) {
+			t.Errorf("expected Literal %q. got %s", tokenLiteral(int(tt.expected)), tok.String())
 		}
 	}
 }
@@ -327,13 +327,13 @@ func TestZ80Instructions(t *testing.T) {
 			continue
 		}
 		if tok.TokenType != expectedToken.TokenType {
-			t.Errorf("expected Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
+			t.Errorf("expected Type %s. got %s", tokenLiteral(int(tok.TokenType)), tok.String())
 		}
 		if tok.Literal != expectedToken.Literal {
-			t.Errorf("expected Literal %q. got %#v", expectedToken.Literal, tok)
+			t.Errorf("expected Literal %q. got %s", expectedToken.Literal, tok.String())
 		}
 		if tok.TokenSubType != expectedToken.TokenSubType {
-			t.Errorf("expected Op '%d'. got %#v", expectedToken.TokenSubType, tok)
+			t.Errorf("expected Op '%d'. got %s", expectedToken.TokenSubType, tok.String())
 		}
 
 	}
@@ -360,13 +360,13 @@ func TestReservedWords(t *testing.T) {
 			t.Fatalf("word %q is not registered", tok.Literal)
 		}
 		if tok.TokenType != expected.TokenType {
-			t.Errorf("expected Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
+			t.Errorf("expected Type %s. got %s", tokenLiteral(int(tok.TokenType)), tok.String())
 		}
 		if tok.Literal != expected.Literal {
-			t.Errorf("expected Literal %q. got %#v", expected.Literal, tok)
+			t.Errorf("expected Literal %q. got %s", expected.Literal, tok.String())
 		}
 		if tok.TokenSubType != expected.TokenSubType {
-			t.Errorf("expected Op '%d'. got %#v", expected.TokenSubType, tok)
+			t.Errorf("expected Op '%d'. got %s", expected.TokenSubType, tok.String())
 		}
 	}
 }
