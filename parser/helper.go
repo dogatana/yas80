@@ -66,7 +66,7 @@ func tokenLiteral(token int) string {
 	if ok {
 		return name
 	}
-	pt := lexerTokenToParseToken((token))
+	pt := lexerTokenToParserToken((token))
 	if 256 <= pt && pt < yyPrivate {
 		return Z80OpCode2Name(pt)
 	}
@@ -79,7 +79,7 @@ func tokenLiteral(token int) string {
 }
 
 // yylex1 の冒頭処理
-func lexerTokenToParseToken(char int) int {
+func lexerTokenToParserToken(char int) int {
 	token := 0
 	if char <= 0 {
 		return int(yyTok1[0])
