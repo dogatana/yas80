@@ -185,45 +185,30 @@ func TestLexInterface(t *testing.T) {
 	}
 }
 
-func TestIDENT(t *testing.T) {
+func TestIdent(t *testing.T) {
 	tests := []struct {
-		input             string
-		expected_literals []string
+		input           string
+		expectedType    TokenType
+		expectedLiteral string
 	}{
-		{" abc _abc ab_c abc_ ", []string{"abc", "_abc", "ab_c", "abc_"}},
-		// testLABEL へ移動
-		// {".abc @abc abc.def abc@def", []string{".abc", "@abc", "abc.def", "abc@def"}},
-	}
-
-	for _, tt := range tests {
-		l := newLexerForTest(tt.input)
-		for _, expected := range tt.expected_literals {
-			tok := l.NextToken()
-			if tok.TokenType != IDENT {
-				t.Errorf("expected=IDENT, got=%#v", tok)
-			}
-			if tok.Literal != expected {
-				t.Errorf("expected=%q, got=%q", expected, tok.Literal)
-			}
-		}
-	}
-}
-
-func TestLabel(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected TokenType
-	}{
-		{" abc.def:", DOT_IDENT},
-		{" .def:", LOCAL_IDENT},
-		{" @def:", AT_IDENT},
+		{" abc     ", IDENT, "abc"},
+		{" _abc    ", IDENT, "_abc"},
+		{" ab_c    ", IDENT, "ab_c"},
+		{" abc_    ", IDENT, "abc_"},
+		{" abc.def:", DOT_IDENT, "abc.def"},
+		{" .def:   ", LOCAL_IDENT, ".def"},
+		{" .def    ", LOCAL_IDENT, ".def"},
+		{" @def    ", AT_IDENT, "@def"},
 	}
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.TokenType != tt.expected {
-			t.Errorf("expected Type %s. got %#v", tokenLiteral(int(tt.expected)), tok)
+		if tok.TokenType != tt.expectedType {
+			t.Errorf("expected Type %s. got %s", tokenLiteral(int(tt.expectedType)), tok.String())
+		}
+		if tok.Literal != tt.expectedLiteral {
+			t.Errorf("expected Literal %q. got %s", tt.expectedLiteral, tok.String())
 		}
 	}
 }
@@ -297,6 +282,7 @@ func TestZ80FLAG(t *testing.T) {
 		op    int
 	}{
 		// C は Z80_REG8 トークンとなる
+		// {"C", Z80_FLAG_C},
 		{"NC", Z80_FLAG_NC},
 		{"Z", Z80_FLAG_Z},
 		{"NZ", Z80_FLAG_NZ},
