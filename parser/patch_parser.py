@@ -130,9 +130,9 @@ def extract_rules(infile):
         print("package parser", file=fp)
         print("", file=fp)
         print("var grammerRules map[int]string = map[int]string{", file=fp)
-        for k, v in rules.items():
+        for k in sorted(rules.keys()):
             key = f"{k}:"
-            print(f'\t{key:4}"{v}",', file=fp)
+            print(f'\t{key:4}"{rules[k]}",', file=fp)
         print("}", file=fp)
 
 def main(infile, outfile):
