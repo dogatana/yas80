@@ -48,14 +48,14 @@ func SetYYDebug(v int) {
 }
 
 var twoCharTokenNames map[int]string = map[int]string{
-	LE:  "<=",
-	GE:  ">=",
-	EQ:  "==",
-	NEQ: "!=",
-	SL:  "<<",
-	SR:  ">>",
-	AND: "&&",
-	OR:  "||",
+	LE:  "LE",  // "<=",
+	GE:  "GE",  // ">=",
+	EQ:  "EQ",  // "==",
+	NEQ: "NEQ", // "!=",
+	SL:  "SL",  // "<<",
+	SR:  "SR",  // ">>",
+	AND: "AND", // "&&",
+	OR:  "OR",  // "||",
 }
 
 func tokenLiteral(token int) string {
