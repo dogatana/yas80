@@ -71,6 +71,9 @@ var _ = __yyfmt__.Sprintf
 %left ADDSUB '|' '^' '-'       // ADDSUB + ^ |
 %left MULDIV SHIFT             // MULDIV * / SHIFT << >> 
 %right UNARY                   // ~ ! -
+%right UMINUS
+%nonassoc '(' '[' 
+
 
 %%
 // 文法規則を指定
@@ -161,7 +164,7 @@ directive	: CONST IDENT '=' expr
 					$$ = &AsignStatement{Left: $1, Value: $3, lineNumber: $2.LineNumber}
 				}
 			}
-			| indexed_expr '=' expr
+			| indexed_expr '=' expr 
 			{
 				if $1.NodeType() == NODE_ERROR {
 					$$ = $1
