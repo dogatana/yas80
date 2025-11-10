@@ -59,6 +59,9 @@ func TestSymbols(t *testing.T) {
 
 	for _, e := range expected {
 		tok := l.NextToken()
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		if tok.TokenType != e.TokenType {
 			t.Errorf("expected Token.TokenType %s. got %s", tokenLiteral(int(e.TokenType)), tok.String())
 		}
@@ -93,6 +96,10 @@ func TestBlankInput(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		for _, expected := range tt.expected_tokens {
 			tok := l.NextToken()
+			if tt.input != "" && tok.LineNumber == 0 {
+				fmt.Println("tokenize", tt.input)
+				t.Errorf("LineNumber not set. got %s", tok.String())
+			}
 			if tok.TokenType != TokenType(expected) {
 				t.Fatalf("tokenize %q, expected=%d, got=%s", tt.input, expected, tok.String())
 			}
@@ -105,6 +112,9 @@ func TestInvalidCharacter(t *testing.T) {
 
 	l := newLexerForTest(input)
 	tok := l.NextToken()
+	if tok.LineNumber == 0 {
+		t.Errorf("LineNumber not set. got %s", tok.String())
+	}
 	if tok.TokenType != INVALID || tok.Literal != "あ" {
 		t.Errorf("expected=INVALID literal 'あ', got=%#v", tok)
 	}
@@ -123,6 +133,9 @@ func TestString(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		if tok.TokenType != STRING || tok.Literal != tt.expected_literal {
 			fmt.Printf("tokenize %q\n", tt.input)
 			t.Errorf("expected=STRING with literal %q, got=%#v", tt.expected_literal, tok)
@@ -157,6 +170,9 @@ func TestNumber(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		if tok.TokenType != NUMBER || tok.Literal != tt.expected_literal {
 			t.Errorf("expected=NUMBER(%q), got=%s", tt.expected_literal, tok.String())
 		}
@@ -204,6 +220,9 @@ func TestIdent(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		if tok.TokenType != tt.expectedType {
 			t.Errorf("expected Type %s. got %s", tokenLiteral(int(tt.expectedType)), tok.String())
 		}
@@ -235,6 +254,9 @@ func TestZ80REG8(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		if tok.TokenType != Z80_REG8 {
 			t.Errorf("expected Type Z80_REG8. got %s", tok.String())
 		}
@@ -264,6 +286,9 @@ func TestZ80REG16(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		if tok.TokenType != Z80_REG16 {
 			t.Errorf("expected Type Z80_REG16. got %s", tok.String())
 		}
@@ -295,6 +320,9 @@ func TestZ80FLAG(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		if tok.TokenType != Z80_FLAG {
 			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, tokenLiteral(int(tok.TokenType)))
 		}
@@ -317,6 +345,9 @@ func TestZ80Instructions(t *testing.T) {
 	l := newLexerForTest(input)
 	for {
 		tok := l.NextToken()
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		if tok.TokenType == EOL {
 			break
 		}
@@ -352,6 +383,9 @@ func TestReservedWords(t *testing.T) {
 
 	for {
 		tok := l.NextToken()
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		if tok.TokenType == EOL {
 			break
 		}
