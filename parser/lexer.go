@@ -40,9 +40,9 @@ func (l *Lexer) Error(msg string, args ...any) {
 	var yyVAL, yylval *Token
 
 	switch len(args) {
-	case 0:
+	case 0: // Error(msg)
 		line = l.lineNumber
-	case 1:
+	case 1: // Error(msg, lineNumber)
 		n, ok := args[0].(int)
 		if !ok {
 			panic(fmt.Sprintf("[SYSTEM] invalid argument for Lexer.Error(string, %T)", args[0]))
@@ -219,32 +219,32 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	switch {
 	// COMP
 	case ch1 == '<' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: LE, Literal: "<="}
+		tok = Token{TokenType: COMP, TokenSubType: LE, Literal: "<=", LineNumber: l.lineNumber}
 	case ch1 == '<' && ch2 == '<':
-		tok = Token{TokenType: SHIFT, TokenSubType: SL, Literal: "<<"}
+		tok = Token{TokenType: SHIFT, TokenSubType: SL, Literal: "<<", LineNumber: l.lineNumber}
 	case ch1 == '>' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: GE, Literal: ">="}
+		tok = Token{TokenType: COMP, TokenSubType: GE, Literal: ">=", LineNumber: l.lineNumber}
 	case ch1 == '>' && ch2 == '>':
-		tok = Token{TokenType: SHIFT, TokenSubType: SR, Literal: ">>"}
+		tok = Token{TokenType: SHIFT, TokenSubType: SR, Literal: ">>", LineNumber: l.lineNumber}
 	case ch1 == '<' || ch1 == '>':
-		tok = Token{TokenType: COMP, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
+		tok = Token{TokenType: COMP, TokenSubType: TokenSubType(ch1), Literal: string(ch1), LineNumber: l.lineNumber}
 	case ch1 == '=' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: EQ, Literal: "=="}
+		tok = Token{TokenType: COMP, TokenSubType: EQ, Literal: "==", LineNumber: l.lineNumber}
 	case ch1 == '!' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: NEQ, Literal: "!="}
+		tok = Token{TokenType: COMP, TokenSubType: NEQ, Literal: "!=", LineNumber: l.lineNumber}
 	case ch1 == '!':
-		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
+		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch1), Literal: string(ch1), LineNumber: l.lineNumber}
 	case ch1 == '&' && ch2 == '&':
-		tok = Token{TokenType: AND, TokenSubType: 0, Literal: "&&"}
+		tok = Token{TokenType: AND, TokenSubType: 0, Literal: "&&", LineNumber: l.lineNumber}
 	case ch1 == '&':
-		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch1), Literal: string(ch1), LineNumber: l.lineNumber}
 	case ch1 == '|' && ch2 == '|':
-		tok = Token{TokenType: OR, TokenSubType: 0, Literal: "||"}
+		tok = Token{TokenType: OR, TokenSubType: 0, Literal: "||", LineNumber: l.lineNumber}
 	case ch1 == '|':
-		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch1), Literal: string(ch1)}
+		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch1), Literal: string(ch1), LineNumber: l.lineNumber}
 	default:
 		// 1文字トークンを返す
-		return Token{TokenType: TokenType(ch1), Literal: string(rune(ch1))}
+		return Token{TokenType: TokenType(ch1), Literal: string(rune(ch1)), LineNumber: l.lineNumber}
 	}
 	l.nextChar()
 	return tok
