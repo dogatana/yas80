@@ -132,10 +132,6 @@ func (l *Lexer) NextToken() Token {
 		ch = l.curChar
 		l.nextChar()
 		return Token{TokenType: TokenType(ch), Literal: string(ch), LineNumber: l.lineNumber}
-	case l.curChar == '&':
-		ch = l.curChar
-		l.nextChar()
-		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), LineNumber: l.lineNumber}
 	case l.curChar == '~':
 		ch = l.curChar
 		l.nextChar()
