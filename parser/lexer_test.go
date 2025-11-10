@@ -94,7 +94,7 @@ func TestBlankInput(t *testing.T) {
 		for _, expected := range tt.expected_tokens {
 			tok := l.NextToken()
 			if tok.TokenType != TokenType(expected) {
-				t.Fatalf("tokenize %q, expected=%d, got=%#v", tt.input, expected, tok)
+				t.Fatalf("tokenize %q, expected=%d, got=%s", tt.input, expected, tok.String())
 			}
 		}
 	}
@@ -141,31 +141,24 @@ func TestNumber(t *testing.T) {
 		{"  0  ", "0"},
 		{"12345", "12345"},
 		{"12_34_5 ", "12_34_5"},
+		{"0x19af", "0x19af"},
+		{"0XABCD", "0XABCD"},
+		{"0o_777", "0o_777"},
+		{"$12_34_56_78", "$12_34_56_78"},
+		{"%1111_0000", "%1111_0000"},
+		// 不正な数値でも受け付ける
+		{"0abc", "0abc"},
+		{"0xhoge", "0xhoge"},
+		{"0ohoge", "0ohoge"},
+		{"$ggg", "$ggg"},
+		{"%xyz", "%xyz"},
 	}
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.TokenType != NUMBER || tok.Literal != tt.expected_literal {
-			t.Errorf("ze %q, expected=NUMBER with literal %q, got=%#v",
-				tt.input, tt.expected_literal, tok)
-		}
-	}
-}
-
-func TestHexNumbers(t *testing.T) {
-
-	input := "  0x19af  0XABCD $12_34_56_78"
-	expected_literals := []string{"0x19af", "0XABCD", "$12_34_56_78"}
-
-	l := newLexerForTest(input)
-	for _, expected := range expected_literals {
-		tok := l.NextToken()
-		if tok.TokenType != NUMBER {
-			t.Errorf("expected=NUMBER, got=%#v", tok)
-		}
-		if tok.TokenType != NUMBER || tok.Literal != expected {
-			t.Errorf("expected=%q, got=%q", expected, tok.Literal)
+			t.Errorf("expected=NUMBER(%q), got=%s", tt.expected_literal, tok.String())
 		}
 	}
 }
