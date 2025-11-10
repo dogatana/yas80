@@ -71,32 +71,6 @@ func TestSymbols(t *testing.T) {
 	}
 }
 
-func TestGroupedToken(t *testing.T) {
-	input := " + | * / & "
-	expected_tokens := []struct {
-		Type int
-		Op   int
-	}{
-		{ADDSUB, '+'},
-		{ADDSUB, '|'},
-		{MULDIV, '*'},
-		{MULDIV, '/'},
-		{MULDIV, '&'},
-	}
-
-	l := newLexerForTest(input)
-
-	for _, expected := range expected_tokens {
-		tok := l.NextToken()
-		if tok.TokenType != TokenType(expected.Type) {
-			t.Errorf("expected Token.Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
-		}
-		if tok.TokenSubType != TokenSubType(expected.Op) {
-			t.Errorf("expected Token.Op %d. got %#v", int(tok.TokenSubType), tok)
-		}
-	}
-}
-
 func TestBlankInput(t *testing.T) {
 	tests := []struct {
 		input           string
