@@ -45,7 +45,8 @@ func TestExpression(t *testing.T) {
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			t.Errorf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
@@ -80,7 +81,8 @@ func TestCallFunction(t *testing.T) {
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
@@ -112,7 +114,8 @@ func TestArrayVariable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
@@ -140,7 +143,8 @@ func TestArrayElement(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
@@ -169,7 +173,8 @@ func TestStringExpression(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)

@@ -499,9 +499,8 @@ indexed_expr: expr '[' ']'
 
 %%
 
-func Parse(l *Lexer) (*Program, int, int) {
-	// error トークンでリカバリすると yyParse() は 0 を返す
+func Parse(l *Lexer) (*Program) {
+	// error トークンでリカバリすると yyParse() は 0 を返すため、戻り値には意味がない
 	yyParse(l)
-	ec, wc := l.logger.Count()
-	return l.program, ec, wc
+	return l.program
 }

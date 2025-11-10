@@ -54,8 +54,8 @@ func (l *Logger) Info(msg string, line int) {
 	l.Infomation = append(l.Infomation, InfoMessage{msg, l.Filename, line})
 }
 
-func (l *Logger) Count() (int, int) {
-	return len(l.Errors), len(l.Warnings)
+func (l *Logger) Count() (int, int, int) {
+	return len(l.Errors), len(l.Warnings), len(l.Infomation)
 }
 
 func (l *Logger) Print() {

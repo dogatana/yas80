@@ -16,7 +16,9 @@ func TestConstStatement(t *testing.T) {
 		{"def", 456},
 	}
 	l := newLexerForTest(input)
-	prog, ec, wc := Parse(l)
+	prog := Parse(l)
+	ec, wc, _ := l.logger.Count()
+
 	if ec > 0 || wc > 0 {
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
@@ -45,7 +47,8 @@ def = 1
  xyz  
   ende`
 	l := newLexerForTest(input)
-	prog, ec, wc := Parse(l)
+	prog := Parse(l)
+	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
 		l.logger.Print()
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
@@ -81,7 +84,8 @@ func TestRepeatStatement(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
@@ -157,7 +161,8 @@ func TestIfStatement(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			fmt.Println("test:", tt.input)
 			l.logger.Print()
@@ -205,7 +210,8 @@ func TestFunctionStatement(t *testing.T) {
 	ENDF`
 
 	l := newLexerForTest(input)
-	prog, ec, wc := Parse(l)
+	prog := Parse(l)
+	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
 		l.logger.Print()
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
@@ -242,7 +248,8 @@ func TestVarStatement(t *testing.T) {
 	for _, tt := range tests {
 
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
@@ -280,7 +287,8 @@ func TestAsignStatement(t *testing.T) {
 	for _, tt := range tests {
 
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			l.logger.Print()
 			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)

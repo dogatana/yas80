@@ -50,7 +50,7 @@ func main() {
 	fmt.Println("-- parser")
 	logger := logger.New(file)
 	l := parser.NewLexer(bufio.NewReader(input), file, logger)
-	prog, _, _ := parser.Parse(l)
+	prog := parser.Parse(l)
 	fmt.Println("--")
 	logger.Print()
 

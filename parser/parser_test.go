@@ -42,7 +42,8 @@ OUTD
 OTDR
 `
 	l := newLexerForTest(input)
-	prog, ec, wc := Parse(l)
+	prog := Parse(l)
+	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
 		for _, e := range l.logger.Errors {
 			fmt.Println(e.String())
@@ -84,7 +85,8 @@ RET
 RET 18
 `
 	l := newLexerForTest(input)
-	prog, ec, wc := Parse(l)
+	prog := Parse(l)
+	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
 		for _, e := range l.logger.Errors {
 			fmt.Println(e.String())
@@ -124,7 +126,8 @@ OUT (2), A
 OUT (C), B
 `
 	l := newLexerForTest(input)
-	prog, ec, wc := Parse(l)
+	prog := Parse(l)
+	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
@@ -144,7 +147,8 @@ LD A, (IX + 1)
 LD (IX + 1), A
 `
 	l := newLexerForTest(input)
-	prog, ec, wc := Parse(l)
+	prog := Parse(l)
+	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
@@ -177,7 +181,8 @@ func TestLableStatement(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog, ec, wc := Parse(l)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
 			t.Fatalf("parsing %s. returns %d errors and %d warnigs", tt.input, ec, wc)
 		}
@@ -199,7 +204,8 @@ func TestDotIdent(t *testing.T) {
 	input := "abc.def"
 
 	l := newLexerForTest(input)
-	prog, ec, wc := Parse(l)
+	prog := Parse(l)
+	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
 		t.Fatalf("parsing %s. returns %d errors and %d warnigs", input, ec, wc)
 	}
