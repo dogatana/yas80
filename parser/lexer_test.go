@@ -5,83 +5,72 @@ import (
 	"testing"
 )
 
-func TestTokens(t *testing.T) {
-	input := `123 "abc" def 456`
+// 非テスト：文字列に対してトークン列を返す
+func TestDisplayTokens(t *testing.T) {
+	input := `()= + - * / & | ^ == != < <= > >= ! ~ << >> || &&`
 	l := newLexerForTest(input)
 	for {
 		tok := l.NextToken()
 		fmt.Println(tok.String())
-		if tok.TokenType == EOL {
+		if tok.TokenType == 0 {
 			break
 		}
 	}
 }
-func TestLexerOneCharacter(t *testing.T) {
-	input := " ( ) - ! ~ & | ^"
-	expected_tokens := []struct {
-		Type    int
-		SubType int
-		Literal string
+
+func TestSymbols(t *testing.T) {
+	input := " ( ) = - + | ^ * / & ! ~ << >> < <= == != >= > || && "
+	expected := []struct {
+		TokenType TokenType
+		SubType   TokenSubType
+		Literal   string
 	}{
 		{'(', 0, "("},
 		{')', 0, ")"},
+		{'=', 0, "="},
 		{'-', 0, "-"},
-		{UNARY, '!', "!"},
-		{UNARY, '~', "~"},
-		{MULDIV, '&', "&"},
+
+		{ADDSUB, '+', "+"},
 		{ADDSUB, '|', "|"},
 		{ADDSUB, '^', "^"},
-	}
 
-	l := newLexerForTest(input)
+		{MULDIV, '*', "*"},
+		{MULDIV, '/', "/"},
+		{MULDIV, '&', "&"},
 
-	for _, expected := range expected_tokens {
-		tok := l.NextToken()
-		// fmt.Println("[tok]", tok.String())
-		if tok.TokenType != TokenType(expected.Type) {
-			t.Errorf("expected Token.Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
-		}
-		if expected.SubType != 0 && tok.TokenSubType != TokenSubType(expected.SubType) {
-			t.Errorf("expected Token.SubType %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
-		}
-		if tok.Literal != expected.Literal {
-			t.Errorf("expected Token.Literal %s. got %#v", tok.Literal, tok)
-		}
-	}
-}
+		{UNARY, '!', "!"},
+		{UNARY, '~', "~"},
 
-func TestTwoCharToken(t *testing.T) {
-	input := "<= >= == != << >> && ||"
-	expected_tokens := []struct {
-		Type    int
-		SubType int
-		Literal string
-	}{
-		{COMP, LE, "<="},
-		{COMP, GE, ">="},
-		{COMP, EQ, "=="},
-		{COMP, NEQ, "!="},
 		{SHIFT, SL, "<<"},
 		{SHIFT, SR, ">>"},
-		{AND, 0, "&&"},
+
+		{COMP, '<', "<"},
+		{COMP, LE, "<="},
+		{COMP, EQ, "=="},
+		{COMP, NEQ, "!="},
+		{COMP, GE, ">="},
+		{COMP, '>', ">"},
+
 		{OR, 0, "||"},
+		{AND, 0, "&&"},
 	}
 
 	l := newLexerForTest(input)
 
-	for _, expected := range expected_tokens {
+	for _, e := range expected {
 		tok := l.NextToken()
-		if tok.TokenType != TokenType(expected.Type) {
-			t.Errorf("expected Token.Type %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
+		if tok.TokenType != e.TokenType {
+			t.Errorf("expected Token.TokenType %s. got %s", tokenLiteral(int(e.TokenType)), tok.String())
 		}
-		if expected.SubType != 0 && tok.TokenSubType != TokenSubType(expected.SubType) {
-			t.Errorf("expected Token.SubType %s. got %#v", tokenLiteral(int(tok.TokenType)), tok)
+		if e.SubType != 0 && tok.TokenSubType != e.SubType {
+			t.Errorf("expected Token.SubType %s. got %s", tokenLiteral(int(tok.TokenSubType)), tok.String())
 		}
-		if tok.Literal != expected.Literal {
-			t.Errorf("expected Token.Literal %s. got %#v", tok.Literal, tok)
+		if tok.Literal != e.Literal {
+			t.Errorf("expected Token.Literal %s. got %s", tok.Literal, tok.String())
 		}
 	}
 }
+
 func TestGroupedToken(t *testing.T) {
 	input := " + | * / & "
 	expected_tokens := []struct {

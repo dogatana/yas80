@@ -65,12 +65,12 @@ var _ = __yyfmt__.Sprintf
 %token<token> error
 
 // 演算の優先度の指定
-%left OR
-%left AND
-%left COMP
-%left ADDSUB '|' '^' '-'
-%left MULDIV SHIFT
-%right UNARY 
+%left OR                       // ||
+%left AND                      // &&
+%left COMP                     // == != < <= > >=
+%left ADDSUB '|' '^' '-'       // ADDSUB + ^ |
+%left MULDIV SHIFT             // MULDIV * / SHIFT << >> 
+%right UNARY                   // ~ ! -
 
 %%
 // 文法規則を指定
