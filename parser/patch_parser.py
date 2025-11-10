@@ -32,6 +32,10 @@ patch_data: list[PatchData] = [
     #     '__yyfmt__.Printf("# %d: char %v (%#v)\\n", yystate, yyTokname(yytoken), yyVAL) // # changed'
     # ),
     PatchData(
+        '__yyfmt__.Printf("lex %s(%d) %#v\\n", yyTokname(token), uint(char), lval)',
+        '__yyfmt__.Printf("# lex %s(%d) %s\\n", yyTokname(token), uint(char), lval.token.String()) // # changed',
+    ),
+    PatchData(
         'ret0:\n'
         ,
         'ret0:\n'
