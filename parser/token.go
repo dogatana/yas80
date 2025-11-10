@@ -16,8 +16,12 @@ type Token struct {
 func (t Token) String() string {
 	tt := int(t.TokenType)
 	tst := int(t.TokenSubType)
-	return fmt.Sprintf("Token{Type: %s(%d), SubType: %s(%d), Literal: %q, LineNumber: %d}",
-		tokenLiteral(tt), tt, tokenLiteral(tst), tst, t.Literal, t.LineNumber)
+	tstName := tokenLiteral(tst)
+	if tst == 0 {
+		tstName = "0"
+	}
+	return fmt.Sprintf("Token{TokenType: %s(%d), SubType: %s(%d), Literal: %q, LineNumber: %d}",
+		tokenLiteral(tt), tt, tstName, tst, t.Literal, t.LineNumber)
 }
 
 var reservedWords map[string]Token = map[string]Token{
