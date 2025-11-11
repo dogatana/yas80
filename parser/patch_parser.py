@@ -27,6 +27,18 @@ patch_data: list[PatchData] = [
         "var yyn int", 
         "var yyn, yySave int // # changed"
     ),
+    PatchData(
+        'func yyErrorMessage(state, lookAhead int) string {',
+        'func yyErrorMessage(state, lookAhead int, token Token) string {',
+    ),
+    PatchData(
+        'res := "syntax error: unexpected " + yyTokname(lookAhead)',
+        'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected %s(%d, %q)", state, yyTokname(lookAhead), lookAhead, token.Literal)'
+    ),
+    PatchData(
+        'yylex.Error(yyErrorMessage(yystate, yytoken))',
+        'yylex.Error(yyErrorMessage(yystate, yytoken, yyrcvr.lval.token))',
+    ),
     # PatchData(
     #     '__yyfmt__.Printf("char %v in %v\\n", yyTokname(yytoken), yyStatname(yystate))',
     #     '__yyfmt__.Printf("# %d: char %v (%#v)\\n", yystate, yyTokname(yytoken), yyVAL) // # changed'
@@ -100,11 +112,7 @@ patch_data: list[PatchData] = [
     ),
     PatchData(
         'return "syntax error: " + e.msg',
-        'return __yyfmt__.Sprintf("syntax error(state %d): %s", state, e.msg)'
-    ),
-    PatchData(
-        'res := "syntax error: unexpected " + yyTokname(lookAhead)',
-        'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected %s(%d)", state,  yyTokname(lookAhead), lookAhead)',
+        'return __yyfmt__.Sprintf("syntax error(state %d): %s [token: %s]", state, e.msg, token.Literal)'
     ),
 ]
 
