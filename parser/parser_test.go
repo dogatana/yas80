@@ -22,6 +22,52 @@ func TestNumberLiteral(t *testing.T) {
 		{"0b1111", 0b1111},
 		{"0B1010", 0b1010},
 		{"%1001", 0b1001},
+		// 定数畳み込み
+		{"2 + 3 * 4", 14},
+		{"2 + 3 * (4 + 5)", 29},
+		{"15 & %1010", 10},
+		{"15 & 0b101", 5},
+		{"%1010 | %0101", 15},
+		{"%1010 ^ %0101", 15},
+		{"15 ^ 15", 0},
+		{"0b1111 ^ 0b0101", 0b1010},
+		{"1 << 8", 256},
+		{"8 >> 1", 4},
+
+		{"~0", -1},
+		{"~-1", 0},
+		{"~0xa5 & 0xff", 0x5a},
+		{"~5ah & 0xff", 0xa5},
+
+		{"1 < 2", 1},
+		{"1 <= 1", 1},
+		{"1 <= 2", 1},
+
+		{"1 > 2", 0},
+		{"1 >= 1", 1},
+		{"1 >= 2", 0},
+
+		{"3 < 2", 0},
+		{"3 <= 3", 1},
+		{"3 <= 2", 0},
+
+		{"3 > 2", 1},
+		{"3 >= 3", 1},
+		{"3 >= 2", 1},
+
+		{"3 < 2", 0},
+		{"3 <= 3", 1},
+		{"3 <= 2", 0},
+
+		{"2 == 2", 1},
+		{"2 != 2", 0},
+
+		{"!0", 1},
+		{"!2", 0},
+		{`!""`, 1},
+		{`!"a"`, 0},
+		{`!("" + "")`, 1},
+		{`!("a" + "b")`, 0},
 	}
 
 	for _, tt := range tests {
@@ -29,27 +75,14 @@ func TestNumberLiteral(t *testing.T) {
 		prog := Parse(l)
 		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
-			fmt.Println("parsing", tt.input)
+			fmt.Printf("input %q\n", tt.input)
 			t.Fatalf("%d errors and %d warnigs", ec, wc)
 		}
 		if len(prog.Statements) == 0 {
-			fmt.Println("parsing", tt.input)
+			fmt.Printf("input %q\n", tt.input)
 			t.Fatalf("%d statements", len(prog.Statements))
 		}
-		stmt, ok := prog.Statements[0].(*ExpressionStatement)
-		if !ok {
-			fmt.Println("parsing", tt.input)
-			t.Errorf("prog.Statemtes[0] is not ExpressionStatement. got %T", prog.Statements[0])
-		}
-		literal, ok := stmt.Value.(*NumberLiteral)
-		if !ok {
-			fmt.Println("parsing", tt.input)
-			t.Errorf("Value is not *NumberLiteral. got %T", stmt.Value)
-		}
-		if literal.Value != tt.expected {
-			fmt.Println("parsing", tt.input)
-			t.Errorf("Value is not %d. got %d", tt.expected, stmt.Value)
-		}
+		testNumberLiteralStatement(t, tt.input, prog.Statements[0], tt.expected)
 	}
 }
 
@@ -70,89 +103,120 @@ func TestStringLiteral(t *testing.T) {
 		prog := Parse(l)
 		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
-			fmt.Println("parsing", tt.input)
+			fmt.Printf("input %q\n", tt.input)
 			t.Fatalf("%d errors and %d warnigs", ec, wc)
 		}
 		if len(prog.Statements) == 0 {
 			fmt.Println("parsing", tt.input)
 			t.Fatalf("%d statements", len(prog.Statements))
 		}
-		stmt, ok := prog.Statements[0].(*ExpressionStatement)
-		if !ok {
-			fmt.Println("parsing", tt.input)
-			t.Errorf("prog.Statemtes[0] is not ExpressionStatement. got %T", prog.Statements[0])
-		}
-		literal, ok := stmt.Value.(*StringLiteral)
-		if !ok {
-			fmt.Println("parsing", tt.input)
-			t.Errorf("Value is not *StringLiteral. got %T", stmt.Value)
-		}
-		if literal.Value != tt.expected {
-			fmt.Println("parsing", tt.input)
-			t.Errorf("Value is not %q. got %q", tt.expected, stmt.Value)
-		}
+		testStringLiteralStatement(t, tt.input, prog.Statements[0], tt.expected)
 	}
 }
+
+func testStringLiteralStatement(t *testing.T, input string, node Node, expected string) {
+	stmt := testExpressionStatement(t, input, node)
+
+	literal, ok := stmt.Value.(*StringLiteral)
+	if !ok {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not *StringLiteral. got %T", literal)
+	}
+	if literal.Value != expected {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not %q. got %q", expected, literal.Value)
+	}
+}
+
+func testNumberLiteralStatement(t *testing.T, input string, node Node, expected int) {
+	stmt := testExpressionStatement(t, input, node)
+
+	literal, ok := stmt.Value.(*NumberLiteral)
+	if !ok {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not *NumberLiteral. got %T", literal)
+	}
+	if literal.Value != expected {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not %d. got %d", expected, literal.Value)
+	}
+}
+
+func testExpressionStatement(t *testing.T, input string, node Node) *ExpressionStatement {
+	stmt, ok := node.(*ExpressionStatement)
+	if !ok {
+		fmt.Printf("input %q\n", input)
+		t.Fatalf("not *ExpressionStatement. got %T", node)
+		return nil // ここへは到達しないが形式として必要
+	}
+	return stmt
+}
+
 func TestLableStatement(t *testing.T) {
 	tests := []struct {
-		input    string
-		expected string
+		input     string
+		TokenType int
+		expected  string
 	}{
-		{" abc: ", "abc"},
-		{" abc : ", "abc"},
-		{"abc:", "abc"},
-		{" abc:ld a,a ", "abc"},
-		{" abc :ld a, a", "abc"},
-		{"abc: ld a, a", "abc"},
-		{" .def: ", ".def"},
-		{" .def : ", ".def"},
-		{".def:", ".def"},
-		{" .def:ld a,a ", ".def"},
-		{" .def :ld a, a", ".def"},
-		{".def: ld a, a", ".def"},
+		{"abc:", IDENT, "abc"},
+		{"abc :ld a, a", IDENT, "abc"},
+		{".abc ", DOT_IDENT, ".abc"},
+		{".abc: ld a,a", DOT_IDENT, ".abc"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := Parse(l)
 		ec, wc, _ := l.logger.Count()
 		if ec > 0 || wc > 0 {
-			t.Fatalf("parsing %s. returns %d errors and %d warnigs", tt.input, ec, wc)
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatalf("%d errors and %d warnigs", ec, wc)
 		}
 		if len(prog.Statements) == 0 {
-			t.Fatalf("parsing %s. statements empty", tt.input)
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatal("statements empty")
 		}
 		stmt, ok := prog.Statements[0].(*LabelStatement)
 		if !ok {
-			t.Errorf("parsing %s. prog.Statemtes[0] is not LabelStatement. got %T", tt.input, prog.Statements[0])
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("prog.Statemtes[0] is not LabelStatement. got %T", prog.Statements[0])
 		}
 		name := stmt.Value.Name
 		if name != tt.expected {
-			t.Errorf("parsing %s. Label.Name is not %q. got %q", tt.input, tt.expected, name)
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("Label.Name is not %q. got %q", tt.expected, name)
 		}
 	}
 }
 
 func TestDotIdent(t *testing.T) {
-	input := "abc.def"
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{"abc.def", "ABC.DEF"},
+	}
 
-	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		t.Fatalf("parsing %s. returns %d errors and %d warnigs", input, ec, wc)
-	}
-	if len(prog.Statements) == 0 {
-		t.Fatalf("parsing %s. statements empty", input)
-	}
-	stmt, ok := prog.Statements[0].(*ExpressionStatement)
-	if !ok {
-		t.Errorf("parsing %s. prog.Statemtes[0] is not ExpressionStatement. got %T", input, prog.Statements[0])
-	}
-	ident, ok := stmt.Value.(*DotIdent)
-	if !ok {
-		t.Errorf("parsing %s. not Expression got %T", input, stmt.Value)
-	}
-	if ident.Left != "ABC" || ident.Right != "DEF" {
-		t.Errorf("parsing %s. not ABC.DEF. got %q", input, ident.String())
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
+		if ec > 0 || wc > 0 {
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatalf("%d errors and %d warnigs", ec, wc)
+		}
+		if len(prog.Statements) == 0 {
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatal("statements empty")
+		}
+		stmt := testExpressionStatement(t, tt.input, prog.Statements[0])
+		ident, ok := stmt.Value.(*DotIdent)
+		if !ok {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("not *DotIdent got %T", stmt.Value)
+		}
+		if ident.Left != "ABC" || ident.Right != "DEF" {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("not %q. got %q", tt.expected, ident.String())
+		}
 	}
 }
