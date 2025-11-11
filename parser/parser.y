@@ -144,11 +144,7 @@ directive	: CONST IDENT '=' expr
 			}
 			| IDENT ENUM EOL enum_elements ENDE
 			{
-				if $4.NodeType() == NODE_ERROR {
-					$$ =  $4
-				} else {
-					$$ = &EnumStatement{Name: $1.Literal, Elements: $4, lineNumber: $1.LineNumber}
-				}
+				$$ = &EnumStatement{Name: $1.Literal, Elements: $4, lineNumber: $1.LineNumber}
 			}
 			| VAR IDENT '=' expr
 			{
@@ -160,7 +156,12 @@ directive	: CONST IDENT '=' expr
 			}
 			| expr '=' expr
 			{
-				if $1.NodeType() == NODE_ERROR {
+				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
+					err := $1.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+					$$ = $3
+
+				} else if $1.NodeType() == NODE_ERROR {
 					$$ = $1
 				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3
@@ -170,10 +171,14 @@ directive	: CONST IDENT '=' expr
 			}
 			| indexed_expr '=' expr 
 			{
-				if $1.NodeType() == NODE_ERROR {
+				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
+					err := $1.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+					$$ = $3
+				} else if $1.NodeType() == NODE_ERROR {
 					$$ = $1
 				} else if $3.NodeType() == NODE_ERROR {
-					$3 = $3	
+					$$ = $3	
 				} else {
 					$$ = &AsignStatement{Left: $1, Value: $3, lineNumber: $1.(*IndexedExpression).lineNumber}
 				}
@@ -182,18 +187,18 @@ directive	: CONST IDENT '=' expr
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
-				} else if $4.NodeType() == NODE_ERROR {
-					$$ = $4
 				} else {
 					$$ = &RepeatStatement{MaxCount: $2, Block: $4, lineNumber: $1.LineNumber}
 				}
 			}
 			| IF expr EOL block_statement elseifs ENDIF
 			{
-				if $2.NodeType() == NODE_ERROR {
+				if $2.NodeType() == NODE_ERROR && $5 != nil && $5.NodeType() == NODE_ERROR{
+					err := $2.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+					$$ = $5
+				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
-				} else if $4.NodeType() == NODE_ERROR {
-					$$ = $4
 				} else if $5 == nil {
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
 				} else if $5.NodeType() == NODE_ERROR {
@@ -204,12 +209,12 @@ directive	: CONST IDENT '=' expr
 			}
 			| IF expr EOL block_statement elseifs ELSE block_statement ENDIF
 			{
-				if $2.NodeType() == NODE_ERROR {
+				if $2.NodeType() == NODE_ERROR && $5 != nil && $5.NodeType() == NODE_ERROR {
+					err := $2.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+					$$ = $5
+				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
-				} else if $4.NodeType() == NODE_ERROR {
-					$$ = $4
-				} else if $7.NodeType() == NODE_ERROR {
-					$$ = $7
 				} else if $5 == nil {
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $7, lineNumber: $1.LineNumber}
 				} else if $5.NodeType() == NODE_ERROR {
@@ -220,7 +225,6 @@ directive	: CONST IDENT '=' expr
 						s = s.Alternative.(*IfStatement)
 					}
 					s.Alternative = $7
-
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
 				}
 			}
@@ -258,7 +262,7 @@ elseifs		: { $$ = nil }
 			;
 
 	
-// statement エラー検出時は yylex.Err() を呼んで伝播を止める
+// statement エラー検出時は yylex.Error() を呼んで伝播を止める
 block_statement	: 	 				{ $$ = &BlockStatement{Block: []Statement{}} }
 			| block_statement EOL 	{ $$ = $1}
 			| block_statement statement 
@@ -272,7 +276,7 @@ block_statement	: 	 				{ $$ = &BlockStatement{Block: []Statement{}} }
 			}
 			;
 	
-// enum_element（実質 statement)エラー検出時は yylex.Err() を呼んで伝播を止める
+// enum_element（実質 statement)エラー検出時は yylex.Error() を呼んで伝播を止める
 enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			| enum_elements EOL { $$ = $1 }
 			| enum_elements enum_element EOL
@@ -371,12 +375,15 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST2 '(' expr ')' ',' expr
 			{
-				if $3.NodeType() == NODE_ERROR {
+				if $3.NodeType() == NODE_ERROR && $6.NodeType() == NODE_ERROR {
+					err := $3.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+					$$ = $6
+				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else if $6.NodeType() == NODE_ERROR {
 					$$ = $6
 				} else {
-
 					$$ = &Z80Instruction{
 							InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
 							Op1: &IndirectExpression{Expression: $3},
@@ -386,7 +393,11 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST2 expr ',' '(' expr ')'
 			{
-				if $2.NodeType() == NODE_ERROR {
+				if $2.NodeType() == NODE_ERROR && $5.NodeType() == NODE_ERROR {
+					err := $2.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+					$$ = $5
+				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else if $5.NodeType() == NODE_ERROR {
 					$$ = $5
@@ -400,11 +411,26 @@ instruction	: Z80_INST0
 			}
 			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
 			{
+				var err *ParseError
+
+				if $3.NodeType() == NODE_ERROR {
+					err = $3.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+				} 
+				if $7.NodeType() == NODE_ERROR {
+					err = $7.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+				}
+				// 常にエラーとする
 				$$ = &ParseError{Message: logger.E006, lineNumber: $1.LineNumber}
 			}
 			| Z80_INST2 expr ',' expr
 			{
-				if $2.NodeType() == NODE_ERROR {
+				if $2.NodeType() == NODE_ERROR && $4.NodeType() == NODE_ERROR {
+					err := $2.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+					$$ = $4
+				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else if $4.NodeType() == NODE_ERROR {
 					$$ = $4
@@ -424,7 +450,7 @@ expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
 			{ 
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
-					yylex.Error("[E]" + err.Message, err.LineNumber())
+					yylex.Error(err.Message, err.LineNumber())
 				}
 				$$ = &ExpressionList{Expressions: []Expression{$1}}
 			}
@@ -432,7 +458,7 @@ expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
 			{
 				if $3.NodeType() == NODE_ERROR {
 					err := $3.(*ParseError)
-					yylex.Error("[E]" + err.Message, err.LineNumber())
+					yylex.Error(err.Message, err.LineNumber())
 				}
 				$1.Expressions = append($1.Expressions, $3)
 				$$ = $1
@@ -459,19 +485,13 @@ expr		: NUMBER
 			{
 				if $1.NodeType() == NODE_ERROR {
 					$$ = $1
-				} else if $3.NodeType() == NODE_ERROR {
-					$$ = $3
 				} else {
 					$$ = &CallExpression{Function: $1, Arguments: $3, lineNumber: $1.LineNumber()}
 				}
 			}
 			| '[' expr_list ']'
 			{
-				if $2.NodeType() == NODE_ERROR {
-					$$ = $2
-				} else {
-					$$ = &ArrayLiteral{Elements: $2, lineNumber: $1.LineNumber}
-				}
+				$$ = &ArrayLiteral{Elements: $2, lineNumber: $1.LineNumber}
 			}
 			| indexed_expr 			{ $$ = $1}
 			| Z80_REG8 				{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
@@ -492,20 +512,27 @@ expr		: NUMBER
 indexed_expr: expr '[' ']'
 			{
 				if $1.NodeType() == NODE_ERROR {
-					$$ = $1
+					err := $1.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
 					yylex.Error(logger.E003, $2.LineNumber)
-				} else {
-					$$ = &ParseError{Message: logger.E004, lineNumber: $2.LineNumber}
-				}
+				} 
+				$$ = &ParseError{Message: logger.E004, lineNumber: $2.LineNumber}
 			}
 			| expr '[' expr ']'
 			{
-				if $1.NodeType() == NODE_ERROR {
-					$$ = $1
+				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
 					yylex.Error(logger.E003, $2.LineNumber)
-				} else if $3.NodeType() == NODE_ERROR {
-					$$ = $3
+					err := $1.(*ParseError)
+					yylex.Error(err.Message, err.LineNumber)
+
 					yylex.Error(logger.E005, $2.LineNumber)
+					$$ = $3
+				} else if $1.NodeType() == NODE_ERROR {
+					yylex.Error(logger.E003, $2.LineNumber)
+					$$ = $1
+				} else if $3.NodeType() == NODE_ERROR {
+					yylex.Error(logger.E005, $2.LineNumber)
+					$$ = $3
 				} else {
 					$$ = &IndexedExpression{Left: $1, Index: $3, lineNumber: $2.LineNumber}
 				}
