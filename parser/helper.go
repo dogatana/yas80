@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"yas80/logger"
 )
 
 func parseInt(s string) (int64, error) {
@@ -224,14 +225,25 @@ func buildPrefixExpression(opcode int, op Expression, lineNumber int) Expression
 	if op.NodeType() == NODE_ERROR {
 		return op
 	}
-	num, ok := op.(*NumberLiteral)
-	if ok {
+	switch op := op.(type) {
+	case *NumberLiteral:
 		fn, ok := prefixFuncs[opcode]
 		if ok {
-			return &NumberLiteral{Value: fn(num.Value), lineNumber: lineNumber}
+			return &NumberLiteral{Value: fn(op.Value), lineNumber: lineNumber}
 		} else {
 			return &ParseError{Message: fmt.Sprintf("UNKNOWN prefix %s", tokenLiteral(opcode)), lineNumber: lineNumber}
 		}
+	case *StringLiteral:
+		if opcode == '!' {
+			var result int
+			if op.Value == "" {
+				result = 1
+			} else {
+				result = 0
+			}
+			return &NumberLiteral{Value: result, lineNumber: lineNumber}
+		}
+		return &ParseError{Message: fmt.Sprintf(logger.E007, rune(opcode)), lineNumber: lineNumber}
 	}
 	return &PrefixExpression{OpCode: opcode, Op: op, lineNumber: lineNumber}
 }
