@@ -87,7 +87,9 @@ program		: { }
 			}
 			| program label statement
 			{
-				if $3.NodeType() == NODE_ERROR {
+				if $3 == nil {
+					// do nothing
+				} else if $3.NodeType() == NODE_ERROR {
 					yylex.Error($3.(*ParseError).Message, $3.LineNumber())
 				} else {
 					prog := yylex.(*Lexer).program
@@ -97,7 +99,9 @@ program		: { }
 			}
 			| program statement 
 			{
-				if $2.NodeType() == NODE_ERROR {
+				if $2 == nil {
+					// do nothing
+				} else if $2.NodeType() == NODE_ERROR {
 					yylex.Error($2.(*ParseError).Message, $2.LineNumber())
 				} else {
 					prog := yylex.(*Lexer).program
