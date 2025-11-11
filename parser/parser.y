@@ -515,6 +515,8 @@ indexed_expr: expr '[' ']'
 %%
 
 func Parse(l *Lexer) (*Program) {
+	// 常に有効
+	yyErrorVerbose = true
 	// error トークンでリカバリすると yyParse() は 0 を返すため、戻り値には意味がない
 	yyParse(l)
 	return l.program
