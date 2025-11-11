@@ -26,12 +26,7 @@ type Lexer struct {
 func (l *Lexer) Lex(lval *yySymType) int {
 	tok := l.NextToken()
 	lval.token = tok
-	// fmt.Println("[token]", tok.String())
-	if tok.TokenType == INVALID {
-		return int([]rune(tok.Literal)[0])
-	} else {
-		return int(tok.TokenType)
-	}
+	return int(tok.TokenType)
 }
 
 // yyLexer インターフェースメソッド
@@ -320,5 +315,5 @@ func (l *Lexer) isWordChar(ch rune) bool {
 }
 
 func (l *Lexer) isOneCharToken(ch rune) bool {
-	return ch == '(' || ch == ')' || ch == ',' || ch == ':'
+	return ch == '(' || ch == ')' || ch == ',' || ch == ':' || ch == '[' || ch == ']'
 }

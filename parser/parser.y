@@ -61,7 +61,7 @@ var _ = __yyfmt__.Sprintf
 
 %token<token>  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':' '[' ']' '='
 
-%token INVALID 
+%token<token> INVALID 
 %token<token> error
 
 // 演算の優先度の指定
