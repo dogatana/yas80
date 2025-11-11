@@ -142,6 +142,46 @@ func testStringLiteralStatement(t *testing.T, input string, node Node, expected 
 	}
 }
 
+func TestArrayLiteral(t *testing.T) {
+	tests := []struct {
+		input    string
+		count    int
+		expected []int
+	}{
+		{"[]", 0, []int{}},
+		{"[1]", 1, []int{1}},
+		{"[1, 2]", 2, []int{1, 2}},
+	}
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
+		if ec > 0 || wc > 0 {
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatalf("%d errors and %d warnigs", ec, wc)
+		}
+		stmt := testExpressionStatement(t, tt.input, prog.Statements[0])
+
+		array, ok := stmt.Value.(*ArrayLiteral)
+		if !ok {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("not *ArrayLiteral. got %T", stmt)
+		}
+		eles := array.Elements
+		if len(eles.Expressions) != tt.count {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("must have %d elements. got %d", tt.count, len(array.Elements.Expressions))
+		}
+		for i, n := range tt.expected {
+			value := eles.Expressions[i].(*NumberLiteral).Value
+			if value != n {
+				fmt.Printf("input %q\n", tt.input)
+				t.Errorf("array[%d] not %d. got %d", i, n, value)
+			}
+		}
+	}
+}
+
 func TestLableStatement(t *testing.T) {
 	tests := []struct {
 		input     string
