@@ -107,7 +107,7 @@ func (pe *ParseError) String() string {
 
 // ラベル - 独立した文として生成
 type LabelStatement struct {
-	Value      *Label
+	Value      *LabelLiteral
 	lineNumber int
 }
 
@@ -393,17 +393,17 @@ func (zi *Z80Instruction) String() string {
 // これ以降は 式 (Exspression)
 
 // ラベル
-type Label struct {
+type LabelLiteral struct {
 	nodeType   NodeType
 	Name       string
 	lineNumber int
 }
 
-func (le *Label) expressionNode()          {}
-func (le *Label) NodeType() NodeType       { return le.nodeType }
-func (le *Label) NodeSubType() NodeSubType { return 0 }
-func (le *Label) LineNumber() int          { return le.lineNumber }
-func (le *Label) String() string           { return le.Name }
+func (le *LabelLiteral) expressionNode()          {}
+func (le *LabelLiteral) NodeType() NodeType       { return le.nodeType }
+func (le *LabelLiteral) NodeSubType() NodeSubType { return 0 }
+func (le *LabelLiteral) LineNumber() int          { return le.lineNumber }
+func (le *LabelLiteral) String() string           { return le.Name }
 
 // 数値
 type NumberLiteral struct {
