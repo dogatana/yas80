@@ -86,6 +86,20 @@ func TestNumberLiteral(t *testing.T) {
 	}
 }
 
+func testNumberLiteralStatement(t *testing.T, input string, node Node, expected int) {
+	stmt := testExpressionStatement(t, input, node)
+
+	literal, ok := stmt.Value.(*NumberLiteral)
+	if !ok {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not *NumberLiteral. got %T", literal)
+	}
+	if literal.Value != expected {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not %d. got %d", expected, literal.Value)
+	}
+}
+
 func TestStringLiteral(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -126,30 +140,6 @@ func testStringLiteralStatement(t *testing.T, input string, node Node, expected 
 		fmt.Printf("input %q\n", input)
 		t.Errorf("not %q. got %q", expected, literal.Value)
 	}
-}
-
-func testNumberLiteralStatement(t *testing.T, input string, node Node, expected int) {
-	stmt := testExpressionStatement(t, input, node)
-
-	literal, ok := stmt.Value.(*NumberLiteral)
-	if !ok {
-		fmt.Printf("input %q\n", input)
-		t.Errorf("not *NumberLiteral. got %T", literal)
-	}
-	if literal.Value != expected {
-		fmt.Printf("input %q\n", input)
-		t.Errorf("not %d. got %d", expected, literal.Value)
-	}
-}
-
-func testExpressionStatement(t *testing.T, input string, node Node) *ExpressionStatement {
-	stmt, ok := node.(*ExpressionStatement)
-	if !ok {
-		fmt.Printf("input %q\n", input)
-		t.Fatalf("not *ExpressionStatement. got %T", node)
-		return nil // ここへは到達しないが形式として必要
-	}
-	return stmt
 }
 
 func TestLableStatement(t *testing.T) {

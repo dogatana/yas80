@@ -2,7 +2,9 @@ package parser
 
 import (
 	"bufio"
+	"fmt"
 	"strings"
+	"testing"
 	"yas80/logger"
 )
 
@@ -22,4 +24,14 @@ func splitTrim(input string) string {
 		}
 	}
 	return strings.Join(ret, "\n")
+}
+
+func testExpressionStatement(t *testing.T, input string, node Node) *ExpressionStatement {
+	stmt, ok := node.(*ExpressionStatement)
+	if !ok {
+		fmt.Printf("input %q\n", input)
+		t.Fatalf("not *ExpressionStatement. got %T", node)
+		return nil // ここへは到達しないが形式として必要
+	}
+	return stmt
 }
