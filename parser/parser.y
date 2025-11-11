@@ -15,7 +15,7 @@ var _ = __yyfmt__.Sprintf
 	num Node
 	node Node
 	err any
-	label *LabelLiteral
+	label *Label
 	enum_element *EnumElement
 	enum_elements *EnumElements
 	block *BlockStatement
@@ -304,17 +304,17 @@ enum_element : IDENT 			{ $$ = &EnumElement{Name: $1.Literal, Value: nil, lineNu
 
 label		: IDENT ':'
 			{
-				$$ = &LabelLiteral{nodeType: NODE_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
+				$$ = &Label{nodeType: NODE_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT ':'
 			{
 				// info のみ表示し、処理継続
 				yylex.Error(logger.I001, $1.LineNumber)
-				$$ = &LabelLiteral{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT
 			{
-				$$ = &LabelLiteral{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
 			}
 			;
 
