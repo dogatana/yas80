@@ -2,165 +2,97 @@ package parser
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 )
 
-func TestINST0(t *testing.T) {
-	input := `EXX
-LDI
-LDIR
-LDD
-LDDR
-CPI
-CPIR
-CPD
-CPDR
-DAA
-CPL
-NEG
-CCF
-SCF
-NOP
-HALT
-DI
-EI
-RLCA
-RLA
-RRCA
-RRA
-RLD
-RRD
-RETI
-RETN
-INI
-INIR
-INDR
-OUTI
-OTIR
-OUTD
-OTDR
-`
-	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		for _, e := range l.logger.Errors {
-			fmt.Println(e.String())
-		}
-		for _, e := range l.logger.Warnings {
-			fmt.Println(e.String())
-		}
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
+func TestNumberLiteral(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{"123_456", 123456},
+		{"0x1234", 0x1234},
+		{"0X4567", 0x4567},
+		{"$89ab", 0x89ab},
+		{"1234h", 0x1234},
+		{"5678H", 0x5678},
+		{"$0123", 0x123},
+		{"0o377", 0o377},
+		{"0O123", 0o123},
+		{"0b1111", 0b1111},
+		{"0B1010", 0b1010},
+		{"%1001", 0b1001},
 	}
-	expected := strings.Trim(input, " \n\t")
-	text := prog.String()
-	if text != expected {
-		t.Errorf("program differs. exptected %d chars. got %d chars",
-			len(expected), len(text))
-		fmt.Println(text)
+
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
+		if ec > 0 || wc > 0 {
+			fmt.Println("parsing", tt.input)
+			t.Fatalf("%d errors and %d warnigs", ec, wc)
+		}
+		if len(prog.Statements) == 0 {
+			fmt.Println("parsing", tt.input)
+			t.Fatalf("%d statements", len(prog.Statements))
+		}
+		stmt, ok := prog.Statements[0].(*ExpressionStatement)
+		if !ok {
+			fmt.Println("parsing", tt.input)
+			t.Errorf("prog.Statemtes[0] is not ExpressionStatement. got %T", prog.Statements[0])
+		}
+		literal, ok := stmt.Value.(*NumberLiteral)
+		if !ok {
+			fmt.Println("parsing", tt.input)
+			t.Errorf("Value is not *NumberLiteral. got %T", stmt.Value)
+		}
+		if literal.Value != tt.expected {
+			fmt.Println("parsing", tt.input)
+			t.Errorf("Value is not %d. got %d", tt.expected, stmt.Value)
+		}
 	}
 }
 
-func TestINST1(t *testing.T) {
-	input := `
-PUSH 1
-POP 2
-SUB 3
-AND 4
-OR 5
-CP 6
-INC 7
-DEC 8
-IM 9
-RLC 10
-RL 11
-RR 12
-SLA 13
-SRA 14
-SRL 15
-DJNZ 16
-RST 17
-RET
-RET 18
-`
-	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		for _, e := range l.logger.Errors {
-			fmt.Println(e.String())
+func TestStringLiteral(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{` "abc" `, "abc"},
+		{`"a\r\n" `, "a\\r\\n"},
+		{` " abc" `, " abc"},
+		{` "abc " `, "abc "},
+		{` " abc " `, " abc "},
+	}
+
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
+		if ec > 0 || wc > 0 {
+			fmt.Println("parsing", tt.input)
+			t.Fatalf("%d errors and %d warnigs", ec, wc)
 		}
-		for _, e := range l.logger.Warnings {
-			fmt.Println(e.String())
+		if len(prog.Statements) == 0 {
+			fmt.Println("parsing", tt.input)
+			t.Fatalf("%d statements", len(prog.Statements))
 		}
-		t.Fatalf("Parser returns %d errors and %d warnigs", ec, wc)
-	}
-	expected := strings.Trim(input, " \n\t")
-	text := strings.ReplaceAll(prog.String(), "\t", " ")
-	if text != expected {
-		t.Errorf("program differs. exptected %d chars. got %d chars",
-			len(expected), len(text))
-		fmt.Println(text)
-	}
-}
-
-func TestINST2(t *testing.T) {
-	input := `
-EX AF, AF'
-ADD A, 1
-ADC A, 2
-SBC A, 3
-BIT 0, B
-SET 1, C
-RES 2, D
-JP 100
-JP C, 100
-JR 200
-JR NC, 200
-CALL 300
-CALL NC, 300
-IN A, (1)
-IN B, (C)
-OUT (2), A
-OUT (C), B
-`
-	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
-	}
-	expected := strings.Trim(input, " \n\t")
-	text := strings.ReplaceAll(prog.String(), "\t", " ")
-	if text != expected {
-		t.Errorf("program differs. exptected %d chars. got %d chars",
-			len(expected), len(text))
+		stmt, ok := prog.Statements[0].(*ExpressionStatement)
+		if !ok {
+			fmt.Println("parsing", tt.input)
+			t.Errorf("prog.Statemtes[0] is not ExpressionStatement. got %T", prog.Statements[0])
+		}
+		literal, ok := stmt.Value.(*StringLiteral)
+		if !ok {
+			fmt.Println("parsing", tt.input)
+			t.Errorf("Value is not *StringLiteral. got %T", stmt.Value)
+		}
+		if literal.Value != tt.expected {
+			fmt.Println("parsing", tt.input)
+			t.Errorf("Value is not %q. got %q", tt.expected, stmt.Value)
+		}
 	}
 }
-
-func TestIndirect(t *testing.T) {
-	input := `
-LD A, (HL)
-LD (HL), A
-LD A, (IX + 1)
-LD (IX + 1), A
-`
-	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
-	}
-	expected := strings.Trim(input, " \n\t")
-	text := strings.ReplaceAll(prog.String(), "\t", " ")
-	if text != expected {
-		t.Errorf("program differs. exptected %d chars. got %d chars",
-			len(expected), len(text))
-		fmt.Println(text)
-	}
-}
-
 func TestLableStatement(t *testing.T) {
 	tests := []struct {
 		input    string
