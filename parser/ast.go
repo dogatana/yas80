@@ -28,6 +28,8 @@ const (
 	NODE_IF_STMT
 	NODE_BLOCK_STMT
 	NODE_FUNCTION_STMT
+	NODE_EXITM_STMT
+	NODE_RETURN_STMT
 
 	// expression
 	NODE_EXPR
@@ -352,6 +354,35 @@ func (as *AsignStatement) String() string {
 	out.WriteString(as.Value.String())
 
 	return out.String()
+}
+
+// Exitm 文
+type ExitmStatement struct {
+	lineNumber int
+}
+
+func (es *ExitmStatement) statementNode()           {}
+func (es *ExitmStatement) NodeType() NodeType       { return NODE_EXITM_STMT }
+func (ee *ExitmStatement) NodeSubType() NodeSubType { return 0 }
+func (es *ExitmStatement) LineNumber() int          { return es.lineNumber }
+func (es *ExitmStatement) String() string           { return "EXITM" }
+
+// Exitm 文
+type ReturnStatement struct {
+	Value      Expression
+	lineNumber int
+}
+
+func (rs *ReturnStatement) statementNode()           {}
+func (rs *ReturnStatement) NodeType() NodeType       { return NODE_RETURN_STMT }
+func (rs *ReturnStatement) NodeSubType() NodeSubType { return 0 }
+func (rs *ReturnStatement) LineNumber() int          { return rs.lineNumber }
+func (rs *ReturnStatement) String() string {
+	s := "RETURN"
+	if rs.Value != nil {
+		s += " " + rs.Value.String()
+	}
+	return s
 }
 
 // Z80 命令文 - Z80Instruction Statement

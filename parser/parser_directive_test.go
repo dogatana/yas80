@@ -313,3 +313,99 @@ func TestAsignStatement(t *testing.T) {
 		}
 	}
 }
+
+func TestExitmStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		NodeType NodeType
+		literal  string
+	}{
+		{"exitm", NODE_EXITM_STMT, "EXITM"},
+		{"ExitM", NODE_EXITM_STMT, "EXITM"},
+		{"EXITM", NODE_EXITM_STMT, "EXITM"},
+	}
+
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
+		if ec > 0 || wc > 0 {
+			fmt.Printf("input %q\n", tt.input)
+			l.logger.Print()
+			t.Fatalf("%d errors and %d warnigs", ec, wc)
+		}
+		if len(prog.Statements) != 1 {
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+		}
+		stmt, ok := prog.Statements[0].(*ExitmStatement)
+		if !ok {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("not ExitmStatement. got %T", stmt)
+		}
+
+		if stmt.NodeType() != tt.NodeType {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("NodeType not %s. got %s", tokenLiteral(int(tt.NodeType)), tokenLiteral(int(stmt.NodeType())))
+		}
+	}
+}
+
+func TestReturnStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		NodeType NodeType
+		expected any
+		literal  string
+	}{
+		{"return", NODE_RETURN_STMT, nil, "RETURN"},
+		{"return 1", NODE_RETURN_STMT, 1, "RETURN"},
+		{`RETURN "abc"`, NODE_RETURN_STMT, "abc", "RETURN"},
+	}
+
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := Parse(l)
+		ec, wc, _ := l.logger.Count()
+		if ec > 0 || wc > 0 {
+			fmt.Printf("input %q\n", tt.input)
+			l.logger.Print()
+			t.Fatalf("%d errors and %d warnigs", ec, wc)
+		}
+		if len(prog.Statements) != 1 {
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+		}
+		stmt, ok := prog.Statements[0].(*ReturnStatement)
+		if !ok {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("not ExitmStatement. got %T", stmt)
+		}
+		if stmt.NodeType() != tt.NodeType {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("NodeType not %s. got %s", tokenLiteral(int(tt.NodeType)), tokenLiteral(int(stmt.NodeType())))
+		}
+		switch v := tt.expected.(type) {
+		case nil:
+			if v != nil {
+				fmt.Printf("input %q\n", tt.input)
+				t.Errorf("ReturnStatement.Value not %v. got %s", v, stmt.Value)
+			}
+		case int:
+			result := stmt.Value.(*NumberLiteral).Value
+			if result != v {
+				fmt.Printf("input %q\n", tt.input)
+				t.Errorf("ReturnStatement.Value not %d. got %d", v, result)
+			}
+		case string:
+			result := stmt.Value.(*StringLiteral).Value
+			if result != v {
+				fmt.Printf("input %q\n", tt.input)
+				t.Errorf("ReturnStatement.Value not %s. got %s", v, result)
+			}
+		default:
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("ReturnStatement.Value is unpexcted type %#v", v)
+		}
+	}
+}

@@ -232,6 +232,15 @@ directive	: CONST IDENT '=' expr
 			{
 				$$ = &FunctionStatement{Name: $1.Literal, Params: $3, Block: $5, lineNumber: $1.LineNumber}
 			}
+			| EXITM			{ $$ = &ExitmStatement{lineNumber: $1.LineNumber}}
+			| RETURN		{ $$ = &ReturnStatement{Value: nil, lineNumber: $1.LineNumber}} 
+			| RETURN expr	
+			{ 
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else {
+					$$ = &ReturnStatement{Value: $2, lineNumber: $1.LineNumber}} 
+				}
 			;
 	
 param_list	: 			{ $$ = []string{}}
