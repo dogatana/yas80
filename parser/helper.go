@@ -187,14 +187,14 @@ func buildInfixExpression(opcode int, op1, op2 Expression, lineNumber int) Expre
 	num2, ok2 := op2.(*NumberLiteral)
 	if ok1 && ok2 {
 		if opcode == '/' && num2.Value == 0 {
-			return &ParseError{Message: "0 除算", lineNumber: lineNumber}
+			return &ParseError{Message: logger.E015, lineNumber: lineNumber}
 		}
 
 		fn, ok := infixFuncs[opcode]
 		if ok {
 			return &NumberLiteral{Value: fn(num1.Value, num2.Value), lineNumber: lineNumber}
 		} else {
-			return &ParseError{Message: fmt.Sprintf("UNKNOWN infix op: '%s'", tokenLiteral(opcode)), lineNumber: lineNumber}
+			return &ParseError{Message: fmt.Sprintf(logger.E016, tokenLiteral(opcode)), lineNumber: lineNumber}
 		}
 	}
 	// 文字列演算(+)の畳み込み

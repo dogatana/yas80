@@ -108,11 +108,10 @@ func (n *NullObject) String() string   { return "NULL" }
 
 // Error
 type ErrorObject struct {
-	Message string
 }
 
 func (e *ErrorObject) Type() ObjectType { return ERROR_OBJ }
-func (e *ErrorObject) String() string   { return "ERROR " + e.Message }
+func (e *ErrorObject) String() string   { return "ERROR" }
 
 // 数値
 type NumberObject struct {
@@ -132,8 +131,9 @@ func (s *StringObject) String() string   { return s.Value }
 
 // 識別子
 type IdentObject struct {
-	Name  string
-	Value Object
+	Name       string
+	Value      Object
+	LineNumber int
 }
 
 // レジスタ
@@ -157,6 +157,7 @@ func (n *NodeObject) String() string   { return n.Value.String() }
 type EnumObject struct {
 	Name  string
 	Value map[string]Object
+	Keys  []string
 }
 
 func (e *EnumObject) Type() ObjectType { return ENUM_OBJ }
@@ -165,7 +166,7 @@ func (e *EnumObject) String() string {
 	stmts := []string{"ENUM " + e.Name}
 
 	for k, v := range e.Value {
-		s := fmt.Sprintf("  %s = %s", k, v.String())
+		s := fmt.Sprintf("%s = %s", k, v.String())
 		stmts = append(stmts, s)
 	}
 	stmts = append(stmts, "END_ENUM")

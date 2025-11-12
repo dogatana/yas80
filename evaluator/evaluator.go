@@ -56,7 +56,6 @@ func (e *Evaluator) updateEnv(env *object.Environment) {
 
 // Eval
 func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Object {
-	fmt.Printf("eval %#v\n", node)
 	switch node := node.(type) {
 	// Program
 	case *parser.Program:
@@ -66,30 +65,30 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.ExpressionStatement:
 		e.lineNumber = node.LineNumber()
 		return e.Eval(node.Value, env)
-	// case *parser.Z80Instruction:
-	// 	e.lineNumber = node.LineNumber()
-	// 	return e.evalZ80Instruction(node, env)
-	// case *parser.ConstStatement:
-	// 	v := e.Eval(node.Value, env)
-	// 	env.Set(node.Name.Name, v)
-	// 	return object.NULL
-	// case *parser.EnumStatement:
-	// 	name := strings.ToUpper(node.Name)
-	// 	_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
-	// 	if ok {
-	// 		e.logger.Error(fmt.Sprintf("定義済み: %s", node.Name), node.LineNumber())
-	// 		return object.ERROR
-	// 	}
-	// 	v := e.evalEnumStatement(node, env)
-	// 	switch v.Type() {
-	// 	case object.ENUM_OBJ:
-	// 		env.GlobalSet(v.(*object.EnumObject).Name, v)
-	// 		return object.NULL
-	// 	case object.NULL_OBJ:
-	// 		return &object.NodeObject{Value: node}
-	// 	default:
-	// 		return object.ERROR
-	// 	}
+	case *parser.Z80Instruction:
+		e.lineNumber = node.LineNumber()
+		return e.evalZ80Instruction(node, env)
+	case *parser.ConstStatement:
+		v := e.Eval(node.Value, env)
+		env.Set(node.Name.Name, v)
+		return object.NULL
+	case *parser.EnumStatement:
+		name := strings.ToUpper(node.Name)
+		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
+		if ok {
+			e.logger.Error(fmt.Sprintf(logger.E012, node.Name), node.LineNumber())
+			return object.ERROR
+		}
+		v := e.evalEnumStatement(node, env)
+		switch v.Type() {
+		case object.ENUM_OBJ:
+			env.GlobalSet(v.(*object.EnumObject).Name, v)
+			return v
+		case object.NULL_OBJ:
+			return &object.NodeObject{Value: node}
+		default:
+			return object.ERROR
+		}
 
 	// Expression
 	case *parser.NumberLiteral:
@@ -99,28 +98,31 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.InfixExpression:
 		v1 := e.Eval(node.Op1, env)
 		v2 := e.Eval(node.Op2, env)
-		return e.evalInfixExpression(node.OpCode, v1, v2, env)
+		return e.evalInfixExpression(node.OpCode, v1, v2, node.LineNumber())
 	case *parser.Ident:
 		obj, ok := env.Get(node.Name)
-		if ok {
-			return obj
+		if !ok {
+			e.logger.Error(fmt.Sprintf(logger.E009, node.Name), node.LineNumber())
+			return object.ERROR
 		}
-		return object.NULL
+		return obj
 	case *parser.DotIdent:
-		fmt.Println("DotIdent", node.String())
 		enum, ok := env.Get(node.Left)
 		if !ok {
-			return &object.ErrorObject{Message: fmt.Sprintf("未定義 '%s'", node.Left)}
+			e.logger.Error(fmt.Sprintf(logger.E010, node.Left), node.LineNumber())
+			return object.ERROR
 		}
 		v, ok := enum.(*object.EnumObject).Get(node.Right)
 		if !ok {
-			return &object.ErrorObject{Message: fmt.Sprintf("未定義 '%s.%s'", node.Left, node.Right)}
+			e.logger.Error(fmt.Sprintf(logger.E011, node.Left, node.Right), node.LineNumber())
+			return object.ERROR
 		}
 		return v
 	case *parser.RegisterLiteral:
 		return object.Z80RgisterObjects[int(node.NodeSubType())]
 	default:
-		return &object.ErrorObject{Message: fmt.Sprintf("未実装: %T", node)}
+		e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
+		return object.ERROR
 	}
 }
 
@@ -129,7 +131,16 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 
 	for _, stmt := range prog.Statements {
 		obj := e.Eval(stmt, env)
-		results.Objects = append(results.Objects, obj)
+		fmt.Println("obj", obj.String())
+		switch obj := obj.(type) {
+		case *object.EnumObject:
+			for _, k := range obj.Keys {
+				fmt.Printf("add %#v\n", obj.Value[k])
+				results.Objects = append(results.Objects, obj.Value[k])
+			}
+		default:
+			results.Objects = append(results.Objects, obj)
+		}
 	}
 	return results
 }
@@ -146,14 +157,16 @@ func (e *Evaluator) evalStatements(stmts []parser.Node, env *object.Environment)
 }
 
 func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.Environment) object.Object {
+	keys := []string{}
 	enum := map[string]object.Object{}
 	value := 0
 	for _, ele := range node.Elements.Elements {
 		eleName := strings.ToUpper(ele.Name)
 		if _, ok := enum[eleName]; ok {
-			e.logger.Error(fmt.Sprintf("[E] 定義済みの名前: %s (ENUM %s)", eleName, node.Name), 0)
+			e.logger.Error(fmt.Sprintf(logger.E013, eleName, node.Name), node.LineNumber())
 			return object.ERROR
 		}
+		keys = append(keys, eleName)
 		if ele.Value == nil {
 			enum[eleName] = &object.NumberObject{Value: value}
 			value += 1
@@ -169,18 +182,18 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 		case object.STRING_OBJ:
 			enum[eleName] = v
 		default:
-			e.logger.Error(fmt.Sprintf("[E] enum 要素に使用できない型 %T", v), 0)
+			// e.logger.Error(fmt.Sprintf(logger.E014, v), ele.LineNumber())
 			return object.ERROR
 		}
 	}
-	return &object.EnumObject{Name: strings.ToUpper(node.Name), Value: enum}
+	return &object.EnumObject{Name: strings.ToUpper(node.Name), Value: enum, Keys: keys}
 }
 
 // 中置演算子式
-func (e *Evaluator) evalInfixExpression(opCode int, op1, op2 object.Object, env *object.Environment) object.Object {
+func (e *Evaluator) evalInfixExpression(opCode int, op1, op2 object.Object, lineNumber int) object.Object {
 	switch {
 	case op1.Type() == object.NUMBER_OBJ && op2.Type() == object.NUMBER_OBJ:
-		return e.evalNumberInfixExpression(opCode, op1, op2, env)
+		return e.evalNumberInfixExpression(opCode, op1, op2, lineNumber)
 	case opCode == '+' && op1.Type() == object.STRING_OBJ && op2.Type() == object.STRING_OBJ:
 		s1 := op1.(*object.StringObject).Value
 		s2 := op2.(*object.StringObject).Value
@@ -189,7 +202,7 @@ func (e *Evaluator) evalInfixExpression(opCode int, op1, op2 object.Object, env 
 	return object.NULL
 }
 
-func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, env *object.Environment) object.Object {
+func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, lineNumber int) object.Object {
 	v1 := op1.(*object.NumberObject).Value
 	v2 := op2.(*object.NumberObject).Value
 	switch opCode {
@@ -201,8 +214,8 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 		return &object.NumberObject{Value: v1 * v2}
 	case '/':
 		if v2 == 0 {
-			e.logger.Error("division by 0", e.lineNumber)
-			return object.NULL
+			e.logger.Error(logger.E015, lineNumber)
+			return object.ERROR
 		}
 		return &object.NumberObject{Value: v1 + v2}
 	case parser.SL:
@@ -232,7 +245,8 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 	case parser.AND:
 		return &object.NumberObject{Value: e.toBool(v1 != 1 && v2 != 1)}
 	default:
-		return object.NULL
+		e.logger.Error(fmt.Sprintf(logger.E016, string(rune(opCode))), lineNumber)
+		return object.ERROR
 	}
 }
 
@@ -265,8 +279,8 @@ func (e *Evaluator) generateRET(node *parser.Z80Instruction, env *object.Environ
 		return &object.Code{Line: node.LineNumber(), Code: []byte{b}}
 	}
 	e.logger.Error(
-		fmt.Sprintf("第1オペランドがフラグではありません '%s'", node.Op1.String()), node.LineNumber())
-	return object.NULL
+		fmt.Sprintf(logger.E017, node.Op1.String()), node.LineNumber())
+	return object.ERROR
 }
 
 func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env *object.Environment) object.Object {
@@ -274,7 +288,8 @@ func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env *object
 	case parser.Z80_INST_LD:
 		return e.evalZ80LD(node, env)
 	default:
-		return object.NULL
+		e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
+		return object.ERROR
 	}
 }
 
@@ -302,15 +317,14 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 				v := op2.(*object.NumberObject).Value
 				bv, ok := e.toByte(v)
 				if !ok {
-					e.logger.Warning(fmt.Sprintf("1バイトの範囲を超えていいます: %d", v), 0)
-					return object.NULL
+					e.logger.Warning(fmt.Sprintf(logger.W001, v, v), node.LineNumber())
+					bv = byte(v & 0xff)
 				}
 				b := 0x06
 				b |= (r1 - parser.Z80_REG_B) << 3
 				return &object.Code{Line: node.LineNumber(), Code: []byte{byte(b), bv}}
 			} else if op2.Type() == object.NULL_OBJ {
 				e.logger.Error(fmt.Sprintf("error expr: %s", node.Op2.String()), 0)
-
 			}
 		}
 	default:
@@ -324,7 +338,7 @@ func (e *Evaluator) toByte(n int) (byte, bool) {
 	case 0 <= n && n <= 255:
 		return byte(n), true
 	case -128 <= n && n < 0:
-		return byte(n * 0xff), true
+		return byte(n & 0xff), true
 	default:
 		return 0, false
 	}

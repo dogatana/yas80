@@ -75,6 +75,8 @@ func main() {
 	logger.Print()
 	fmt.Println("--")
 
+	fmt.Println(len(result.Objects), "objects")
+	fmt.Println("--")
 	for n, o := range result.Objects {
 		if o == nil {
 			fmt.Printf("%d: <nil>\n", n+1)
