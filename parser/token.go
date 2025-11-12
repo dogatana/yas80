@@ -40,6 +40,7 @@ var reservedWords map[string]Token = map[string]Token{
 
 	"MACRO": {TokenType: MACRO, Literal: "MACRO"},
 	"ENDM":  {TokenType: ENDM, Literal: "ENDM"},
+	"EXITM": {TokenType: EXITM, Literal: "EXITM"},
 
 	"REPEAT": {TokenType: REPEAT, Literal: "REPEAT"},
 	"ENDR":   {TokenType: ENDR, Literal: "ENDR"},
@@ -47,8 +48,9 @@ var reservedWords map[string]Token = map[string]Token{
 	"PROC": {TokenType: PROC, Literal: "PROC"},
 	"ENDP": {TokenType: ENDP, Literal: "ENDP"},
 
-	"FUNC": {TokenType: FUNC, Literal: "FUNC"},
-	"ENDF": {TokenType: ENDF, Literal: "ENDF"},
+	"FUNC":   {TokenType: FUNC, Literal: "FUNC"},
+	"ENDF":   {TokenType: ENDF, Literal: "ENDF"},
+	"RETURN": {TokenType: RETURN, Literal: "RETURN"},
 
 	"BLOCK": {TokenType: BLOCK, Literal: "BLOCK"},
 	"ENDB":  {TokenType: ENDB, Literal: "ENDB"},

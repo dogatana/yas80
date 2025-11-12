@@ -6,7 +6,7 @@ import (
 )
 
 // 非テスト：文字列に対してトークン列を返す
-func TestDisplayTokens(t *testing.T) {
+func testDisplayTokens(t *testing.T) {
 	input := `()= + - * / & | ^ == != < <= > >= ! ~ << >> || &&`
 	l := newLexerForTest(input)
 	for {
@@ -373,9 +373,9 @@ func TestZ80Instructions(t *testing.T) {
 func TestReservedWords(t *testing.T) {
 	input := "CONST VAR EQU FN ORG " +
 		"IF ELSE ELIF ENDIF " +
-		"MACRO ENDM " +
+		"MACRO ENDM EXITM " +
 		"REPEAT ENDR " +
-		"FUNC ENDF " +
+		"FUNC ENDF RETURN " +
 		"PROC ENDP " +
 		"BLOCK ENDB " +
 		"FOR ENDF "

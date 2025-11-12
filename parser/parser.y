@@ -51,9 +51,9 @@ var _ = __yyfmt__.Sprintf
 %token<token> FN // 1行関数
 
 %token<token> IF ELSE ELIF ENDIF
-%token<token> MACRO ENDM
+%token<token> MACRO ENDM EXITM
 %token<token> REPEAT ENDR
-%token<token> FUNC ENDF
+%token<token> FUNC ENDF RETURN
 %token<token> PROC ENDP
 %token<token> ENUM ENDE
 %token<token> BLOCK ENDB
@@ -466,7 +466,7 @@ expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
 			;
 
 expr		: NUMBER
-	 		{
+			{
 				n, err := parseInt($1.Literal)
 				if err == nil {
 					$$ = &NumberLiteral{Value: int(n), lineNumber: $1.LineNumber}
