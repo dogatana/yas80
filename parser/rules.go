@@ -70,7 +70,7 @@ var grammerRules map[int]string = map[int]string{
 	67: "expr:  expr SHIFT expr.",
 	68: "expr:  expr OR expr.",
 	69: "expr:  expr AND expr.",
-	70: "expr:  '-' expr.",
+	70: "expr:  ADDSUB expr.",
 	71: "expr:  UNARY expr.",
 	72: "indexed_expr:  expr '[' ']'.",
 	73: "indexed_expr:  expr '[' expr ']'.",

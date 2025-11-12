@@ -210,6 +210,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression, lineNumber int) Expre
 type prefixFuncType func(x int) int
 
 var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
+	'+': func(x int) int { return x },
 	'-': func(x int) int { return -x },
 	'~': func(x int) int { return -1 ^ x },
 	'!': func(x int) int {
@@ -231,7 +232,7 @@ func buildPrefixExpression(opcode int, op Expression, lineNumber int) Expression
 		if ok {
 			return &NumberLiteral{Value: fn(op.Value), lineNumber: lineNumber}
 		} else {
-			return &ParseError{Message: fmt.Sprintf("UNKNOWN prefix %s", tokenLiteral(opcode)), lineNumber: lineNumber}
+			return &ParseError{Message: fmt.Sprintf(logger.E008, rune(opcode)), lineNumber: lineNumber}
 		}
 	case *StringLiteral:
 		if opcode == '!' {

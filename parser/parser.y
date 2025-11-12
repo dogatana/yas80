@@ -65,12 +65,12 @@ var _ = __yyfmt__.Sprintf
 %token<token> error
 
 // 演算の優先度の指定
-%left OR                       // ||
-%left AND                      // &&
-%left COMP                     // == != < <= > >=
-%left ADDSUB '|' '^' '-'       // ADDSUB + ^ |
-%left MULDIV SHIFT             // MULDIV * / SHIFT << >> 
-%right UNARY                   // ~ ! -
+%left OR              // ||
+%left AND             // &&
+%left COMP            // == != < <= > >=
+%left ADDSUB          // ADDSUB + ^ |
+%left MULDIV SHIFT    // MULDIV * / SHIFT << >> 
+%right UNARY          // ~ ! -
 %right UMINUS
 %nonassoc '(' '[' 
 
@@ -514,7 +514,7 @@ expr		: NUMBER
 			| expr SHIFT expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
 			| expr OR expr			{ $$ = buildInfixExpression(OR, $1, $3, $2.LineNumber) }
 			| expr AND expr			{ $$ = buildInfixExpression(AND, $1, $3, $2.LineNumber) }
-			| '-' expr %prec UNARY	{ $$ = buildPrefixExpression('-', $2, $1.LineNumber) }
+			| ADDSUB expr %prec UNARY	{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, $1.LineNumber) }
 			| UNARY expr 			{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, $1.LineNumber) }
 			;
 

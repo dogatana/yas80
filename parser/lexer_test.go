@@ -28,8 +28,8 @@ func TestSymbols(t *testing.T) {
 		{'(', 0, "("},
 		{')', 0, ")"},
 		{'=', 0, "="},
-		{'-', 0, "-"},
 
+		{ADDSUB, '-', "-"},
 		{ADDSUB, '+', "+"},
 		{ADDSUB, '|', "|"},
 		{ADDSUB, '^', "^"},
@@ -69,7 +69,7 @@ func TestSymbols(t *testing.T) {
 			t.Errorf("expected Token.SubType %s. got %s", tokenLiteral(int(tok.TokenSubType)), tok.String())
 		}
 		if tok.Literal != e.Literal {
-			t.Errorf("expected Token.Literal %s. got %s", tok.Literal, tok.String())
+			t.Errorf("expected Token.Literal %q. got %s", tok.Literal, tok.String())
 		}
 	}
 }

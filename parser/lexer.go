@@ -106,11 +106,7 @@ func (l *Lexer) NextToken() Token {
 		l.nextChar()
 		l.nextChar()
 		return Token{TokenType: STRING, Literal: s, LineNumber: l.lineNumber}
-	case l.curChar == '-': // 単項・2項両方あるので1文字トークンとする
-		ch := l.curChar
-		l.nextChar()
-		return Token{TokenType: TokenType(ch), Literal: string(ch), LineNumber: l.lineNumber}
-	case l.curChar == '+' || l.curChar == '^': // ADDSUB
+	case l.curChar == '+' || l.curChar == '-' || l.curChar == '^': // ADDSUB
 		ch := l.curChar
 		l.nextChar()
 		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), LineNumber: l.lineNumber}
