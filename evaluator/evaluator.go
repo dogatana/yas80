@@ -86,6 +86,8 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 			return &object.NodeObject{Value: node, LineNumber: node.LineNumber()}
 
 		}
+	case *parser.BlockStatement:
+		return e.evalBlockStatement(node, env)
 	case *parser.EnumStatement:
 		name := strings.ToUpper(node.Name)
 		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
@@ -155,12 +157,41 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 		case *object.ReturnObject:
 			results.Objects = append(results.Objects, obj.Value)
 			return results
+		case *object.BlockObject:
+			if len(obj.Block) == 0 {
+				results.Objects = append(results.Objects, object.NULL)
+				continue
+			}
+			ret, ok := obj.Block[len(obj.Block)-1].(*object.ReturnObject)
+			if ok {
+				obj.Block[len(obj.Block)-1] = ret.Value
+			}
+			results.Objects = append(results.Objects, obj.Block...)
 		default:
-			// e.logger.Error(fmt.Sprintf(logger.E999, obj), stmt.LineNumber())
 			results.Objects = append(results.Objects, obj)
 		}
 	}
 	return results
+}
+
+func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.Environment) object.Object {
+	block := &object.BlockObject{Block: []object.Object{}}
+
+	for _, stmt := range stmt.Block {
+		obj := e.Eval(stmt, env)
+		switch obj := obj.(type) {
+		case *object.EnumObject:
+			for _, k := range obj.Keys {
+				block.Block = append(block.Block, obj.Value[k])
+			}
+		case *object.ReturnObject:
+			block.Block = append(block.Block, obj)
+			return block
+		default:
+			block.Block = append(block.Block, obj)
+		}
+	}
+	return block
 }
 
 func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Environment) object.Object {
@@ -169,12 +200,17 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Enviro
 		return &object.NodeObject{Value: stmt, LineNumber: stmt.LineNumber()}
 	}
 	if cond.Value != 0 {
-		return &object.NumberObject{Value: 100, LineNumber: stmt.LineNumber()}
+		if stmt.Consequence == nil {
+			return object.NULL
+		}
+		return e.Eval(stmt.Consequence, env)
+	} else if stmt.Alternative == nil {
+		return object.NULL
 	} else {
-		return &object.NumberObject{Value: -100, LineNumber: stmt.LineNumber()}
+		return e.Eval(stmt.Alternative, env)
 	}
-
 }
+
 func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env *object.Environment) object.Object {
 	var ret object.Object
 	if stmt.Value == nil {

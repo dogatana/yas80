@@ -67,13 +67,26 @@ func TestIf(t *testing.T) {
 	}{
 		{`if 1 \ endif`, -1}, // -1 は NullObject とする
 		{`if 0 \ endif`, -1},
-		{`if 1 \ 100 \ endif`, -1},
-		{`if 0 \ 100 \ endif`, -1},
+		{`if 1 \ else \ endif`, -1},
+		{`if 0 \ else \ endif`, -1},
 
 		{`if 1 \ 100 \ endif`, 100},
 		{`if 0 \ 100 \ endif`, -1},
+
+		{`if 1 \ 100 \ else \ endif`, 100},
+		{`if 0 \ 100 \ else \ endif`, -1},
+
 		{`if 1 \ 100 \ else \ 200  \ endif`, 100},
-		{`if 1 \ 100 \ else \ 200  \ endif`, 200},
+		{`if 0 \ 100 \ else \ 200  \ endif`, 200},
+
+		{`const val = 1 \ if val == 1 \ 100 \ elif val == 2 \ 200  \ endif`, 100},
+		{`const val = 2 \ if val == 1 \ 100 \ elif val == 2 \ 200  \ endif`, 200},
+		{`const val = 3 \ if val == 1 \ 100 \ elif val == 2 \ 200  \ endif`, -1},
+
+		{`const val = 3 \ if val == 1 \ 100 \ elif val == 2 \ 200  \ else \ 300 \ endif`, 300},
+
+		{`const val = 2 \ if val == 1 \ 100 \ elif val == 2 \ 200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
+		{`const val = 2 \ if val == 1 \ 100 \ elif val == 2 \ 200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
 	}
 
 	for _, tt := range tests {

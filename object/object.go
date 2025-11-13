@@ -18,6 +18,7 @@ const (
 	PROGRAM_OBJ
 	NODE_OBJ
 	RETURN_OBJ
+	BLOCK_OBJ
 )
 
 var (
@@ -195,4 +196,19 @@ func (e *EnumObject) String() string {
 func (e *EnumObject) Get(key string) (Object, bool) {
 	v, ok := e.Value[key]
 	return v, ok
+}
+
+// Block
+type BlockObject struct {
+	Block []Object
+}
+
+func (b *BlockObject) Type() ObjectType { return BLOCK_OBJ }
+func (b *BlockObject) String() string {
+	strs := []string{}
+
+	for _, o := range b.Block {
+		strs = append(strs, o.String())
+	}
+	return strings.Join(strs, "\n")
 }
