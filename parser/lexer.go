@@ -40,7 +40,7 @@ func (l *Lexer) Error(msg string, args ...any) {
 	case 1: // Error(msg, lineNumber)
 		n, ok := args[0].(int)
 		if !ok {
-			panic(fmt.Sprintf("[SYSTEM] invalid argument for Lexer.Error(string, %T)", args[0]))
+			panic(fmt.Sprintf("[SYSTEM] invalid argument for Lexer.Error(string, %T(#%v))", args[0], args[0]))
 		}
 		line = n
 	case 2:
