@@ -71,6 +71,8 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		return e.Eval(node.Value, env)
 	case *parser.ReturnStatement:
 		return e.evalReturnStatement(node, env)
+	case *parser.IfStatement:
+		return e.evalIfStatement(node, env)
 	case *parser.Z80Instruction:
 		e.lineNumber = node.LineNumber()
 		return e.evalZ80Instruction(node, env)
@@ -170,17 +172,18 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 	return results
 }
 
-func (e *Evaluator) evalStatements(stmts []parser.Node, env *object.Environment) object.Object {
-	p := &object.ProgramObject{}
-	for _, stmt := range stmts {
-		obj := e.Eval(stmt, env)
-		// if obj != object.NULL {
-		p.Objects = append(p.Objects, obj)
-		// }
+func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Environment) object.Object {
+	cond, ok := e.Eval(stmt.Condition, env).(*object.NumberObject)
+	if !ok {
+		return &object.NodeObject{Value: stmt, LineNumber: stmt.LineNumber()}
 	}
-	return p
-}
+	if cond.Value != 0 {
+		return &object.NumberObject{Value: 100, LineNumber: stmt.LineNumber()}
+	} else {
+		return &object.NumberObject{Value: -100, LineNumber: stmt.LineNumber()}
+	}
 
+}
 func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env *object.Environment) object.Object {
 	var ret object.Object
 	if stmt.Value == nil {

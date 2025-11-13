@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"fmt"
 	"testing"
 	"yas80/logger"
 	"yas80/object"
@@ -28,16 +29,6 @@ func TestEvalExpression(t *testing.T) {
 
 		last := prog.Objects[len(prog.Objects)-1]
 		testNumberObject(t, last, tt.expected, tt.input)
-		// obj, ok := last.(*object.NumberObject)
-		// if !ok {
-		// 	fmt.Printf("input %q\n", tt.input)
-		// 	t.Fatalf("prog.Objects[-1] not NumberObject. got %T", last)
-		// }
-		// if obj.Value != tt.expected {
-		// 	fmt.Printf("input %q\n", tt.input)
-		// 	fmt.Println(prog.String())
-		// 	t.Errorf("object is not %d. got %d", tt.expected, obj.Value)
-		// }
 	}
 }
 
@@ -59,5 +50,38 @@ func TestReturn(t *testing.T) {
 
 		last := prog.Objects[len(prog.Objects)-1]
 		testNumberObject(t, last, tt.expected, tt.input)
+	}
+}
+
+func TestIf(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{`if 1 \ endif`, -1}, // -1 は NullObject とする
+		{`if 0 \ endif`, -1},
+		{`if 1 \ 100 \ endif`, -1},
+		{`if 0 \ 100 \ endif`, -1},
+
+		{`if 1 \ 100 \ endif`, 100},
+		{`if 0 \ 100 \ endif`, -1},
+		{`if 1 \ 100 \ else \ 200  \ endif`, 100},
+		{`if 1 \ 100 \ else \ 200  \ endif`, 200},
+	}
+
+	for _, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logger.New("<eval test>")
+		prog := evaluateInput(t, tt.input, logger, env)
+
+		last := prog.Objects[len(prog.Objects)-1]
+		if tt.expected >= 0 {
+			testNumberObject(t, last, tt.expected, tt.input)
+			continue
+		}
+		if last != object.NULL {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("should be NULL. got %T(%#v)", last, last)
+		}
 	}
 }
