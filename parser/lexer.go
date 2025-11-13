@@ -73,6 +73,8 @@ func NewLexer(r *bufio.Reader, filename string, logger *logger.Logger) *Lexer {
 	return l
 }
 
+func (l *Lexer) Logger() *logger.Logger { return l.logger }
+
 func (l *Lexer) NextToken() Token {
 	// 空白をスキップ
 	l.skipWhitespace()
@@ -277,7 +279,7 @@ func (l *Lexer) peekChar() rune {
 }
 
 func (l *Lexer) skipWhitespace() {
-	for !l.isEOF && (l.curChar == ' ' || l.curChar == '\t') {
+	for !l.isEOF && (l.curChar == ' ' || l.curChar == '\t' || l.curChar == '\r') {
 		l.nextChar()
 	}
 }

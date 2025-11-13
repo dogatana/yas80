@@ -13,8 +13,8 @@ type Evaluator struct {
 	lineNumber int
 }
 
-func New(es *logger.Logger) *Evaluator {
-	return &Evaluator{logger: es}
+func New(logger *logger.Logger) *Evaluator {
+	return &Evaluator{logger: logger}
 }
 
 func (e *Evaluator) ResolveConst(prog *parser.Program, env *object.Environment) {
@@ -131,7 +131,6 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 
 	for _, stmt := range prog.Statements {
 		obj := e.Eval(stmt, env)
-		fmt.Println("obj", obj.String())
 		switch obj := obj.(type) {
 		case *object.EnumObject:
 			for _, k := range obj.Keys {
