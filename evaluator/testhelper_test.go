@@ -3,6 +3,8 @@ package evaluator
 import (
 	"bufio"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"yas80/logger"
@@ -14,6 +16,8 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env *objec
 	progNode := parseTextForTest(t, input)
 
 	evaluator := New(logger)
+	checkDebug(evaluator)
+
 	obj := evaluator.Eval(progNode, env)
 	ec, wc, _ := logger.Count()
 	if ec > 0 || wc > 0 {
@@ -32,6 +36,19 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env *objec
 		t.Fatal("Eval() return 0 Objects")
 	}
 	return programObject
+}
+
+func checkDebug(e *Evaluator) {
+	val := os.Getenv("yydebug")
+	if val == "" {
+		e.debug = 0
+		return
+	}
+	n, err := strconv.Atoi(val)
+	if err != nil {
+		e.debug = 0
+	}
+	e.debug = n
 }
 
 func testNumberObject(t *testing.T, obj object.Object, expected int, input string) bool {

@@ -11,6 +11,7 @@ import (
 type Evaluator struct {
 	logger     *logger.Logger
 	lineNumber int
+	debug      int
 }
 
 func New(logger *logger.Logger) *Evaluator {
@@ -56,7 +57,9 @@ func (e *Evaluator) updateEnv(env *object.Environment) {
 
 // Eval
 func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Object {
-	fmt.Printf("eval %T(%#v)\n", node, node)
+	if e.debug > 0 {
+		fmt.Printf("eval %T(%#v)\n", node, node)
+	}
 	switch node := node.(type) {
 	// Program
 	case *parser.Program:
