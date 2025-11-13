@@ -162,7 +162,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 	for _, ele := range node.Elements.Elements {
 		eleName := strings.ToUpper(ele.Name)
 		if _, ok := enum[eleName]; ok {
-			e.logger.Error(fmt.Sprintf(logger.E013, eleName, node.Name), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(logger.E013, node.Name, ele.Name), node.LineNumber())
 			return object.ERROR
 		}
 		keys = append(keys, eleName)
