@@ -56,6 +56,7 @@ func (e *Evaluator) updateEnv(env *object.Environment) {
 
 // Eval
 func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Object {
+	fmt.Printf("eval %T(%#v)\n", node, node)
 	switch node := node.(type) {
 	// Program
 	case *parser.Program:
@@ -65,13 +66,21 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.ExpressionStatement:
 		e.lineNumber = node.LineNumber()
 		return e.Eval(node.Value, env)
+	case *parser.ReturnStatement:
+		return e.evalReturnStatement(node, env)
 	case *parser.Z80Instruction:
 		e.lineNumber = node.LineNumber()
 		return e.evalZ80Instruction(node, env)
 	case *parser.ConstStatement:
 		v := e.Eval(node.Value, env)
 		env.Set(node.Name.Name, v)
-		return object.NULL
+		switch v := v.(type) {
+		case *object.NumberObject, *object.StringObject:
+			return v
+		default:
+			return &object.NodeObject{Value: node, LineNumber: node.LineNumber()}
+
+		}
 	case *parser.EnumStatement:
 		name := strings.ToUpper(node.Name)
 		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
@@ -92,9 +101,11 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 
 	// Expression
 	case *parser.NumberLiteral:
-		return &object.NumberObject{Value: node.Value}
+		return &object.NumberObject{Value: node.Value, LineNumber: node.LineNumber()}
+	case *parser.StringLiteral:
+		return &object.StringObject{Value: node.Value, LineNumber: node.LineNumber()}
 	case *parser.FlagLiteral:
-		return &object.StringObject{Value: node.String()}
+		return &object.StringObject{Value: node.String(), LineNumber: node.LineNumber()}
 	case *parser.InfixExpression:
 		v1 := e.Eval(node.Op1, env)
 		v2 := e.Eval(node.Op2, env)
@@ -129,15 +140,27 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) object.Object {
 	results := &object.ProgramObject{}
 
+	var ret object.Object
+
 	for _, stmt := range prog.Statements {
 		obj := e.Eval(stmt, env)
 		switch obj := obj.(type) {
+		case *object.NumberObject, *object.StringObject:
+			ret = obj
+			results.Objects = append(results.Objects, obj)
 		case *object.EnumObject:
 			for _, k := range obj.Keys {
-				fmt.Printf("add %#v\n", obj.Value[k])
+				ret = obj.Value[k]
 				results.Objects = append(results.Objects, obj.Value[k])
 			}
+		case *object.ReturnObject:
+			if obj.Value != object.NULL {
+				ret = obj.Value
+			}
+			results.Objects = append(results.Objects, ret)
+			return results
 		default:
+			e.logger.Error(fmt.Sprintf(logger.E999, obj), stmt.LineNumber())
 			results.Objects = append(results.Objects, obj)
 		}
 	}
@@ -153,6 +176,16 @@ func (e *Evaluator) evalStatements(stmts []parser.Node, env *object.Environment)
 		// }
 	}
 	return p
+}
+
+func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env *object.Environment) object.Object {
+	var ret object.Object
+	if stmt.Value == nil {
+		ret = object.NULL
+	} else {
+		ret = e.Eval(stmt.Value, env)
+	}
+	return &object.ReturnObject{Value: ret, LineNumber: stmt.LineNumber()}
 }
 
 func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.Environment) object.Object {

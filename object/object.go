@@ -17,6 +17,7 @@ const (
 	CODE_OBJ
 	PROGRAM_OBJ
 	NODE_OBJ
+	RETURN_OBJ
 )
 
 var (
@@ -113,9 +114,24 @@ type ErrorObject struct {
 func (e *ErrorObject) Type() ObjectType { return ERROR_OBJ }
 func (e *ErrorObject) String() string   { return "ERROR" }
 
+// return
+type ReturnObject struct {
+	Value      Object
+	LineNumber int
+}
+
+func (r *ReturnObject) Type() ObjectType { return RETURN_OBJ }
+func (r *ReturnObject) String() string {
+	if r.Value == NULL {
+		return "RETURN"
+	}
+	return "RETURN " + r.Value.String()
+}
+
 // 数値
 type NumberObject struct {
-	Value int
+	Value      int
+	LineNumber int
 }
 
 func (n *NumberObject) Type() ObjectType { return NUMBER_OBJ }
@@ -123,7 +139,8 @@ func (n *NumberObject) String() string   { return fmt.Sprintf("%d", n.Value) }
 
 // 文字列
 type StringObject struct {
-	Value string
+	Value      string
+	LineNumber int
 }
 
 func (s *StringObject) Type() ObjectType { return STRING_OBJ }
@@ -147,7 +164,8 @@ func (r *RegisterObject) String() string   { return parser.Z80OpCode2Name(r.Regi
 
 // Node
 type NodeObject struct {
-	Value parser.Node
+	Value      parser.Node
+	LineNumber int
 }
 
 func (n *NodeObject) Type() ObjectType { return NODE_OBJ }
