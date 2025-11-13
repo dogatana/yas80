@@ -34,6 +34,21 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env *objec
 	return programObject
 }
 
+func testNumberObject(t *testing.T, obj object.Object, expected int, input string) bool {
+	number, ok := obj.(*object.NumberObject)
+	if !ok {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("Object not NumberObject. got %T", obj)
+		return false
+	}
+	if number.Value != expected {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("object is not %d. got %d", expected, number.Value)
+		return false
+	}
+	return true
+}
+
 func parseTextForTest(t *testing.T, input string) *parser.Program {
 	file := "<string>"
 	es := logger.New(file)
