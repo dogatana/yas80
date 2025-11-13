@@ -145,27 +145,18 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) object.Object {
 	results := &object.ProgramObject{}
 
-	var ret object.Object
-
 	for _, stmt := range prog.Statements {
 		obj := e.Eval(stmt, env)
 		switch obj := obj.(type) {
-		case *object.NumberObject, *object.StringObject:
-			ret = obj
-			results.Objects = append(results.Objects, obj)
 		case *object.EnumObject:
 			for _, k := range obj.Keys {
-				ret = obj.Value[k]
 				results.Objects = append(results.Objects, obj.Value[k])
 			}
 		case *object.ReturnObject:
-			if obj.Value != object.NULL {
-				ret = obj.Value
-			}
-			results.Objects = append(results.Objects, ret)
+			results.Objects = append(results.Objects, obj.Value)
 			return results
 		default:
-			e.logger.Error(fmt.Sprintf(logger.E999, obj), stmt.LineNumber())
+			// e.logger.Error(fmt.Sprintf(logger.E999, obj), stmt.LineNumber())
 			results.Objects = append(results.Objects, obj)
 		}
 	}

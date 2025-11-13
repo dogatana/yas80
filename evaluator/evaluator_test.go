@@ -39,7 +39,7 @@ func TestReturn(t *testing.T) {
 	}{
 		{"1", 1},
 		{`1 \ 2 \ 3`, 3},
-		{`1 \ 2 \ return \ 3`, 2},
+		{`1 \ 2 \ return \ 3`, -1},
 		{`1 \ 2 \ return 99 \ 3`, 99},
 	}
 
@@ -49,7 +49,14 @@ func TestReturn(t *testing.T) {
 		prog := evaluateInput(t, tt.input, logger, env)
 
 		last := prog.Objects[len(prog.Objects)-1]
-		testNumberObject(t, last, tt.expected, tt.input)
+		if tt.expected >= 0 {
+			testNumberObject(t, last, tt.expected, tt.input)
+			continue
+		}
+		if last != object.NULL {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("should be NULL. got %T(%#v)", last, last)
+		}
 	}
 }
 
