@@ -203,7 +203,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression, lineNumber int) Expre
 	if ok1 && ok2 && opcode == '+' {
 		return &StringLiteral{Value: str1.Value + str2.Value}
 	}
-	return &InfixExpression{OpCode: opcode, Op1: op1, Op2: op2}
+	return &InfixExpression{OpCode: opcode, Op1: op1, Op2: op2, lineNumber: lineNumber}
 }
 
 // 数値リテラルの畳み込み(前置演算子)
