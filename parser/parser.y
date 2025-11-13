@@ -424,11 +424,11 @@ instruction	: Z80_INST0
 
 				if $3.NodeType() == NODE_ERROR {
 					err = $3.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.LineNumber())
 				} 
 				if $7.NodeType() == NODE_ERROR {
 					err = $7.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.LineNumber())
 				}
 				// 常にエラーとする
 				$$ = &ParseError{Message: logger.E006, lineNumber: $1.LineNumber}
