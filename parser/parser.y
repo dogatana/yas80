@@ -522,7 +522,7 @@ indexed_expr: expr '[' ']'
 			{
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.LineNumber())
 					yylex.Error(logger.E003, $2.LineNumber)
 				} 
 				$$ = &ParseError{Message: logger.E004, lineNumber: $2.LineNumber}
