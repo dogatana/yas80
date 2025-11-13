@@ -105,3 +105,31 @@ func TestIf(t *testing.T) {
 		}
 	}
 }
+
+func TestFunc(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{`retNULL func \ 100 \ endf \ ret100()`, -1}, // -1 は NullObject とする
+		{`ret100 func \ return 100 \ endf \ ret100()`, 100},
+		{`abs func arg \ if arg > 0 \ return arg \ else \ -arg \ endf \ abs(100)`, 100},
+		{`abs func arg \ if arg > 0 \ return arg \ else \ -arg \ endf \ abs(-100)`, 100},
+	}
+
+	for _, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logger.New("<eval test>")
+		prog := evaluateInput(t, tt.input, logger, env)
+
+		last := prog.Objects[len(prog.Objects)-1]
+		if tt.expected >= 0 {
+			testNumberObject(t, last, tt.expected, tt.input)
+			continue
+		}
+		if last != object.NULL {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("should be NULL. got %T(%#v)", last, last)
+		}
+	}
+}

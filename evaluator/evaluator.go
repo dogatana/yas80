@@ -73,6 +73,8 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		return e.evalReturnStatement(node, env)
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
+	case *parser.FunctionStatement:
+		return e.evalFunctionStatement(node, env)
 	case *parser.Z80Instruction:
 		e.lineNumber = node.LineNumber()
 		return e.evalZ80Instruction(node, env)
@@ -209,6 +211,18 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Enviro
 	} else {
 		return e.Eval(stmt.Alternative, env)
 	}
+}
+
+func (e *Evaluator) evalFunctionStatement(stmt *parser.FunctionStatement, env *object.Environment) object.Object {
+	name := strings.ToUpper((stmt.Name))
+	_, ok := env.Get(name)
+	if ok {
+		e.logger.Error(fmt.Sprintf(logger.E018, stmt.Name), stmt.LineNumber())
+		return object.NULL
+	}
+	obj := &object.FunctionObject{Params: stmt.Params, Body: stmt.Block}
+	env.Set(strings.ToUpper(stmt.Name), obj)
+	return obj
 }
 
 func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env *object.Environment) object.Object {

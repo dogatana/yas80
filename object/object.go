@@ -19,6 +19,7 @@ const (
 	NODE_OBJ
 	RETURN_OBJ
 	BLOCK_OBJ
+	FUNC_OBJ
 )
 
 var (
@@ -212,3 +213,12 @@ func (b *BlockObject) String() string {
 	}
 	return strings.Join(strs, "\n")
 }
+
+// Function
+type FunctionObject struct {
+	Params []string
+	Body   parser.Node
+}
+
+func (f *FunctionObject) Type() ObjectType { return FUNC_OBJ }
+func (f *FunctionObject) String() string   { return f.Body.String() }
