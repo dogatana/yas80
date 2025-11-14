@@ -39,16 +39,16 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env *objec
 }
 
 func checkDebug(e *Evaluator) {
-	val := os.Getenv("yydebug")
+	val := os.Getenv("evaldebug")
 	if val == "" {
-		e.debug = 0
+		e.Debug = 0
 		return
 	}
 	n, err := strconv.Atoi(val)
 	if err != nil {
-		e.debug = 0
+		e.Debug = 0
 	}
-	e.debug = n
+	e.Debug = n
 }
 
 func testNumberObject(t *testing.T, obj object.Object, expected int, input string) bool {
