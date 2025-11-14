@@ -39,6 +39,18 @@ patch_data: list[PatchData] = [
         'yylex.Error(yyErrorMessage(yystate, yytoken))',
         'yylex.Error(yyErrorMessage(yystate, yytoken, yyrcvr.lval.token))',
     ),
+    PatchData(
+        '\t\t\t' 'if len(expected) == cap(expected) {\n'
+        '\t\t\t' '\treturn res\n'
+        '\t\t\t' '}\n',
+        '\t\t\t' '// if len(expected) == cap(expected) {\n'
+        '\t\t\t' '//\treturn res\n'
+        '\t\t\t' '// }\n',
+    ),
+    PatchData(
+        '\t' 'res += " or "\n',
+        '\t' 'res += ", "\n',
+    ),
     # PatchData(
     #     '__yyfmt__.Printf("char %v in %v\\n", yyTokname(yytoken), yyStatname(yystate))',
     #     '__yyfmt__.Printf("# %d: char %v (%#v)\\n", yystate, yyTokname(yytoken), yyVAL) // # changed'
