@@ -276,12 +276,15 @@ block_statement	: 	 				{ $$ = &BlockStatement{Block: []Statement{}} }
 			| block_statement EOL 	{ $$ = $1}
 			| block_statement statement 
 			{ 
-				if $2.NodeType() == NODE_ERROR {
+				if $2 == nil { // error
+					// do nothing
+				} else if $2.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
 					yylex.Error(err.Message, err.LineNumber())
+				} else {
+					$1.Block = append($1.Block, $2.(Statement))
+					$$ = $1
 				}
-				$1.Block = append($1.Block, $2.(Statement))
-				$$ = $1
 			}
 			;
 	
