@@ -13,8 +13,8 @@ import (
 	"yas80/parser"
 )
 
-func getYYDebugEnv() int {
-	v := os.Getenv("YYDEBUG")
+func getDebugEnv(name string) int {
+	v := os.Getenv(name)
 	if v == "" {
 		return 0
 	}
@@ -44,7 +44,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	parser.SetYYDebug(getYYDebugEnv())
+	parser.SetYYDebug(getDebugEnv("yydebug"))
 
 	// 構文解析開始
 	fmt.Println("-- parser")
@@ -65,6 +65,7 @@ func main() {
 	// 評価開始
 	fmt.Println("-- evaluator")
 	eval := evaluator.New(logger)
+	eval.Debug = getDebugEnv("evaldebug")
 
 	env := object.NewEnvironment(nil)
 	// eval.ResolveConst(prog, env)
