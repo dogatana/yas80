@@ -1,6 +1,7 @@
 package object
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"yas80/parser"
@@ -216,9 +217,23 @@ func (b *BlockObject) String() string {
 
 // Function
 type FunctionObject struct {
+	Name   string
 	Params []string
 	Body   parser.Node
 }
 
 func (f *FunctionObject) Type() ObjectType { return FUNC_OBJ }
-func (f *FunctionObject) String() string   { return f.Body.String() }
+func (f *FunctionObject) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(f.Name + " FUNC")
+	if len(f.Params) > 0 {
+		out.WriteRune(' ')
+		out.WriteString(strings.Join(f.Params, ", "))
+	}
+	out.WriteRune('\n')
+	out.WriteString(f.Body.String() + "\n")
+	out.WriteString("ENDF")
+
+	return out.String()
+}

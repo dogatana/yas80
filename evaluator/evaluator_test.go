@@ -108,19 +108,30 @@ func TestIf(t *testing.T) {
 	}
 }
 
-func testFunc(t *testing.T) {
+func TestFunc(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
 	}{
-		// {`retNULL func \ 100 \ endf \ RETNULL()`, -1}, // -1 は NullObject とする
+		{`retNULL func \ 100 \ endf \ RETNULL()`, -1}, // -1 は NullObject とする
 		{`ret100 func \ return 100 \ endf \ ret100()`, 100},
 		{`ret100 func \ 1 \ 2 \ return 100 \ 4 \ endf \ ret100()`, 100},
-		{`abs func arg \ return arg \ endf \  abs(123)`, 123},
+		{`abs func arg \ 1 \ return arg \ 2 \ endf \  abs(123)`, 123},
 		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \ endif \ endf \ abs(100)`, 100},
 		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \  endif \endf \ abs(-100)`, 100},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ endif \ endif \ endf \ deep(100)`, 999},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ return 999 \ endif \ return 888 \ endif \ endf \ deep(100)`, 999},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ deep(1)`, -1},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ deep(2)`, 777},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ deep(3)`, 888},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ deep(4)`, 999},
+		{`	fib func x
+					if x < 2
+						return 1
+					else
+						return fib(x - 1) + fib(x - 2)
+					endif
+				endf
+			fib(5)
+			`, 8},
 	}
 
 	for _, tt := range tests {

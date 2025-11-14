@@ -109,6 +109,8 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		}
 
 	// Expression
+	case *parser.CallExpression:
+		return e.evalCallExpression(node, env)
 	case *parser.NumberLiteral:
 		return &object.NumberObject{Value: node.Value, LineNumber: node.LineNumber()}
 	case *parser.StringLiteral:
@@ -118,9 +120,18 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.InfixExpression:
 		v1 := e.Eval(node.Op1, env)
 		v2 := e.Eval(node.Op2, env)
+		if v1.Type() == object.ERROR_OBJ || v2.Type() == object.ERROR_OBJ {
+			return object.ERROR
+		}
 		return e.evalInfixExpression(node.OpCode, v1, v2, node.LineNumber())
+	case *parser.PrefixExpression:
+		v := e.Eval(node.Op, env)
+		if v.Type() == object.ERROR_OBJ {
+			return object.ERROR
+		}
+		return e.evalPrefixExpression(node.OpCode, v, node.LineNumber())
 	case *parser.Ident:
-		obj, ok := env.Get(node.Name)
+		obj, ok := env.Get(strings.ToUpper(node.Name))
 		if !ok {
 			e.logger.Error(fmt.Sprintf(logger.E009, node.Name), node.LineNumber())
 			return object.ERROR
@@ -150,6 +161,9 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 	results := &object.ProgramObject{}
 
 	for _, stmt := range prog.Statements {
+		if e.Debug > 1 {
+			fmt.Println("eval stmt", stmt.String())
+		}
 		obj := e.Eval(stmt, env)
 		switch obj := obj.(type) {
 		case *object.EnumObject:
@@ -189,6 +203,15 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.
 		case *object.ReturnObject:
 			block.Block = append(block.Block, obj)
 			return block
+		case *object.BlockObject:
+			if len(obj.Block) == 0 {
+				block.Block = append(block.Block, object.NULL)
+				continue
+			}
+			block.Block = append(block.Block, obj.Block...)
+			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ {
+				return block
+			}
 		default:
 			block.Block = append(block.Block, obj)
 		}
@@ -220,7 +243,7 @@ func (e *Evaluator) evalFunctionStatement(stmt *parser.FunctionStatement, env *o
 		e.logger.Error(fmt.Sprintf(logger.E018, stmt.Name), stmt.LineNumber())
 		return object.NULL
 	}
-	obj := &object.FunctionObject{Params: stmt.Params, Body: stmt.Block}
+	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block}
 	env.Set(strings.ToUpper(stmt.Name), obj)
 	return obj
 }
@@ -266,6 +289,54 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 		}
 	}
 	return &object.EnumObject{Name: strings.ToUpper(node.Name), Value: enum, Keys: keys}
+}
+
+// 関数呼出し
+func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.Environment) object.Object {
+	obj := e.Eval(expr.Function, env)
+	if obj == object.ERROR {
+		return object.ERROR
+	} else if obj == object.NULL {
+		return &object.NodeObject{Value: expr, LineNumber: expr.LineNumber()}
+	}
+
+	fn, ok := obj.(*object.FunctionObject)
+	if !ok {
+		e.logger.Error(logger.E019, expr.LineNumber())
+		fmt.Printf("obj %T(%#v)\n", obj, obj)
+		return object.ERROR
+	}
+	if len(expr.Arguments.Expressions) != len(fn.Params) {
+		e.logger.Error(fmt.Sprintf(logger.E021, fn.Name), expr.LineNumber())
+		return object.ERROR
+	}
+	newEnv := object.NewEnvironment(env)
+	for i, param := range fn.Params {
+		p := strings.ToUpper(param)
+		v := e.Eval(expr.Arguments.Expressions[i], env)
+		if v == object.ERROR {
+			return object.ERROR
+		} else if v == object.NULL {
+			v = &object.NodeObject{Value: expr.Arguments.Expressions[i]}
+		}
+		newEnv.Set(p, v)
+	}
+
+	ret, ok := e.evalBlockStatement(fn.Body.(*parser.BlockStatement), newEnv).(*object.BlockObject)
+	fmt.Printf("fn.Body %T(%#v)\n", fn.Body, fn.Body)
+	fmt.Printf("call func %s returns %T(%#v)\n", fn.Name, ret, ret)
+	value := ret.Block[len(ret.Block)-1]
+	fmt.Printf("value %T(%#v)\n", value, value)
+
+	if !ok {
+		panic(fmt.Sprintf("call func %s returns %T(%#v)", fn.Name, ret, ret))
+	}
+	last := ret.Block[len(ret.Block)-1]
+	fmt.Printf("return %T(%#v)\n", last, last)
+	if len(ret.Block) == 0 || last.Type() != object.RETURN_OBJ {
+		return object.NULL
+	}
+	return last.(*object.ReturnObject).Value
 }
 
 // 中置演算子式
@@ -326,6 +397,42 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 	default:
 		e.logger.Error(fmt.Sprintf(logger.E016, string(rune(opCode))), lineNumber)
 		return object.ERROR
+	}
+}
+
+// 前置演算子式
+func (e *Evaluator) evalPrefixExpression(opCode int, op object.Object, lineNumber int) object.Object {
+	switch op := op.(type) {
+	case *object.NumberObject:
+		switch opCode {
+		case '+':
+			return &object.NumberObject{Value: op.Value, LineNumber: lineNumber}
+		case '-':
+			return &object.NumberObject{Value: -op.Value, LineNumber: lineNumber}
+		case '~':
+			return &object.NumberObject{Value: op.Value ^ -1, LineNumber: lineNumber}
+		case '!':
+			return &object.NumberObject{Value: e.boolToInt(op.Value == 0), LineNumber: lineNumber}
+		default:
+			e.logger.Error(fmt.Sprintf(logger.E008, rune(opCode)), lineNumber)
+			return object.ERROR
+		}
+	case *object.StringObject:
+		if opCode == '!' {
+			return &object.NumberObject{Value: e.boolToInt(op.Value == ""), LineNumber: lineNumber}
+		}
+		e.logger.Error(fmt.Sprintf(logger.E007, rune(opCode)), lineNumber)
+		return object.ERROR
+	}
+	e.logger.Error(logger.E022, lineNumber)
+	return object.ERROR
+}
+
+func (e *Evaluator) boolToInt(value bool) int {
+	if value {
+		return 1
+	} else {
+		return 0
 	}
 }
 
