@@ -243,7 +243,7 @@ func (e *Evaluator) evalFunctionStatement(stmt *parser.FunctionStatement, env *o
 		e.logger.Error(fmt.Sprintf(logger.E018, stmt.Name), stmt.LineNumber())
 		return object.NULL
 	}
-	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block}
+	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env}
 	env.Set(strings.ToUpper(stmt.Name), obj)
 	return obj
 }
@@ -310,7 +310,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 		e.logger.Error(fmt.Sprintf(logger.E021, fn.Name), expr.LineNumber())
 		return object.ERROR
 	}
-	newEnv := object.NewEnvironment(env)
+	newEnv := object.NewEnvironment(fn.Env)
 	for i, param := range fn.Params {
 		p := strings.ToUpper(param)
 		v := e.Eval(expr.Arguments.Expressions[i], env)

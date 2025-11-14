@@ -220,6 +220,7 @@ type FunctionObject struct {
 	Name   string
 	Params []string
 	Body   parser.Node
+	Env    *Environment
 }
 
 func (f *FunctionObject) Type() ObjectType { return FUNC_OBJ }

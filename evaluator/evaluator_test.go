@@ -152,3 +152,39 @@ func TestFunc(t *testing.T) {
 		}
 	}
 }
+
+func TestClosure(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{`
+		adder func x
+			inner func y
+				return x + y
+			endf
+			return inner
+		endf
+		const add3 = adder(3)
+		add3(10)
+		`, 13},
+	}
+
+	for _, tt := range tests {
+		fmt.Println("input", tt.input)
+		env := object.NewEnvironment(nil)
+		logger := logger.New("<eval test>")
+		prog := evaluateInput(t, tt.input, logger, env)
+		env.Print()
+
+		last := prog.Objects[len(prog.Objects)-1]
+		if tt.expected >= 0 {
+			testNumberObject(t, last, tt.expected, tt.input)
+			continue
+		}
+		if last != object.NULL {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("should be NULL. got %T(%#v)", last, last)
+		}
+	}
+}
