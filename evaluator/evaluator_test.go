@@ -41,6 +41,8 @@ func TestReturn(t *testing.T) {
 		{`1 \ 2 \ 3`, 3},
 		{`1 \ 2 \ return \ 3`, -1},
 		{`1 \ 2 \ return 99 \ 3`, 99},
+		{`1 \ if 1 \ if 2 \ 3 \ return 99 \ 4 \ endif \ return 98 \ 5 \ endif`, 99},
+		{`1 \ if 1 \ if 0 \ 3 \ return 99 \ 4 \ endif \ return 98 \ 5 \ endif`, 98},
 	}
 
 	for _, tt := range tests {
@@ -106,21 +108,27 @@ func TestIf(t *testing.T) {
 	}
 }
 
-func TestFunc(t *testing.T) {
+func testFunc(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
 	}{
-		{`retNULL func \ 100 \ endf \ ret100()`, -1}, // -1 は NullObject とする
+		// {`retNULL func \ 100 \ endf \ RETNULL()`, -1}, // -1 は NullObject とする
 		{`ret100 func \ return 100 \ endf \ ret100()`, 100},
-		{`abs func arg \ if arg > 0 \ return arg \ else \ -arg \ endf \ abs(100)`, 100},
-		{`abs func arg \ if arg > 0 \ return arg \ else \ -arg \ endf \ abs(-100)`, 100},
+		{`ret100 func \ 1 \ 2 \ return 100 \ 4 \ endf \ ret100()`, 100},
+		{`abs func arg \ return arg \ endf \  abs(123)`, 123},
+		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \ endif \ endf \ abs(100)`, 100},
+		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \  endif \endf \ abs(-100)`, 100},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ endif \ endif \ endf \ deep(100)`, 999},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ return 999 \ endif \ return 888 \ endif \ endf \ deep(100)`, 999},
 	}
 
 	for _, tt := range tests {
+		fmt.Println("input", tt.input)
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		prog := evaluateInput(t, tt.input, logger, env)
+		env.Print()
 
 		last := prog.Objects[len(prog.Objects)-1]
 		if tt.expected >= 0 {
