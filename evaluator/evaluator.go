@@ -303,7 +303,6 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
 		e.logger.Error(logger.E019, expr.LineNumber())
-		fmt.Printf("obj %T(%#v)\n", obj, obj)
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {
@@ -323,16 +322,10 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 	}
 
 	ret, ok := e.evalBlockStatement(fn.Body.(*parser.BlockStatement), newEnv).(*object.BlockObject)
-	fmt.Printf("fn.Body %T(%#v)\n", fn.Body, fn.Body)
-	fmt.Printf("call func %s returns %T(%#v)\n", fn.Name, ret, ret)
-	value := ret.Block[len(ret.Block)-1]
-	fmt.Printf("value %T(%#v)\n", value, value)
-
 	if !ok {
 		panic(fmt.Sprintf("call func %s returns %T(%#v)", fn.Name, ret, ret))
 	}
 	last := ret.Block[len(ret.Block)-1]
-	fmt.Printf("return %T(%#v)\n", last, last)
 	if len(ret.Block) == 0 || last.Type() != object.RETURN_OBJ {
 		return object.NULL
 	}
