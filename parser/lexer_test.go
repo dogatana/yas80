@@ -18,7 +18,7 @@ func testDisplayTokens(t *testing.T) {
 	}
 }
 
-func TestSymbols(t *testing.T) {
+func TestLexerSymbols(t *testing.T) {
 	input := " ( ) = - + | ^ * / & ! ~ << >> < <= == != >= > || && "
 	expected := []struct {
 		TokenType TokenType
@@ -74,7 +74,7 @@ func TestSymbols(t *testing.T) {
 	}
 }
 
-func TestBlankInput(t *testing.T) {
+func TestLexerBlankInput(t *testing.T) {
 	tests := []struct {
 		input           string
 		expected_tokens []int
@@ -107,7 +107,7 @@ func TestBlankInput(t *testing.T) {
 	}
 }
 
-func TestInvalidCharacter(t *testing.T) {
+func TestLexerInvalidCharacter(t *testing.T) {
 	input := " あ "
 
 	l := newLexerForTest(input)
@@ -120,7 +120,7 @@ func TestInvalidCharacter(t *testing.T) {
 	}
 }
 
-func TestString(t *testing.T) {
+func TestLexerString(t *testing.T) {
 	tests := []struct {
 		input            string
 		expected_literal string
@@ -143,7 +143,7 @@ func TestString(t *testing.T) {
 	}
 }
 
-func TestNumber(t *testing.T) {
+func TestLexerNumber(t *testing.T) {
 	tests := []struct {
 		input            string
 		expected_literal string
@@ -201,7 +201,7 @@ func TestLexInterface(t *testing.T) {
 	}
 }
 
-func TestIdent(t *testing.T) {
+func TestLexerIdent(t *testing.T) {
 	tests := []struct {
 		input           string
 		expectedType    TokenType
@@ -231,7 +231,7 @@ func TestIdent(t *testing.T) {
 		}
 	}
 }
-func TestZ80REG8(t *testing.T) {
+func TestLexerZ80REG8(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected TokenSubType
@@ -269,7 +269,7 @@ func TestZ80REG8(t *testing.T) {
 	}
 }
 
-func TestZ80REG16(t *testing.T) {
+func TestLexerZ80REG16(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected TokenSubType
@@ -301,7 +301,7 @@ func TestZ80REG16(t *testing.T) {
 	}
 }
 
-func TestZ80FLAG(t *testing.T) {
+func TestLexerZ80FLAG(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected TokenSubType
@@ -336,22 +336,21 @@ func TestZ80FLAG(t *testing.T) {
 }
 
 func TestZ80Instructions(t *testing.T) {
-	input := "LD PUSH POP EX EXX LDI LDIR LDDR CPI CPIR CPDR ADD ADC SUB SBC AND OR " +
-		"CP INC DEC DAA CPL NEG CCF SCF NOP HALT DI EI IM " +
-		"RLCA RLA RRCA RRA RLC RL RR SLA SRA SRL RLD RRD " +
-		"BIT SET RES JP JR DJNZ CALL RET RETI RETN RST " +
-		"IN INI INIR INDR OUT OUTI OTIR OUTD OTDR"
+	input := readTestDataFile(t, "z80instruction.txt")
 
 	l := newLexerForTest(input)
 	for {
 		tok := l.NextToken()
-		if tok.LineNumber == 0 {
-			t.Errorf("LineNumber not set. got %s", tok.String())
-		}
 		if tok.TokenType == EOL {
+			continue
+		}
+		if tok.TokenType == EOF {
 			break
 		}
 
+		if tok.LineNumber == 0 {
+			t.Errorf("LineNumber not set. got %s", tok.String())
+		}
 		expectedToken, ok := z80ReservedWords[tok.Literal]
 		if !ok {
 			t.Errorf("instruction %q not found", tok.Literal)
@@ -370,7 +369,7 @@ func TestZ80Instructions(t *testing.T) {
 	}
 }
 
-func TestReservedWords(t *testing.T) {
+func TestLexReservedWords(t *testing.T) {
 	input := "CONST VAR EQU FN ORG " +
 		"IF ELSE ELIF ENDIF " +
 		"MACRO ENDM EXITM " +

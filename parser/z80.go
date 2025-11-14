@@ -80,6 +80,7 @@ const (
 	Z80_INST_RLC
 	Z80_INST_RL
 	Z80_INST_RR
+	Z80_INST_RRC
 	Z80_INST_SLA
 	Z80_INST_SRA
 	Z80_INST_SRL
@@ -99,12 +100,14 @@ const (
 	Z80_INST_IN
 	Z80_INST_INI
 	Z80_INST_INIR
+	Z80_INST_IND
 	Z80_INST_INDR
 	Z80_INST_OUT
 	Z80_INST_OUTI
 	Z80_INST_OTIR
 	Z80_INST_OUTD
 	Z80_INST_OTDR
+	Z80_INST_XOR
 )
 
 var z80ReservedWords map[string]Token = map[string]Token{
@@ -160,6 +163,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"SBC":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_SBC, Literal: "SBC"},
 	"AND":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_AND, Literal: "AND"},
 	"OR":   {TokenType: Z80_INST1, TokenSubType: Z80_INST_OR, Literal: "OR"},
+	"XOR":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_XOR, Literal: "XOR"},
 	"CP":   {TokenType: Z80_INST1, TokenSubType: Z80_INST_CP, Literal: "CP"},
 	"INC":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_INC, Literal: "INC"},
 	"DEC":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_DEC, Literal: "DEC"},
@@ -180,6 +184,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"RLC":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_RLC, Literal: "RLC"},
 	"RL":   {TokenType: Z80_INST1, TokenSubType: Z80_INST_RL, Literal: "RL"},
 	"RR":   {TokenType: Z80_INST1, TokenSubType: Z80_INST_RR, Literal: "RR"},
+	"RRC":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_RRC, Literal: "RRC"},
 	"SLA":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_SLA, Literal: "SLA"},
 	"SRA":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_SRA, Literal: "SRA"},
 	"SRL":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_SRL, Literal: "SRL"},
@@ -199,6 +204,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"IN":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_IN, Literal: "IN"},
 	"INI":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_INI, Literal: "INI"},
 	"INIR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_INIR, Literal: "INIR"},
+	"IND":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_INDR, Literal: "IND"},
 	"INDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_INDR, Literal: "INDR"},
 	"OUT":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_OUT, Literal: "OUT"},
 	"OUTI": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OUTI, Literal: "OUTI"},

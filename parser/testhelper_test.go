@@ -3,6 +3,9 @@ package parser
 import (
 	"bufio"
 	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"yas80/logger"
@@ -34,4 +37,17 @@ func testExpressionStatement(t *testing.T, input string, node Node) *ExpressionS
 		return nil // ここへは到達しないが形式として必要
 	}
 	return stmt
+}
+
+func readTestDataFile(t *testing.T, filename string) string {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime.Caller(0) failed")
+	}
+	path := filepath.Join(filepath.Dir(file), "testdata", filename)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("could read %s", path)
+	}
+	return string(data)
 }
