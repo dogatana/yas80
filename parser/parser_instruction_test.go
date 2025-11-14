@@ -129,6 +129,7 @@ OUT (C), B
 	prog := Parse(l)
 	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
+		l.logger.Print()
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Trim(input, " \n\t")

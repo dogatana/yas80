@@ -33,6 +33,7 @@ var _ = __yyfmt__.Sprintf
 %type<params> param_list
 %type<expr_list> expr_list
 %type<expr> expr indexed_expr
+%type<expr> operand1 operand2
 
 
 %token<token> EOL
@@ -341,102 +342,27 @@ instruction	: Z80_INST0
 				$$ = &Z80Instruction{
 						InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber}
 			}
-			| Z80_INST1 '(' expr ')'
-			{
-				if $3.NodeType() == NODE_ERROR {
-					$$ = $3
-				} else {
-					$$ = &Z80Instruction{
-							InstType: Z80_INST1, OpCode: int($1.TokenSubType), 
-							Op1: &IndirectExpression{Expression: $3},
-							lineNumber: $1.LineNumber }
-				}
-			}
-			| Z80_INST1 expr
+			| Z80_INST1 operand1
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else {
-					$$ = &Z80Instruction{
-							InstType: Z80_INST1, OpCode: int($1.TokenSubType), 
-							Op1: $2,
-							lineNumber: $1.LineNumber }
+					$$ = &Z80Instruction{InstType: Z80_INST1, OpCode: int($1.TokenSubType), 
+						Op1: $2, 
+						lineNumber: $1.LineNumber }
 				}
 			}
-			| Z80_INST2 '(' expr ')'
-			{
-				if $3.NodeType() == NODE_ERROR {
-					$$ = $3
-				} else {
-					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
-							Op2: &IndirectExpression{Expression: $3},
-							lineNumber: $1.LineNumber }
-				}
-			}
-			| Z80_INST2 expr
+			| Z80_INST2 operand2
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else {
-					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
-							Op2: $2,
-							lineNumber: $1.LineNumber }
+					$$ = &Z80Instruction{InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
+						Op2: $2,
+						lineNumber: $1.LineNumber }
 				}
 			}
-			| Z80_INST2 '(' expr ')' ',' expr
-			{
-				if $3.NodeType() == NODE_ERROR && $6.NodeType() == NODE_ERROR {
-					err := $3.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
-					$$ = $6
-				} else if $3.NodeType() == NODE_ERROR {
-					$$ = $3
-				} else if $6.NodeType() == NODE_ERROR {
-					$$ = $6
-				} else {
-					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
-							Op1: &IndirectExpression{Expression: $3},
-							Op2: $6,
-							lineNumber: $1.LineNumber }
-				}
-			}
-			| Z80_INST2 expr ',' '(' expr ')'
-			{
-				if $2.NodeType() == NODE_ERROR && $5.NodeType() == NODE_ERROR {
-					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
-					$$ = $5
-				} else if $2.NodeType() == NODE_ERROR {
-					$$ = $2
-				} else if $5.NodeType() == NODE_ERROR {
-					$$ = $5
-				} else {
-					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
-							Op1: $2,
-							Op2: &IndirectExpression{Expression: $5},
-							lineNumber: $1.LineNumber }
-				}
-			}
-			| Z80_INST2 '(' expr ')' ',' '(' expr ')'
-			{
-				var err *ParseError
-
-				if $3.NodeType() == NODE_ERROR {
-					err = $3.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber())
-				} 
-				if $7.NodeType() == NODE_ERROR {
-					err = $7.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber())
-				}
-				// 常にエラーとする
-				$$ = &ParseError{Message: logger.E006, lineNumber: $1.LineNumber}
-			}
-			| Z80_INST2 expr ',' expr
+			| Z80_INST2 operand1 ',' operand2
 			{
 				if $2.NodeType() == NODE_ERROR && $4.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
@@ -447,15 +373,44 @@ instruction	: Z80_INST0
 				} else if $4.NodeType() == NODE_ERROR {
 					$$ = $4
 				} else {
-					$$ = &Z80Instruction{
-							InstType: Z80_INST2, OpCode: int($1.TokenSubType),
+					$$ = &Z80Instruction{InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
 							Op1: $2,
 							Op2: $4,
-							lineNumber: $1.LineNumber}
+							lineNumber: $1.LineNumber }
 				}
 			}
 			;
 	
+operand1	: operand2			{ $$ = $1 }
+			| Z80_FLAG 			{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
+			;
+
+operand2	: Z80_REG8 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
+			| Z80_REG16 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
+			| '(' Z80_REG16 ')'
+			{ 
+				$$ = &IndirectExpression{Expression: 
+					&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType), lineNumber: $2.LineNumber}}
+			}
+			| '(' Z80_REG16 ADDSUB expr ')' 
+			{
+				$$ = &IndirectExpression{Expression: 
+						buildInfixExpression(
+							int($3.TokenSubType), 
+							&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType), lineNumber: $1.LineNumber},
+							$4,
+							$2.LineNumber)}
+			}
+			| '(' Z80_REG8 ')'
+			{ 
+				$$ = &IndirectExpression{Expression: 
+					&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType), lineNumber: $2.LineNumber}}
+			}
+			| '(' expr ')'		{ $$ = &IndirectExpression{Expression: $2} }
+			| expr 				{ $$ = $1 }
+			;
+			
+
 // expr エラー検出時は yylex.Error() を呼んで伝播を止める
 expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
 			| expr
@@ -506,9 +461,6 @@ expr		: NUMBER
 				$$ = &ArrayLiteral{Elements: $2, lineNumber: $1.LineNumber}
 			}
 			| indexed_expr 			{ $$ = $1}
-			| Z80_REG8 				{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
-			| Z80_REG16 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
-			| Z80_FLAG 				{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| '(' expr ')'			{ $$ = $2}
 			| expr ADDSUB expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
 			| expr '-' expr		 	{ $$ = buildInfixExpression('-', $1, $3, $2.LineNumber) }
