@@ -80,7 +80,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		return e.evalZ80Instruction(node, env)
 	case *parser.ConstStatement:
 		v := e.Eval(node.Value, env)
-		env.Set(node.Name.Name, v)
+		env.Set(strings.ToUpper(node.Name.Name), v)
 		switch v := v.(type) {
 		case *object.NumberObject, *object.StringObject:
 			return v
