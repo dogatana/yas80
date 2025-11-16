@@ -15,6 +15,8 @@ venv/
 *.exe
 *.bin
 
+doc/
+
 !parser/testdata/*.txt
 GOYACC.md
 TODO.md
