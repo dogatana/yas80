@@ -137,6 +137,11 @@ func (l *Lexer) NextToken() Token {
 		literal += l.readWord()
 		l.nextChar()
 		return Token{TokenType: NUMBER, Literal: literal, LineNumber: l.lineNumber}
+	case l.curChar == '$' && !l.isXDigit(l.peekChar()):
+		// $ ローケーションカウンタ
+		tok := Token{TokenType: IDENT, Literal: "$", LineNumber: l.lineNumber}
+		l.nextChar()
+		return tok
 	case l.curChar == '$' || l.curChar == '%':
 		// 16進数リテラル($) or 2進数リテラル
 		literal = string(l.curChar)
@@ -302,6 +307,10 @@ func (l *Lexer) readWord() string {
 
 func (l *Lexer) isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+func (l *Lexer) isXDigit(ch rune) bool {
+	return l.isDigit(ch) || 'a' <= ch && ch <= 'f' || 'A' <= ch && ch <= 'F'
 }
 
 func (l *Lexer) isAlpha(ch rune) bool {

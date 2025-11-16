@@ -163,7 +163,10 @@ func TestLexerNumber(t *testing.T) {
 		{"0abc", "0abc"},
 		{"0xhoge", "0xhoge"},
 		{"0ohoge", "0ohoge"},
-		{"$ggg", "$ggg"},
+		{"$0ggg", "$0ggg"},
+		{"$9ggg", "$9ggg"},
+		{"$aggg", "$aggg"},
+		{"$fggg", "$fggg"},
 		{"%xyz", "%xyz"},
 	}
 
@@ -400,6 +403,44 @@ func TestLexReservedWords(t *testing.T) {
 		}
 		if tok.TokenSubType != expected.TokenSubType {
 			t.Errorf("expected Op '%d'. got %s", expected.TokenSubType, tok.String())
+		}
+	}
+}
+
+func TestLexerDoller(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected []TokenType
+	}{
+		// C は Z80_REG8 トークンとなる
+		// {"C", Z80_FLAG_C},
+		{"$", []TokenType{IDENT, EOL}},
+		{"$ ", []TokenType{IDENT, EOL}},
+		{"$0", []TokenType{NUMBER, EOL}},
+		{"$a", []TokenType{NUMBER, EOL}},
+		{"$f", []TokenType{NUMBER, EOL}},
+		{"$A", []TokenType{NUMBER, EOL}},
+		{"$F", []TokenType{NUMBER, EOL}},
+		{"$_", []TokenType{IDENT, IDENT, EOL}},
+		{"$g", []TokenType{IDENT, IDENT, EOL}},
+		{"$$", []TokenType{IDENT, IDENT, EOL}},
+	}
+
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		for _, tokenType := range tt.expected {
+			tok := l.NextToken()
+			if tok.LineNumber == 0 {
+				fmt.Printf("input %q\n", tt.input)
+				t.Errorf("LineNumber not set. got %s", tok.String())
+			}
+			if tok.TokenType != tokenType {
+				fmt.Printf("input %q\n", tt.input)
+				t.Errorf("expected TokenType %s. got %#v", tokenLiteral(int(tokenType)), tok)
+			}
+			if tok.TokenType == EOL {
+				break
+			}
 		}
 	}
 }
