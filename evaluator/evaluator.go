@@ -63,6 +63,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	switch node := node.(type) {
 	// Program
 	case *parser.Program:
+		e.initLocationCounter(env, 0)
 		return e.evalProgram(node, env)
 
 	// Statement
@@ -76,8 +77,23 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.FunctionStatement:
 		return e.evalFunctionStatement(node, env)
 	case *parser.Z80Instruction:
+		e.printLocationCounter(env)
 		e.lineNumber = node.LineNumber()
-		return e.evalZ80Instruction(node, env)
+		obj := e.evalZ80Instruction(node, env)
+		if obj.Type() == object.CODE_OBJ {
+			code := obj.(*object.CodeObject)
+			code.Addr = e.getLocationCounter(env)
+			e.advanceLocationCounter(env, code.Size())
+		}
+		e.printLocationCounter(env)
+		return obj
+	case *parser.LabelStatement:
+		obj, ok := env.Get("$")
+		if !ok {
+			panic(fmt.Sprintf("could not get $ at %s", node.String()))
+		}
+		addr := obj.(*object.NumberObject)
+		return &object.NumberObject{Value: addr.Value, LineNumber: node.LineNumber()}
 	case *parser.ConstStatement:
 		v := e.Eval(node.Value, env)
 		env.Set(strings.ToUpper(node.Name.Name), v)
@@ -155,6 +171,37 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
 		return object.ERROR
 	}
+}
+
+// location counter 初期化
+func (e *Evaluator) initLocationCounter(env *object.Environment, addr int) {
+	env.GlobalSet("$", &object.NumberObject{Value: addr})
+}
+
+// location counter 取得
+func (e *Evaluator) getLocationCounter(env *object.Environment) int {
+	counter, ok := env.GlobalGet("$")
+	if !ok {
+		panic("getLocationCounter failed")
+	}
+	return counter.(*object.NumberObject).Value
+
+}
+
+// location counter 表示
+func (e *Evaluator) printLocationCounter(env *object.Environment) {
+	fmt.Printf("$ %04x\n", e.getLocationCounter(env))
+}
+
+// location counter 更新
+func (e *Evaluator) advanceLocationCounter(env *object.Environment, n int) {
+	obj, ok := env.GlobalGet("$")
+	if !ok {
+		panic("getLocationCounter failed")
+	}
+	counter := obj.(*object.NumberObject)
+	counter.Value += n
+	fmt.Println(counter.String())
 }
 
 func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) object.Object {
