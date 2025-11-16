@@ -90,18 +90,22 @@ func (p *ProgramObject) String() string {
 }
 
 // code
-type Code struct {
+type CodeObject struct {
 	Line int
+	Addr int
 	Code []byte
 }
 
-func (f *Code) Type() ObjectType { return CODE_OBJ }
-func (f *Code) String() string {
-	text := fmt.Sprintf("%d: ", f.Line)
+func (f *CodeObject) Type() ObjectType { return CODE_OBJ }
+func (f *CodeObject) String() string {
+	text := fmt.Sprintf("%d:%04x: ", f.Line, f.Addr)
 	for _, b := range f.Code {
-		text += fmt.Sprintf("%02x", b)
+		text += fmt.Sprintf("%02x ", b)
 	}
 	return text
+}
+func (f *CodeObject) Size() int {
+	return len(f.Code)
 }
 
 // NULL

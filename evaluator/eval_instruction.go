@@ -11,7 +11,7 @@ func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env *object.
 	switch node.NodeType() {
 	case parser.Z80_INST0:
 		info := Z80CodeTable0[int(node.OpCode)]
-		obj := &object.Code{Line: node.LineNumber(), Code: make([]byte, len(info.Bytes))}
+		obj := &object.CodeObject{Line: node.LineNumber(), Code: make([]byte, len(info.Bytes))}
 		copy(obj.Code, info.Bytes)
 		return obj
 	case parser.Z80_INST1:
@@ -28,12 +28,12 @@ func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env *object.
 
 func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ *object.Environment) object.Object {
 	if node.Op1 == nil {
-		return &object.Code{Line: node.LineNumber(), Code: []byte{0xc9}}
+		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0xc9}}
 	}
 	if node.Op1.NodeType() == parser.Z80_FLAG {
 		flag := int(node.Op1.NodeSubType()) - parser.Z80_FLAG_NZ
 		b := byte(0xc0 | flag<<3)
-		return &object.Code{Line: node.LineNumber(), Code: []byte{b}}
+		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{b}}
 	}
 	e.logger.Error(
 		fmt.Sprintf(logger.E017, node.Op1.String()), node.LineNumber())
@@ -66,7 +66,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 			}
 			b := 0xc0
 			b |= ((r1 - parser.Z80_REG_B) << 3) | (r2 - parser.Z80_REG_B)
-			return &object.Code{Line: node.LineNumber(), Code: []byte{byte(b)}}
+			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{byte(b)}}
 		default:
 			op2 := e.Eval(node.Op2, env)
 			if op2.Type() == object.NUMBER_OBJ {
@@ -79,7 +79,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 				}
 				b := 0x06
 				b |= (r1 - parser.Z80_REG_B) << 3
-				return &object.Code{Line: node.LineNumber(), Code: []byte{byte(b), bv}}
+				return &object.CodeObject{Line: node.LineNumber(), Code: []byte{byte(b), bv}}
 			} else if op2.Type() == object.NULL_OBJ {
 				e.logger.Error(fmt.Sprintf("error expr: %s", node.Op2.String()), 0)
 			}
@@ -94,7 +94,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 		if !ok {
 			return object.NULL
 		}
-		return &object.Code{Line: node.LineNumber(), Code: []byte{0x21, byte(num.Value & 0xff), byte((num.Value >> 8) & 0xff)}}
+		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0x21, byte(num.Value & 0xff), byte((num.Value >> 8) & 0xff)}}
 
 	default:
 		return object.NULL
