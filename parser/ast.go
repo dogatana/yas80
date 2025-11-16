@@ -493,7 +493,7 @@ type IndexedExpression struct {
 func (ie *IndexedExpression) expressionNode()          {}
 func (ie *IndexedExpression) NodeType() NodeType       { return NODE_INDEXED_EXPR }
 func (ie *IndexedExpression) NodeSubType() NodeSubType { return 0 }
-func (ie *IndexedExpression) LineNumber() int          { return ie.LineNumber() }
+func (ie *IndexedExpression) LineNumber() int          { return ie.lineNumber }
 func (ie *IndexedExpression) String() string {
 	var out bytes.Buffer
 
