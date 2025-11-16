@@ -385,7 +385,8 @@ operand1	: operand2			{ $$ = $1 }
 			| Z80_FLAG 			{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			;
 
-operand2	: Z80_REG8 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
+operand2	: IDENT 			{ $$ = &Ident{Name: $1.Literal, lineNumber: $1.LineNumber} }
+			| Z80_REG8 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| Z80_REG16 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| '(' Z80_REG16 ')'
 			{ 
@@ -441,9 +442,6 @@ expr		: NUMBER
 					$$ = &ParseError{Message: fmt.Sprintf(logger.E002, $1.Literal), lineNumber: $1.LineNumber}
 				}
 			}
-			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
-			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
-			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| STRING 		{ $$ = &StringLiteral{Value: $1.Literal, lineNumber: $1.LineNumber} }
 			| IDENT 		{ $$ = &Ident{Name: $1.Literal, lineNumber: $1.LineNumber} }
 			| DOT_IDENT
