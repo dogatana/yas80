@@ -167,7 +167,7 @@ type RegisterObject struct {
 }
 
 func (r *RegisterObject) Type() ObjectType { return REGISTER_OBJ }
-func (r *RegisterObject) String() string   { return parser.Z80OpCode2Name(r.Register) }
+func (r *RegisterObject) String() string   { return parser.Z80Opcode2Name(r.Register) }
 
 // Node
 type NodeObject struct {

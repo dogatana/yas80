@@ -139,13 +139,13 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		if v1.Type() == object.ERROR_OBJ || v2.Type() == object.ERROR_OBJ {
 			return object.ERROR
 		}
-		return e.evalInfixExpression(node.OpCode, v1, v2, node.LineNumber())
+		return e.evalInfixExpression(node.Operator, v1, v2, node.LineNumber())
 	case *parser.PrefixExpression:
 		v := e.Eval(node.Op, env)
 		if v.Type() == object.ERROR_OBJ {
 			return object.ERROR
 		}
-		return e.evalPrefixExpression(node.OpCode, v, node.LineNumber())
+		return e.evalPrefixExpression(node.Operator, v, node.LineNumber())
 	case *parser.Ident:
 		obj, ok := env.Get(strings.ToUpper(node.Name))
 		if !ok {

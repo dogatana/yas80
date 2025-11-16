@@ -335,19 +335,19 @@ label		: IDENT ':'
 instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{
-					InstType: Z80_INST0, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber} 
+					InstType: Z80_INST0, Opcode: int($1.TokenSubType), lineNumber: $1.LineNumber} 
 			}
 			| Z80_INST1
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST1, OpCode: int($1.TokenSubType), lineNumber: $1.LineNumber}
+						InstType: Z80_INST1, Opcode: int($1.TokenSubType), lineNumber: $1.LineNumber}
 			}
 			| Z80_INST1 operand1
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else {
-					$$ = &Z80Instruction{InstType: Z80_INST1, OpCode: int($1.TokenSubType), 
+					$$ = &Z80Instruction{InstType: Z80_INST1, Opcode: int($1.TokenSubType), 
 						Op1: $2, 
 						lineNumber: $1.LineNumber }
 				}
@@ -357,7 +357,7 @@ instruction	: Z80_INST0
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else {
-					$$ = &Z80Instruction{InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
+					$$ = &Z80Instruction{InstType: Z80_INST2, Opcode: int($1.TokenSubType), 
 						Op2: $2,
 						lineNumber: $1.LineNumber }
 				}
@@ -373,7 +373,7 @@ instruction	: Z80_INST0
 				} else if $4.NodeType() == NODE_ERROR {
 					$$ = $4
 				} else {
-					$$ = &Z80Instruction{InstType: Z80_INST2, OpCode: int($1.TokenSubType), 
+					$$ = &Z80Instruction{InstType: Z80_INST2, Opcode: int($1.TokenSubType), 
 							Op1: $2,
 							Op2: $4,
 							lineNumber: $1.LineNumber }

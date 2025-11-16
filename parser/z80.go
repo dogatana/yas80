@@ -143,7 +143,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"P":  {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_P, Literal: "P"},
 	"M":  {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_M, Literal: "M"},
 
-	// OpCode
+	// Opcode
 	"LD":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_LD, Literal: "LD"},
 	"PUSH": {TokenType: Z80_INST1, TokenSubType: Z80_INST_PUSH, Literal: "PUSH"},
 	"POP":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_POP, Literal: "POP"},
@@ -213,7 +213,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"OTDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OTDR, Literal: "OTDR"},
 }
 
-func Z80OpCode2Name(opcode int) string {
+func Z80Opcode2Name(opcode int) string {
 	for _, v := range z80ReservedWords {
 		if int(v.TokenSubType) == opcode {
 			return v.Literal

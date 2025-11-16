@@ -63,8 +63,8 @@ OTDR
 		if inst.InstType != Z80_INST0 {
 			t.Errorf("not Z80_INST0. got %s", tokenLiteral(inst.InstType))
 		}
-		if tokenLiteral(inst.OpCode) != expected[i] {
-			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.OpCode))
+		if tokenLiteral(inst.Opcode) != expected[i] {
+			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.Opcode))
 		}
 	}
 }
@@ -117,8 +117,8 @@ RET 18
 		if inst.InstType != Z80_INST1 {
 			t.Errorf("not Z80_INST1. got %s", tokenLiteral(inst.InstType))
 		}
-		if tokenLiteral(inst.OpCode) != expected[i] {
-			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.OpCode))
+		if tokenLiteral(inst.Opcode) != expected[i] {
+			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.Opcode))
 		}
 	}
 }
@@ -163,8 +163,8 @@ OUT (C), B
 		if inst.InstType != Z80_INST2 {
 			t.Errorf("not Z80_INST2. got %s", tokenLiteral(inst.InstType))
 		}
-		if tokenLiteral(inst.OpCode) != expected[i] {
-			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.OpCode))
+		if tokenLiteral(inst.Opcode) != expected[i] {
+			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.Opcode))
 		}
 	}
 }

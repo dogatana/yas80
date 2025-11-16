@@ -10,12 +10,12 @@ import (
 func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env *object.Environment) object.Object {
 	switch node.NodeType() {
 	case parser.Z80_INST0:
-		info := Z80CodeTable0[int(node.OpCode)]
+		info := Z80CodeTable0[int(node.Opcode)]
 		obj := &object.CodeObject{Line: node.LineNumber(), Code: make([]byte, len(info.Bytes))}
 		copy(obj.Code, info.Bytes)
 		return obj
 	case parser.Z80_INST1:
-		if node.OpCode == parser.Z80_INST_RET {
+		if node.Opcode == parser.Z80_INST_RET {
 			return e.generateRET(node, env)
 		}
 		return object.NULL

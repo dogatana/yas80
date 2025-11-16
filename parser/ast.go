@@ -388,7 +388,7 @@ func (rs *ReturnStatement) String() string {
 // Z80 命令文 - Z80Instruction Statement
 type Z80Instruction struct {
 	InstType   int
-	OpCode     int
+	Opcode     int
 	Op1        Expression
 	Op2        Expression
 	lineNumber int
@@ -399,13 +399,13 @@ func (zi *Z80Instruction) NodeType() NodeType {
 	return NodeType(zi.InstType)
 }
 func (zi *Z80Instruction) NodeSubType() NodeSubType {
-	return NodeSubType(zi.OpCode)
+	return NodeSubType(zi.Opcode)
 }
 func (zi *Z80Instruction) LineNumber() int { return zi.lineNumber }
 func (zi *Z80Instruction) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(Z80OpCode2Name(zi.OpCode))
+	out.WriteString(Z80Opcode2Name(zi.Opcode))
 	switch {
 	case zi.Op1 == nil && zi.Op2 == nil:
 		break
@@ -519,7 +519,7 @@ func (rl *RegisterLiteral) NodeType() NodeType       { return NodeType(rl.Regist
 func (rl *RegisterLiteral) NodeSubType() NodeSubType { return NodeSubType(rl.Register) }
 func (rl *RegisterLiteral) LineNumber() int          { return rl.lineNumber }
 func (rl *RegisterLiteral) String() string {
-	return Z80OpCode2Name(rl.Register)
+	return Z80Opcode2Name(rl.Register)
 }
 
 // フラグ
@@ -533,7 +533,7 @@ func (fl *FlagLiteral) NodeType() NodeType       { return Z80_FLAG }
 func (fl *FlagLiteral) NodeSubType() NodeSubType { return NodeSubType(fl.Flag) }
 func (fl *FlagLiteral) LineNumber() int          { return fl.lineNumber }
 func (fl *FlagLiteral) String() string {
-	return Z80OpCode2Name(fl.Flag)
+	return Z80Opcode2Name(fl.Flag)
 }
 
 // 識別子
@@ -579,7 +579,7 @@ func (ie *IndirectExpression) String() string {
 
 // 中置演算子式
 type InfixExpression struct {
-	OpCode     int
+	Operator   int
 	Op1        Expression
 	Op2        Expression
 	lineNumber int
@@ -587,7 +587,7 @@ type InfixExpression struct {
 
 func (ie *InfixExpression) expressionNode()          {}
 func (ie *InfixExpression) NodeType() NodeType       { return NODE_INFIX_EXPR }
-func (ie *InfixExpression) NodeSubType() NodeSubType { return NodeSubType(ie.OpCode) }
+func (ie *InfixExpression) NodeSubType() NodeSubType { return NodeSubType(ie.Operator) }
 func (ie *InfixExpression) LineNumber() int          { return ie.lineNumber }
 func (ie *InfixExpression) String() string {
 	var op1, op2 string
@@ -604,7 +604,7 @@ func (ie *InfixExpression) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("(" + op1 + " ")
-	out.WriteString(tokenLiteral(ie.OpCode))
+	out.WriteString(tokenLiteral(ie.Operator))
 	out.WriteString(" " + op2 + ")")
 
 	return out.String()
@@ -612,14 +612,14 @@ func (ie *InfixExpression) String() string {
 
 // 前置演算子式
 type PrefixExpression struct {
-	OpCode     int
+	Operator   int
 	Op         Expression
 	lineNumber int
 }
 
 func (pe *PrefixExpression) expressionNode()          {}
 func (pe *PrefixExpression) NodeType() NodeType       { return NodeType(NODE_PREFIX_EXPR) }
-func (pe *PrefixExpression) NodeSubType() NodeSubType { return NodeSubType(pe.OpCode) }
+func (pe *PrefixExpression) NodeSubType() NodeSubType { return NodeSubType(pe.Operator) }
 func (pe *PrefixExpression) LineNumber() int          { return pe.lineNumber }
 func (pe *PrefixExpression) String() string {
 	var op string
@@ -629,7 +629,7 @@ func (pe *PrefixExpression) String() string {
 		op = pe.Op.String()
 	}
 
-	return "(" + tokenLiteral(pe.OpCode) + op + ")"
+	return "(" + tokenLiteral(pe.Operator) + op + ")"
 }
 
 // 関数呼出し

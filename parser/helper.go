@@ -69,7 +69,7 @@ func tokenLiteral(token int) string {
 	}
 	pt := lexerTokenToParserToken((token))
 	if 256 <= pt && pt < yyPrivate {
-		return Z80OpCode2Name(pt)
+		return Z80Opcode2Name(pt)
 	}
 	name = yyTokname(pt)
 	// 1 文字トークンは 'x' のように ' で囲まれているのでそれをはずす
@@ -203,7 +203,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression, lineNumber int) Expre
 	if ok1 && ok2 && opcode == '+' {
 		return &StringLiteral{Value: str1.Value + str2.Value}
 	}
-	return &InfixExpression{OpCode: opcode, Op1: op1, Op2: op2, lineNumber: lineNumber}
+	return &InfixExpression{Operator: opcode, Op1: op1, Op2: op2, lineNumber: lineNumber}
 }
 
 // 数値リテラルの畳み込み(前置演算子)
@@ -246,5 +246,5 @@ func buildPrefixExpression(opcode int, op Expression, lineNumber int) Expression
 		}
 		return &ParseError{Message: fmt.Sprintf(logger.E007, rune(opcode)), lineNumber: lineNumber}
 	}
-	return &PrefixExpression{OpCode: opcode, Op: op, lineNumber: lineNumber}
+	return &PrefixExpression{Operator: opcode, Op: op, lineNumber: lineNumber}
 }
