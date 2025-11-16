@@ -58,7 +58,6 @@ OTDR
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
-		fmt.Println(text)
 	}
 }
 
@@ -101,7 +100,6 @@ RET 18
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
-		fmt.Println(text)
 	}
 }
 
@@ -158,6 +156,5 @@ LD (IX + 1), A
 	if text != expected {
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
-		fmt.Println(text)
 	}
 }
