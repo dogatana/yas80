@@ -204,7 +204,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"IN":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_IN, Literal: "IN"},
 	"INI":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_INI, Literal: "INI"},
 	"INIR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_INIR, Literal: "INIR"},
-	"IND":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_INDR, Literal: "IND"},
+	"IND":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_IND, Literal: "IND"},
 	"INDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_INDR, Literal: "INDR"},
 	"OUT":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_OUT, Literal: "OUT"},
 	"OUTI": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OUTI, Literal: "OUTI"},
