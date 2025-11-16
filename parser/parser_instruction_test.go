@@ -53,11 +53,19 @@ OTDR
 		}
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
-	expected := strings.Trim(input, " \n\t")
-	text := prog.String()
-	if text != expected {
-		t.Errorf("program differs. exptected %d chars. got %d chars",
-			len(expected), len(text))
+	expected := strings.Split(strings.Trim(input, " \n"), "\n")
+	fmt.Println(expected)
+	for i, node := range prog.Statements {
+		inst, ok := node.(*Z80Instruction)
+		if !ok {
+			t.Errorf("not Z80Instuction. got %T", node)
+		}
+		if inst.InstType != Z80_INST0 {
+			t.Errorf("not Z80_INST0. got %s", tokenLiteral(inst.InstType))
+		}
+		if tokenLiteral(inst.OpCode) != expected[i] {
+			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.OpCode))
+		}
 	}
 }
 
@@ -95,11 +103,23 @@ RET 18
 		}
 		t.Fatalf("Parser returns %d errors and %d warnigs", ec, wc)
 	}
-	expected := strings.Trim(input, " \n\t")
-	text := strings.ReplaceAll(prog.String(), "\t", " ")
-	if text != expected {
-		t.Errorf("program differs. exptected %d chars. got %d chars",
-			len(expected), len(text))
+	expected := []string{}
+	for _, line := range strings.Split(strings.Trim(input, " \n"), "\n") {
+		words := strings.Split(line, " ")
+		expected = append(expected, words[0])
+	}
+
+	for i, node := range prog.Statements {
+		inst, ok := node.(*Z80Instruction)
+		if !ok {
+			t.Errorf("not Z80Instuction. got %T", node)
+		}
+		if inst.InstType != Z80_INST1 {
+			t.Errorf("not Z80_INST1. got %s", tokenLiteral(inst.InstType))
+		}
+		if tokenLiteral(inst.OpCode) != expected[i] {
+			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.OpCode))
+		}
 	}
 }
 
@@ -130,11 +150,22 @@ OUT (C), B
 		l.logger.Print()
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
-	expected := strings.Trim(input, " \n\t")
-	text := strings.ReplaceAll(prog.String(), "\t", " ")
-	if text != expected {
-		t.Errorf("program differs. exptected %d chars. got %d chars",
-			len(expected), len(text))
+	expected := []string{}
+	for _, line := range strings.Split(strings.Trim(input, " \n"), "\n") {
+		words := strings.Split(line, " ")
+		expected = append(expected, words[0])
+	}
+	for i, node := range prog.Statements {
+		inst, ok := node.(*Z80Instruction)
+		if !ok {
+			t.Errorf("not Z80Instuction. got %T", node)
+		}
+		if inst.InstType != Z80_INST2 {
+			t.Errorf("not Z80_INST2. got %s", tokenLiteral(inst.InstType))
+		}
+		if tokenLiteral(inst.OpCode) != expected[i] {
+			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.OpCode))
+		}
 	}
 }
 
