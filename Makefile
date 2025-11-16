@@ -1,7 +1,8 @@
 SRC = main.go parser/token.go parser/lexer.go parser/z80.go \
 	  parser/parser.go parser/ast.go parser/helper.go parser/rules.go \
 	  parser/modifyyaccerror.go \
-	  object/object.go  evaluator/evaluator.go \
+	  object/object.go  \
+	  evaluator/evaluator.go evaluator/eval_instruction.go \
 	  logger/logger.go logger/error_messages.go
 
 TEMP = parser/temp.go
