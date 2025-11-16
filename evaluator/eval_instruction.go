@@ -26,7 +26,7 @@ func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env *object.
 	}
 }
 
-func (e *Evaluator) generateRET(node *parser.Z80Instruction, env *object.Environment) object.Object {
+func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ *object.Environment) object.Object {
 	if node.Op1 == nil {
 		return &object.Code{Line: node.LineNumber(), Code: []byte{0xc9}}
 	}
@@ -84,6 +84,18 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 				e.logger.Error(fmt.Sprintf("error expr: %s", node.Op2.String()), 0)
 			}
 		}
+	case parser.Z80_REG16:
+		r1 := int(node.Op1.NodeSubType())
+		if r1 != parser.Z80_REG_HL {
+			return object.NULL
+		}
+		op2 := e.Eval(node.Op2, env)
+		num, ok := op2.(*object.NumberObject)
+		if !ok {
+			return object.NULL
+		}
+		return &object.Code{Line: node.LineNumber(), Code: []byte{0x21, byte(num.Value & 0xff), byte((num.Value >> 8) & 0xff)}}
+
 	default:
 		return object.NULL
 	}
