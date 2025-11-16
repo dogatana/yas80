@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-// 非テスト：文字列に対してトークン列を返す
+//lint:ignore U1000 非テスト：文字列に対してトークン列を返す
 func testDisplayTokens(t *testing.T) {
 	input := `()= + - * / & | ^ == != < <= > >= ! ~ << >> || &&`
 	l := newLexerForTest(input)
