@@ -59,16 +59,22 @@ func (l *Logger) Count() (int, int, int) {
 }
 
 func (l *Logger) Print() {
-	fmt.Printf("%d errros\n", len(l.Errors))
-	for _, e := range l.Errors {
-		fmt.Println(e.String())
+	if len(l.Errors) != 0 {
+		fmt.Printf("%d errros\n", len(l.Errors))
+		for _, e := range l.Errors {
+			fmt.Println(e.String())
+		}
 	}
-	fmt.Printf("%d warnings\n", len(l.Warnings))
-	for _, e := range l.Warnings {
-		fmt.Println(e.String())
+	if len(l.Warnings) != 0 {
+		fmt.Printf("%d warnings\n", len(l.Warnings))
+		for _, e := range l.Warnings {
+			fmt.Println(e.String())
+		}
 	}
-	fmt.Printf("%d info\n", len(l.Infomation))
-	for _, e := range l.Infomation {
-		fmt.Println(e.String())
+	if len(l.Infomation) != 0 {
+		fmt.Printf("%d info\n", len(l.Infomation))
+		for _, e := range l.Infomation {
+			fmt.Println(e.String())
+		}
 	}
 }
