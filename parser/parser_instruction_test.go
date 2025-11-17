@@ -61,10 +61,10 @@ OTDR
 			t.Errorf("not Z80Instuction. got %T", node)
 		}
 		if inst.InstType != Z80_INST0 {
-			t.Errorf("not Z80_INST0. got %s", tokenLiteral(inst.InstType))
+			t.Errorf("not Z80_INST0. got %s", TokenLiteral(inst.InstType))
 		}
-		if tokenLiteral(inst.Opcode) != expected[i] {
-			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.Opcode))
+		if TokenLiteral(inst.Opcode) != expected[i] {
+			t.Errorf("not %s. got %s", expected[i], TokenLiteral(inst.Opcode))
 		}
 	}
 }
@@ -115,10 +115,10 @@ RET 18
 			t.Errorf("not Z80Instuction. got %T", node)
 		}
 		if inst.InstType != Z80_INST1 {
-			t.Errorf("not Z80_INST1. got %s", tokenLiteral(inst.InstType))
+			t.Errorf("not Z80_INST1. got %s", TokenLiteral(inst.InstType))
 		}
-		if tokenLiteral(inst.Opcode) != expected[i] {
-			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.Opcode))
+		if TokenLiteral(inst.Opcode) != expected[i] {
+			t.Errorf("not %s. got %s", expected[i], TokenLiteral(inst.Opcode))
 		}
 	}
 }
@@ -161,10 +161,10 @@ OUT (C), B
 			t.Errorf("not Z80Instuction. got %T", node)
 		}
 		if inst.InstType != Z80_INST2 {
-			t.Errorf("not Z80_INST2. got %s", tokenLiteral(inst.InstType))
+			t.Errorf("not Z80_INST2. got %s", TokenLiteral(inst.InstType))
 		}
-		if tokenLiteral(inst.Opcode) != expected[i] {
-			t.Errorf("not %s. got %s", expected[i], tokenLiteral(inst.Opcode))
+		if TokenLiteral(inst.Opcode) != expected[i] {
+			t.Errorf("not %s. got %s", expected[i], TokenLiteral(inst.Opcode))
 		}
 	}
 }

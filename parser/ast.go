@@ -604,7 +604,7 @@ func (ie *InfixExpression) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("(" + op1 + " ")
-	out.WriteString(tokenLiteral(ie.Operator))
+	out.WriteString(TokenLiteral(ie.Operator))
 	out.WriteString(" " + op2 + ")")
 
 	return out.String()
@@ -629,7 +629,7 @@ func (pe *PrefixExpression) String() string {
 		op = pe.Op.String()
 	}
 
-	return "(" + tokenLiteral(pe.Operator) + op + ")"
+	return "(" + TokenLiteral(pe.Operator) + op + ")"
 }
 
 // 関数呼出し

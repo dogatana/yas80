@@ -346,7 +346,7 @@ func TestExitmStatement(t *testing.T) {
 
 		if stmt.NodeType() != tt.NodeType {
 			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("NodeType not %s. got %s", tokenLiteral(int(tt.NodeType)), tokenLiteral(int(stmt.NodeType())))
+			t.Errorf("NodeType not %s. got %s", TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
 		}
 	}
 }
@@ -383,7 +383,7 @@ func TestReturnStatement(t *testing.T) {
 		}
 		if stmt.NodeType() != tt.NodeType {
 			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("NodeType not %s. got %s", tokenLiteral(int(tt.NodeType)), tokenLiteral(int(stmt.NodeType())))
+			t.Errorf("NodeType not %s. got %s", TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
 		}
 		switch v := tt.expected.(type) {
 		case nil:

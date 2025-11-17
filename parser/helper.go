@@ -49,17 +49,17 @@ func SetYYDebug(v int) {
 }
 
 var twoCharTokenNames map[int]string = map[int]string{
-	LE:  "LE",  // "<=",
-	GE:  "GE",  // ">=",
-	EQ:  "EQ",  // "==",
-	NEQ: "NEQ", // "!=",
-	SL:  "SL",  // "<<",
-	SR:  "SR",  // ">>",
-	AND: "AND", // "&&",
-	OR:  "OR",  // "||",
+	LE:  "<=", // "<=",
+	GE:  ">=", // ">=",
+	EQ:  "==", // "==",
+	NEQ: "!=", // "!=",
+	SL:  "<<", // "<<",
+	SR:  ">>", // ">>",
+	AND: "&&", // "&&",
+	OR:  "||", // "||",
 }
 
-func tokenLiteral(token int) string {
+func TokenLiteral(token int) string {
 	if token == '\n' {
 		return "EOL"
 	}
@@ -194,7 +194,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression, lineNumber int) Expre
 		if ok {
 			return &NumberLiteral{Value: fn(num1.Value, num2.Value), lineNumber: lineNumber}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(logger.E016, tokenLiteral(opcode)), lineNumber: lineNumber}
+			return &ParseError{Message: fmt.Sprintf(logger.E016, TokenLiteral(opcode)), lineNumber: lineNumber}
 		}
 	}
 	// 文字列演算(+)の畳み込み

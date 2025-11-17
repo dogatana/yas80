@@ -63,10 +63,10 @@ func TestLexerSymbols(t *testing.T) {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != e.TokenType {
-			t.Errorf("expected Token.TokenType %s. got %s", tokenLiteral(int(e.TokenType)), tok.String())
+			t.Errorf("expected Token.TokenType %s. got %s", TokenLiteral(int(e.TokenType)), tok.String())
 		}
 		if e.SubType != 0 && tok.TokenSubType != e.SubType {
-			t.Errorf("expected Token.SubType %s. got %s", tokenLiteral(int(tok.TokenSubType)), tok.String())
+			t.Errorf("expected Token.SubType %s. got %s", TokenLiteral(int(tok.TokenSubType)), tok.String())
 		}
 		if tok.Literal != e.Literal {
 			t.Errorf("expected Token.Literal %q. got %s", tok.Literal, tok.String())
@@ -227,7 +227,7 @@ func TestLexerIdent(t *testing.T) {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != tt.expectedType {
-			t.Errorf("expected Type %s. got %s", tokenLiteral(int(tt.expectedType)), tok.String())
+			t.Errorf("expected Type %s. got %s", TokenLiteral(int(tt.expectedType)), tok.String())
 		}
 		if tok.Literal != tt.expectedLiteral {
 			t.Errorf("expected Literal %q. got %s", tt.expectedLiteral, tok.String())
@@ -264,7 +264,7 @@ func TestLexerZ80REG8(t *testing.T) {
 			t.Errorf("expected Type Z80_REG8. got %s", tok.String())
 		}
 		if tok.TokenSubType != tt.expected {
-			t.Errorf("expected TokenSubtype %q. got %s", tokenLiteral(int(tt.expected)), tok.String())
+			t.Errorf("expected TokenSubtype %q. got %s", TokenLiteral(int(tt.expected)), tok.String())
 		}
 		if tok.Literal != tt.input {
 			t.Errorf("expected Literal %q. got %s", tt.input, tok.String())
@@ -296,9 +296,9 @@ func TestLexerZ80REG16(t *testing.T) {
 			t.Errorf("expected Type Z80_REG16. got %s", tok.String())
 		}
 		if tok.TokenSubType != TokenSubType(tt.expected) {
-			t.Errorf("expected TokenSubType %q. got %s", tokenLiteral(int(tt.expected)), tok.String())
+			t.Errorf("expected TokenSubType %q. got %s", TokenLiteral(int(tt.expected)), tok.String())
 		}
-		if tok.Literal != tokenLiteral(int(tt.expected)) {
+		if tok.Literal != TokenLiteral(int(tt.expected)) {
 			t.Errorf("expected Literal %q. got %s", tt.input, tok.String())
 		}
 	}
@@ -327,13 +327,13 @@ func TestLexerZ80FLAG(t *testing.T) {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != Z80_FLAG {
-			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, tokenLiteral(int(tok.TokenType)))
+			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, TokenLiteral(int(tok.TokenType)))
 		}
 		if tok.TokenSubType != TokenSubType(tt.expected) {
-			t.Errorf("expected TokenSubType %q. got %s", tokenLiteral(int(tt.expected)), tok.String())
+			t.Errorf("expected TokenSubType %q. got %s", TokenLiteral(int(tt.expected)), tok.String())
 		}
-		if tok.Literal != tokenLiteral(int(tt.expected)) {
-			t.Errorf("expected Literal %q. got %s", tokenLiteral(int(tt.expected)), tok.String())
+		if tok.Literal != TokenLiteral(int(tt.expected)) {
+			t.Errorf("expected Literal %q. got %s", TokenLiteral(int(tt.expected)), tok.String())
 		}
 	}
 }
@@ -360,7 +360,7 @@ func TestZ80Instructions(t *testing.T) {
 			continue
 		}
 		if tok.TokenType != expectedToken.TokenType {
-			t.Errorf("expected Type %s. got %s", tokenLiteral(int(tok.TokenType)), tok.String())
+			t.Errorf("expected Type %s. got %s", TokenLiteral(int(tok.TokenType)), tok.String())
 		}
 		if tok.Literal != expectedToken.Literal {
 			t.Errorf("expected Literal %q. got %s", expectedToken.Literal, tok.String())
@@ -396,7 +396,7 @@ func TestLexReservedWords(t *testing.T) {
 			t.Fatalf("word %q is not registered", tok.Literal)
 		}
 		if tok.TokenType != expected.TokenType {
-			t.Errorf("expected Type %s. got %s", tokenLiteral(int(tok.TokenType)), tok.String())
+			t.Errorf("expected Type %s. got %s", TokenLiteral(int(tok.TokenType)), tok.String())
 		}
 		if tok.Literal != expected.Literal {
 			t.Errorf("expected Literal %q. got %s", expected.Literal, tok.String())
@@ -436,7 +436,7 @@ func TestLexerDoller(t *testing.T) {
 			}
 			if tok.TokenType != tokenType {
 				fmt.Printf("input %q\n", tt.input)
-				t.Errorf("expected TokenType %s. got %#v", tokenLiteral(int(tokenType)), tok)
+				t.Errorf("expected TokenType %s. got %#v", TokenLiteral(int(tokenType)), tok)
 			}
 			if tok.TokenType == EOL {
 				break
