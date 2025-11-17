@@ -49,15 +49,12 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 			code.Addr = e.getLocationCounter(env)
 			e.advanceLocationCounter(env, code.Size())
 		}
-		e.printLocationCounter(env)
 		return obj
 	case *parser.LabelStatement:
+		e.printLocationCounter(env)
 		uname := strings.ToUpper(node.Value.Name)
-		obj, ok := env.Get("$")
-		if !ok {
-			panic(fmt.Sprintf("could not get $ at %s", node.String()))
-		}
-		addr := obj.(*object.NumberObject)
+		// Get("$") で取得したものを利用すると、更新後の値が得られてしまうので新たに作成
+		addr := &object.NumberObject{Value: e.getLocationCounter(env), LineNumber: node.LineNumber()}
 
 		// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
 		sym := &object.SymbolObject{
@@ -255,11 +252,14 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 				obj.Block[len(obj.Block)-1] = ret.Value
 			}
 			results.Objects = append(results.Objects, obj.Block...)
-		case *object.SymbolObject:
-			prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
-			results.Objects = append(results.Objects, obj)
+		// case *object.SymbolObject:
+		// 	prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
+		// 	results.Objects = append(results.Objects, obj)
 		default:
 			results.Objects = append(results.Objects, obj)
+		}
+		if stmt.NodeType() == parser.NODE_CONST_STMT {
+			prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
 		}
 	}
 	return results
