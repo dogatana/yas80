@@ -25,6 +25,11 @@ func getDebugEnv(name string) int {
 	return 0
 }
 
+func parse(logger *logger.Logger, input io.Reader, filename string) *parser.Program {
+	l := parser.NewLexer(bufio.NewReader(input), filename, logger)
+	return parser.Parse(l)
+}
+
 // メイン関数
 func main() {
 	var (
@@ -46,23 +51,24 @@ func main() {
 
 	parser.SetYYDebug(getDebugEnv("yydebug"))
 
-	// 構文解析開始
-	fmt.Println("-- parser")
+	// logger 作成
 	logger := logger.New(file)
-	l := parser.NewLexer(bufio.NewReader(input), file, logger)
-	prog := parser.Parse(l)
-	fmt.Println("--")
-	logger.Print()
 
-	// 構文解析結果
-	fmt.Printf("%d statements\n", len(prog.Statements))
-	fmt.Println("--")
+	// 構文解析開始
+	fmt.Println("# parse")
+	prog := parse(logger, input, file)
+	logger.Print()
+	fmt.Println("")
+
+	// AST 表示
+	fmt.Printf("# %d statements\n", len(prog.Statements))
 	if len(prog.Statements) == 0 {
 		os.Exit(0)
 	}
 	fmt.Println(prog.String())
+	fmt.Println("")
 
-	// 評価開始
+	// pass1
 	fmt.Println("-- evaluator")
 	eval := evaluator.New(logger)
 	eval.Debug = getDebugEnv("evaldebug")
@@ -89,4 +95,27 @@ func main() {
 	}
 	fmt.Println("-- env")
 	env.Print()
+	fmt.Println("-- env after EvalEnv")
+	err := eval.EvalEnv(env)
+	if err != nil {
+		fmt.Println("Error during EvalEnv:", err)
+	}
+	env.Print()
+
+	eval.Pass1 = true
+	result = eval.Eval(prog, env).(*object.ProgramObject)
+	logger.Print()
+	fmt.Println("-- after pass2")
+	fmt.Println(prog.String())
+	fmt.Println("--")
+	fmt.Println(len(result.Objects), "objects")
+	fmt.Println("--")
+	for n, o := range result.Objects {
+		if o == nil {
+			fmt.Printf("%d: <nil>\n", n+1)
+		} else {
+			fmt.Printf("%d: %s\n", n+1, o.String())
+		}
+	}
+
 }

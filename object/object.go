@@ -160,7 +160,8 @@ func (d *DeleltedObject) String() string {
 // symbol
 type SymbolObject struct {
 	Name       string
-	Value      parser.Node
+	Node       parser.Node
+	Value      Object
 	State      SymbolState
 	DependsOn  []string
 	LineNumber int

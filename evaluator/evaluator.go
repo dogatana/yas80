@@ -98,7 +98,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 
 		// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
 		sym := &object.SymbolObject{
-			Name: uname, Value: node.Value, State: object.SYMBOL_STATE_DEFINED, DependsOn: []string{}}
+			Name: uname, Node: node.Value, Value: addr, State: object.SYMBOL_STATE_DEFINED, DependsOn: []string{}}
 		env.Set(uname, sym)
 		return addr
 	case *parser.ConstStatement:
@@ -113,7 +113,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		case *object.UndefinedObject:
 			// 未定義定数として登録
 			sym := &object.SymbolObject{
-				Name: uname, Value: node.Value, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
+				Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
 			env.Set(uname, sym)
 			return sym
 		case *object.ErrorObject:
@@ -262,6 +262,9 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 	for i, stmt := range prog.Statements {
 		if e.Debug > 1 {
 			fmt.Println("eval stmt", stmt.String())
+		}
+		if stmt.NodeType() == parser.NODE_DELETED_STMT {
+			continue
 		}
 		obj := e.Eval(stmt, env)
 		switch obj := obj.(type) {
@@ -545,4 +548,73 @@ func (e *Evaluator) boolToInt(value bool) int {
 	} else {
 		return 0
 	}
+}
+
+func (e *Evaluator) EvalEnv(env *object.Environment) error {
+	order, err := e.tsortEnv(env)
+	if err != nil {
+		return err
+	}
+	fmt.Println("order:", order)
+	for _, name := range order {
+		obj, ok := env.Get(name)
+		if !ok {
+			return fmt.Errorf("internal error: could not get %s", name)
+		}
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok {
+			continue
+		}
+		if sym.State == object.SYMBOL_STATE_DEFINED {
+			env.Set(name, sym.Value)
+			continue
+		}
+		value := e.Eval(sym.Node, env)
+		if e.isError(value) || e.isUndefined(value) {
+			return fmt.Errorf("could not eval symbol %s", name)
+		}
+		env.Set(name, value)
+	}
+	return nil
+}
+
+func (e *Evaluator) tsortEnv(env *object.Environment) ([]string, error) {
+	visited := map[string]bool{}
+	visiting := map[string]bool{}
+	order := []string{}
+
+	var visit func(string) error
+	visit = func(name string) error {
+		if visiting[name] {
+			return fmt.Errorf("循環参照: %s", name)
+		}
+		if visited[name] {
+			return nil
+		}
+		visiting[name] = true
+		obj, ok := env.Get(name)
+		if !ok {
+			return fmt.Errorf("未定義シンボル: %s", name)
+		}
+		sym, ok := obj.(*object.SymbolObject)
+		if ok {
+			for _, dep := range sym.DependsOn {
+				if err := visit(dep); err != nil {
+					return err
+				}
+			}
+		}
+		visited[name] = true
+		visiting[name] = false
+		order = append(order, name)
+		return nil
+	}
+
+	for name := range env.Store {
+		fmt.Printf("vist(%s)\n", name)
+		if err := visit(name); err != nil {
+			return nil, err
+		}
+	}
+	return order, nil
 }
