@@ -171,7 +171,14 @@ func (e *Evaluator) isError(obj object.Object) bool {
 }
 
 func (e *Evaluator) isUndefined(obj object.Object) bool {
-	return obj.Type() == object.UNDEFINED_OBJ
+	switch obj := obj.(type) {
+	case *object.UndefinedObject:
+		return true
+	case *object.SymbolObject:
+		return obj.State != object.SYMBOL_STATE_DEFINED
+	default:
+		return false
+	}
 }
 
 func (e *Evaluator) mergeUndefined(obj1, obj2 object.Object) *object.UndefinedObject {
@@ -423,7 +430,12 @@ func (e *Evaluator) evalInfixExpression(opCode int, op1, op2 object.Object, line
 		s1 := op1.(*object.StringObject).Value
 		s2 := op2.(*object.StringObject).Value
 		return &object.StringObject{Value: s1 + " " + s2}
+	case e.isUndefined(op1) || e.isUndefined(op2):
+		return e.mergeUndefined(op1, op2)
 	default:
+		if e.Debug > 0 {
+			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
+		}
 		e.logger.Error(fmt.Sprintf(logger.E023, parser.TokenLiteral(opCode)), lineNumber)
 		return object.ERROR
 	}
@@ -574,7 +586,6 @@ func (e *Evaluator) tsortEnv(env *object.Environment) ([]string, error) {
 	}
 
 	for name := range env.Store {
-		fmt.Printf("vist(%s)\n", name)
 		if err := visit(name); err != nil {
 			return nil, err
 		}
