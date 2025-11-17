@@ -33,7 +33,7 @@ var _ = __yyfmt__.Sprintf
 %type<params> param_list
 %type<expr_list> expr_list
 %type<expr> expr indexed_expr
-%type<expr> operand1 operand2
+%type<expr> operand
 
 
 %token<token> EOL
@@ -342,7 +342,7 @@ instruction	: Z80_INST0
 				$$ = &Z80Instruction{
 						InstType: Z80_INST1, Opcode: int($1.TokenSubType), lineNumber: $1.LineNumber}
 			}
-			| Z80_INST1 operand1
+			| Z80_INST1 operand
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
@@ -352,7 +352,7 @@ instruction	: Z80_INST0
 						lineNumber: $1.LineNumber }
 				}
 			}
-			| Z80_INST2 operand2
+			| Z80_INST2 operand
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
@@ -362,7 +362,7 @@ instruction	: Z80_INST0
 						lineNumber: $1.LineNumber }
 				}
 			}
-			| Z80_INST2 operand1 ',' operand2
+			| Z80_INST2 operand ',' operand
 			{
 				if $2.NodeType() == NODE_ERROR && $4.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
@@ -381,13 +381,8 @@ instruction	: Z80_INST0
 			}
 			;
 	
-operand1	: operand2			{ $$ = $1 }
-			| Z80_FLAG 			{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
-			;
 
-operand2	: Z80_REG8 			{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
-			| Z80_REG16 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
-			| '(' Z80_REG16 ')'
+operand	: '(' Z80_REG16 ')'
 			{ 
 				$$ = &IndirectExpression{Expression: 
 					&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType), lineNumber: $2.LineNumber}}
@@ -442,6 +437,9 @@ expr		: NUMBER
 				}
 			}
 			| STRING 		{ $$ = &StringLiteral{Value: $1.Literal, lineNumber: $1.LineNumber} }
+			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
+			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
+			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| IDENT 		{ $$ = &Ident{Name: $1.Literal, lineNumber: $1.LineNumber} }
 			| DOT_IDENT
 			{
