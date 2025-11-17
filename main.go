@@ -61,38 +61,40 @@ func main() {
 	fmt.Println("")
 
 	// AST 表示
-	fmt.Printf("# %d statements\n", len(prog.Statements))
+	fmt.Println("# ast")
 	if len(prog.Statements) == 0 {
 		os.Exit(0)
 	}
 	fmt.Println(prog.String())
 	fmt.Println("")
 
+	// env 作成
+	env := object.NewEnvironment(nil)
+
 	// pass1
-	fmt.Println("-- evaluator")
+	fmt.Println("# pass1")
 	eval := evaluator.New(logger)
 	eval.Debug = getDebugEnv("evaldebug")
 
-	env := object.NewEnvironment(nil)
-
-	result := eval.Eval(prog, env).(*object.ProgramObject)
+	objects := eval.Eval(prog, env).(*object.ProgramObject)
 	logger.Print()
-	fmt.Println("-- after pass1")
-	fmt.Println(prog.String())
 
+	fmt.Println(len(objects.Objects), "objects")
 	fmt.Println("--")
-	fmt.Println(len(result.Objects), "objects")
-	fmt.Println("--")
-	for n, o := range result.Objects {
+	for _, o := range objects.Objects {
 		if o == nil {
-			fmt.Printf("%d: <nil>\n", n+1)
+			fmt.Println("<nil>")
 		} else {
-			fmt.Printf("%d: %s\n", n+1, o.String())
+			fmt.Println(o.String())
 		}
 	}
-	fmt.Println("-- env")
+
+	fmt.Println("\n# ast")
+	fmt.Println(prog.String())
+
+	fmt.Println("\n# env")
 	env.Print()
-	fmt.Println("-- env after EvalEnv")
+	fmt.Println("\n# env after eval")
 	err := eval.EvalEnv(env)
 	if err != nil {
 		fmt.Println("Error during EvalEnv:", err)
@@ -100,19 +102,21 @@ func main() {
 	env.Print()
 
 	eval.Pass1 = true
-	result = eval.Eval(prog, env).(*object.ProgramObject)
+	objects = eval.Eval(prog, env).(*object.ProgramObject)
 	logger.Print()
 	fmt.Println("-- after pass2")
 	fmt.Println(prog.String())
 	fmt.Println("--")
-	fmt.Println(len(result.Objects), "objects")
+	fmt.Println(len(objects.Objects), "objects")
 	fmt.Println("--")
-	for n, o := range result.Objects {
+	for _, o := range objects.Objects {
 		if o == nil {
-			fmt.Printf("%d: <nil>\n", n+1)
-		} else {
-			fmt.Printf("%d: %s\n", n+1, o.String())
+			fmt.Println("<nil>")
+			continue
 		}
+		if o.Type() == object.CODE_OBJ {
+			fmt.Print("code: ")
+		}
+		fmt.Println(o.String())
 	}
-
 }
