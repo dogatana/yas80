@@ -11,11 +11,12 @@ import (
 type Evaluator struct {
 	logger     *logger.Logger
 	lineNumber int
+	Pass1      bool
 	Debug      int
 }
 
 func New(logger *logger.Logger) *Evaluator {
-	return &Evaluator{logger: logger}
+	return &Evaluator{logger: logger, Pass1: true}
 }
 
 func (e *Evaluator) ResolveConst(prog *parser.Program, env *object.Environment) {
@@ -88,21 +89,38 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		e.printLocationCounter(env)
 		return obj
 	case *parser.LabelStatement:
+		uname := strings.ToUpper(node.Value.Name)
 		obj, ok := env.Get("$")
 		if !ok {
 			panic(fmt.Sprintf("could not get $ at %s", node.String()))
 		}
 		addr := obj.(*object.NumberObject)
-		return &object.NumberObject{Value: addr.Value, LineNumber: node.LineNumber()}
+
+		// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
+		sym := &object.SymbolObject{
+			Name: uname, Value: node.Value, State: object.SYMBOL_STATE_DEFINED, DependsOn: []string{}}
+		env.Set(uname, sym)
+		return addr
 	case *parser.ConstStatement:
+		// const/equ は参照内容によって NumberObject/StringObject/SymbolObject のいずれかになる
+		uname := strings.ToUpper(node.Name.Name)
 		v := e.Eval(node.Value, env)
-		env.Set(strings.ToUpper(node.Name.Name), v)
 		switch v := v.(type) {
 		case *object.NumberObject, *object.StringObject:
+			// 定数として確定
+			env.Set(uname, v)
 			return v
+		case *object.UndefinedObject:
+			// 未定義定数として登録
+			sym := &object.SymbolObject{
+				Name: uname, Value: node.Value, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
+			env.Set(uname, sym)
+			return sym
+		case *object.ErrorObject:
+			return object.ERROR
 		default:
-			return &object.NodeObject{Value: node, LineNumber: node.LineNumber()}
-
+			env.Set(uname, v)
+			return v
 		}
 	case *parser.BlockStatement:
 		return e.evalBlockStatement(node, env)
@@ -136,19 +154,26 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.InfixExpression:
 		v1 := e.Eval(node.Op1, env)
 		v2 := e.Eval(node.Op2, env)
-		if v1.Type() == object.ERROR_OBJ || v2.Type() == object.ERROR_OBJ {
+		if e.isError(v1) || e.isError(v2) {
 			return object.ERROR
+		} else if e.isUndefined(v1) || e.isUndefined(v2) {
+			return e.mergeUndefined(v1, v2)
 		}
 		return e.evalInfixExpression(node.Operator, v1, v2, node.LineNumber())
 	case *parser.PrefixExpression:
 		v := e.Eval(node.Op, env)
-		if v.Type() == object.ERROR_OBJ {
-			return object.ERROR
+		if e.isError(v) || e.isUndefined(v) {
+			return v
 		}
 		return e.evalPrefixExpression(node.Operator, v, node.LineNumber())
 	case *parser.Ident:
-		obj, ok := env.Get(strings.ToUpper(node.Name))
-		if !ok {
+		uname := strings.ToUpper(node.Name)
+		obj, ok := env.Get(uname)
+		if !ok && e.Pass1 {
+			// Pass1 の場合は未定義識別子を UndefinedObject として返す
+			return &object.UndefinedObject{Names: []string{uname}}
+		} else if !ok {
+			// Pass2 の場合は ERROR を返す
 			e.logger.Error(fmt.Sprintf(logger.E009, node.Name), node.LineNumber())
 			return object.ERROR
 		}
@@ -171,6 +196,32 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
 		return object.ERROR
 	}
+}
+
+func (e *Evaluator) isError(obj object.Object) bool {
+	switch obj.(type) {
+	case *object.ErrorObject:
+		return true
+	default:
+		return false
+	}
+}
+
+func (e *Evaluator) isUndefined(obj object.Object) bool {
+	return obj.Type() == object.UNDEFINED_OBJ
+}
+
+func (e *Evaluator) mergeUndefined(obj1, obj2 object.Object) *object.UndefinedObject {
+	names := []string{}
+	u1, ok := obj1.(*object.UndefinedObject)
+	if ok {
+		names = append(names, u1.Names...)
+	}
+	u2, ok := obj2.(*object.UndefinedObject)
+	if ok {
+		names = append(names, u2.Names...)
+	}
+	return &object.UndefinedObject{Names: names}
 }
 
 // location counter 初期化
@@ -204,10 +255,11 @@ func (e *Evaluator) advanceLocationCounter(env *object.Environment, n int) {
 	fmt.Println(counter.String())
 }
 
+// Program 評価
 func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) object.Object {
 	results := &object.ProgramObject{}
 
-	for _, stmt := range prog.Statements {
+	for i, stmt := range prog.Statements {
 		if e.Debug > 1 {
 			fmt.Println("eval stmt", stmt.String())
 		}
@@ -230,6 +282,9 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 				obj.Block[len(obj.Block)-1] = ret.Value
 			}
 			results.Objects = append(results.Objects, obj.Block...)
+		case *object.SymbolObject:
+			prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
+			results.Objects = append(results.Objects, obj)
 		default:
 			results.Objects = append(results.Objects, obj)
 		}
@@ -341,10 +396,11 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 // 関数呼出し
 func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.Environment) object.Object {
 	obj := e.Eval(expr.Function, env)
-	if obj == object.ERROR {
-		return object.ERROR
+	if e.isError(obj) || e.isUndefined(obj) {
+		return obj
 	} else if obj == object.NULL {
-		return &object.NodeObject{Value: expr, LineNumber: expr.LineNumber()}
+		panic("object is NULL")
+		// return &object.NodeObject{Value: expr, LineNumber: expr.LineNumber()}
 	}
 
 	fn, ok := obj.(*object.FunctionObject)
@@ -356,27 +412,40 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 		e.logger.Error(fmt.Sprintf(logger.E021, fn.Name), expr.LineNumber())
 		return object.ERROR
 	}
+
 	newEnv := object.NewEnvironment(fn.Env)
 	for i, param := range fn.Params {
 		p := strings.ToUpper(param)
 		v := e.Eval(expr.Arguments.Expressions[i], env)
-		if v == object.ERROR {
-			return object.ERROR
-		} else if v == object.NULL {
-			v = &object.NodeObject{Value: expr.Arguments.Expressions[i]}
+		if e.isError(v) || e.isUndefined(v) {
+			return v
 		}
 		newEnv.Set(p, v)
 	}
+
+	// 関数本体の評価は Pass1 であっても未定義エラーを発生させる
+	savePass := e.Pass1
+	e.Pass1 = false
 
 	ret, ok := e.evalBlockStatement(fn.Body.(*parser.BlockStatement), newEnv).(*object.BlockObject)
 	if !ok {
 		panic(fmt.Sprintf("call func %s returns %T(%#v)", fn.Name, ret, ret))
 	}
-	last := ret.Block[len(ret.Block)-1]
-	if len(ret.Block) == 0 || last.Type() != object.RETURN_OBJ {
+	e.Pass1 = savePass
+
+	if len(ret.Block) == 0 {
 		return object.NULL
 	}
-	return last.(*object.ReturnObject).Value
+	for _, obj := range ret.Block {
+		if e.isError(obj) || e.isUndefined(obj) {
+			return obj
+		}
+	}
+	last := ret.Block[len(ret.Block)-1]
+	if last.Type() == object.RETURN_OBJ {
+		return last.(*object.ReturnObject).Value
+	}
+	return object.NULL
 }
 
 // 中置演算子式
@@ -388,8 +457,10 @@ func (e *Evaluator) evalInfixExpression(opCode int, op1, op2 object.Object, line
 		s1 := op1.(*object.StringObject).Value
 		s2 := op2.(*object.StringObject).Value
 		return &object.StringObject{Value: s1 + " " + s2}
+	default:
+		e.logger.Error(fmt.Sprintf(logger.E023, parser.TokenLiteral(opCode)), lineNumber)
+		return object.ERROR
 	}
-	return object.NULL
 }
 
 func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, lineNumber int) object.Object {

@@ -74,8 +74,10 @@ func main() {
 
 	result := eval.Eval(prog, env).(*object.ProgramObject)
 	logger.Print()
-	fmt.Println("--")
+	fmt.Println("-- after pass1")
+	fmt.Println(prog.String())
 
+	fmt.Println("--")
 	fmt.Println(len(result.Objects), "objects")
 	fmt.Println("--")
 	for n, o := range result.Objects {

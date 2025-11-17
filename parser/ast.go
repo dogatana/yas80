@@ -17,6 +17,7 @@ const (
 
 	// statement
 	NODE_STMT
+	NODE_DELETED_STMT
 	NODE_LABEL_STMT
 	NODE_EXPR_STMT
 	NODE_CONST_STMT
@@ -123,6 +124,19 @@ func (ls *LabelStatement) String() string {
 		out += ":"
 	}
 	return out
+}
+
+// DeletedStatement
+type DeletedStatement struct {
+	Node Node
+}
+
+func (ds *DeletedStatement) statementNode()           {}
+func (ds *DeletedStatement) NodeType() NodeType       { return NODE_DELETED_STMT }
+func (ds *DeletedStatement) NodeSubType() NodeSubType { return 0 }
+func (ds *DeletedStatement) LineNumber() int          { return 0 }
+func (ds *DeletedStatement) String() string {
+	return fmt.Sprintf("Deleted{%s}", ds.Node.String())
 }
 
 // 式文 - Expression Statement

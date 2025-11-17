@@ -21,6 +21,17 @@ const (
 	RETURN_OBJ
 	BLOCK_OBJ
 	FUNC_OBJ
+	UNDEFINED_OBJ
+	SYMBOL_OBJ
+	DELETE_OBJ
+)
+
+type SymbolState int
+
+const (
+	SYMBOL_STATE_UNDEFINED SymbolState = iota
+	SYMBOL_STATE_TENTATIVE
+	SYMBOL_STATE_DEFINED
 )
 
 var (
@@ -120,6 +131,46 @@ type ErrorObject struct {
 
 func (e *ErrorObject) Type() ObjectType { return ERROR_OBJ }
 func (e *ErrorObject) String() string   { return "ERROR" }
+
+// Undefined
+type UndefinedObject struct {
+	Names []string
+}
+
+func (u *UndefinedObject) Type() ObjectType { return UNDEFINED_OBJ }
+func (u *UndefinedObject) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("UNDEFINED(")
+	out.WriteString(strings.Join(u.Names, ", "))
+	out.WriteRune(')')
+	return out.String()
+}
+
+// deleted
+type DeleltedObject struct {
+	Node parser.Node
+}
+
+func (d *DeleltedObject) Type() ObjectType { return DELETE_OBJ }
+func (d *DeleltedObject) String() string {
+	return "DELETED(" + d.Node.String() + ")"
+}
+
+// symbol
+type SymbolObject struct {
+	Name       string
+	Value      parser.Node
+	State      SymbolState
+	DependsOn  []string
+	LineNumber int
+}
+
+func (s *SymbolObject) Type() ObjectType { return SYMBOL_OBJ }
+func (s *SymbolObject) String() string {
+	return fmt.Sprintf("SYMBOL{Name: %s, Value: %v, State: %d, Depends: [%s]}",
+		s.Name, s.Value, s.State, strings.Join(s.DependsOn, ", "))
+}
 
 // return
 type ReturnObject struct {
