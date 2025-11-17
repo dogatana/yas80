@@ -44,3 +44,20 @@ var Z80CodeTable0 map[int]*Z80Code = map[int]*Z80Code{
 	parser.Z80_INST_OUTD: {Bytes: []byte{0xed, 0xab}, Cycle: 0},
 	parser.Z80_INST_OTDR: {Bytes: []byte{0xed, 0xbb}, Cycle: 0},
 }
+
+var Z80Reg8Index map[int]byte = map[int]byte{
+	parser.Z80_REG_B: 0,
+	parser.Z80_REG_C: 1,
+	parser.Z80_REG_D: 2,
+	parser.Z80_REG_E: 3,
+	parser.Z80_REG_H: 4,
+	parser.Z80_REG_L: 5,
+	parser.Z80_REG_A: 7,
+}
+
+var Z80Reg16Index map[int]byte = map[int]byte{
+	parser.Z80_REG_BC: 0,
+	parser.Z80_REG_DE: 1,
+	parser.Z80_REG_HL: 2,
+	parser.Z80_REG_SP: 3,
+}

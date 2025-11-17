@@ -51,58 +51,115 @@ func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env *object
 }
 
 func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environment) object.Object {
-	switch node.Op1.NodeType() {
-	case parser.Z80_REG8:
-		r1 := int(node.Op1.NodeSubType())
-		if r1 > parser.Z80_REG_A {
-			return object.NULL
-		}
-		switch node.Op2.NodeType() {
+	op1 := e.Eval(node.Op1, env)
+
+	switch op1 := op1.(type) {
+	case *object.RegisterObject:
+		switch op1.RegisterType {
 		case parser.Z80_REG8:
-			// LD r,r'
-			r2 := int(node.Op2.NodeSubType())
-			if r2 > parser.Z80_REG_A {
-				return object.NULL
-			}
-			b := 0xc0
-			b |= ((r1 - parser.Z80_REG_B) << 3) | (r2 - parser.Z80_REG_B)
-			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{byte(b)}}
-		default:
-			op2 := e.Eval(node.Op2, env)
-			if op2.Type() == object.NUMBER_OBJ {
-				// LD r,n
-				v := op2.(*object.NumberObject).Value
-				bv, ok := e.intToByte(v)
-				if !ok {
-					e.logger.Warning(fmt.Sprintf(logger.W001, v, v), node.LineNumber())
-					bv = byte(v & 0xff)
-				}
-				b := 0x06
-				b |= (r1 - parser.Z80_REG_B) << 3
-				return &object.CodeObject{Line: node.LineNumber(), Code: []byte{byte(b), bv}}
-			} else if op2.Type() == object.NULL_OBJ {
-				e.logger.Error(fmt.Sprintf("error expr: %s", node.Op2.String()), 0)
-			}
+			// LD r, x
+			return e.evalZ80LD_reg8(node, op1, env)
+		case parser.Z80_REG16:
+			// LD rr, x
+			return e.evalZ80LD_reg16(node, op1, env)
 		}
-	case parser.Z80_REG16:
-		r1 := int(node.Op1.NodeSubType())
-		if r1 != parser.Z80_REG_HL {
-			return object.NULL
+		e.logger.Error(logger.E024, node.LineNumber())
+		return object.ERROR
+	// case *object.IndirectExpression:
+	// 	e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
+	// 	return object.ERROR
+	default:
+		if e.Pass1 {
+			// pass1 の場合はダミーとして LD A, A を返す
+			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0x7f}}
 		}
-		op2 := e.Eval(node.Op2, env)
-		num, ok := op2.(*object.NumberObject)
-		if !ok && e.Pass1 {
-			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0x21, 0, 0}}
-		} else if !ok {
-			e.logger.Error(logger.E024, node.LineNumber())
+		e.logger.Error(logger.E024, node.LineNumber())
+		return object.ERROR
+	}
+}
+
+func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env *object.Environment) object.Object {
+	op2 := e.Eval(node.Op2, env)
+
+	switch op2 := op2.(type) {
+	case *object.RegisterObject:
+		// LD r, r'
+		if op2.RegisterType != parser.Z80_REG8 {
+			e.logger.Error(logger.E025, node.LineNumber())
 			return object.ERROR
 		}
-		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0x21, byte(num.Value & 0xff), byte((num.Value >> 8) & 0xff)}}
+		r1 := Z80Reg8Index[int(op1.Register)]
+		r2 := Z80Reg8Index[int(op2.Register)]
 
+		b := 0x40 | r1<<3 | r2
+		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{byte(b)}}
+	case *object.NumberObject:
+		// LD r, n
+		v, ok := e.intToByte(op2.Value)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(logger.W001, op2.Value, op2.Value), node.LineNumber())
+		}
+		r1 := Z80Reg8Index[int(op1.Register)]
+		b := byte(0x06 | (r1 << 3))
+		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{b, v}}
+	// case *object.IndirectExpression:
+	// 	e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
+	// 	return object.ERROR
 	default:
-		return object.NULL
+		if e.Pass1 {
+			// pass1 の場合はダミーとして LD A, A を返す
+			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0x7f}}
+		}
+		e.logger.Error(logger.E025, node.LineNumber())
+		return object.ERROR
 	}
-	return object.NULL
+}
+
+func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, env *object.Environment) object.Object {
+	op2 := e.Eval(node.Op2, env)
+
+	switch op2 := op2.(type) {
+	case *object.RegisterObject:
+		// LD rr, rr'
+		if op1.Register != parser.Z80_REG_SP {
+			e.logger.Error(logger.E026, node.LineNumber())
+			return object.ERROR
+		}
+		if op2.RegisterType != parser.Z80_REG16 {
+			e.logger.Error(logger.E025, node.LineNumber())
+			return object.ERROR
+		}
+		switch op2.Register {
+		case parser.Z80_REG_HL:
+			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0xf9}}
+		case parser.Z80_REG_IX:
+			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0xdd, 0xf9}}
+		case parser.Z80_REG_IY:
+			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0xfd, 0xf9}}
+		default:
+			e.logger.Error(logger.E027, node.LineNumber())
+			return object.ERROR
+		}
+	case *object.NumberObject:
+		// LD rr, nn
+		v, ok := e.intToWord(op2.Value)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(logger.W002, op2.Value, op2.Value), node.LineNumber())
+		}
+		r1 := Z80Reg16Index[int(op1.Register)]
+		b := byte(0x01 | (r1 << 4))
+		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{b, byte(v & 0xff), byte((v >> 8) & 0xff)}}
+	// case *object.IndirectExpression:
+	// 	e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
+	// 	return object.ERROR
+	default:
+		if e.Pass1 {
+			// pass1 の場合はダミーとして LD HL, 0 を返す
+			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0x21, 0, 0}}
+		}
+		e.logger.Error(logger.E025, node.LineNumber())
+		return object.ERROR
+	}
 }
 
 func (e *Evaluator) intToByte(n int) (byte, bool) {
@@ -112,6 +169,17 @@ func (e *Evaluator) intToByte(n int) (byte, bool) {
 	case -128 <= n && n < 0:
 		return byte(n & 0xff), true
 	default:
-		return 0, false
+		return byte(n & 0xff), false
+	}
+}
+
+func (e *Evaluator) intToWord(n int) (int, bool) {
+	switch {
+	case 0 <= n && n <= 65535:
+		return n, true
+	case -32768 <= n && n < 0:
+		return (n & 0xffff), true
+	default:
+		return (n & 0xffff), false
 	}
 }

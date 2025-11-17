@@ -49,6 +49,26 @@ var (
 	Z80_REG_IXL = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_IXL}
 	Z80_REG_IYH = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_IYH}
 	Z80_REG_IYL = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_IYL}
+	Z80_REG_I   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_I}
+	Z80_REG_R   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_R}
+
+	Z80_REG_SP   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_SP}
+	Z80_REG_IX   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_IX}
+	Z80_REG_IY   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_IY}
+	Z80_REG_AF   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_AF}
+	Z80_REG_AFEX = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_AFEX}
+	Z80_REG_BC   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_BC}
+	Z80_REG_DE   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_DE}
+	Z80_REG_HL   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_HL}
+
+	Z80_FLAG_C  = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_C}
+	Z80_FLAG_NC = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_NC}
+	Z80_FLAG_Z  = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_Z}
+	Z80_FLAG_NZ = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_NZ}
+	Z80_FLAG_PO = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_PO}
+	Z80_FLAG_PE = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_PE}
+	Z80_FLAG_P  = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_P}
+	Z80_FLAG_M  = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_M}
 )
 
 var Z80RgisterObjects map[int]Object = map[int]Object{
@@ -63,6 +83,25 @@ var Z80RgisterObjects map[int]Object = map[int]Object{
 	parser.Z80_REG_IXL: Z80_REG_IXL,
 	parser.Z80_REG_IYH: Z80_REG_IYH,
 	parser.Z80_REG_IYL: Z80_REG_IYL,
+	parser.Z80_REG_I:   Z80_REG_IYL,
+	parser.Z80_REG_R:   Z80_REG_IYL,
+
+	parser.Z80_REG_SP:   Z80_REG_SP,
+	parser.Z80_REG_IX:   Z80_REG_IX,
+	parser.Z80_REG_IY:   Z80_REG_IY,
+	parser.Z80_REG_AF:   Z80_REG_AF,
+	parser.Z80_REG_AFEX: Z80_REG_AFEX,
+	parser.Z80_REG_BC:   Z80_REG_BC,
+	parser.Z80_REG_DE:   Z80_REG_DE,
+	parser.Z80_REG_HL:   Z80_REG_HL,
+
+	parser.Z80_FLAG_NC: Z80_FLAG_NC,
+	parser.Z80_FLAG_Z:  Z80_FLAG_Z,
+	parser.Z80_FLAG_NZ: Z80_FLAG_NZ,
+	parser.Z80_FLAG_PO: Z80_FLAG_PO,
+	parser.Z80_FLAG_PE: Z80_FLAG_PE,
+	parser.Z80_FLAG_P:  Z80_FLAG_P,
+	parser.Z80_FLAG_M:  Z80_FLAG_M,
 }
 
 type ObjectType int
