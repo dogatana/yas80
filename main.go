@@ -55,10 +55,8 @@ func main() {
 	logger := logger.New(file)
 
 	// 構文解析開始
-	fmt.Println("# parse")
 	prog := parse(logger, input, file)
 	logger.Print()
-	fmt.Println("")
 
 	// AST 表示
 	fmt.Println("# ast")
@@ -79,8 +77,7 @@ func main() {
 	objects := eval.Eval(prog, env).(*object.ProgramObject)
 	logger.Print()
 
-	fmt.Println(len(objects.Objects), "objects")
-	fmt.Println("--")
+	fmt.Printf("\n# %d objects\n", len(objects.Objects))
 	for _, o := range objects.Objects {
 		if o == nil {
 			fmt.Println("<nil>")
@@ -94,21 +91,25 @@ func main() {
 
 	fmt.Println("\n# env")
 	env.Print()
+	fmt.Println("\n# eval env")
+	order, err := eval.EvalEnv(env)
+	fmt.Println("order:", order)
+
 	fmt.Println("\n# env after eval")
-	err := eval.EvalEnv(env)
 	if err != nil {
 		fmt.Println("Error during EvalEnv:", err)
 	}
 	env.Print()
 
+	fmt.Println("\n# pass2")
 	eval.Pass1 = false
 	objects = eval.Eval(prog, env).(*object.ProgramObject)
 	logger.Print()
-	fmt.Println("-- after pass2")
+
+	fmt.Println("\n# ast")
 	fmt.Println(prog.String())
-	fmt.Println("--")
-	fmt.Println(len(objects.Objects), "objects")
-	fmt.Println("--")
+
+	fmt.Printf("\n# %d objects\n", len(objects.Objects))
 	for _, o := range objects.Objects {
 		if o == nil {
 			fmt.Println("<nil>")
@@ -119,5 +120,6 @@ func main() {
 		}
 		fmt.Println(o.String())
 	}
+	fmt.Println("\n# final env")
 	env.Print()
 }

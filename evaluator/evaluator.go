@@ -525,16 +525,15 @@ func (e *Evaluator) boolToInt(value bool) int {
 	}
 }
 
-func (e *Evaluator) EvalEnv(env *object.Environment) error {
+func (e *Evaluator) EvalEnv(env *object.Environment) ([]string, error) {
 	order, err := e.tsortEnv(env)
 	if err != nil {
-		return err
+		return order, nil
 	}
-	fmt.Println("order:", order)
 	for _, name := range order {
 		obj, ok := env.Get(name)
 		if !ok {
-			return fmt.Errorf("internal error: could not get %s", name)
+			return order, fmt.Errorf("internal error: could not get %s", name)
 		}
 		sym, ok := obj.(*object.SymbolObject)
 		if !ok {
@@ -546,11 +545,11 @@ func (e *Evaluator) EvalEnv(env *object.Environment) error {
 		}
 		value := e.Eval(sym.Node, env)
 		if e.isError(value) || e.isUndefined(value) {
-			return fmt.Errorf("could not eval symbol %s", name)
+			return order, fmt.Errorf("could not eval symbol %s", name)
 		}
 		env.Set(name, value)
 	}
-	return nil
+	return order, nil
 }
 
 func (e *Evaluator) tsortEnv(env *object.Environment) ([]string, error) {
