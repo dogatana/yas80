@@ -169,8 +169,8 @@ type SymbolObject struct {
 
 func (s *SymbolObject) Type() ObjectType { return SYMBOL_OBJ }
 func (s *SymbolObject) String() string {
-	return fmt.Sprintf("SYMBOL{Name: %s, Value: %v, State: %d, Depends: [%s]}",
-		s.Name, s.Value, s.State, strings.Join(s.DependsOn, ", "))
+	return fmt.Sprintf("SYMBOL{Name: %s, Node: %s, Value: %v, State: %d, Depends: [%s]}",
+		s.Name, s.Node.String(), s.Value, s.State, strings.Join(s.DependsOn, ", "))
 }
 
 // return
@@ -194,7 +194,7 @@ type NumberObject struct {
 }
 
 func (n *NumberObject) Type() ObjectType { return NUMBER_OBJ }
-func (n *NumberObject) String() string   { return fmt.Sprintf("%d", n.Value) }
+func (n *NumberObject) String() string   { return fmt.Sprintf("%d(0x%x)", n.Value, n.Value) }
 
 // 文字列
 type StringObject struct {
@@ -203,7 +203,7 @@ type StringObject struct {
 }
 
 func (s *StringObject) Type() ObjectType { return STRING_OBJ }
-func (s *StringObject) String() string   { return s.Value }
+func (s *StringObject) String() string   { return fmt.Sprintf("%q", s.Value) }
 
 // 識別子
 type IdentObject struct {
