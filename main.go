@@ -101,7 +101,7 @@ func main() {
 	}
 	env.Print()
 
-	eval.Pass1 = true
+	eval.Pass1 = false
 	objects = eval.Eval(prog, env).(*object.ProgramObject)
 	logger.Print()
 	fmt.Println("-- after pass2")
