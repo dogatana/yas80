@@ -21,7 +21,7 @@ const (
 	RETURN_OBJ
 	BLOCK_OBJ
 	FUNC_OBJ
-	UNDEFINED_OBJ
+	REF_NOTFOUND_OBJ
 	SYMBOL_OBJ
 	DELETE_OBJ
 )
@@ -132,17 +132,17 @@ type ErrorObject struct {
 func (e *ErrorObject) Type() ObjectType { return ERROR_OBJ }
 func (e *ErrorObject) String() string   { return "ERROR" }
 
-// Undefined
-type UndefinedObject struct {
+// pass1 で右辺式で識別が見つからない場合に使用
+type RefNotFoundObject struct {
 	Names []string
 }
 
-func (u *UndefinedObject) Type() ObjectType { return UNDEFINED_OBJ }
-func (u *UndefinedObject) String() string {
+func (r *RefNotFoundObject) Type() ObjectType { return REF_NOTFOUND_OBJ }
+func (r *RefNotFoundObject) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("UNDEFINED(")
-	out.WriteString(strings.Join(u.Names, ", "))
+	out.WriteString("REF_NOTFOUND(")
+	out.WriteString(strings.Join(r.Names, ", "))
 	out.WriteRune(')')
 	return out.String()
 }

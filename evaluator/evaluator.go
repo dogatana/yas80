@@ -70,7 +70,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 			// 定数として確定
 			env.Set(uname, v)
 			return v
-		case *object.UndefinedObject:
+		case *object.RefNotFoundObject:
 			// 未定義定数として登録
 			sym := &object.SymbolObject{
 				Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
@@ -131,7 +131,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		obj, ok := env.Get(uname)
 		if !ok && e.Pass1 {
 			// Pass1 の場合は未定義識別子を UndefinedObject として返す
-			return &object.UndefinedObject{Names: []string{uname}}
+			return &object.RefNotFoundObject{Names: []string{uname}}
 		} else if !ok {
 			// Pass2 の場合は ERROR を返す
 			e.logger.Error(fmt.Sprintf(logger.E009, node.Name), node.LineNumber())
@@ -169,7 +169,7 @@ func (e *Evaluator) isError(obj object.Object) bool {
 
 func (e *Evaluator) isUndefined(obj object.Object) bool {
 	switch obj := obj.(type) {
-	case *object.UndefinedObject:
+	case *object.RefNotFoundObject:
 		return true
 	case *object.SymbolObject:
 		return obj.State != object.SYMBOL_STATE_DEFINED
@@ -178,17 +178,17 @@ func (e *Evaluator) isUndefined(obj object.Object) bool {
 	}
 }
 
-func (e *Evaluator) mergeUndefined(obj1, obj2 object.Object) *object.UndefinedObject {
+func (e *Evaluator) mergeUndefined(obj1, obj2 object.Object) *object.RefNotFoundObject {
 	names := []string{}
-	u1, ok := obj1.(*object.UndefinedObject)
+	u1, ok := obj1.(*object.RefNotFoundObject)
 	if ok {
 		names = append(names, u1.Names...)
 	}
-	u2, ok := obj2.(*object.UndefinedObject)
+	u2, ok := obj2.(*object.RefNotFoundObject)
 	if ok {
 		names = append(names, u2.Names...)
 	}
-	return &object.UndefinedObject{Names: names}
+	return &object.RefNotFoundObject{Names: names}
 }
 
 // location counter 初期化
