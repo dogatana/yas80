@@ -91,8 +91,11 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 		}
 		op2 := e.Eval(node.Op2, env)
 		num, ok := op2.(*object.NumberObject)
-		if !ok {
-			return object.NULL
+		if !ok && e.Pass1 {
+			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0x21, 0, 0}}
+		} else if !ok {
+			e.logger.Error(logger.E024, node.LineNumber())
+			return object.ERROR
 		}
 		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0x21, byte(num.Value & 0xff), byte((num.Value >> 8) & 0xff)}}
 
