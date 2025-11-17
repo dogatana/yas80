@@ -74,9 +74,6 @@ func main() {
 	eval.Debug = getDebugEnv("evaldebug")
 
 	env := object.NewEnvironment(nil)
-	// eval.ResolveConst(prog, env)
-	// fmt.Println("-- global env")
-	// env.Print()
 
 	result := eval.Eval(prog, env).(*object.ProgramObject)
 	logger.Print()

@@ -19,43 +19,6 @@ func New(logger *logger.Logger) *Evaluator {
 	return &Evaluator{logger: logger, Pass1: true}
 }
 
-func (e *Evaluator) ResolveConst(prog *parser.Program, env *object.Environment) {
-	e.scanConst(prog, env)
-	e.updateEnv(env)
-}
-
-func (e *Evaluator) scanConst(prog *parser.Program, env *object.Environment) {
-	for _, stmt := range prog.Statements {
-		cs, ok := stmt.(*parser.ConstStatement)
-		if !ok {
-			continue
-		}
-		o := e.Eval(cs.Value, env)
-		switch o.Type() {
-		case object.NUMBER_OBJ, object.STRING_OBJ:
-			env.GlobalSet(cs.Name.Name, o)
-		case object.NULL_OBJ:
-			env.GlobalSet(cs.Name.Name, &object.NodeObject{Value: cs.Value})
-		default:
-			env.GlobalSet(cs.Name.Name, object.NULL)
-		}
-	}
-}
-
-func (e *Evaluator) updateEnv(env *object.Environment) {
-	genv := env.GlobalEnv()
-	for k, v := range genv.Store {
-		if v.Type() == object.NODE_OBJ {
-			o := e.Eval(v.(*object.NodeObject).Value, env)
-			if o.Type() == object.NUMBER_OBJ || o.Type() == object.STRING_OBJ {
-				genv.Set(k, o)
-			} else {
-				genv.Set(k, object.NULL)
-			}
-		}
-	}
-}
-
 // Eval
 func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Object {
 	if e.Debug > 0 {
