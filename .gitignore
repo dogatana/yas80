@@ -13,8 +13,11 @@ venv/
 *.txt
 *.output
 *.exe
+
 *.bin
 *.o
+*.lst
+*.lis
 
 doc/
 
