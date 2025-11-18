@@ -20,8 +20,17 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env *objec
 	evaluator := New(logger)
 	checkDebug(evaluator)
 
-	obj := evaluator.Eval(progNode, env)
+	_ = evaluator.Eval(progNode, env)
 	ec, wc, _ := logger.Count()
+	if ec > 0 || wc > 0 {
+		fmt.Printf("input %q\n", input)
+		logger.Print()
+		t.Fatalf("Eval() %d errors and %d warnigs", ec, wc)
+	}
+
+	evaluator.Pass1 = false
+	obj := evaluator.Eval(progNode, env)
+	ec, wc, _ = logger.Count()
 	if ec > 0 || wc > 0 {
 		fmt.Printf("input %q\n", input)
 		logger.Print()

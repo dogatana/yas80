@@ -1,2 +1,12 @@
-inst0.bin: inst0.asm
-	ailz80asm -bin -f -i $<
+ASM = ailz80asm
+ASMOPT = -lst -bin -f -i
+SRCS = inst0.asm ld_r8_r8.asm forward.asm
+BINS = $(SRCS:.asm=.bin)
+
+ALL: $(BINS)
+
+clean:
+	rm *.bin
+
+%.bin: %.asm
+	$(ASM) $(ASMOPT) $<

@@ -135,11 +135,9 @@ func TestFunc(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		fmt.Println("input", tt.input)
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		prog := evaluateInput(t, tt.input, logger, env)
-		env.Print()
 
 		last := prog.Objects[len(prog.Objects)-1]
 		if tt.expected >= 0 {
@@ -171,11 +169,9 @@ func TestClosure(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		fmt.Println("input", tt.input)
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		prog := evaluateInput(t, tt.input, logger, env)
-		env.Print()
 
 		last := prog.Objects[len(prog.Objects)-1]
 		if tt.expected >= 0 {
