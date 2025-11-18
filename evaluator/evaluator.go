@@ -25,8 +25,10 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		fmt.Printf("eval %#v)\n", node)
 	}
 	switch node := node.(type) {
+
 	// Program
 	case *parser.Program:
+		// 一旦 0 に初期化し ORG 他で上書きする
 		e.initLocationCounter(env, 0)
 		return e.evalProgram(node, env)
 
@@ -71,6 +73,11 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 			env.Set(uname, v)
 			return v
 		case *object.RefNotFoundObject:
+			// 階層でチェックが入っているはずだが念のため
+			if !e.Pass1 {
+				e.logger.Error(fmt.Sprintf(logger.E009, strings.Join(v.Names, ", ")), node.LineNumber())
+				return object.ERROR
+			}
 			// 未定義定数として登録
 			sym := &object.SymbolObject{
 				Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
@@ -79,6 +86,9 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		case *object.ErrorObject:
 			return object.ERROR
 		default:
+			if e.Debug > 0 {
+				fmt.Printf("const %s = %#v\n", uname, v)
+			}
 			env.Set(uname, v)
 			return v
 		}
@@ -96,7 +106,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		case object.ENUM_OBJ:
 			env.GlobalSet(v.(*object.EnumObject).Name, v)
 			return v
-		case object.NULL_OBJ:
+		case object.NULL_OBJ: // TODO
 			return &object.NodeObject{Value: node}
 		default:
 			return object.ERROR
@@ -258,7 +268,10 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 		default:
 			results.Objects = append(results.Objects, obj)
 		}
-		if stmt.NodeType() == parser.NODE_CONST_STMT {
+
+		// pass1 で無効化するステートメント
+		switch stmt := stmt.(type) {
+		case *parser.ConstStatement, *parser.FunctionStatement:
 			prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
 		}
 	}
@@ -372,7 +385,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 	if e.isError(obj) || e.isUndefined(obj) {
 		return obj
 	} else if obj == object.NULL {
-		panic("object is NULL")
+		panic("object is NULL") // TODO
 		// return &object.NodeObject{Value: expr, LineNumber: expr.LineNumber()}
 	}
 
