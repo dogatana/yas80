@@ -20,6 +20,7 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env *objec
 	evaluator := New(logger)
 	checkDebug(evaluator)
 
+	// pass1
 	_ = evaluator.Eval(progNode, env)
 	ec, wc, _ := logger.Count()
 	if ec > 0 || wc > 0 {
@@ -28,6 +29,15 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env *objec
 		t.Fatalf("Eval() %d errors and %d warnigs", ec, wc)
 	}
 
+	// resolve forward reference
+	_, err := evaluator.EvalEnv(env)
+	if err != nil {
+		fmt.Println("input")
+		fmt.Println(input)
+		t.Fatalf("EvalEnv() error: %v", err)
+	}
+
+	// pass2
 	evaluator.Pass1 = false
 	obj := evaluator.Eval(progNode, env)
 	ec, wc, _ = logger.Count()
