@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -83,4 +85,29 @@ func parseTextForTest(t *testing.T, input string) *parser.Program {
 		t.Fatal("Parse() returns 0 statements")
 	}
 	return prog
+}
+
+func readTestDataFile(t *testing.T, filename string) []byte {
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime.Caller(0) failed")
+	}
+	path := filepath.Join(filepath.Dir(file), "testdata", filename)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("could read %s", path)
+	}
+	return data
+}
+
+func collectCode(prog *object.ProgramObject) []byte {
+	var result []byte
+	for _, obj := range prog.Objects {
+		code, ok := obj.(*object.CodeObject)
+		if !ok {
+			continue
+		}
+		result = append(result, code.Code...)
+	}
+	return result
 }
