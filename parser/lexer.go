@@ -17,7 +17,7 @@ type Lexer struct {
 	index      int
 	curChar    rune
 	lineNumber int
-	fileNmae   string
+	filename   string
 	logger     *logger.Logger
 	program    *Program
 }
@@ -68,7 +68,7 @@ func (l *Lexer) Error(msg string, args ...any) {
 func NewLexer(r *bufio.Reader, filename string, logger *logger.Logger) *Lexer {
 	l := &Lexer{scanner: bufio.NewScanner(r), program: &Program{}}
 	l.nextChar()
-	l.fileNmae = filename
+	l.filename = filename
 	l.logger = logger
 	return l
 }
