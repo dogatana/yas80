@@ -54,7 +54,6 @@ OTDR
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
 	expected := strings.Split(strings.Trim(input, " \n"), "\n")
-	fmt.Println(expected)
 	for i, node := range prog.Statements {
 		inst, ok := node.(*Z80Instruction)
 		if !ok {
