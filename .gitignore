@@ -14,6 +14,7 @@ venv/
 *.output
 *.exe
 *.bin
+*.o
 
 doc/
 
