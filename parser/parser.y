@@ -170,20 +170,6 @@ directive	: CONST IDENT '=' expr
 					$$ = &AsignStatement{Left: $1, Value: $3, lineNumber: $2.LineNumber}
 				}
 			}
-			| indexed_expr '=' expr 
-			{
-				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
-					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
-					$$ = $3
-				} else if $1.NodeType() == NODE_ERROR {
-					$$ = $1
-				} else if $3.NodeType() == NODE_ERROR {
-					$$ = $3	
-				} else {
-					$$ = &AsignStatement{Left: $1, Value: $3, lineNumber: $1.(*IndexedExpression).lineNumber}
-				}
-			}
 			| REPEAT expr EOL block_statement ENDR
 			{
 				if $2.NodeType() == NODE_ERROR {
@@ -461,7 +447,6 @@ expr		: NUMBER
 			| indexed_expr 			{ $$ = $1}
 			| '(' expr ')'			{ $$ = $2}
 			| expr ADDSUB expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
-			| expr '-' expr		 	{ $$ = buildInfixExpression('-', $1, $3, $2.LineNumber) }
 			| expr MULDIV expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
 			| expr COMP expr 		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
 			| expr SHIFT expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
