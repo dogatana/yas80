@@ -88,8 +88,16 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 			e.logger.Error(logger.E025, node.LineNumber())
 			return object.ERROR
 		}
-		r1 := Z80Reg8Index[int(op1.Register)]
-		r2 := Z80Reg8Index[int(op2.Register)]
+		r1, ok := Z80Reg8Index[int(op1.Register)]
+		if !ok {
+			e.logger.Error(fmt.Sprintf(logger.E028, parser.TokenLiteral(op1.Register)), node.LineNumber())
+			return object.ERROR
+		}
+		r2, ok := Z80Reg8Index[int(op2.Register)]
+		if !ok {
+			e.logger.Error(fmt.Sprintf(logger.E028, parser.TokenLiteral(op2.Register)), node.LineNumber())
+			return object.ERROR
+		}
 
 		b := 0x40 | r1<<3 | r2
 		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{byte(b)}}
