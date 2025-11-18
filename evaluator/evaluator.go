@@ -83,6 +83,13 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 				Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
 			env.Set(uname, sym)
 			return sym
+		case *object.SymbolObject:
+			// Symbo Object の場合は値を取得し新たに登録する
+			sym := &object.SymbolObject{
+				Name: uname, Node: node.Value, Value: v.Value, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: []string{v.Name}}
+			env.Set(uname, sym)
+			return sym
+
 		case *object.ErrorObject:
 			return object.ERROR
 		default:
@@ -436,6 +443,25 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 
 // 中置演算子式
 func (e *Evaluator) evalInfixExpression(opCode int, op1, op2 object.Object, lineNumber int) object.Object {
+	if op1.Type() == object.SYMBOL_OBJ {
+		op1 = op1.(*object.SymbolObject).Value
+		if op1 == nil {
+			if !e.Pass1 {
+				e.logger.Error(logger.E024, lineNumber)
+			}
+			return object.ERROR
+		}
+	}
+	if op2.Type() == object.SYMBOL_OBJ {
+		op2 = op2.(*object.SymbolObject).Value
+		if op2 == nil {
+			if !e.Pass1 {
+				e.logger.Error(logger.E025, lineNumber)
+			}
+			return object.ERROR
+		}
+	}
+
 	switch {
 	case op1.Type() == object.NUMBER_OBJ && op2.Type() == object.NUMBER_OBJ:
 		return e.evalNumberInfixExpression(opCode, op1, op2, lineNumber)
@@ -539,9 +565,9 @@ func (e *Evaluator) boolToInt(value bool) int {
 }
 
 func (e *Evaluator) EvalEnv(env *object.Environment) ([]string, error) {
-	order, err := e.tsortEnv(env)
+	order, err := e.tSortEnv(env)
 	if err != nil {
-		return order, nil
+		return order, err
 	}
 	for _, name := range order {
 		obj, ok := env.Get(name)
@@ -565,7 +591,8 @@ func (e *Evaluator) EvalEnv(env *object.Environment) ([]string, error) {
 	return order, nil
 }
 
-func (e *Evaluator) tsortEnv(env *object.Environment) ([]string, error) {
+// 環境をトポロジカルソート
+func (e *Evaluator) tSortEnv(env *object.Environment) ([]string, error) {
 	visited := map[string]bool{}
 	visiting := map[string]bool{}
 	order := []string{}

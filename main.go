@@ -92,7 +92,13 @@ func main() {
 	fmt.Println("\n# env")
 	env.Print()
 	fmt.Println("\n# eval env")
+
+	// forward reference 解決
+	fmt.Println("\n# eval env")
 	order, err := eval.EvalEnv(env)
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println("order:", order)
 
 	fmt.Println("\n# env after eval")
