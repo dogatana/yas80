@@ -56,26 +56,25 @@ func main() {
 
 	// 構文解析開始
 	prog := parse(logger, input, file)
-	logger.Print()
 
 	// AST 表示
 	fmt.Println("# ast")
 	if len(prog.Statements) == 0 {
-		os.Exit(0)
+		fmt.Print("no statements detected")
+	} else {
+		fmt.Println(prog.String())
 	}
-	fmt.Println(prog.String())
 	fmt.Println("")
 
 	// env 作成
 	env := object.NewEnvironment(nil)
 
-	// pass1
+	// pass1 実行
 	fmt.Println("# pass1")
 	eval := evaluator.New(logger)
 	eval.Debug = getDebugEnv("evaldebug")
 
 	objects := eval.Eval(prog, env).(*object.ProgramObject)
-	logger.Print()
 
 	fmt.Printf("\n# %d objects\n", len(objects.Objects))
 	for _, o := range objects.Objects {
@@ -86,24 +85,27 @@ func main() {
 		}
 	}
 
-	fmt.Println("\n# ast")
+	fmt.Println("\n# ast after pass1")
 	fmt.Println(prog.String())
 
 	fmt.Println("\n# env")
 	env.Print()
-	fmt.Println("\n# eval env")
 
-	// forward reference 解決
+	// eval env
 	fmt.Println("\n# eval env")
 	order, err := eval.EvalEnv(env)
 	if err != nil {
 		logger.Error(err.Error(), 0)
-		logger.Print()
+	}
+	fmt.Println("order:", order)
+	logger.Print()
+
+	fmt.Println("\n# env after eval")
+	env.Print()
+	if len(logger.Errors) > 0 {
 		fmt.Println("*** abort ***")
 		os.Exit(1)
 	}
-	fmt.Println("order:", order)
-	env.Print()
 
 	fmt.Println("\n# pass2")
 	eval.Pass1 = false
