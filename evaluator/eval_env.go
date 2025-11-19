@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"fmt"
+	"yas80/logger"
 	"yas80/object"
 )
 
@@ -13,7 +14,7 @@ func (e *Evaluator) EvalEnv(env *object.Environment) ([]string, error) {
 	for _, name := range order {
 		obj, ok := env.Get(name)
 		if !ok {
-			return order, fmt.Errorf("internal error: could not get %s", name)
+			return order, fmt.Errorf(logger.E900, fmt.Sprintf(": could not get %s", name))
 		}
 		sym, ok := obj.(*object.SymbolObject)
 		if !ok {
@@ -25,7 +26,7 @@ func (e *Evaluator) EvalEnv(env *object.Environment) ([]string, error) {
 		}
 		value := e.Eval(sym.Node, env)
 		if isError(value) || isRefNotFound(value) {
-			return order, fmt.Errorf("could not eval symbol %s", name)
+			return order, fmt.Errorf(logger.E900, fmt.Sprintf(": could not eval '%s'", name))
 		}
 		env.Set(name, value)
 	}
@@ -41,7 +42,7 @@ func (e *Evaluator) tSortEnv(env *object.Environment) ([]string, error) {
 	var visit func(string) error
 	visit = func(name string) error {
 		if visiting[name] {
-			return fmt.Errorf("循環参照: %s", name)
+			return fmt.Errorf(logger.E030, name)
 		}
 		if visited[name] {
 			return nil
@@ -49,7 +50,7 @@ func (e *Evaluator) tSortEnv(env *object.Environment) ([]string, error) {
 		visiting[name] = true
 		obj, ok := env.Get(name)
 		if !ok {
-			return fmt.Errorf("未定義シンボル: %s", name)
+			return fmt.Errorf(logger.E009, name)
 		}
 		sym, ok := obj.(*object.SymbolObject)
 		if ok {
