@@ -23,6 +23,7 @@ const (
 	FUNC_OBJ
 	REF_NOTFOUND_OBJ
 	SYMBOL_OBJ
+	SYMBOL_EXPR_OBJ
 	DELETE_OBJ
 )
 
@@ -210,6 +211,19 @@ func (s *SymbolObject) Type() ObjectType { return SYMBOL_OBJ }
 func (s *SymbolObject) String() string {
 	return fmt.Sprintf("SYMBOL{Name: %s, Node: %s, Value: %v, State: %d, Depends: [%s]}",
 		s.Name, s.Node.String(), s.Value, s.State, strings.Join(s.DependsOn, ", "))
+}
+
+// symbol expressoin
+type SymbolExprObject struct {
+	Value      Object
+	Names      []string
+	LineNumber int
+}
+
+func (s *SymbolExprObject) Type() ObjectType { return SYMBOL_EXPR_OBJ }
+func (s *SymbolExprObject) String() string {
+	return fmt.Sprintf("SYMBOL_EXPR{Names: %s, Value: %s}",
+		strings.Join(s.Names, ", "), s.Value.String())
 }
 
 // return
