@@ -97,14 +97,12 @@ func main() {
 	fmt.Println("\n# eval env")
 	order, err := eval.EvalEnv(env)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error(err.Error(), 0)
+		logger.Print()
+		fmt.Println("*** abort ***")
+		os.Exit(1)
 	}
 	fmt.Println("order:", order)
-
-	fmt.Println("\n# env after eval")
-	if err != nil {
-		fmt.Println("Error during EvalEnv:", err)
-	}
 	env.Print()
 
 	fmt.Println("\n# pass2")
