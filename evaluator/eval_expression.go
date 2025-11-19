@@ -91,7 +91,9 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env *objec
 		if e.Debug > 0 {
 			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
 		}
-		e.logger.Error(fmt.Sprintf(logger.E023, parser.TokenLiteral(node.Operator)), lineNumber)
+		if !e.Pass1 {
+			e.logger.Error(fmt.Sprintf(logger.E023, parser.TokenLiteral(node.Operator)), lineNumber)
+		}
 		return object.ERROR
 	}
 }
@@ -138,7 +140,9 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 	case parser.AND:
 		return &object.NumberObject{Value: boolToInt(v1 != 1 && v2 != 1)}
 	default:
-		e.logger.Error(fmt.Sprintf(logger.E016, string(rune(opCode))), lineNumber)
+		if !e.Pass1 {
+			e.logger.Error(fmt.Sprintf(logger.E016, string(rune(opCode))), lineNumber)
+		}
 		return object.ERROR
 	}
 }
@@ -157,16 +161,26 @@ func (e *Evaluator) evalPrefixExpression(opCode int, op object.Object, lineNumbe
 		case '!':
 			return &object.NumberObject{Value: boolToInt(op.Value == 0), LineNumber: lineNumber}
 		default:
-			e.logger.Error(fmt.Sprintf(logger.E008, rune(opCode)), lineNumber)
+			if !e.Pass1 {
+				e.logger.Error(fmt.Sprintf(logger.E008, rune(opCode)), lineNumber)
+			}
 			return object.ERROR
 		}
 	case *object.StringObject:
 		if opCode == '!' {
 			return &object.NumberObject{Value: boolToInt(op.Value == ""), LineNumber: lineNumber}
 		}
-		e.logger.Error(fmt.Sprintf(logger.E007, rune(opCode)), lineNumber)
+		if !e.Pass1 {
+			e.logger.Error(fmt.Sprintf(logger.E007, rune(opCode)), lineNumber)
+		}
 		return object.ERROR
+	case *object.RefNotFoundObject:
+		return op
+	case *object.SymbolExprObject:
+		return op
 	}
-	e.logger.Error(logger.E022, lineNumber)
+	if !e.Pass1 {
+		e.logger.Error(logger.E022, lineNumber)
+	}
 	return object.ERROR
 }
