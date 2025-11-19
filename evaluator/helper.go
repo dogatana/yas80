@@ -1,6 +1,9 @@
 package evaluator
 
-import "yas80/object"
+import (
+	"fmt"
+	"yas80/object"
+)
 
 // 各種 object 判定
 
@@ -45,4 +48,35 @@ func extractNames(obj object.Object) []string {
 	default:
 		return []string{}
 	}
+}
+
+// location counter 初期化
+func initLocationCounter(env *object.Environment, addr int) {
+	env.GlobalSet("$", &object.NumberObject{Value: addr})
+}
+
+// location counter 取得
+func getLocationCounter(env *object.Environment) int {
+	counter, ok := env.GlobalGet("$")
+	if !ok {
+		panic("getLocationCounter failed")
+	}
+	return counter.(*object.NumberObject).Value
+
+}
+
+// location counter 表示
+func printLocationCounter(env *object.Environment) {
+	fmt.Printf("$ %04x\n", getLocationCounter(env))
+}
+
+// location counter 更新
+func advanceLocationCounter(env *object.Environment, n int) {
+	obj, ok := env.GlobalGet("$")
+	if !ok {
+		panic("getLocationCounter failed")
+	}
+	counter := obj.(*object.NumberObject)
+	counter.Value += n
+	fmt.Println(counter.String())
 }

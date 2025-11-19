@@ -29,7 +29,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	// Program
 	case *parser.Program:
 		// 一旦 0 に初期化し ORG 他で上書きする
-		e.initLocationCounter(env, 0)
+		initLocationCounter(env, 0)
 		return e.evalProgram(node, env)
 
 	// Statement
@@ -43,20 +43,20 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.FunctionStatement:
 		return e.evalFunctionStatement(node, env)
 	case *parser.Z80Instruction:
-		e.printLocationCounter(env)
+		printLocationCounter(env)
 		e.lineNumber = node.LineNumber()
 		obj := e.evalZ80Instruction(node, env)
 		if obj.Type() == object.CODE_OBJ {
 			code := obj.(*object.CodeObject)
-			code.Addr = e.getLocationCounter(env)
-			e.advanceLocationCounter(env, code.Size())
+			code.Addr = getLocationCounter(env)
+			advanceLocationCounter(env, code.Size())
 		}
 		return obj
 	case *parser.LabelStatement:
-		e.printLocationCounter(env)
+		printLocationCounter(env)
 		uname := strings.ToUpper(node.Value.Name)
 		// Get("$") で取得したものを利用すると、更新後の値が得られてしまうので新たに作成
-		addr := &object.NumberObject{Value: e.getLocationCounter(env), LineNumber: node.LineNumber()}
+		addr := &object.NumberObject{Value: getLocationCounter(env), LineNumber: node.LineNumber()}
 
 		// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
 		sym := &object.SymbolObject{
@@ -173,37 +173,6 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
 		return object.ERROR
 	}
-}
-
-// location counter 初期化
-func (e *Evaluator) initLocationCounter(env *object.Environment, addr int) {
-	env.GlobalSet("$", &object.NumberObject{Value: addr})
-}
-
-// location counter 取得
-func (e *Evaluator) getLocationCounter(env *object.Environment) int {
-	counter, ok := env.GlobalGet("$")
-	if !ok {
-		panic("getLocationCounter failed")
-	}
-	return counter.(*object.NumberObject).Value
-
-}
-
-// location counter 表示
-func (e *Evaluator) printLocationCounter(env *object.Environment) {
-	fmt.Printf("$ %04x\n", e.getLocationCounter(env))
-}
-
-// location counter 更新
-func (e *Evaluator) advanceLocationCounter(env *object.Environment, n int) {
-	obj, ok := env.GlobalGet("$")
-	if !ok {
-		panic("getLocationCounter failed")
-	}
-	counter := obj.(*object.NumberObject)
-	counter.Value += n
-	fmt.Println(counter.String())
 }
 
 // Program 評価
