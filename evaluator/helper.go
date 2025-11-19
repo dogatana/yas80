@@ -80,3 +80,11 @@ func advanceLocationCounter(env *object.Environment, n int) {
 	counter.Value += n
 	fmt.Println(counter.String())
 }
+
+func boolToInt(value bool) int {
+	if value {
+		return 1
+	} else {
+		return 0
+	}
+}
