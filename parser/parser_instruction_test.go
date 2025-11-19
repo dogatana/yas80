@@ -46,10 +46,10 @@ OTDR
 	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
 		for _, e := range l.logger.Errors {
-			fmt.Println(e.String())
+			fmt.Println(e.Error())
 		}
 		for _, e := range l.logger.Warnings {
-			fmt.Println(e.String())
+			fmt.Println(e.Error())
 		}
 		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
 	}
@@ -95,10 +95,10 @@ RET 18
 	ec, wc, _ := l.logger.Count()
 	if ec > 0 || wc > 0 {
 		for _, e := range l.logger.Errors {
-			fmt.Println(e.String())
+			fmt.Println(e.Error())
 		}
 		for _, e := range l.logger.Warnings {
-			fmt.Println(e.String())
+			fmt.Println(e.Error())
 		}
 		t.Fatalf("Parser returns %d errors and %d warnigs", ec, wc)
 	}
