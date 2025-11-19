@@ -139,7 +139,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		return e.evalInfixExpression(node, env, node.LineNumber())
 	case *parser.PrefixExpression:
 		v := e.Eval(node.Op, env)
-		if e.isError(v) || e.isRefNotFound(v) {
+		if isError(v) || isRefNotFound(v) {
 			return v
 		}
 		return e.evalPrefixExpression(node.Operator, v, node.LineNumber())
@@ -173,63 +173,6 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
 		return object.ERROR
 	}
-}
-
-func (e *Evaluator) isError(obj object.Object) bool {
-	return obj.Type() == object.ERROR_OBJ
-}
-
-func (e *Evaluator) isNumber(obj object.Object) bool {
-	return obj.Type() == object.NUMBER_OBJ
-}
-
-func (e *Evaluator) isString(obj object.Object) bool {
-	return obj.Type() == object.STRING_OBJ
-}
-
-func (e *Evaluator) isRefNotFound(obj object.Object) bool {
-	return obj.Type() == object.REF_NOTFOUND_OBJ
-}
-
-func (e *Evaluator) isSymolOrSymbolExpr(obj object.Object) bool {
-	return obj.Type() == object.SYMBOL_OBJ || obj.Type() == object.SYMBOL_EXPR_OBJ
-}
-
-func (e *Evaluator) mergeNames(obj1, obj2 object.Object) []string {
-	names := []string{}
-
-	switch obj1 := obj1.(type) {
-	case *object.RefNotFoundObject:
-		names = append(names, obj1.Names...)
-	case *object.SymbolExprObject:
-		names = append(names, obj1.Names...)
-	case *object.SymbolObject:
-		names = append(names, obj1.Name)
-	}
-
-	switch obj2 := obj2.(type) {
-	case *object.RefNotFoundObject:
-		names = append(names, obj2.Names...)
-	case *object.SymbolExprObject:
-		names = append(names, obj2.Names...)
-	case *object.SymbolObject:
-		names = append(names, obj2.Name)
-	}
-
-	return names
-}
-
-func (e *Evaluator) mergeUndefined(obj1, obj2 object.Object) *object.RefNotFoundObject {
-	names := []string{}
-	u1, ok := obj1.(*object.RefNotFoundObject)
-	if ok {
-		names = append(names, u1.Names...)
-	}
-	u2, ok := obj2.(*object.RefNotFoundObject)
-	if ok {
-		names = append(names, u2.Names...)
-	}
-	return &object.RefNotFoundObject{Names: names}
 }
 
 // location counter 初期化
@@ -413,7 +356,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 // 関数呼出し
 func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.Environment) object.Object {
 	obj := e.Eval(expr.Function, env)
-	if e.isError(obj) || e.isRefNotFound(obj) {
+	if isError(obj) || isRefNotFound(obj) {
 		return obj
 	} else if obj == object.NULL {
 		panic("object is NULL") // TODO
@@ -434,7 +377,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 	for i, param := range fn.Params {
 		p := strings.ToUpper(param)
 		v := e.Eval(expr.Arguments.Expressions[i], env)
-		if e.isError(v) || e.isRefNotFound(v) {
+		if isError(v) || isRefNotFound(v) {
 			return v
 		}
 		newEnv.Set(p, v)
@@ -454,7 +397,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 		return object.NULL
 	}
 	for _, obj := range ret.Block {
-		if e.isError(obj) || e.isRefNotFound(obj) {
+		if isError(obj) || isRefNotFound(obj) {
 			return obj
 		}
 	}
@@ -471,11 +414,11 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env *objec
 	op2 := e.Eval(node.Op2, env)
 
 	switch {
-	case e.isError(op1) || e.isError(op2):
+	case isError(op1) || isError(op2):
 		return object.ERROR
-	case e.isNumber(op1) && e.isNumber(op2):
+	case isNumber(op1) && isNumber(op2):
 		return e.evalNumberInfixExpression(node.Operator, op1, op2, lineNumber)
-	case e.isString(op1) && e.isString(op2):
+	case isString(op1) && isString(op2):
 		if node.Operator != '+' {
 			if !e.Pass1 {
 				e.logger.Error(logger.E029, lineNumber)
@@ -485,10 +428,10 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env *objec
 		s1 := op1.(*object.StringObject).Value
 		s2 := op2.(*object.StringObject).Value
 		return &object.StringObject{Value: s1 + " " + s2}
-	case e.isRefNotFound(op1) || e.isRefNotFound(op2):
-		return &object.RefNotFoundObject{Names: e.mergeNames(op1, op2)}
-	case e.isSymolOrSymbolExpr(op1) || e.isSymolOrSymbolExpr(op2):
-		return &object.SymbolExprObject{Names: e.mergeNames(op1, op2)}
+	case isRefNotFound(op1) || isRefNotFound(op2):
+		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
+	case isSymolOrSymbolExpr(op1) || isSymolOrSymbolExpr(op2):
+		return &object.SymbolExprObject{Names: mergeNames(op1, op2)}
 	default:
 		if e.Debug > 0 {
 			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
@@ -600,7 +543,7 @@ func (e *Evaluator) EvalEnv(env *object.Environment) ([]string, error) {
 			continue
 		}
 		value := e.Eval(sym.Node, env)
-		if e.isError(value) || e.isRefNotFound(value) {
+		if isError(value) || isRefNotFound(value) {
 			return order, fmt.Errorf("could not eval symbol %s", name)
 		}
 		env.Set(name, value)

@@ -1,0 +1,48 @@
+package evaluator
+
+import "yas80/object"
+
+// 各種 object 判定
+
+func isError(obj object.Object) bool {
+	return obj.Type() == object.ERROR_OBJ
+}
+
+func isNumber(obj object.Object) bool {
+	return obj.Type() == object.NUMBER_OBJ
+}
+
+func isString(obj object.Object) bool {
+	return obj.Type() == object.STRING_OBJ
+}
+
+func isRefNotFound(obj object.Object) bool {
+	return obj.Type() == object.REF_NOTFOUND_OBJ
+}
+
+func isSymolOrSymbolExpr(obj object.Object) bool {
+	return obj.Type() == object.SYMBOL_OBJ || obj.Type() == object.SYMBOL_EXPR_OBJ
+}
+
+// 依存先の識別子を抽出する: 重複する名は後段のソートでユニークになる
+func mergeNames(obj1, obj2 object.Object) []string {
+	names := []string{}
+
+	names = append(names, extractNames(obj1)...)
+	names = append(names, extractNames(obj2)...)
+
+	return names
+}
+
+func extractNames(obj object.Object) []string {
+	switch obj := obj.(type) {
+	case *object.RefNotFoundObject:
+		return obj.Names
+	case *object.SymbolExprObject:
+		return obj.Names
+	case *object.SymbolObject:
+		return []string{obj.Name}
+	default:
+		return []string{}
+	}
+}
