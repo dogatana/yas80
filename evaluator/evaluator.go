@@ -64,48 +64,8 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		env.Set(uname, sym)
 		return addr
 	case *parser.ConstStatement:
-		// const/equ は参照内容によって NumberObject/StringObject/SymbolObject のいずれかになる
-		uname := strings.ToUpper(node.Name.Name)
-		v := e.Eval(node.Value, env)
-		switch v := v.(type) {
-		case *object.NumberObject, *object.StringObject:
-			// 定数として確定
-			env.Set(uname, v)
-			return v
-		case *object.RefNotFoundObject:
-			// 階層でチェックが入っているはずだが念のため
-			if !e.Pass1 {
-				e.logger.Error(fmt.Sprintf(logger.E009, strings.Join(v.Names, ", ")), node.LineNumber())
-				return object.ERROR
-			}
-			// 未定義定数として登録
-			sym := &object.SymbolObject{
-				Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
-			env.Set(uname, sym)
-			return sym
-		case *object.SymbolObject:
-			// Symbo Object の場合は値を取得し新たに登録する
-			sym := &object.SymbolObject{
-				Name: uname, Node: node.Value, Value: v.Value, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: []string{v.Name}}
-			env.Set(uname, sym)
-			return sym
-
-		case *object.SymbolExprObject:
-			// Symbo Object の場合は値を取得し新たに登録する
-			sym := &object.SymbolObject{
-				Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
-			env.Set(uname, sym)
-			return sym
-
-		case *object.ErrorObject:
-			return object.ERROR
-		default:
-			if e.Debug > 0 {
-				fmt.Printf("const %s = %#v\n", uname, v)
-			}
-			env.Set(uname, v)
-			return v
-		}
+		// const/equ は参照内容によって NumberObject/StringObject/SymbolObject/SymbolExprObject のいずれかになる
+		return e.evalConstStatement(node, env)
 	case *parser.BlockStatement:
 		return e.evalBlockStatement(node, env)
 	case *parser.EnumStatement:
@@ -221,6 +181,7 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 	return results
 }
 
+// 複合文 BlockStatement
 func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.Environment) object.Object {
 	block := &object.BlockObject{Block: []object.Object{}}
 
@@ -250,6 +211,52 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.
 	return block
 }
 
+// const / equ 文
+func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.Environment) object.Object {
+	uname := strings.ToUpper(node.Name.Name)
+	v := e.Eval(node.Value, env)
+	switch v := v.(type) {
+	case *object.NumberObject, *object.StringObject:
+		// 定数として確定
+		env.Set(uname, v)
+		return v
+	case *object.RefNotFoundObject:
+		// 階層でチェックが入っているはずだが念のため
+		if !e.Pass1 {
+			e.logger.Error(fmt.Sprintf(logger.E009, strings.Join(v.Names, ", ")), node.LineNumber())
+			return object.ERROR
+		}
+		// 未定義定数として登録
+		sym := &object.SymbolObject{
+			Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
+		env.Set(uname, sym)
+		return sym
+	case *object.SymbolObject:
+		// Symbo Object の場合は値を取得し新たに登録する
+		sym := &object.SymbolObject{
+			Name: uname, Node: node.Value, Value: v.Value, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: []string{v.Name}}
+		env.Set(uname, sym)
+		return sym
+
+	case *object.SymbolExprObject:
+		// Symbo Object の場合は値を取得し新たに登録する
+		sym := &object.SymbolObject{
+			Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
+		env.Set(uname, sym)
+		return sym
+
+	case *object.ErrorObject:
+		return object.ERROR
+	default:
+		if e.Debug > 0 {
+			fmt.Printf("const %s = %#v\n", uname, v)
+		}
+		env.Set(uname, v)
+		return v
+	}
+}
+
+// if 文
 func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Environment) object.Object {
 	cond, ok := e.Eval(stmt.Condition, env).(*object.NumberObject)
 	if !ok {
@@ -267,6 +274,7 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Enviro
 	}
 }
 
+// function 文
 func (e *Evaluator) evalFunctionStatement(stmt *parser.FunctionStatement, env *object.Environment) object.Object {
 	name := strings.ToUpper((stmt.Name))
 	_, ok := env.Get(name)
@@ -279,6 +287,7 @@ func (e *Evaluator) evalFunctionStatement(stmt *parser.FunctionStatement, env *o
 	return obj
 }
 
+// return 文
 func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env *object.Environment) object.Object {
 	var ret object.Object
 	if stmt.Value == nil {
@@ -289,6 +298,7 @@ func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env *objec
 	return &object.ReturnObject{Value: ret, LineNumber: stmt.LineNumber()}
 }
 
+// enum 文
 func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.Environment) object.Object {
 	keys := []string{}
 	enum := map[string]object.Object{}
