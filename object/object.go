@@ -216,15 +216,13 @@ func (s *SymbolObject) String() string {
 
 // symbol expressoin
 type SymbolExprObject struct {
-	Value      Object
 	Names      []string
 	LineNumber int
 }
 
 func (s *SymbolExprObject) Type() ObjectType { return SYMBOL_EXPR_OBJ }
 func (s *SymbolExprObject) String() string {
-	return fmt.Sprintf("SYMBOL_EXPR{Names: %s, Value: %s}",
-		strings.Join(s.Names, ", "), s.Value.String())
+	return fmt.Sprintf("SYMBOL_EXPR{Names: [%s]}", strings.Join(s.Names, ", "))
 }
 
 // return
