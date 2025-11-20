@@ -210,8 +210,9 @@ type SymbolObject struct {
 
 func (s *SymbolObject) Type() ObjectType { return SYMBOL_OBJ }
 func (s *SymbolObject) String() string {
-	return fmt.Sprintf("SYMBOL{Name: %s, Node: %s, Value: %v, State: %d, Depends: [%s]}",
-		s.Name, s.Node.String(), s.Value, s.State, strings.Join(s.DependsOn, ", "))
+	// return fmt.Sprintf("SYMBOL{Name: %s, Node: %s, Value: %v, State: %d, Depends: [%s]}",
+	// 	s.Name, s.Node.String(), s.Value, s.State, strings.Join(s.DependsOn, ", "))
+	return fmt.Sprintf("%#v", s)
 }
 
 // symbol expressoin
