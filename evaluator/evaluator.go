@@ -60,7 +60,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 
 		// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
 		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: addr, State: object.SYMBOL_STATE_DEFINED, DependsOn: []string{}}
+			Name: uname, Node: node.Value, Value: addr, State: object.VALUE_DETERMINED, DependsOn: []string{}}
 		env.Set(uname, sym)
 		return addr
 	case *parser.ConstStatement:
@@ -228,20 +228,20 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.
 		}
 		// 未定義定数として登録
 		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
+			Name: uname, Node: node.Value, Value: object.NULL, State: object.VALUE_NULL, DependsOn: v.Names}
 		env.Set(uname, sym)
 		return sym
 	case *object.SymbolObject:
 		// Symbo Object の場合は値を取得し新たに登録する
 		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: v.Value, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: []string{v.Name}}
+			Name: uname, Node: node.Value, Value: v.Value, State: object.VALUE_NULL, DependsOn: []string{v.Name}}
 		env.Set(uname, sym)
 		return sym
 
 	case *object.SymbolExprObject:
-		// Symbo Object の場合は値を取得し新たに登録する
+		// Symbo Expression Object の場合は値を取得し新たに登録する
 		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: nil, State: object.SYMBOL_STATE_UNDEFINED, DependsOn: v.Names}
+			Name: uname, Node: node.Value, Value: object.NULL, State: object.VALUE_NULL, DependsOn: v.Names}
 		env.Set(uname, sym)
 		return sym
 

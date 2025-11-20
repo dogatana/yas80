@@ -20,7 +20,7 @@ func (e *Evaluator) EvalEnv(env *object.Environment) ([]string, error) {
 		if !ok {
 			continue
 		}
-		if sym.State == object.SYMBOL_STATE_DEFINED {
+		if sym.State == object.VALUE_DETERMINED {
 			env.Set(name, sym.Value)
 			continue
 		}

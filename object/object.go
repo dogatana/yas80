@@ -30,9 +30,10 @@ const (
 type SymbolState int
 
 const (
-	SYMBOL_STATE_UNDEFINED SymbolState = iota
-	SYMBOL_STATE_TENTATIVE
-	SYMBOL_STATE_DEFINED
+	NOT_REGISTERED SymbolState = -1 + iota
+	VALUE_NULL
+	VALUE_TENTATIVE
+	VALUE_DETERMINED
 )
 
 var (
