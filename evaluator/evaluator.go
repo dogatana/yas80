@@ -111,7 +111,12 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 			return &object.RefNotFoundObject{Names: []string{uname}}
 		} else if !ok {
 			// Pass2 の場合は ERROR を返す
-			e.logger.Error(fmt.Sprintf(logger.E009, node.Name), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(logger.E009, uname), node.LineNumber())
+			return object.ERROR
+		}
+		sym, ok := (obj).(*object.SymbolObject)
+		if ok && sym.State == object.NOT_REGISTERED {
+			e.logger.Error(fmt.Sprintf(logger.E009, uname), node.LineNumber())
 			return object.ERROR
 		}
 		return obj
@@ -215,6 +220,7 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.
 func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.Environment) object.Object {
 	uname := strings.ToUpper(node.Name.Name)
 	v := e.Eval(node.Value, env)
+	fmt.Printf("evaled %#v %d\n", v, node.LineNumber())
 	switch v := v.(type) {
 	case *object.NumberObject, *object.StringObject:
 		// 定数として確定
@@ -228,20 +234,23 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.
 		}
 		// 未定義定数として登録
 		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: object.NULL, State: object.VALUE_NULL, DependsOn: v.Names}
+			Name: uname, Node: node.Value, Value: object.NULL, State: object.VALUE_NULL, DependsOn: v.Names,
+			LineNumber: node.LineNumber()}
 		env.Set(uname, sym)
 		return sym
 	case *object.SymbolObject:
 		// Symbo Object の場合は値を取得し新たに登録する
 		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: v.Value, State: object.VALUE_NULL, DependsOn: []string{v.Name}}
+			Name: uname, Node: node.Value, Value: v.Value, State: object.VALUE_NULL, DependsOn: []string{v.Name},
+			LineNumber: node.LineNumber()}
 		env.Set(uname, sym)
 		return sym
 
 	case *object.SymbolExprObject:
 		// Symbo Expression Object の場合は値を取得し新たに登録する
 		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: object.NULL, State: object.VALUE_NULL, DependsOn: v.Names}
+			Name: uname, Node: node.Value, Value: object.NULL, State: object.VALUE_NULL, DependsOn: v.Names,
+			LineNumber: node.LineNumber()}
 		env.Set(uname, sym)
 		return sym
 
