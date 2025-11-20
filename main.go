@@ -98,12 +98,13 @@ func main() {
 		logger.Error(err.Error(), 0)
 	}
 	fmt.Println("order:", order)
-	logger.Print()
 
 	fmt.Println("\n# env after eval")
 	env.Print()
+
 	if len(logger.Errors) > 0 {
-		fmt.Println("*** abort ***")
+		fmt.Println("\n*** abort ***")
+		logger.Print()
 		os.Exit(1)
 	}
 
