@@ -1,9 +1,11 @@
-SRC = main.go parser/token.go parser/lexer.go parser/z80.go \
-	  parser/parser.go parser/ast.go parser/helper.go parser/rules.go \
-	  parser/modifyyaccerror.go \
-	  object/object.go  \
-	  evaluator/evaluator.go evaluator/eval_instruction.go evaluator\helper.go \
-	  logger/logger.go logger/error_messages.go
+SRC = main.go \
+	parser/token.go parser/lexer.go parser/z80.go \
+	parser/parser.go parser/ast.go parser/helper.go parser/rules.go \
+	parser/modifyyaccerror.go \
+	object/object.go  object/environment.go \
+	evaluator/evaluator.go evaluator/eval_instruction.go evaluator/eval_env.go \
+	evaluator/z80code.go evaluator/helper.go \
+	logger/logger.go logger/error_messages.go
 
 TEMP = parser/temp.go
 YACC = parser/parser.y
