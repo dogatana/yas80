@@ -14,6 +14,7 @@ func TestZ80Instruction(t *testing.T) {
 		"ld_r8_r8",
 		"forward",
 		"forward_symbol",
+		"forward_mix",
 	}
 
 	for _, base := range tests {
