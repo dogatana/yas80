@@ -191,7 +191,7 @@ func TestIfStatement(t *testing.T) {
 	}
 }
 
-func TestFunctionStatement(t *testing.T) {
+func TestFuncStatement(t *testing.T) {
 	input := `abs func x
 	if x > 0
 	  x
