@@ -219,6 +219,14 @@ directive	: CONST IDENT '=' expr
 			{
 				$$ = &FuncStatement{Name: $1.Literal, Params: $3, Block: $5, lineNumber: $1.LineNumber}
 			}
+			| FUNCTION IDENT '(' param_list ')' expr
+			{ 
+				$$ = &FuncStatement{
+					Name: $2.Literal, Params: $4, 
+					Block: &BlockStatement{
+						Block: []Statement {&ReturnStatement{Value: $6, lineNumber: $1.LineNumber}}}, 
+					lineNumber: $1.LineNumber}
+			}
 			| EXITM			{ $$ = &ExitmStatement{lineNumber: $1.LineNumber}}
 			| RETURN		{ $$ = &ReturnStatement{Value: nil, lineNumber: $1.LineNumber}} 
 			| RETURN expr	
