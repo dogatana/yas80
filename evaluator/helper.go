@@ -88,3 +88,16 @@ func boolToInt(value bool) int {
 		return 0
 	}
 }
+
+// Symbol.SymState に応じて値を unwrap して返す
+func unwrapSymbol(obj object.Object) object.Object {
+	sym, ok := obj.(*object.SymbolObject)
+	if !ok {
+		return obj
+	}
+	if sym.SymState == object.VALUE_DETERMINED || sym.SymState == object.VALUE_TENTATIVE {
+		// unwrap して Value を返す
+		return sym.Value
+	}
+	return obj
+}

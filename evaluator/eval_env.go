@@ -21,16 +21,18 @@ func (e *Evaluator) EvalEnv(env *object.Environment) ([]string, error) {
 		if !ok {
 			continue
 		}
-		if sym.State == object.VALUE_DETERMINED {
+		if sym.SymState == object.VALUE_DETERMINED {
 			env.Set(name, sym.Value)
 			continue
 		}
-		if sym.State == object.NOT_REGISTERED {
+		if sym.SymState == object.NOT_REGISTERED {
 			continue
 		}
-		value := e.Eval(sym.Node, env)
-		if !isError(value) && !isRefNotFound(value) {
-			env.Set(name, value)
+		if sym.Node != nil {
+			value := e.Eval(sym.Node, env)
+			if !isError(value) && !isRefNotFound(value) {
+				env.Set(name, value)
+			}
 		}
 		// return order, fmt.Errorf(logger.E900, fmt.Sprintf(": could not eval '%s'", name))
 	}
@@ -55,8 +57,8 @@ func (e *Evaluator) tSortEnv(env *object.Environment) ([]string, error) {
 		obj, ok := env.Get(name)
 		if !ok {
 			// return fmt.Errorf(logger.E009, name)
-			// 未定の場合、新たに NOT_REGISTERED として登録する
-			obj = &object.SymbolObject{Name: name, Value: object.NULL, State: object.NOT_REGISTERED, DependsOn: []string{}}
+			// 未定の場合、新たに UNKNOWN/NOT_REGISTERED として登録する
+			obj := object.NewUnknownSymbol(name, "", 0)
 			env.Set(name, obj)
 		}
 		sym, ok := obj.(*object.SymbolObject)

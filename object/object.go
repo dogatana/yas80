@@ -36,6 +36,29 @@ const (
 	VALUE_DETERMINED
 )
 
+var symbolStateNames map[SymbolState]string = map[SymbolState]string{
+	NOT_REGISTERED:   "NotRegistered",
+	VALUE_NULL:       "NullValue",
+	VALUE_TENTATIVE:  "TentativeValue",
+	VALUE_DETERMINED: "Determined",
+}
+
+type SymbolType int
+
+const (
+	UNKNOWN SymbolType = iota
+	CONST
+	LABEL
+	VARIABLE
+)
+
+var symbolTypeNames map[SymbolType]string = map[SymbolType]string{
+	UNKNOWN:  "Unknown",
+	CONST:    "Const",
+	LABEL:    "Label",
+	VARIABLE: "Variable",
+}
+
 var (
 	NULL  = &NullObject{}
 	ERROR = &ErrorObject{}
@@ -201,18 +224,66 @@ func (d *DeleltedObject) String() string {
 // symbol
 type SymbolObject struct {
 	Name       string
+	SymType    SymbolType
+	SymState   SymbolState
 	Node       parser.Node
 	Value      Object
-	State      SymbolState
 	DependsOn  []string
 	LineNumber int
 }
 
 func (s *SymbolObject) Type() ObjectType { return SYMBOL_OBJ }
 func (s *SymbolObject) String() string {
-	// return fmt.Sprintf("SYMBOL{Name: %s, Node: %s, Value: %v, State: %d, Depends: [%s]}",
-	// 	s.Name, s.Node.String(), s.Value, s.State, strings.Join(s.DependsOn, ", "))
-	return fmt.Sprintf("%#v", s)
+	str := fmt.Sprintf("Symbol{Name:%q, SymType: %s, SymState: %s, Value: %T",
+		s.Name, symbolTypeNames[s.SymType], symbolStateNames[s.SymState], s.Value)
+	if len(s.DependsOn) > 0 {
+		str += ", [" + strings.Join(s.DependsOn, ",") + "]"
+	}
+	return str + "}"
+}
+
+func NewLabelSymbol(name string, addr int, lineNumber int) *SymbolObject {
+	return &SymbolObject{Name: name,
+		SymType:    LABEL,
+		SymState:   VALUE_TENTATIVE,
+		Value:      &NumberObject{Value: addr, LineNumber: lineNumber},
+		LineNumber: lineNumber,
+	}
+}
+
+func NewConstSymbol(name string, node parser.Node, value Object, depends []string, lineNumber int) *SymbolObject {
+	return &SymbolObject{Name: name,
+		SymType:    CONST,
+		SymState:   VALUE_NULL,
+		Node:       node,
+		Value:      value,
+		DependsOn:  depends,
+		LineNumber: lineNumber,
+	}
+}
+
+func NewNullConstSymbol(name string, node parser.Node, depends []string, lineNumber int) *SymbolObject {
+	return &SymbolObject{Name: name,
+		SymType:    CONST,
+		SymState:   VALUE_NULL,
+		Node:       node,
+		Value:      NULL,
+		DependsOn:  depends,
+		LineNumber: lineNumber,
+	}
+}
+
+func NewUnknownSymbol(name, depend string, lineNumber int) *SymbolObject {
+	sym := &SymbolObject{Name: name,
+		SymType:    UNKNOWN,
+		SymState:   NOT_REGISTERED,
+		DependsOn:  []string{},
+		LineNumber: lineNumber,
+	}
+	if depend != "" {
+		sym.DependsOn = append(sym.DependsOn, depend)
+	}
+	return sym
 }
 
 // symbol expressoin

@@ -53,16 +53,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		}
 		return obj
 	case *parser.LabelStatement:
-		printLocationCounter(env)
-		uname := strings.ToUpper(node.Value.Name)
-		// Get("$") で取得したものを利用すると、更新後の値が得られてしまうので新たに作成
-		addr := &object.NumberObject{Value: getLocationCounter(env), LineNumber: node.LineNumber()}
-
-		// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
-		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: addr, State: object.VALUE_DETERMINED, DependsOn: []string{}}
-		env.Set(uname, sym)
-		return addr
+		return e.evalLabelStatement(node, env)
 	case *parser.ConstStatement:
 		// const/equ は参照内容によって NumberObject/StringObject/SymbolObject/SymbolExprObject のいずれかになる
 		return e.evalConstStatement(node, env)
@@ -115,7 +106,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 			return object.ERROR
 		}
 		sym, ok := (obj).(*object.SymbolObject)
-		if ok && sym.State == object.NOT_REGISTERED {
+		if ok && sym.SymState == object.NOT_REGISTERED {
 			e.logger.Error(fmt.Sprintf(logger.E009, uname), node.LineNumber())
 			return object.ERROR
 		}
@@ -135,6 +126,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.RegisterLiteral:
 		return object.Z80RgisterObjects[int(node.NodeSubType())]
 	default:
+		fmt.Printf("default %T\n", node)
 		e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
 		return object.ERROR
 	}
@@ -216,11 +208,45 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.
 	return block
 }
 
+func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env *object.Environment) object.Object {
+	uname := strings.ToUpper(node.Value.Name)
+	// pass2 で定義済みならエラー
+	if obj, ok := env.Get(uname); ok {
+		switch obj := obj.(type) {
+		case *object.SymbolObject:
+			if obj.SymType != object.LABEL || obj.LineNumber != node.LineNumber() || obj.SymState == object.VALUE_DETERMINED {
+				if !e.Pass1 {
+					e.logger.Error(fmt.Sprintf(logger.E032, uname), node.LineNumber())
+				}
+				return object.ERROR
+			}
+			// fall through
+		default:
+			if !e.Pass1 {
+				e.logger.Error(fmt.Sprintf(logger.E032, uname), node.LineNumber())
+			}
+			return object.ERROR
+		}
+	}
+	// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
+	// sym := &object.SymbolObject{
+	// 	Name: uname, Node: node.Value, Value: addr, SymState: object.VALUE_DETERMINED, DependsOn: []string{}}
+	sym := object.NewLabelSymbol(uname, getLocationCounter(env), node.LineNumber())
+	env.Set(uname, sym)
+	return sym
+}
+
 // const / equ 文
 func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.Environment) object.Object {
 	uname := strings.ToUpper(node.Name.Name)
+
+	// 定義済みならエラー
+	if _, ok := env.Get(uname); ok {
+		e.logger.Error(fmt.Sprintf(logger.E031, uname), node.LineNumber())
+		return object.ERROR
+	}
 	v := e.Eval(node.Value, env)
-	fmt.Printf("evaled %#v %d\n", v, node.LineNumber())
+
 	switch v := v.(type) {
 	case *object.NumberObject, *object.StringObject:
 		// 定数として確定
@@ -233,27 +259,22 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.
 			return object.ERROR
 		}
 		// 未定義定数として登録
-		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: object.NULL, State: object.VALUE_NULL, DependsOn: v.Names,
-			LineNumber: node.LineNumber()}
+		sym := object.NewNullConstSymbol(uname, node.Value, v.Names, node.LineNumber())
 		env.Set(uname, sym)
 		return sym
 	case *object.SymbolObject:
 		// Symbo Object の場合は値を取得し新たに登録する
-		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: v.Value, State: object.VALUE_NULL, DependsOn: []string{v.Name},
-			LineNumber: node.LineNumber()}
+		depends := make([]string, len(v.DependsOn)) // 他のシンボルの情報なので copy
+		copy(depends, v.DependsOn)
+		sym := object.NewNullConstSymbol(uname, node.Value, depends, node.LineNumber())
 		env.Set(uname, sym)
 		return sym
 
 	case *object.SymbolExprObject:
 		// Symbo Expression Object の場合は値を取得し新たに登録する
-		sym := &object.SymbolObject{
-			Name: uname, Node: node.Value, Value: object.NULL, State: object.VALUE_NULL, DependsOn: v.Names,
-			LineNumber: node.LineNumber()}
+		sym := object.NewNullConstSymbol(uname, node.Value, v.Names, node.LineNumber())
 		env.Set(uname, sym)
 		return sym
-
 	case *object.ErrorObject:
 		return object.ERROR
 	default:
