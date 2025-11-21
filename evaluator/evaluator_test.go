@@ -185,7 +185,7 @@ func TestClosure(t *testing.T) {
 	}
 }
 
-func TestFibFunction(t *testing.T) {
+func TestFibFunc(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -218,5 +218,26 @@ func TestFibFunction(t *testing.T) {
 			fmt.Printf("input %q\n", tt.input)
 			t.Errorf("should be NULL. got %T(%#v)", last, last)
 		}
+	}
+}
+
+func TestFunction(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(0, 0)`, 0xd000},
+		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(1, 0)`, 0xd001},
+		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(0, 1)`, 0xd000 + 40},
+		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(39, 24)`, 0xd000 + 40*24 + 39},
+	}
+
+	for _, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logger.New("<eval test>")
+		prog := evaluateInput(t, tt.input, logger, env)
+
+		last := prog.Objects[len(prog.Objects)-1]
+		testNumberObject(t, last, tt.expected, tt.input)
 	}
 }
