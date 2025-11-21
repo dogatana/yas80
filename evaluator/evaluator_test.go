@@ -227,9 +227,11 @@ func TestFunction(t *testing.T) {
 		expected int
 	}{
 		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(0, 0)`, 0xd000},
-		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(1, 0)`, 0xd001},
-		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(0, 1)`, 0xd000 + 40},
 		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(39, 24)`, 0xd000 + 40*24 + 39},
+		{`function add1(x) x + 1 \ const fn = add1 \ fn(99)`, 100},
+		{`	function add1(x) x + 1
+			function double(fn, x) fn(fn(x))
+			double(add1, 98)`, 100},
 	}
 
 	for _, tt := range tests {
