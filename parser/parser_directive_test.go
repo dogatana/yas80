@@ -72,15 +72,15 @@ def = 1
 	}
 }
 
-func TestRepeatStatement(t *testing.T) {
+func TestReptStatement(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
 	}{
-		{`repeat 1\ endr`, "REPEAT 1\nENDR"},
-		{` Repeat 2 \\\\ endR`, "REPEAT 2\nENDR"},
-		{` REPEAT 3 \\\\ EndR`, "REPEAT 3\nENDR"},
-		{` REPEAT 4 \1\ 2\3 \ 4 \ EndR`, "REPEAT 4\n1\n2\n3\n4\nENDR"},
+		{`rept 1\ endr`, "REPT 1\nENDR"},
+		{` Rept 2 \\\\ endR`, "REPT 2\nENDR"},
+		{` REPT 3 \\\\ EndR`, "REPT 3\nENDR"},
+		{` REPT 4 \1\ 2\3 \ 4 \ EndR`, "REPT 4\n1\n2\n3\n4\nENDR"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
@@ -94,7 +94,7 @@ func TestRepeatStatement(t *testing.T) {
 			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
 		}
 		stmt := prog.Statements[0]
-		repeat, ok := stmt.(*RepeatStatement)
+		repeat, ok := stmt.(*ReptStatement)
 		if !ok {
 			t.Errorf("prog.Statements[0] not *RepeatStatment. got %T", stmt)
 		}
@@ -220,7 +220,7 @@ func TestFunctionStatement(t *testing.T) {
 		t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
 	}
 	stmt := prog.Statements[0]
-	fn, ok := stmt.(*FunctionStatement)
+	fn, ok := stmt.(*FuncStatement)
 	if !ok {
 		t.Errorf("prog.Statements[0] not *FunctionStatment. got %T", stmt)
 	}

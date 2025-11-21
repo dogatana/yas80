@@ -26,11 +26,11 @@ func (t Token) String() string {
 
 var reservedWords map[string]Token = map[string]Token{
 	// 単一行構文
-	"EQU":   {TokenType: EQU, Literal: "EQU"},
-	"CONST": {TokenType: CONST, Literal: "CONST"},
-	"VAR":   {TokenType: VAR, Literal: "VAR"},
-	"FN":    {TokenType: FN, Literal: "FN"},
-	"ORG":   {TokenType: ORG, Literal: "ORG"},
+	"EQU":      {TokenType: EQU, Literal: "EQU"},
+	"CONST":    {TokenType: CONST, Literal: "CONST"},
+	"VAR":      {TokenType: VAR, Literal: "VAR"},
+	"FUNCTION": {TokenType: FUNCTION, Literal: "FUNCTION"},
+	"ORG":      {TokenType: ORG, Literal: "ORG"},
 
 	// 複数行構文
 	"IF":    {TokenType: IF, Literal: "IF"},
@@ -42,8 +42,8 @@ var reservedWords map[string]Token = map[string]Token{
 	"ENDM":  {TokenType: ENDM, Literal: "ENDM"},
 	"EXITM": {TokenType: EXITM, Literal: "EXITM"},
 
-	"REPEAT": {TokenType: REPEAT, Literal: "REPEAT"},
-	"ENDR":   {TokenType: ENDR, Literal: "ENDR"},
+	"REPT": {TokenType: REPT, Literal: "REPT"},
+	"ENDR": {TokenType: ENDR, Literal: "ENDR"},
 
 	"PROC": {TokenType: PROC, Literal: "PROC"},
 	"ENDP": {TokenType: ENDP, Literal: "ENDP"},

@@ -25,10 +25,10 @@ const (
 	NODE_ASIGN_STMT
 	NODE_ENUM_STMT
 	NODE_ENUM_ELEMENTS_STMT
-	NODE_REPEAT_STMT
+	NODE_REPT_STMT
 	NODE_IF_STMT
 	NODE_BLOCK_STMT
-	NODE_FUNCTION_STMT
+	NODE_FUNC_STMT
 	NODE_EXITM_STMT
 	NODE_RETURN_STMT
 
@@ -208,21 +208,21 @@ func (ee *EnumElement) String() string {
 	}
 }
 
-// repeat statment
-type RepeatStatement struct {
+// rept statment
+type ReptStatement struct {
 	MaxCount   Expression
 	Block      *BlockStatement
 	lineNumber int
 }
 
-func (rs *RepeatStatement) statementNode()           {}
-func (rs *RepeatStatement) NodeType() NodeType       { return NODE_REPEAT_STMT }
-func (rs *RepeatStatement) NodeSubType() NodeSubType { return 0 }
-func (rs *RepeatStatement) LineNumber() int          { return rs.lineNumber }
-func (rs *RepeatStatement) String() string {
+func (rs *ReptStatement) statementNode()           {}
+func (rs *ReptStatement) NodeType() NodeType       { return NODE_REPT_STMT }
+func (rs *ReptStatement) NodeSubType() NodeSubType { return 0 }
+func (rs *ReptStatement) LineNumber() int          { return rs.lineNumber }
+func (rs *ReptStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("REPEAT ")
+	out.WriteString("REPT ")
 	out.WriteString(rs.MaxCount.String() + "\n")
 	block := rs.Block.String()
 	if block != "" {
@@ -265,19 +265,19 @@ func (is *IfStatement) String() string {
 	return out.String()
 }
 
-// function 文
-type FunctionStatement struct {
+// func 文
+type FuncStatement struct {
 	Name       string
 	Params     []string
 	Block      *BlockStatement
 	lineNumber int
 }
 
-func (fs *FunctionStatement) statementNode()           {}
-func (fs *FunctionStatement) NodeType() NodeType       { return NODE_FUNCTION_STMT }
-func (fs *FunctionStatement) NodeSubType() NodeSubType { return 0 }
-func (fs *FunctionStatement) LineNumber() int          { return fs.lineNumber }
-func (fs *FunctionStatement) String() string {
+func (fs *FuncStatement) statementNode()           {}
+func (fs *FuncStatement) NodeType() NodeType       { return NODE_FUNC_STMT }
+func (fs *FuncStatement) NodeSubType() NodeSubType { return 0 }
+func (fs *FuncStatement) LineNumber() int          { return fs.lineNumber }
+func (fs *FuncStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString(fs.Name + " FUNC " + strings.Join(fs.Params, ", ") + "\n")

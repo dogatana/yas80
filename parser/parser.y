@@ -49,11 +49,11 @@ var _ = __yyfmt__.Sprintf
 
 %token<token> ORG
 %token<token> CONST VAR EQU
-%token<token> FN // 1行関数
+%token<token> FUNCTION // 1行関数
 
 %token<token> IF ELSE ELIF ENDIF
 %token<token> MACRO ENDM EXITM
-%token<token> REPEAT ENDR
+%token<token> REPT ENDR
 %token<token> FUNC ENDF RETURN
 %token<token> PROC ENDP
 %token<token> ENUM ENDE
@@ -170,12 +170,12 @@ directive	: CONST IDENT '=' expr
 					$$ = &AsignStatement{Left: $1, Value: $3, lineNumber: $2.LineNumber}
 				}
 			}
-			| REPEAT expr EOL block_statement ENDR
+			| REPT expr EOL block_statement ENDR
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else {
-					$$ = &RepeatStatement{MaxCount: $2, Block: $4, lineNumber: $1.LineNumber}
+					$$ = &ReptStatement{MaxCount: $2, Block: $4, lineNumber: $1.LineNumber}
 				}
 			}
 			| IF expr EOL block_statement elseifs ENDIF
@@ -217,7 +217,7 @@ directive	: CONST IDENT '=' expr
 			}
 			| IDENT FUNC param_list EOL block_statement ENDF
 			{
-				$$ = &FunctionStatement{Name: $1.Literal, Params: $3, Block: $5, lineNumber: $1.LineNumber}
+				$$ = &FuncStatement{Name: $1.Literal, Params: $3, Block: $5, lineNumber: $1.LineNumber}
 			}
 			| EXITM			{ $$ = &ExitmStatement{lineNumber: $1.LineNumber}}
 			| RETURN		{ $$ = &ReturnStatement{Value: nil, lineNumber: $1.LineNumber}} 

@@ -15,7 +15,7 @@ var grammerRules map[int]string = map[int]string{
 	12: "directive:  IDENT ENUM EOL enum_elements ENDE.",
 	13: "directive:  VAR IDENT '=' expr.",
 	14: "directive:  expr '=' expr.",
-	15: "directive:  REPEAT expr EOL block_statement ENDR.",
+	15: "directive:  REPT expr EOL block_statement ENDR.",
 	16: "directive:  IF expr EOL block_statement elseifs ENDIF.",
 	17: "directive:  IF expr EOL block_statement elseifs ELSE block_statement ENDIF.",
 	18: "directive:  IDENT FUNC param_list EOL block_statement ENDF.",

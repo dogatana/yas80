@@ -373,10 +373,10 @@ func TestZ80Instructions(t *testing.T) {
 }
 
 func TestLexReservedWords(t *testing.T) {
-	input := "CONST VAR EQU FN ORG " +
+	input := "CONST VAR EQU FUNCTION ORG " +
 		"IF ELSE ELIF ENDIF " +
 		"MACRO ENDM EXITM " +
-		"REPEAT ENDR " +
+		"REPT ENDR " +
 		"FUNC ENDF RETURN " +
 		"PROC ENDP " +
 		"BLOCK ENDB " +

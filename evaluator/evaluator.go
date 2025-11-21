@@ -40,8 +40,8 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		return e.evalReturnStatement(node, env)
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
-	case *parser.FunctionStatement:
-		return e.evalFunctionStatement(node, env)
+	case *parser.FuncStatement:
+		return e.evalFuncStatement(node, env)
 	case *parser.Z80Instruction:
 		e.lineNumber = node.LineNumber()
 		obj := e.evalZ80Instruction(node, env)
@@ -169,7 +169,7 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 
 		// pass1 で無効化するステートメント
 		switch stmt := stmt.(type) {
-		case *parser.ConstStatement, *parser.FunctionStatement:
+		case *parser.ConstStatement, *parser.FuncStatement:
 			prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
 		}
 	}
@@ -303,7 +303,7 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Enviro
 }
 
 // function 文
-func (e *Evaluator) evalFunctionStatement(stmt *parser.FunctionStatement, env *object.Environment) object.Object {
+func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env *object.Environment) object.Object {
 	name := strings.ToUpper((stmt.Name))
 	_, ok := env.Get(name)
 	if ok {
