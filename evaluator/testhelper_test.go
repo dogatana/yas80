@@ -130,3 +130,15 @@ func collectCode(prog *object.ProgramObject) []byte {
 	}
 	return result
 }
+
+func bytesEqual(sa, sb []byte) bool {
+	if len(sa) != len(sb) {
+		return false
+	}
+	for i, b := range sa {
+		if b != sb[i] {
+			return false
+		}
+	}
+	return true
+}

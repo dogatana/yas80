@@ -184,3 +184,39 @@ func TestClosure(t *testing.T) {
 		}
 	}
 }
+
+func TestFibFunction(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
+		{`
+		fib func x
+			if x == 0
+				return 1
+			elif x == 1
+				return 1
+			else
+				return fib(x - 1) + fib(x - 2)
+			endif
+		endf
+		fib(10)
+		`, 89},
+	}
+
+	for _, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logger.New("<eval test>")
+		prog := evaluateInput(t, tt.input, logger, env)
+
+		last := prog.Objects[len(prog.Objects)-1]
+		if tt.expected >= 0 {
+			testNumberObject(t, last, tt.expected, tt.input)
+			continue
+		}
+		if last != object.NULL {
+			fmt.Printf("input %q\n", tt.input)
+			t.Errorf("should be NULL. got %T(%#v)", last, last)
+		}
+	}
+}

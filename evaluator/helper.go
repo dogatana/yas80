@@ -78,7 +78,6 @@ func advanceLocationCounter(env *object.Environment, n int) {
 	}
 	counter := obj.(*object.NumberObject)
 	counter.Value += n
-	fmt.Println(counter.String())
 }
 
 func boolToInt(value bool) int {

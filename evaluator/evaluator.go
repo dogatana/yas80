@@ -43,7 +43,6 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.FunctionStatement:
 		return e.evalFunctionStatement(node, env)
 	case *parser.Z80Instruction:
-		printLocationCounter(env)
 		e.lineNumber = node.LineNumber()
 		obj := e.evalZ80Instruction(node, env)
 		if obj.Type() == object.CODE_OBJ {
@@ -126,7 +125,6 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.RegisterLiteral:
 		return object.Z80RgisterObjects[int(node.NodeSubType())]
 	default:
-		fmt.Printf("default %T\n", node)
 		e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
 		return object.ERROR
 	}

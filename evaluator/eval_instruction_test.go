@@ -4,8 +4,6 @@ import (
 	"testing"
 	"yas80/logger"
 	"yas80/object"
-
-	"github.com/google/go-cmp/cmp"
 )
 
 func TestZ80Instruction(t *testing.T) {
@@ -27,8 +25,9 @@ func TestZ80Instruction(t *testing.T) {
 		logger.Print()
 		result := collectCode(prog)
 
-		if !cmp.Equal(result, expected) {
-			t.Errorf("output mismatch (-want +got):\n%s", cmp.Diff(expected, result))
+		if !bytesEqual(result, expected) {
+			// t.Errorf("output mismatch (-want +got):\n%s", cmp.Diff(expected, result))
+			t.Errorf("expected %d bytes. got %d bytes", len(expected), len(result))
 		}
 	}
 }

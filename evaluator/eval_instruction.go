@@ -81,7 +81,6 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env *object.Environment) object.Object {
 	op2 := e.Eval(node.Op2, env)
 
-	fmt.Printf("LD r8 op2 %s => %#v", node.Op2.String(), op2)
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:
 		// LD r, r'
@@ -115,7 +114,6 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 	// 	e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
 	// 	return object.ERROR
 	case *object.SymbolObject:
-		fmt.Printf("op2 %#v", op2)
 		op2v, ok := op2.Value.(*object.NumberObject)
 		if ok {
 			v, ok := e.intToByte(op2v.Value)
@@ -133,7 +131,6 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 		e.logger.Error(logger.E025, node.LineNumber())
 		return object.ERROR
 	default:
-		fmt.Printf("default op2 %#v", op2)
 		if e.Pass1 {
 			// pass1 の場合はダミーとして LD A, A を返す
 			return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0x7f}}
@@ -145,8 +142,6 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 
 func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, env *object.Environment) object.Object {
 	op2 := e.Eval(node.Op2, env)
-
-	fmt.Printf("LD r16 op2 %s => %#v", node.Op2.String(), op2)
 
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:
@@ -183,7 +178,6 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 	// 	e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
 	// 	return object.ERROR
 	case *object.SymbolObject:
-		fmt.Printf("op2 %#v", op2)
 		op2v, ok := op2.Value.(*object.NumberObject)
 		if ok {
 			v, ok := e.intToWord(op2v.Value)
