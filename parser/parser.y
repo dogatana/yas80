@@ -80,24 +80,6 @@ var _ = __yyfmt__.Sprintf
 // 文法規則を指定
 program		: { }
 			| program EOL
-			| program label EOL
-			{
-				stmt := &LabelStatement{Value: $2, lineNumber: $3.LineNumber}
-				prog := yylex.(*Lexer).program
-				prog.Statements = append(prog.Statements, stmt)
-			}
-			| program label statement
-			{
-				if $3 == nil {
-					// do nothing
-				} else if $3.NodeType() == NODE_ERROR {
-					yylex.Error($3.(*ParseError).Message, $3.LineNumber())
-				} else {
-					prog := yylex.(*Lexer).program
-					stmt := &LabelStatement{Value: $2, lineNumber: $2.LineNumber()}
-					prog.Statements = append(prog.Statements, stmt, $3)
-				}
-			}
 			| program statement 
 			{
 				if $2 == nil {
@@ -111,7 +93,20 @@ program		: { }
 			}
 			;
 
-statement   : expr EOL			
+statement   : label EOL 
+			{
+				$$ = &LabelStatement{Value: $1, lineNumber: $1.LineNumber()}
+			}
+			| label instruction EOL
+			{ 
+				prog := yylex.(*Lexer).program
+				stmt := &LabelStatement{Value: $1, lineNumber: $1.LineNumber()}
+				prog.Statements = append(prog.Statements, stmt)
+				$$ = $2 
+			}
+			| instruction EOL	{ $$ = $1 }
+			| directive	 EOL	{ $$ = $1 }
+			| expr EOL			
 			{ 
 				if $1.NodeType() == NODE_ERROR {
 					$$ = $1
@@ -119,8 +114,6 @@ statement   : expr EOL
 					$$ = &ExpressionStatement{Value: $1, lineNumber: $2.LineNumber}
 				}
 			}
-			| instruction EOL	{ $$ = $1 }
-			| directive	 EOL	{ $$ = $1 }
 			| error EOL
 			{
 				yylex.Error(__yyfmt__.Sprintf("[statement error] %s", $1.String()), $2.LineNumber)
