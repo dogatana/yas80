@@ -229,6 +229,8 @@ directive	: CONST IDENT '=' expr
 				} else {
 					$$ = &ReturnStatement{Value: $2, lineNumber: $1.LineNumber}} 
 				}
+			| IDENT PROC	{ $$ = &ProcStatement{Name:$1.Literal, IsStart: true, lineNumber: $2.LineNumber }}
+			| ENDP 			{ $$ = &ProcStatement{IsStart: false, lineNumber: $1.LineNumber}}
 			;
 	
 param_list	: 			{ $$ = []string{}}
@@ -428,6 +430,7 @@ expr		: NUMBER
 			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| IDENT 		{ $$ = &Ident{Name: $1.Literal, lineNumber: $1.LineNumber} }
+			| LOCAL_IDENT 	{ $$ = &LocalIdent{Name: $1.Literal, lineNumber: $1.LineNumber} }
 			| DOT_IDENT
 			{
 				names := strings.Split(strings.ToUpper($1.Literal), ".")

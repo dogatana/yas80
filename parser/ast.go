@@ -31,6 +31,7 @@ const (
 	NODE_FUNC_STMT
 	NODE_EXITM_STMT
 	NODE_RETURN_STMT
+	NODE_PROC_STMT
 
 	// expression
 	NODE_EXPR
@@ -38,6 +39,7 @@ const (
 	NODE_NUMBER
 	NODE_STRING
 	NODE_IDENT
+	NODE_LOCAL_IDENT
 	NODE_DOT_IDENT
 	NODE_ARRAY
 	NODE_INDEXED_EXPR
@@ -137,6 +139,25 @@ func (ds *DeletedStatement) NodeSubType() NodeSubType { return 0 }
 func (ds *DeletedStatement) LineNumber() int          { return 0 }
 func (ds *DeletedStatement) String() string {
 	return fmt.Sprintf("Deleted{%s}", ds.Node.String())
+}
+
+// PROC/ENDPROC - それぞれ単一文として生成
+type ProcStatement struct {
+	Name       string
+	IsStart    bool
+	lineNumber int
+}
+
+func (ps *ProcStatement) statementNode()           {}
+func (ps *ProcStatement) NodeType() NodeType       { return NODE_PROC_STMT }
+func (ps *ProcStatement) NodeSubType() NodeSubType { return 0 }
+func (ps *ProcStatement) LineNumber() int          { return ps.lineNumber }
+func (ps *ProcStatement) String() string {
+	if ps.IsStart {
+		return ps.Name + " PROC"
+	} else {
+		return "ENDP"
+	}
 }
 
 // 式文 - Expression Statement
@@ -562,6 +583,18 @@ func (i *Ident) NodeType() NodeType       { return NODE_IDENT }
 func (i *Ident) NodeSubType() NodeSubType { return 0 }
 func (i *Ident) LineNumber() int          { return i.lineNumber }
 func (i *Ident) String() string           { return i.Name }
+
+type LocalIdent struct {
+	Name       string
+	Value      Expression
+	lineNumber int
+}
+
+func (li *LocalIdent) expressionNode()          {}
+func (li *LocalIdent) NodeType() NodeType       { return NODE_LOCAL_IDENT }
+func (li *LocalIdent) NodeSubType() NodeSubType { return 0 }
+func (li *LocalIdent) LineNumber() int          { return li.lineNumber }
+func (li *LocalIdent) String() string           { return li.Name }
 
 // ドット識別子
 type DotIdent struct {
