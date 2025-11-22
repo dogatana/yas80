@@ -574,27 +574,16 @@ func (fl *FlagLiteral) String() string {
 // 識別子
 type Ident struct {
 	Name       string
+	IdentType  int
 	Value      Expression
 	lineNumber int
 }
 
 func (i *Ident) expressionNode()          {}
 func (i *Ident) NodeType() NodeType       { return NODE_IDENT }
-func (i *Ident) NodeSubType() NodeSubType { return 0 }
+func (i *Ident) NodeSubType() NodeSubType { return NodeSubType(i.IdentType) }
 func (i *Ident) LineNumber() int          { return i.lineNumber }
 func (i *Ident) String() string           { return i.Name }
-
-type LocalIdent struct {
-	Name       string
-	Value      Expression
-	lineNumber int
-}
-
-func (li *LocalIdent) expressionNode()          {}
-func (li *LocalIdent) NodeType() NodeType       { return NODE_LOCAL_IDENT }
-func (li *LocalIdent) NodeSubType() NodeSubType { return 0 }
-func (li *LocalIdent) LineNumber() int          { return li.lineNumber }
-func (li *LocalIdent) String() string           { return li.Name }
 
 // ドット識別子
 type DotIdent struct {

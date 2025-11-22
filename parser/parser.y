@@ -16,6 +16,7 @@ var _ = __yyfmt__.Sprintf
 	node Node
 	err any
 	label *Label
+	ident *Ident
 	enum_element *EnumElement
 	enum_elements *EnumElements
 	block *BlockStatement
@@ -34,6 +35,7 @@ var _ = __yyfmt__.Sprintf
 %type<expr_list> expr_list
 %type<expr> expr indexed_expr
 %type<expr> operand
+%type<ident> ident
 
 
 %token<token> EOL
@@ -120,32 +122,32 @@ statement   : label EOL
 			}
 			;
 
-directive	: CONST IDENT '=' expr
+directive	: CONST ident '=' expr
 			{ 
 				if $4.NodeType() == NODE_ERROR {
 					$$ =  $4
 				} else {
-					$$ = &ConstStatement{Name: &Ident{Name: $2.Literal}, Value: $4, lineNumber: $2.LineNumber}
+					$$ = &ConstStatement{Name: &Ident{Name: $2.Name}, Value: $4, lineNumber: $1.LineNumber}
 				}
 			}
-			| IDENT EQU expr		
+			| ident EQU expr		
 			{ 
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					$$ = &ConstStatement{Name: &Ident{Name: $1.Literal}, Value: $3, lineNumber: $1.LineNumber}
+					$$ = &ConstStatement{Name: &Ident{Name: $1.Name}, Value: $3, lineNumber: $2.LineNumber}
 				}
 			}
-			| IDENT ENUM EOL enum_elements ENDE
+			| ident ENUM EOL enum_elements ENDE
 			{
-				$$ = &EnumStatement{Name: $1.Literal, Elements: $4, lineNumber: $1.LineNumber}
+				$$ = &EnumStatement{Name: $1.Name, Elements: $4, lineNumber: $2.LineNumber}
 			}
-			| VAR IDENT '=' expr
+			| VAR ident '=' expr
 			{
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4
 				} else {
-					$$ = &VariableStatement{Name: &Ident{Name: $2.Literal}, Value: $4, lineNumber: $2.LineNumber}
+					$$ = &VariableStatement{Name: &Ident{Name: $2.Name}, Value: $4, lineNumber: $1.LineNumber}
 				}
 			}
 			| expr '=' expr
@@ -208,14 +210,14 @@ directive	: CONST IDENT '=' expr
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
 				}
 			}
-			| IDENT FUNC param_list EOL block_statement ENDF
+			| ident FUNC param_list EOL block_statement ENDF
 			{
-				$$ = &FuncStatement{Name: $1.Literal, Params: $3, Block: $5, lineNumber: $1.LineNumber}
+				$$ = &FuncStatement{Name: $1.Name, Params: $3, Block: $5, lineNumber: $2.LineNumber}
 			}
-			| FUNCTION IDENT '(' param_list ')' expr
+			| FUNCTION ident '(' param_list ')' expr
 			{ 
 				$$ = &FuncStatement{
-					Name: $2.Literal, Params: $4, 
+					Name: $2.Name, Params: $4, 
 					Block: &BlockStatement{
 						Block: []Statement {&ReturnStatement{Value: $6, lineNumber: $1.LineNumber}}}, 
 					lineNumber: $1.LineNumber}
@@ -229,10 +231,13 @@ directive	: CONST IDENT '=' expr
 				} else {
 					$$ = &ReturnStatement{Value: $2, lineNumber: $1.LineNumber}} 
 				}
-			| IDENT PROC	{ $$ = &ProcStatement{Name:$1.Literal, IsStart: true, lineNumber: $2.LineNumber }}
+			| ident PROC	{ $$ = &ProcStatement{Name:$1.Name, IsStart: true, lineNumber: $2.LineNumber }}
 			| ENDP 			{ $$ = &ProcStatement{IsStart: false, lineNumber: $1.LineNumber}}
 			;
 	
+ident		: IDENT		 	{ $$ = &Ident{Name: $1.Literal, IdentType: IDENT, lineNumber: $1.LineNumber}}
+			| LOCAL_IDENT	{ $$ = &Ident{Name: $1.Literal, IdentType: LOCAL_IDENT, lineNumber: $1.LineNumber}}
+			;
 param_list	: 			{ $$ = []string{}}
 			| IDENT		{ $$ = []string{$1.Literal} }
 			| param_list ',' IDENT
@@ -429,8 +434,8 @@ expr		: NUMBER
 			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
-			| IDENT 		{ $$ = &Ident{Name: $1.Literal, lineNumber: $1.LineNumber} }
-			| LOCAL_IDENT 	{ $$ = &LocalIdent{Name: $1.Literal, lineNumber: $1.LineNumber} }
+			| IDENT 		{ $$ = &Ident{Name: $1.Literal, IdentType: IDENT, lineNumber: $1.LineNumber} }
+			| LOCAL_IDENT 	{ $$ = &Ident{Name: $1.Literal, IdentType: LOCAL_IDENT, lineNumber: $1.LineNumber} }
 			| DOT_IDENT
 			{
 				names := strings.Split(strings.ToUpper($1.Literal), ".")
