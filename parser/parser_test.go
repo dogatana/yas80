@@ -169,16 +169,16 @@ func TestArrayLiteral(t *testing.T) {
 	}
 }
 
-func TestLableStatement(t *testing.T) {
+func TestLabelStatement(t *testing.T) {
 	tests := []struct {
 		input     string
 		TokenType int
 		expected  string
 	}{
-		{"abc:", IDENT, "abc"},
-		{"abc :ld a, a", IDENT, "abc"},
-		{".abc ", DOT_IDENT, ".abc"},
-		{".abc: ld a,a", DOT_IDENT, ".abc"},
+		{"abc:", IDENT, "ABC"},
+		{"abc :ld a, a", IDENT, "ABC"},
+		{".abc ", DOT_IDENT, ".ABC"},
+		{".abc: ld a,a", DOT_IDENT, ".ABC"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)

@@ -236,22 +236,22 @@ directive	: CONST ident '=' expr
 			| IDENT MACRO param_list EOL block_statement ENDM
 			{
 				// macro 定義は ident でなく IDENT 
-				$$ = &MacroStatement{Name: $1.Literal, Params: $3, Body: $5, lineNumber: $1.LineNumber}
+				$$ = &MacroStatement{Name: strings.ToUpper($1.Literal), Params: $3, Body: $5, lineNumber: $1.LineNumber}
 			}
 			| IDENT '(' expr_list ')'
 			{
-				$$ = &MacroCallStatement{Name: $1.Literal, Args: $3, lineNumber: $1.LineNumber}
+				$$ = &MacroCallStatement{Name: strings.ToUpper($1.Literal), Args: $3, lineNumber: $1.LineNumber}
 			}
 			;
 	
-ident		: IDENT		 	{ $$ = &Ident{Name: $1.Literal, IdentType: IDENT, lineNumber: $1.LineNumber}}
-			| LOCAL_IDENT	{ $$ = &Ident{Name: $1.Literal, IdentType: LOCAL_IDENT, lineNumber: $1.LineNumber}}
+ident		: IDENT		 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT, lineNumber: $1.LineNumber}}
+			| LOCAL_IDENT	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT, lineNumber: $1.LineNumber}}
 			;
 param_list	: 			{ $$ = []string{}}
-			| IDENT		{ $$ = []string{$1.Literal} }
+			| IDENT		{ $$ = []string{strings.ToUpper($1.Literal)} }
 			| param_list ',' IDENT
 			{
-				$1 = append($1, $3.Literal)
+				$1 = append($1, strings.ToUpper($3.Literal))
 				$$ = $1
 			}
 			;
@@ -306,31 +306,31 @@ enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			}
 			;
 
-enum_element : IDENT 			{ $$ = &EnumElement{Name: $1.Literal, Value: nil, lineNumber: $1.LineNumber} }
+enum_element : IDENT 			{ $$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: nil, lineNumber: $1.LineNumber} }
 			| IDENT '=' expr	
 			{ 
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
 					stmt := &ExpressionStatement{Value:$3, lineNumber: $3.LineNumber()} 
-					$$ = &EnumElement{Name: $1.Literal, Value: stmt, lineNumber: $1.LineNumber }
+					$$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: stmt, lineNumber: $1.LineNumber }
 				}
 			}
 			;
 
 label		: IDENT ':'
 			{
-				$$ = &Label{nodeType: NODE_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
+				$$ = &Label{nodeType: NODE_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT ':'
 			{
 				// info のみ表示し、処理継続
 				yylex.Error(logger.I001, $1.LineNumber)
-				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT
 			{
-				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: $1.Literal, lineNumber: $1.LineNumber}
+				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
 			}
 			;
 
@@ -443,12 +443,13 @@ expr		: NUMBER
 			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), lineNumber:$1.LineNumber}}
 			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), lineNumber:$1.LineNumber}}
-			| IDENT 		{ $$ = &Ident{Name: $1.Literal, IdentType: IDENT, lineNumber: $1.LineNumber} }
-			| LOCAL_IDENT 	{ $$ = &Ident{Name: $1.Literal, IdentType: LOCAL_IDENT, lineNumber: $1.LineNumber} }
+			| IDENT 		{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT, lineNumber: $1.LineNumber} }
+			| LOCAL_IDENT 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT, lineNumber: $1.LineNumber} }
 			| DOT_IDENT
 			{
-				names := strings.Split(strings.ToUpper($1.Literal), ".")
-				$$ = &DotIdent{Name: $1.Literal, Left: names[0], Right: names[1], lineNumber: $1.LineNumber}
+				uname := strings.ToUpper($1.Literal)
+				names := strings.Split(uname, ".")
+				$$ = &DotIdent{Name: uname, Left: names[0], Right: names[1], lineNumber: $1.LineNumber}
 			}
 			| expr '(' expr_list ')'
 			{

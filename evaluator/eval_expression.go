@@ -2,7 +2,6 @@ package evaluator
 
 import (
 	"fmt"
-	"strings"
 	"yas80/logger"
 	"yas80/object"
 	"yas80/parser"
@@ -30,12 +29,11 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 
 	newEnv := object.NewEnvironment(fn.Env)
 	for i, param := range fn.Params {
-		p := strings.ToUpper(param)
 		v := e.Eval(expr.Arguments.Expressions[i], env)
 		if isError(v) || isRefNotFound(v) {
 			return v
 		}
-		newEnv.Set(p, v)
+		newEnv.Set(param, v)
 	}
 
 	// 関数本体の評価は Pass1 であっても未定義エラーを発生させる

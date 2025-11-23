@@ -12,8 +12,8 @@ func TestConstStatement(t *testing.T) {
 		Name  string
 		Value int
 	}{
-		{"abc", 123},
-		{"def", 456},
+		{"ABC", 123},
+		{"DEF", 456},
 	}
 	l := newLexerForTest(input)
 	prog := ParseForTest(t, l, input)

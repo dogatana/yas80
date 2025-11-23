@@ -59,10 +59,10 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 	case *parser.BlockStatement:
 		return e.evalBlockStatement(node, env)
 	case *parser.EnumStatement:
-		name := strings.ToUpper(node.Name)
+		name := node.Name
 		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
 		if ok {
-			e.logger.Error(fmt.Sprintf(logger.E012, node.Name), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(logger.E012, name), node.LineNumber())
 			return object.ERROR
 		}
 		v := e.evalEnumStatement(node, env)
@@ -94,7 +94,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		}
 		return e.evalPrefixExpression(node.Operator, v, node.LineNumber())
 	case *parser.Ident:
-		uname := strings.ToUpper(node.Name)
+		uname := node.Name
 		obj, ok := env.Get(uname)
 		if !ok && e.Pass1 {
 			// Pass1 の場合は未定義識別子を UndefinedObject として返す
@@ -207,21 +207,21 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.
 }
 
 func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env *object.Environment) object.Object {
-	uname := strings.ToUpper(node.Value.Name)
+	name := node.Value.Name
 	// pass2 で定義済みならエラー
-	if obj, ok := env.Get(uname); ok {
+	if obj, ok := env.Get(name); ok {
 		switch obj := obj.(type) {
 		case *object.SymbolObject:
 			if obj.SymType != object.LABEL || obj.LineNumber != node.LineNumber() || obj.SymState == object.VALUE_DETERMINED {
 				if !e.Pass1 {
-					e.logger.Error(fmt.Sprintf(logger.E032, uname), node.LineNumber())
+					e.logger.Error(fmt.Sprintf(logger.E032, name), node.LineNumber())
 				}
 				return object.ERROR
 			}
 			// fall through
 		default:
 			if !e.Pass1 {
-				e.logger.Error(fmt.Sprintf(logger.E032, uname), node.LineNumber())
+				e.logger.Error(fmt.Sprintf(logger.E032, name), node.LineNumber())
 			}
 			return object.ERROR
 		}
@@ -229,18 +229,18 @@ func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env *object.
 	// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
 	// sym := &object.SymbolObject{
 	// 	Name: uname, Node: node.Value, Value: addr, SymState: object.VALUE_DETERMINED, DependsOn: []string{}}
-	sym := object.NewLabelSymbol(uname, getLocationCounter(env), node.LineNumber())
-	env.Set(uname, sym)
+	sym := object.NewLabelSymbol(name, getLocationCounter(env), node.LineNumber())
+	env.Set(name, sym)
 	return sym
 }
 
 // const / equ 文
 func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.Environment) object.Object {
-	uname := strings.ToUpper(node.Name.Name)
+	name := node.Name.Name
 
 	// 定義済みならエラー
-	if _, ok := env.Get(uname); ok {
-		e.logger.Error(fmt.Sprintf(logger.E031, uname), node.LineNumber())
+	if _, ok := env.Get(name); ok {
+		e.logger.Error(fmt.Sprintf(logger.E031, name), node.LineNumber())
 		return object.ERROR
 	}
 	v := e.Eval(node.Value, env)
@@ -248,7 +248,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.
 	switch v := v.(type) {
 	case *object.NumberObject, *object.StringObject:
 		// 定数として確定
-		env.Set(uname, v)
+		env.Set(name, v)
 		return v
 	case *object.RefNotFoundObject:
 		// 階層でチェックが入っているはずだが念のため
@@ -257,29 +257,29 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.
 			return object.ERROR
 		}
 		// 未定義定数として登録
-		sym := object.NewNullConstSymbol(uname, node.Value, v.Names, node.LineNumber())
-		env.Set(uname, sym)
+		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.LineNumber())
+		env.Set(name, sym)
 		return sym
 	case *object.SymbolObject:
 		// Symbo Object の場合は値を取得し新たに登録する
 		depends := make([]string, len(v.DependsOn)) // 他のシンボルの情報なので copy
 		copy(depends, v.DependsOn)
-		sym := object.NewNullConstSymbol(uname, node.Value, depends, node.LineNumber())
-		env.Set(uname, sym)
+		sym := object.NewNullConstSymbol(name, node.Value, depends, node.LineNumber())
+		env.Set(name, sym)
 		return sym
 
 	case *object.SymbolExprObject:
 		// Symbo Expression Object の場合は値を取得し新たに登録する
-		sym := object.NewNullConstSymbol(uname, node.Value, v.Names, node.LineNumber())
-		env.Set(uname, sym)
+		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.LineNumber())
+		env.Set(name, sym)
 		return sym
 	case *object.ErrorObject:
 		return object.ERROR
 	default:
 		if e.Debug > 0 {
-			fmt.Printf("const %s = %#v\n", uname, v)
+			fmt.Printf("const %s = %#v\n", name, v)
 		}
-		env.Set(uname, v)
+		env.Set(name, v)
 		return v
 	}
 }
@@ -304,14 +304,14 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Enviro
 
 // function 文
 func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env *object.Environment) object.Object {
-	name := strings.ToUpper((stmt.Name))
+	name := stmt.Name
 	_, ok := env.Get(name)
 	if ok {
-		e.logger.Error(fmt.Sprintf(logger.E018, stmt.Name), stmt.LineNumber())
+		e.logger.Error(fmt.Sprintf(logger.E018, name), stmt.LineNumber())
 		return object.NULL
 	}
 	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env}
-	env.Set(strings.ToUpper(stmt.Name), obj)
+	env.Set(name, obj)
 	return obj
 }
 
@@ -332,7 +332,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 	enum := map[string]object.Object{}
 	value := 0
 	for _, ele := range node.Elements.Elements {
-		eleName := strings.ToUpper(ele.Name)
+		eleName := ele.Name
 		if _, ok := enum[eleName]; ok {
 			e.logger.Error(fmt.Sprintf(logger.E013, node.Name, ele.Name), node.LineNumber())
 			return object.ERROR
@@ -357,5 +357,5 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 			return object.ERROR
 		}
 	}
-	return &object.EnumObject{Name: strings.ToUpper(node.Name), Value: enum, Keys: keys}
+	return &object.EnumObject{Name: node.Name, Value: enum, Keys: keys}
 }

@@ -102,8 +102,8 @@ func TestArrayVariable(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"var a0 = []", "VAR a0 = []"},
-		{"var array = [1,2,3]", "VAR array = [1, 2, 3]"},
+		{"var a0 = []", "VAR A0 = []"},
+		{"var array = [1,2,3]", "VAR ARRAY = [1, 2, 3]"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
@@ -127,8 +127,8 @@ func TestArrayElement(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"a0 [ 123 ]", "a0[123]"},
-		{"a1 [ 1 + 2 * 3 ]", "a1[7]"},
+		{"a0 [ 123 ]", "A0[123]"},
+		{"a1 [ 1 + 2 * 3 ]", "A1[7]"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
