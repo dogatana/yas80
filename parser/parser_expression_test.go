@@ -45,11 +45,8 @@ func TestExpression(t *testing.T) {
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			t.Errorf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
@@ -72,21 +69,17 @@ func TestCallFunction(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"aFunc()", "aFunc()"},
-		{"  aFunc(   )  ", "aFunc()"},
-		{"aFunc(1)", "aFunc(1)"},
-		{"aFunc(1,2,3)", "aFunc(1, 2, 3)"},
-		{"aFunc(1,2+3,4*5)", "aFunc(1, 5, 20)"},
+		{"aFunc()", "AFUNC()"},
+		{"  aFunc(   )  ", "AFUNC()"},
+		{"aFunc(1)", "AFUNC(1)"},
+		{"aFunc(1,2,3)", "AFUNC(1, 2, 3)"},
+		{"aFunc(1,2+3,4*5)", "AFUNC(1, 5, 20)"},
 	}
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			l.logger.Print()
-			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
@@ -114,12 +107,8 @@ func TestArrayVariable(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			l.logger.Print()
-			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
@@ -143,12 +132,8 @@ func TestArrayElement(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			l.logger.Print()
-			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
@@ -173,12 +158,8 @@ func TestStringExpression(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			l.logger.Print()
-			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}

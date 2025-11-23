@@ -74,12 +74,7 @@ func TestNumberLiteral(t *testing.T) {
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			fmt.Printf("input %q\n", tt.input)
-			t.Fatalf("%d errors and %d warnigs", ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
 		if len(prog.Statements) == 0 {
 			fmt.Printf("input %q\n", tt.input)
 			t.Fatalf("%d statements", len(prog.Statements))
@@ -116,12 +111,7 @@ func TestStringLiteral(t *testing.T) {
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			fmt.Printf("input %q\n", tt.input)
-			t.Fatalf("%d errors and %d warnigs", ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
 		if len(prog.Statements) == 0 {
 			fmt.Println("parsing", tt.input)
 			t.Fatalf("%d statements", len(prog.Statements))
@@ -156,12 +146,7 @@ func TestArrayLiteral(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			fmt.Printf("input %q\n", tt.input)
-			t.Fatalf("%d errors and %d warnigs", ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
 		stmt := testExpressionStatement(t, tt.input, prog.Statements[0])
 
 		array, ok := stmt.Value.(*ArrayLiteral)
@@ -197,12 +182,7 @@ func TestLableStatement(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			fmt.Printf("input %q\n", tt.input)
-			t.Fatalf("%d errors and %d warnigs", ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
 		if len(prog.Statements) == 0 {
 			fmt.Printf("input %q\n", tt.input)
 			t.Fatal("statements empty")
@@ -230,12 +210,8 @@ func TestDotIdent(t *testing.T) {
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			fmt.Printf("input %q\n", tt.input)
-			t.Fatalf("%d errors and %d warnigs", ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) == 0 {
 			fmt.Printf("input %q\n", tt.input)
 			t.Fatal("statements empty")

@@ -17,6 +17,22 @@ func newLexerForTest(input string) *Lexer {
 	return NewLexer(bufio.NewReader(strings.NewReader(input)), file, es)
 }
 
+func ParseForTest(t *testing.T, lexer *Lexer, input string) *Program {
+	prog := Parse(lexer)
+	ec, wc, _ := lexer.logger.Count()
+	if ec > 0 || wc > 0 {
+		fmt.Printf("input %q\n", input)
+		t.Fatalf("%d errors and %d warnigs", ec, wc)
+	}
+	prog = PreProrocess(prog)
+	ec, wc, _ = lexer.logger.Count()
+	if ec > 0 || wc > 0 {
+		fmt.Printf("input %q\n", input)
+		t.Fatalf("%d errors and %d warnigs", ec, wc)
+	}
+	return prog
+}
+
 func splitTrim(input string) string {
 	strs := strings.Split(strings.ReplaceAll(input, "\\", "\n"), "\n")
 	ret := []string{}

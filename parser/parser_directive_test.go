@@ -16,12 +16,8 @@ func TestConstStatement(t *testing.T) {
 		{"def", 456},
 	}
 	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
+	prog := ParseForTest(t, l, input)
 
-	if ec > 0 || wc > 0 {
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
-	}
 	if len(prog.Statements) != 2 {
 		t.Fatalf("expect 2 statements. got %d", len(prog.Statements))
 	}
@@ -47,12 +43,8 @@ def = 1
  xyz  
   ende`
 	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		l.logger.Print()
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
-	}
+	prog := ParseForTest(t, l, input)
+
 	if len(prog.Statements) != 1 {
 		t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
 	}
@@ -84,12 +76,8 @@ func TestReptStatement(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			l.logger.Print()
-			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
 		}
@@ -161,13 +149,8 @@ func TestIfStatement(t *testing.T) {
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			fmt.Println("test:", tt.input)
-			l.logger.Print()
-			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			fmt.Println("test:", tt.input)
 			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
@@ -210,12 +193,8 @@ func TestFuncStatement(t *testing.T) {
 	ENDF`
 
 	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		l.logger.Print()
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
-	}
+	prog := ParseForTest(t, l, input)
+
 	if len(prog.Statements) != 1 {
 		t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
 	}
@@ -248,12 +227,8 @@ func TestVarStatement(t *testing.T) {
 	for _, tt := range tests {
 
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			l.logger.Print()
-			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
 		}
@@ -287,12 +262,8 @@ func TestAsignStatement(t *testing.T) {
 	for _, tt := range tests {
 
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			l.logger.Print()
-			t.Fatalf("parsing %s returns %d errors and %d warnigs", tt.input, ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
 		}
@@ -327,13 +298,8 @@ func TestExitmStatement(t *testing.T) {
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			fmt.Printf("input %q\n", tt.input)
-			l.logger.Print()
-			t.Fatalf("%d errors and %d warnigs", ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			fmt.Printf("input %q\n", tt.input)
 			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
@@ -365,13 +331,8 @@ func TestReturnStatement(t *testing.T) {
 
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := Parse(l)
-		ec, wc, _ := l.logger.Count()
-		if ec > 0 || wc > 0 {
-			fmt.Printf("input %q\n", tt.input)
-			l.logger.Print()
-			t.Fatalf("%d errors and %d warnigs", ec, wc)
-		}
+		prog := ParseForTest(t, l, tt.input)
+
 		if len(prog.Statements) != 1 {
 			fmt.Printf("input %q\n", tt.input)
 			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))

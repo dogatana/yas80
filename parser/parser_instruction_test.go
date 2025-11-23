@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -42,17 +41,8 @@ OUTD
 OTDR
 `
 	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		for _, e := range l.logger.Errors {
-			fmt.Println(e.Error())
-		}
-		for _, e := range l.logger.Warnings {
-			fmt.Println(e.Error())
-		}
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
-	}
+	prog := ParseForTest(t, l, input)
+
 	expected := strings.Split(strings.Trim(input, " \n"), "\n")
 	for i, node := range prog.Statements {
 		inst, ok := node.(*Z80Instruction)
@@ -91,17 +81,8 @@ RET
 RET 18
 `
 	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		for _, e := range l.logger.Errors {
-			fmt.Println(e.Error())
-		}
-		for _, e := range l.logger.Warnings {
-			fmt.Println(e.Error())
-		}
-		t.Fatalf("Parser returns %d errors and %d warnigs", ec, wc)
-	}
+	prog := ParseForTest(t, l, input)
+
 	expected := []string{}
 	for _, line := range strings.Split(strings.Trim(input, " \n"), "\n") {
 		words := strings.Split(line, " ")
@@ -143,12 +124,8 @@ OUT (2), A
 OUT (C), B
 `
 	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		l.logger.Print()
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
-	}
+	prog := ParseForTest(t, l, input)
+
 	expected := []string{}
 	for _, line := range strings.Split(strings.Trim(input, " \n"), "\n") {
 		words := strings.Split(line, " ")
@@ -176,11 +153,8 @@ LD A, (IX + 1)
 LD (IX + 1), A
 `
 	l := newLexerForTest(input)
-	prog := Parse(l)
-	ec, wc, _ := l.logger.Count()
-	if ec > 0 || wc > 0 {
-		t.Fatalf("parsing %s returns %d errors and %d warnigs", input, ec, wc)
-	}
+	prog := ParseForTest(t, l, input)
+
 	expected := strings.Trim(input, " \n\t")
 	text := strings.ReplaceAll(prog.String(), "\t", " ")
 	if text != expected {
