@@ -26,7 +26,7 @@ var grammerRules map[int]string = map[int]string{
 	23: "directive:  ident PROC.",
 	24: "directive:  ENDP.",
 	25: "directive:  IDENT MACRO param_list EOL block_statement ENDM.",
-	26: "directive:  IDENT expr_list.",
+	26: "directive:  IDENT '(' expr_list ')'.",
 	27: "ident:  IDENT.",
 	28: "ident:  LOCAL_IDENT.",
 	29: "param_list: .",

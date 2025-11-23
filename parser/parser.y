@@ -236,11 +236,11 @@ directive	: CONST ident '=' expr
 			| IDENT MACRO param_list EOL block_statement ENDM
 			{
 				// macro 定義は ident でなく IDENT 
-				$$ = &MacroStatement{Name: $1.Literal, Params: $3, Block: $5, lineNumber: $1.LineNumber}
+				$$ = &MacroStatement{Name: $1.Literal, Params: $3, Body: $5, lineNumber: $1.LineNumber}
 			}
-			| IDENT expr_list %prec UNARY
+			| IDENT '(' expr_list ')'
 			{
-				$$ = &MacroCallStatement{Name: $1.Literal, Args: $2, lineNumber: $1.LineNumber}
+				$$ = &MacroCallStatement{Name: $1.Literal, Args: $3, lineNumber: $1.LineNumber}
 			}
 			;
 	

@@ -92,6 +92,7 @@ func parseTextForTest(t *testing.T, input string) *parser.Program {
 	es := logger.New(file)
 	l := parser.NewLexer(bufio.NewReader(strings.NewReader(input)), file, es)
 	prog := parser.Parse(l)
+	prog = parser.PreProrocess((prog))
 	ec, wc, _ := l.Logger().Count()
 	if ec > 0 || wc > 0 {
 		fmt.Printf("input %q\n", input)
