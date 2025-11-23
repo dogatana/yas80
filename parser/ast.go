@@ -587,6 +587,7 @@ func (i *Ident) String() string           { return i.Name }
 
 // ドット識別子
 type DotIdent struct {
+	Name       string
 	Left       string
 	Right      string
 	Value      Expression

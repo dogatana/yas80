@@ -439,7 +439,7 @@ expr		: NUMBER
 			| DOT_IDENT
 			{
 				names := strings.Split(strings.ToUpper($1.Literal), ".")
-				$$ = &DotIdent{Left: names[0], Right: names[1], lineNumber: $1.LineNumber}
+				$$ = &DotIdent{Name: $1.Literal, Left: names[0], Right: names[1], lineNumber: $1.LineNumber}
 			}
 			| expr '(' expr_list ')'
 			{
