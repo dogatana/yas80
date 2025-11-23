@@ -32,6 +32,8 @@ const (
 	NODE_EXITM_STMT
 	NODE_RETURN_STMT
 	NODE_PROC_STMT
+	NODE_MACRO_STMT
+	NODE_MACRO_CALL_STMT
 
 	// expression
 	NODE_EXPR
@@ -306,6 +308,43 @@ func (fs *FuncStatement) String() string {
 	out.WriteString("ENDF")
 
 	return out.String()
+}
+
+// macro 文
+type MacroStatement struct {
+	Name       string
+	Params     []string
+	Body       *BlockStatement
+	lineNumber int
+}
+
+func (ms *MacroStatement) statementNode()           {}
+func (ms *MacroStatement) NodeType() NodeType       { return NODE_MACRO_STMT }
+func (ms *MacroStatement) NodeSubType() NodeSubType { return 0 }
+func (ms *MacroStatement) LineNumber() int          { return ms.lineNumber }
+func (ms *MacroStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(ms.Name + " MACRO " + strings.Join(ms.Params, ", ") + "\n")
+	out.WriteString(ms.Body.String() + "\n")
+	out.WriteString("ENDM")
+
+	return out.String()
+}
+
+// macro 文
+type MacroCallStatement struct {
+	Name       string
+	Args       *ExpressionList
+	lineNumber int
+}
+
+func (mc *MacroCallStatement) statementNode()           {}
+func (mc *MacroCallStatement) NodeType() NodeType       { return NODE_MACRO_CALL_STMT }
+func (mc *MacroCallStatement) NodeSubType() NodeSubType { return 0 }
+func (mc *MacroCallStatement) LineNumber() int          { return mc.lineNumber }
+func (mc *MacroCallStatement) String() string {
+	return fmt.Sprintf("MACRO(%s) with %d arguments", mc.Name, len(mc.Args.Expressions))
 }
 
 // block statement
