@@ -344,7 +344,11 @@ func (mc *MacroCallStatement) NodeType() NodeType       { return NODE_MACRO_CALL
 func (mc *MacroCallStatement) NodeSubType() NodeSubType { return 0 }
 func (mc *MacroCallStatement) LineNumber() int          { return mc.lineNumber }
 func (mc *MacroCallStatement) String() string {
-	return fmt.Sprintf("MACRO(%s) with %d arguments", mc.Name, len(mc.Args.Expressions))
+	args := []string{}
+	for _, arg := range mc.Args.Expressions {
+		args = append(args, arg.String())
+	}
+	return fmt.Sprintf("MACRO %s CALL with %s", mc.Name, strings.Join(args, ","))
 }
 
 // block statement
