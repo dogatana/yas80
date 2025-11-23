@@ -57,6 +57,10 @@ func main() {
 	// 構文解析開始
 	prog := parse(logger, input, file)
 
+	// プリプロセス
+	fmt.Println("\n# preprocess")
+	prog = parser.PreProrocess(prog)
+
 	// AST 表示
 	fmt.Println("# ast")
 	if len(prog.Statements) == 0 {

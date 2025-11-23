@@ -103,6 +103,15 @@ func parseTextForTest(t *testing.T, input string) *parser.Program {
 		fmt.Printf("input %q\n", input)
 		t.Fatal("Parse() returns 0 statements")
 	}
+
+	prog = parser.PreProrocess(prog)
+	ec, wc, _ = l.Logger().Count()
+	if ec > 0 || wc > 0 {
+		fmt.Printf("input %q\n", input)
+		l.Logger().Print()
+		t.Fatalf("PreProcess() %d errors and %d warnigs", ec, wc)
+	}
+
 	return prog
 }
 
