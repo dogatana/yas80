@@ -23,7 +23,9 @@ func ParseForTest(t *testing.T, lexer *Lexer, input string) *Program {
 	ec, wc, _ := lexer.logger.Count()
 	if ec > 0 || wc > 0 {
 		fmt.Printf("input %q\n", input)
+		lexer.logger.Print()
 		t.Fatalf("%d errors and %d warnigs", ec, wc)
+
 	}
 	return prog
 }
