@@ -488,12 +488,12 @@ func (zi *Z80Instruction) String() string {
 	case zi.Op1 == nil && zi.Op2 == nil:
 		break
 	case zi.Op1 != nil && zi.Op2 != nil:
-		out.WriteString("\t" + opString(zi.Op1))
+		out.WriteString(" " + opString(zi.Op1))
 		out.WriteString(", " + opString(zi.Op2))
 	case zi.Op1 != nil:
-		out.WriteString("\t" + opString(zi.Op1))
+		out.WriteString(" " + opString(zi.Op1))
 	default:
-		out.WriteString("\t" + opString(zi.Op2))
+		out.WriteString(" " + opString(zi.Op2))
 	}
 
 	return out.String()
