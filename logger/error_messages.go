@@ -38,6 +38,10 @@ const (
 	E031 = "const/equ '%s' を再定義不可" // label or const で定義済み
 	E032 = "label '%s' を再定義不可"     // label or const で定義済み
 
+	EMACRO_DUP  = "MACRO %s は定義済み"
+	EMACRO_NEST = "MACRO 定義はネスト不可"
+	EMACRO_ARGS = "MACRO %s の仮引数と引数の個数不一致"
+
 	E900 = "E900 内部エラー %s"
 	E999 = "[E]'%T' の評価は未実装"
 

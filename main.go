@@ -59,7 +59,8 @@ func main() {
 
 	// プリプロセス
 	fmt.Println("\n# preprocess")
-	prog = parser.PreProrocess(prog)
+	prog = parser.PreProrocess(logger, prog)
+	logger.Print()
 
 	// AST 表示
 	fmt.Println("# ast")
