@@ -188,7 +188,7 @@ func TestFuncStatement(t *testing.T) {
 	IF (x > 0)
 	X
 	ELSE
-	(-x)
+	(-X)
 	ENDIF
 	ENDF`
 
