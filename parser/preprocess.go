@@ -80,24 +80,24 @@ func preprocessStatements(log *logger.Logger, stmts []Node) []Node {
 			// } else {
 			// 	result = append(result, stmts...)
 			// }
-		case *IfStatement:
-			conseq := preprocessStatements(log, stmt.Consequence.(*BlockStatement).Block)
-			var alt []Node
+		// case *IfStatement:
+		// 	conseq := preprocessStatements(log, stmt.Consequence.(*BlockStatement).Block)
+		// 	var alt []Node
 
-			switch altStmt := stmt.Alternative.(type) {
-			case *BlockStatement:
-				alt = preprocessStatements(log, stmt.Alternative.(*BlockStatement).Block)
-			case *IfStatement:
-				alt = preprocessStatements(log, []Node{altStmt})
-			default:
-				panic(fmt.Sprintf("cannot process %T", stmt))
-			}
-			stmt = &IfStatement{
-				Condition:   stmt.Condition,
-				Consequence: &BlockStatement{Block: conseq},
-				Alternative: &BlockStatement{Block: alt},
-				lineNumber:  stmt.lineNumber}
-			result = append(result, stmt)
+		// 	switch altStmt := stmt.Alternative.(type) {
+		// 	case *BlockStatement:
+		// 		alt = preprocessStatements(log, stmt.Alternative.(*BlockStatement).Block)
+		// 	case *IfStatement:
+		// 		alt = preprocessStatements(log, []Node{altStmt})
+		// 	default:
+		// 		panic(fmt.Sprintf("cannot process %T", stmt))
+		// 	}
+		// 	stmt = &IfStatement{
+		// 		Condition:   stmt.Condition,
+		// 		Consequence: &BlockStatement{Block: conseq},
+		// 		Alternative: &BlockStatement{Block: alt},
+		// 		lineNumber:  stmt.lineNumber}
+		// 	result = append(result, stmt)
 
 		default:
 			result = append(result, stmt)
