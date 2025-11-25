@@ -31,6 +31,14 @@ func New(filename string, content []byte) *FileBlock {
 	return &FileBlock{Filename: filename, Content: content}
 }
 
+func NewFromReader(filename string, reader io.Reader) (*FileBlock, error) {
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+	return &FileBlock{Filename: filename, Content: data}, nil
+
+}
 func NewFromFile(filename string) (*FileBlock, error) {
 	var data []byte
 	var err error

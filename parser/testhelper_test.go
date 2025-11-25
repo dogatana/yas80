@@ -1,20 +1,21 @@
 package parser
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+	"yas80/fileblock"
 	"yas80/logger"
 )
 
 func newLexerForTest(input string) *Lexer {
 	file := "<string>"
 	es := logger.New(file)
-	return NewLexer(bufio.NewReader(strings.NewReader(input)), file, es)
+	fb := fileblock.New(file, []byte(input))
+	return NewLexer(file, fb, es)
 }
 
 func ParseForTest(t *testing.T, lexer *Lexer, input string) *Program {

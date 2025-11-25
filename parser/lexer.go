@@ -2,8 +2,10 @@ package parser
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"strings"
+	"yas80/fileblock"
 	"yas80/logger"
 )
 
@@ -65,10 +67,11 @@ func (l *Lexer) Error(msg string, args ...any) {
 	}
 }
 
-func NewLexer(r *bufio.Reader, filename string, logger *logger.Logger) *Lexer {
-	l := &Lexer{scanner: bufio.NewScanner(r), program: &Program{}}
+func NewLexer(filename string, fb *fileblock.FileBlock, logger *logger.Logger) *Lexer {
+	sb := bytes.NewReader(fb.Content)
+	l := &Lexer{scanner: bufio.NewScanner(sb), program: &Program{}}
 	l.nextChar()
-	l.filename = filename
+	l.filename = fb.Filename
 	l.logger = logger
 	return l
 }

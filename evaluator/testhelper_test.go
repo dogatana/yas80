@@ -1,14 +1,13 @@
 package evaluator
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
 	"testing"
+	"yas80/fileblock"
 	"yas80/logger"
 	"yas80/object"
 	"yas80/parser"
@@ -90,7 +89,8 @@ func testNumberObject(t *testing.T, obj object.Object, expected int, input strin
 func parseTextForTest(t *testing.T, input string) *parser.Program {
 	file := "<string>"
 	es := logger.New(file)
-	l := parser.NewLexer(bufio.NewReader(strings.NewReader(input)), file, es)
+	fb := fileblock.New(file, []byte(input))
+	l := parser.NewLexer(file, fb, es)
 	prog := parser.Parse(l)
 	ec, wc, _ := l.Logger().Count()
 	if ec > 0 || wc > 0 {

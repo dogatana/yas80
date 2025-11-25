@@ -1,13 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
 	"strconv"
 	"strings"
 	"yas80/evaluator"
+	"yas80/fileblock"
 	"yas80/logger"
 	"yas80/object"
 	"yas80/parser"
@@ -26,7 +26,13 @@ func getDebugEnv(name string) int {
 }
 
 func parse(logger *logger.Logger, input io.Reader, filename string) *parser.Program {
-	l := parser.NewLexer(bufio.NewReader(input), filename, logger)
+	// l := parser.NewLexer(bufio.NewReader(input), filename, logger)
+	fb, err := fileblock.NewFromReader(filename, input)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	l := parser.NewLexer(filename, fb, logger)
 	return parser.Parse(l)
 }
 
