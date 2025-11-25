@@ -63,7 +63,7 @@ func NewFromFile(filename string) (*FileBlock, error) {
 		data = data[3:]
 	}
 	// CR/LF を LF へ
-	data = bytes.ReplaceAll([]byte{13, 10}, []byte{10})
+	data = bytes.ReplaceAll(data, []byte{13, 10}, []byte{10})
 	return &FileBlock{Filename: filename, Content: data}, nil
 }
 
