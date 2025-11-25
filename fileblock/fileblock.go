@@ -52,15 +52,18 @@ func NewFromFile(filename string) (*FileBlock, error) {
 	}
 
 	if !utf8.Valid(data) {
+		// cp932 と仮定し utf8 へ変換
 		if data, err = shiftJisToUtf8(data); err != nil {
 			return nil, err
-			// return nil, fmt.Errorf("%s: unknown encoding", filename)
 		}
 	}
 
+	// BOM があれば削除
 	if hasBOM(data) {
 		data = data[3:]
 	}
+	// CR/LF を LF へ
+	data = bytes.ReplaceAll([]byte{13, 10}, []byte{10})
 	return &FileBlock{Filename: filename, Content: data}, nil
 }
 

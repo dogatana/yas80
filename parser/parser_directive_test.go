@@ -177,18 +177,18 @@ func TestIfStatement(t *testing.T) {
 func TestFuncStatement(t *testing.T) {
 	input := `abs func x
 	if x > 0
-	  x
+	  return x
 	else
-	  -x
+	  return -x
 	endif
 	endf
 	`
 	expected := `
-	abs FUNC x
+	ABS FUNC X
 	IF (x > 0)
-	X
+	RETURN X
 	ELSE
-	(-X)
+	RETURN (-X)
 	ENDIF
 	ENDF`
 

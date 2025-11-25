@@ -219,7 +219,7 @@ directive	: CONST ident '=' expr
 				$$ = &FuncStatement{
 					Name: $2.Name, Params: $4, 
 					Block: &BlockStatement{
-						Block: []Statement {&ReturnStatement{Value: $6, lineNumber: $1.LineNumber}}}, 
+						Block: []Node {&ReturnStatement{Value: $6, lineNumber: $1.LineNumber}}}, 
 					lineNumber: $1.LineNumber}
 			}
 			| EXITM			{ $$ = &ExitmStatement{lineNumber: $1.LineNumber}}
@@ -276,7 +276,7 @@ elseifs		: { $$ = nil }
 
 	
 // statement エラー検出時は yylex.Error() を呼んで伝播を止める
-block_statement	: 	 				{ $$ = &BlockStatement{Block: []Statement{}} }
+block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
 			| block_statement EOL 	{ $$ = $1}
 			| block_statement statement 
 			{ 

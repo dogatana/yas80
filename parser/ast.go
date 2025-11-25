@@ -353,7 +353,7 @@ func (mc *MacroCallStatement) String() string {
 
 // block statement
 type BlockStatement struct {
-	Block []Statement
+	Block []Node
 }
 
 func (bs *BlockStatement) statementNode()           {}
