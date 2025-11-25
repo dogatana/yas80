@@ -17,10 +17,10 @@ func TestMacroExpand(t *testing.T) {
 		ld left, right
 		endm
 		
-		ld_macro(a, 1)
-		ld_macro(a, 1 + 3)
-		ld_macro(a, b)
-		ld_macro(hl, $100)`,
+		ld_macro a, 1
+		ld_macro a, 1 + 3
+		ld_macro a, b
+		ld_macro hl, $100`,
 			`LD A, 1
 LD A, 4
 LD A, B

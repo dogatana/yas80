@@ -32,10 +32,11 @@ func PreProrocess(log *logger.Logger, prog *Program) *Program {
 			if !ok {
 				// 関数 call も macro call に構文解析される
 				// マクロでなければ、関数コール式文に変換
-				expStmt := &ExpressionStatement{
-					Value: &CallExpression{
-						Function: &Ident{Name: name, IdentType: IDENT}, Arguments: stmt.Args, lineNumber: stmt.LineNumber()},
-					lineNumber: stmt.LineNumber()}
+				// expStmt := &ExpressionStatement{
+				// 	Value: &CallExpression{
+				// 		Function: &Ident{Name: name, IdentType: IDENT}, Arguments: stmt.Args, lineNumber: stmt.LineNumber()},
+				// 	lineNumber: stmt.LineNumber()}
+				expStmt := replaceMacroCall(stmt)
 				result = append(result, expStmt)
 				continue
 			}
@@ -55,6 +56,45 @@ func PreProrocess(log *logger.Logger, prog *Program) *Program {
 		}
 	}
 	return &Program{Statements: result}
+}
+
+func replaceMacroCall(stmt *MacroCallStatement) Statement {
+	var expr Expression
+	ln := stmt.lineNumber
+	switch len(stmt.Args.Expressions) {
+	case 0:
+		// 引数が 0 なら Ident の式文とする
+		expr = &Ident{Name: stmt.Name, lineNumber: ln}
+	case 1:
+		if len(stmt.Args.Expressions) == 1 {
+			array, ok := stmt.Args.Expressions[0].(*ArrayLiteral)
+			if ok && len(array.Elements.Expressions) == 1 {
+				expr = &IndexedExpression{
+					Left:       &Ident{Name: stmt.Name, lineNumber: ln},
+					Index:      array.Elements.Expressions[0],
+					lineNumber: ln}
+				break
+			}
+		}
+		fallthrough
+	default:
+		expr = &CallExpression{
+			Function:   &Ident{Name: stmt.Name, IdentType: IDENT},
+			Arguments:  stmt.Args,
+			lineNumber: ln}
+	}
+	// if len(stmt.Args.Expressions) == 0 {
+	// 	// 引数が 0 なら Ident の式文とする
+	// 	expr = &Ident{Name: stmt.Name, lineNumber: ln}
+	// 	//return &ExpressionStatement{Value: &Ident{Name: stmt.Name, lineNumber: ln}, lineNumber: ln}
+	// } else {
+	// 	expr = &CallExpression{
+	// 		Function:   &Ident{Name: stmt.Name, IdentType: IDENT},
+	// 		Arguments:  stmt.Args,
+	// 		lineNumber: ln}
+	// }
+
+	return &ExpressionStatement{Value: expr, lineNumber: ln}
 }
 
 // トップレベルからマクロ定義を抽出する
@@ -94,9 +134,7 @@ func applyMacro(log *logger.Logger, call *MacroCallStatement, def *MacroStatemen
 			log.Error(fmt.Sprintf(logger.EMACRO_NEST), stmt.LineNumber())
 			continue
 		}
-		fmt.Println("before", stmt.String())
 		node, _ := modifyNode(stmt, paramTable)
-		fmt.Println("after", node.String())
 		result = append(result, node.(Statement))
 	}
 	return result, nil

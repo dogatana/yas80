@@ -238,9 +238,9 @@ directive	: CONST ident '=' expr
 				// macro 定義は ident でなく IDENT 
 				$$ = &MacroStatement{Name: strings.ToUpper($1.Literal), Params: $3, Body: $5, lineNumber: $1.LineNumber}
 			}
-			| IDENT '(' expr_list ')'
+			| IDENT expr_list 
 			{
-				$$ = &MacroCallStatement{Name: strings.ToUpper($1.Literal), Args: $3, lineNumber: $1.LineNumber}
+				$$ = &MacroCallStatement{Name: strings.ToUpper($1.Literal), Args: $2, lineNumber: $1.LineNumber}
 			}
 			;
 	
@@ -451,13 +451,12 @@ expr		: NUMBER
 				names := strings.Split(uname, ".")
 				$$ = &DotIdent{Name: uname, Left: names[0], Right: names[1], lineNumber: $1.LineNumber}
 			}
-			| expr '(' expr_list ')'
+			| IDENT '(' expr_list ')'
 			{
-				if $1.NodeType() == NODE_ERROR {
-					$$ = $1
-				} else {
-					$$ = &CallExpression{Function: $1, Arguments: $3, lineNumber: $1.LineNumber()}
-				}
+				$$ = &CallExpression{
+					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT, lineNumber: $1.LineNumber}, 
+					Arguments: $3, 
+					lineNumber: $1.LineNumber}
 			}
 			| '[' expr_list ']'
 			{
