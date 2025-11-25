@@ -1,6 +1,7 @@
 package fileblock
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -13,7 +14,7 @@ func TestReadBlock(t *testing.T) {
 		"utf8-bom.txt",
 		"sjis.txt",
 	}
-	expected := readTestDataFile(t, "utf8.txt")
+	expected := bytes.ReplaceAll(readTestDataFile(t, "utf8.txt"), []byte{13, 10}, []byte{10})
 
 	for _, filename := range tests {
 		path := testDataFilePath(t, filename)
