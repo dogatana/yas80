@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 	"yas80/logger"
 )
 
@@ -37,6 +38,11 @@ func extractMacroDef(log *logger.Logger, prog *Program) {
 		// 登録後はNode削除
 		prog.Statements[i] = &DeletedStatement{Node: stmt}
 	}
+	names := []string{}
+	for name := range macroTable {
+		names = append(names, name)
+	}
+	fmt.Println("regsitered macro: ", strings.Join(names, ","))
 }
 
 // Program.Statements, BlockStatement.Block の書き換え
@@ -53,7 +59,7 @@ func preprocessStatements(log *logger.Logger, stmts []Node) []Node {
 			log.Error(fmt.Sprintf(logger.EMACRO_NEST), stmt.lineNumber)
 		case *MacroCallStatement:
 			name := stmt.Name
-			macroDef, ok := macroTable[name]
+			_, ok := macroTable[name]
 			if !ok {
 				// name マクロが登録されていない
 				// 関数 call も macro call に構文解析される
@@ -61,18 +67,19 @@ func preprocessStatements(log *logger.Logger, stmts []Node) []Node {
 				result = append(result, expStmt)
 				continue
 			}
-			if len(stmt.Args.Expressions) != len(macroDef.Params) {
-				// 仮引数、引数の数のチェック
-				log.Error(fmt.Sprintf(logger.EMACRO_ARGS, name), stmt.lineNumber)
-				return nil
-			}
-			// マクロ展開
-			stmts, err := expandMacroBody(log, stmt, macroDef)
-			if err != nil {
-				log.Error(err.Error(), stmt.lineNumber)
-			} else {
-				result = append(result, stmts...)
-			}
+			result = append(result, stmt)
+			// if len(stmt.Args.Expressions) != len(macroDef.Params) {
+			// 	// 仮引数、引数の数のチェック
+			// 	log.Error(fmt.Sprintf(logger.EMACRO_ARGS, name), stmt.lineNumber)
+			// 	return nil
+			// }
+			// // マクロ展開
+			// stmts, err := expandMacroBody(log, stmt, macroDef)
+			// if err != nil {
+			// 	log.Error(err.Error(), stmt.lineNumber)
+			// } else {
+			// 	result = append(result, stmts...)
+			// }
 		case *IfStatement:
 			conseq := preprocessStatements(log, stmt.Consequence.(*BlockStatement).Block)
 			var alt []Node
