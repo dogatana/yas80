@@ -51,17 +51,40 @@ func main() {
 
 	parser.SetYYDebug(getDebugEnv("yydebug"))
 
-	// logger 作成
-	logger := logger.New(file)
+	// log 作成
+	log := logger.New(file)
 
 	// 構文解析開始
-	prog := parse(logger, input, file)
+	prog := parse(log, input, file)
 
+	// 構文解析直後の AST 表示
+	if getDebugEnv("astdebug") > 0 {
+		log.Print()
+		fmt.Println("--")
+		for i, s := range prog.Statements {
+			fmt.Printf("%d: %#v\n", i, s)
+		}
+		fmt.Println("--")
+		fmt.Println(prog.String())
+		if getDebugEnv("astdebug") == 1 {
+			os.Exit(0)
+		}
+	}
 	// プリプロセス
 	fmt.Println("\n# preprocess")
-	prog = parser.PreProrocess(logger, prog)
-	logger.Print()
+	prog = parser.PreProrocess(log, prog)
+	log.Print()
 
+	// プリプロセス直後の AST 表示
+	if getDebugEnv("astdebug") > 1 {
+		fmt.Println("--")
+		for i, s := range prog.Statements {
+			fmt.Printf("%d: %#v\n", i, s)
+		}
+		fmt.Println("--")
+		fmt.Println(prog.String())
+		os.Exit(0)
+	}
 	// AST 表示
 	fmt.Println("# ast")
 	if len(prog.Statements) == 0 {
@@ -76,7 +99,7 @@ func main() {
 
 	// pass1 実行
 	fmt.Println("# pass1")
-	eval := evaluator.New(logger)
+	eval := evaluator.New(log)
 	eval.Debug = getDebugEnv("evaldebug")
 
 	objects := eval.Eval(prog, env).(*object.ProgramObject)
@@ -100,23 +123,23 @@ func main() {
 	fmt.Println("\n# eval env")
 	order, err := eval.EvalEnv(env)
 	if err != nil {
-		logger.Error(err.Error(), 0)
+		log.Error(err.Error(), 0)
 	}
 	fmt.Println("order:", order)
 
 	fmt.Println("\n# env after eval")
 	env.Print()
 
-	if len(logger.Errors) > 0 {
+	if len(log.Errors) > 0 {
 		fmt.Println("\n*** abort ***")
-		logger.Print()
+		log.Print()
 		os.Exit(1)
 	}
 
 	fmt.Println("\n# pass2")
 	eval.Pass1 = false
 	objects = eval.Eval(prog, env).(*object.ProgramObject)
-	logger.Print()
+	log.Print()
 
 	fmt.Println("\n# ast")
 	fmt.Println(prog.String())
