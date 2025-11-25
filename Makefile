@@ -6,7 +6,8 @@ SRC = main.go \
 	object/object.go  object/environment.go \
 	evaluator/evaluator.go evaluator/eval_instruction.go evaluator/eval_env.go \
 	evaluator/z80code.go evaluator/helper.go \
-	logger/logger.go logger/error_messages.go
+	logger/logger.go logger/error_messages.go \
+	fileblock/fileblock.go
 
 TEMP = parser/temp.go
 YACC = parser/parser.y
@@ -26,13 +27,13 @@ yacc:
 	python ${PATCH} ${PARSER} ${PARSER} ${YOUT}
 
 vet:
-	go vet ./parser ./evaluator
+	go vet ./parser ./evaluator ./fileblock
 
 check:
 	staticcheck ./parser ./evaluator
 
 test:
-	go test ./parser ./evaluator
+	go test ./parser ./evaluator ./fileblock
 
 testv:
-	go test -v ./parser ./evaluator
+	go test -v ./parser ./evaluator ./fileblock
