@@ -81,7 +81,6 @@ var _ = __yyfmt__.Sprintf
 %%
 // 文法規則を指定
 program		: { }
-			| program EOL
 			| program statement 
 			{
 				if $2 == nil {
@@ -95,7 +94,8 @@ program		: { }
 			}
 			;
 
-statement   : label EOL 
+statement   : EOL { $$ = nil }
+			| label EOL 
 			{
 				$$ = &LabelStatement{Value: $1, lineNumber: $1.LineNumber()}
 			}
