@@ -272,14 +272,20 @@ func (is *IfStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("IF " + is.Condition.String() + "\n")
-	block := is.Consequence.String()
-	if block != "" {
-		out.WriteString(block + "\n")
-	}
-	if is.Alternative != nil {
-		block = is.Alternative.String()
+	if is.Consequence == nil {
+		out.WriteString("<nil>\n")
+	} else {
+		block := is.Consequence.String()
 		if block != "" {
-			out.WriteString("ELSE\n")
+			out.WriteString(block + "\n")
+		}
+	}
+	out.WriteString("ELSE\n")
+	if is.Alternative == nil {
+		out.WriteString("<nil>\n")
+	} else {
+		block := is.Alternative.String()
+		if block != "" {
 			out.WriteString(block + "\n")
 		}
 	}

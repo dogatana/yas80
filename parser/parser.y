@@ -175,18 +175,20 @@ directive	: CONST ident '=' expr
 			}
 			| IF expr EOL block_statement elseifs ENDIF
 			{
-				if $2.NodeType() == NODE_ERROR && $5 != nil && $5.NodeType() == NODE_ERROR{
+				if $2.NodeType() == NODE_ERROR && $5.NodeType() == NODE_ERROR{
 					err := $2.(*ParseError)
 					yylex.Error(err.Message, err.LineNumber)
 					$$ = $5
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else if $5 == nil {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Node{}}, lineNumber: $1.LineNumber}
 				} else if $5.NodeType() == NODE_ERROR {
 					$$ = $5
-				} else {
+				} else if $5.NodeType() == NODE_BLOCK_STMT {
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
+				} else {
+					$$ = &ParseError{Message: "IF error", lineNumber: $1.LineNumber}
 				} 
 			}
 			| IF expr EOL block_statement elseifs ELSE block_statement ENDIF
@@ -197,17 +199,26 @@ directive	: CONST ident '=' expr
 					$$ = $5
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
+				} else if $5 == nil  && $7 == nil {
+					$$ = &IfStatement{ Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Node{}}, lineNumber: $1.LineNumber}
 				} else if $5 == nil {
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $7, lineNumber: $1.LineNumber}
 				} else if $5.NodeType() == NODE_ERROR {
 					$$ = $5
-				}  else {
-					s := $5.(*IfStatement)
-					for s.Alternative != nil {
-						s = s.Alternative.(*IfStatement)
+				}  else if block, ok := $5.(*BlockStatement); ok {
+					if len(block.Block) != 1 || block.Block[0].NodeType() != NODE_IF_STMT {
+						$$ = &ParseError{Message: "IF-ELSE error", lineNumber: $1.LineNumber}
+					} else {
+						last := getLastIfStatement(block.Block[0].(*IfStatement))
+						if last.NodeType() == NODE_ERROR {
+							$$ = last
+						} else {
+							last.(*IfStatement).Alternative = $7
+							$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
+						}
 					}
-					s.Alternative = $7
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, lineNumber: $1.LineNumber}
+				} else {
+					$$ = &ParseError{Message: "IF-ELSE error", lineNumber: $1.LineNumber}
 				}
 			}
 			| ident FUNC param_list EOL block_statement ENDF
@@ -259,17 +270,33 @@ param_list	: 			{ $$ = []string{}}
 elseifs		: { $$ = nil }
 			| elseifs ELIF expr EOL block_statement 
 			{ 
+				ifst := &IfStatement{Condition: $3, Consequence: $5, Alternative: &BlockStatement{Block:[]Node{}},lineNumber: $2.LineNumber}
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else if $1 == nil {
-					$$ = &IfStatement{Condition: $3, Consequence: $5, lineNumber: $2.LineNumber}
-				} else {
-					s := $1.(*IfStatement)
-					for s.Alternative != nil {
-						s = s.Alternative.(*IfStatement)
-					}
-					s.Alternative = &IfStatement{Condition: $3, Consequence: $5, lineNumber: $2.LineNumber}
+					$$ = &BlockStatement{Block: []Node{ifst}}
+				} else if block := $1.(*BlockStatement); len(block.Block) == 0 {
+					block.Block = append(block.Block, ifst)
 					$$ = $1
+				} else if len(block.Block) == 1 && block.Block[0].NodeType() == NODE_IF_STMT {
+					stmt := block.Block[0].(*IfStatement)
+					for {
+						if stmt.Alternative == nil {
+							stmt.Alternative = &BlockStatement{Block:[]Node{ifst}}
+							$$ = $1
+							break
+						} else if block := stmt.Alternative.(*BlockStatement); len(block.Block) == 0 {
+							block.Block = append(block.Block, ifst)
+							$$ = $1
+							break
+						} else if len(block.Block) == 1 && block.Block[0].NodeType() == NODE_IF_STMT {
+							stmt = block.Block[0].(*IfStatement)
+							continue
+						} else {
+							$$ = &ParseError{Message: fmt.Sprintf("elseif error %s", $1.String()), lineNumber: $2.LineNumber}
+							break
+						}
+					}
 				}
 			}
 			;
@@ -505,6 +532,7 @@ indexed_expr: expr '[' ']'
 			;
 
 %%
+
 
 func Parse(l *Lexer) (*Program) {
 	// 常に有効

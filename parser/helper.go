@@ -248,3 +248,17 @@ func buildPrefixExpression(opcode int, op Expression, lineNumber int) Expression
 	}
 	return &PrefixExpression{Operator: opcode, Op: op, lineNumber: lineNumber}
 }
+
+// elif の連鎖している if 文の最後を抽出する
+func getLastIfStatement(stmt *IfStatement) Node {
+	for {
+		if stmt.Alternative == nil {
+			return stmt
+		}
+		block := stmt.Alternative.(*BlockStatement)
+		if len(block.Block) == 0 {
+			return stmt
+		}
+		stmt = block.Block[0].(*IfStatement)
+	}
+}

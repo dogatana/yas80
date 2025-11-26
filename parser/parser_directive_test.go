@@ -104,43 +104,43 @@ func TestIfStatement(t *testing.T) {
 	}{
 		{
 			`if 1\ endif`,
-			"IF 1\nENDIF",
+			`IF 1\ELSE\ENDIF`,
 		},
 		{
 			`if 1 \ else \ endif`,
-			"IF 1\nENDIF",
+			`IF 1\ELSE\ENDIF`,
 		},
 		{
 			`if 1 \ 100 \ endif`,
-			"IF 1\n100\nENDIF",
+			`IF 1\100\ELSE\ENDIF`,
 		},
 		{
 			`if 1 \ 100 \ else \ endif`,
-			"IF 1\n100\nENDIF",
+			`IF 1\100\ELSE\ENDIF`,
 		},
 		{
 			`if 1 \ 100 \ else \ 200 \  endif`,
-			"IF 1\n100\nELSE\n200\nENDIF",
+			`IF 1\100\ELSE\200\ENDIF`,
 		},
 		{
 			`if 1 \ 100 \ if 2 \ 200 \else \ 300 \ endif \ endif`,
-			"IF 1\n100\nIF 2\n200\nELSE\n300\nENDIF\nENDIF",
+			`IF 1\100\IF 2\200\ELSE\300\ENDIF\ELSE\ENDIF`,
 		},
 		{
 			`if 1 \ 100 \ if 2 \ 200 \endif \ else \ 300 \ endif`,
-			"IF 1\n100\nIF 2\n200\nENDIF\nELSE\n300\nENDIF",
+			`IF 1\100\IF 2\200\ELSE\ENDIF\ELSE\300\ENDIF`,
 		},
 		{
 			` if 1 \ 100 \ if 2 \ 200 \else \ 300 \endif \ else \ if 3 \ 400 \ else \ 500 \endif\endif`,
-			"IF 1\n100\nIF 2\n200\nELSE\n300\nENDIF\nELSE\nIF 3\n400\nELSE\n500\nENDIF\nENDIF",
+			`IF 1\100\IF 2\200\ELSE\300\ENDIF\ELSE\IF 3\400\ELSE\500\ENDIF\ENDIF`,
 		},
 		{
 			`if 1 \ 200 \ elif 2 \ 300 \ endif`,
-			"IF 1\n200\nELSE\nIF 2\n300\nENDif\nENDIF",
+			`IF 1\200\ELSE\IF 2\300\ELSE\ENDif\ENDIF`,
 		},
 		{
 			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \endif`,
-			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\ENDIF\ENDIF\ENDIF\ENDIF`,
+			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\ELSE\ENDIF\ENDIF\ENDIF\ENDIF`,
 		},
 		{
 			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \else\500\endif`,

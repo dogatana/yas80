@@ -2,8 +2,8 @@ package parser
 
 var grammerRules map[int]string = map[int]string{
 	1:  "program: .",
-	2:  "program:  program EOL.",
-	3:  "program:  program statement.",
+	2:  "program:  program statement.",
+	3:  "statement:  EOL.",
 	4:  "statement:  label EOL.",
 	5:  "statement:  label instruction EOL.",
 	6:  "statement:  instruction EOL.",
