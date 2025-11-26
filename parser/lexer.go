@@ -85,7 +85,7 @@ func (l *Lexer) NextToken() Token {
 LINE_CONT:
 	// 空白をスキップ
 	l.skipWhitespace()
-	fmt.Printf("curChar %q, peekChar %q\n", string(l.curChar), string(l.peekChar()))
+	// fmt.Printf("curChar %q, peekChar %q\n", string(l.curChar), string(l.peekChar()))
 
 	// var tokType int
 	switch {

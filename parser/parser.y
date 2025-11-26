@@ -304,7 +304,6 @@ elseifs		: { $$ = nil }
 	
 // statement エラー検出時は yylex.Error() を呼んで伝播を止める
 block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
-			| block_statement EOL 	{ $$ = $1}
 			| block_statement statement 
 			{ 
 				if $2 == nil { // error
@@ -437,8 +436,7 @@ operand	: '(' Z80_REG16 ')'
 			
 
 // expr エラー検出時は yylex.Error() を呼んで伝播を止める
-expr_list	: 			{ $$ = &ExpressionList{Expressions: []Expression{}} }
-			| expr
+expr_list	: expr		// 最低でも 1 個の引数で必要
 			{ 
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
@@ -478,6 +476,13 @@ expr		: NUMBER
 				names := strings.Split(uname, ".")
 				$$ = &DotIdent{Name: uname, Left: names[0], Right: names[1], lineNumber: $1.LineNumber}
 			}
+			| IDENT '(' ')'
+			{
+				$$ = &CallExpression{
+					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT, lineNumber: $1.LineNumber}, 
+					Arguments: &ExpressionList{Expressions: []Expression{}},
+					lineNumber: $1.LineNumber}
+			}
 			| IDENT '(' expr_list ')'
 			{
 				$$ = &CallExpression{
@@ -485,10 +490,8 @@ expr		: NUMBER
 					Arguments: $3, 
 					lineNumber: $1.LineNumber}
 			}
-			| '[' expr_list ']'
-			{
-				$$ = &ArrayLiteral{Elements: $2, lineNumber: $1.LineNumber}
-			}
+			| '[' ']'			{ $$ = &ArrayLiteral{Elements: &ExpressionList{Expressions: []Expression{}}, lineNumber: $1.LineNumber}}
+			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2, lineNumber: $1.LineNumber} }
 			| indexed_expr 			{ $$ = $1}
 			| '(' expr ')'			{ $$ = $2}
 			| expr ADDSUB expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.LineNumber) }
