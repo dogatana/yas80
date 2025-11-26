@@ -84,6 +84,10 @@ func (l *Lexer) NextToken() Token {
 
 	var literal string
 	var ch rune
+
+LINE_CONT:
+	// fmt.Printf("curChar %q, peekChar %q\n", string(l.curChar), string(l.peekChar()))
+
 	// var tokType int
 	switch {
 	case l.curChar == EOF:
@@ -96,6 +100,11 @@ func (l *Lexer) NextToken() Token {
 		}
 		l.nextChar()
 		return Token{TokenType: EOL, Literal: "\\n", LineNumber: l.lineNumber}
+	case l.curChar == '\\' && l.peekChar() == '\n':
+		// 行継続
+		l.nextChar()
+		l.nextChar()
+		goto LINE_CONT
 	case l.curChar == '\\':
 		// マルチステートメント
 		tok := Token{TokenType: EOL, Literal: "\\", LineNumber: l.lineNumber}
@@ -281,7 +290,7 @@ func (l *Lexer) nextChar() {
 
 func (l *Lexer) peekChar() rune {
 	if l.index >= len(l.text) {
-		return 0
+		return '\n'
 	}
 	return l.text[l.index]
 }
