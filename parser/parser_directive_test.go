@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestConstStatement(t *testing.T) {
+func TestParseConstStatement(t *testing.T) {
 	input := `const abc = 123 \ def equ 456`
 	expected := []struct {
 		Name  string
@@ -36,7 +36,7 @@ func TestConstStatement(t *testing.T) {
 	}
 }
 
-func TestEnumStatement(t *testing.T) {
+func TestParseEnumStatement(t *testing.T) {
 	input := ` test enum
  abc
 def = 1  
@@ -64,7 +64,7 @@ def = 1
 	}
 }
 
-func TestReptStatement(t *testing.T) {
+func TestParseReptStatement(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -97,7 +97,7 @@ func TestReptStatement(t *testing.T) {
 	}
 }
 
-func TestIfStatement(t *testing.T) {
+func TestParseIfStatement(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -174,7 +174,7 @@ func TestIfStatement(t *testing.T) {
 	}
 }
 
-func TestFuncStatement(t *testing.T) {
+func TestParseFuncStatement(t *testing.T) {
 	input := `abs func x
 	if x > 0
 	  return x
@@ -215,7 +215,7 @@ func TestFuncStatement(t *testing.T) {
 	}
 }
 
-func TestVarStatement(t *testing.T) {
+func TestParseVarStatement(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -250,7 +250,7 @@ func TestVarStatement(t *testing.T) {
 	}
 }
 
-func TestAsignStatement(t *testing.T) {
+func TestParseAsignStatement(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -285,7 +285,7 @@ func TestAsignStatement(t *testing.T) {
 	}
 }
 
-func TestExitmStatement(t *testing.T) {
+func TestParseExitmStatement(t *testing.T) {
 	tests := []struct {
 		input    string
 		NodeType NodeType
@@ -317,7 +317,7 @@ func TestExitmStatement(t *testing.T) {
 	}
 }
 
-func TestReturnStatement(t *testing.T) {
+func TestParseReturnStatement(t *testing.T) {
 	tests := []struct {
 		input    string
 		NodeType NodeType

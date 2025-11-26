@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestExpression(t *testing.T) {
+func TestParseExpression(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -64,7 +64,7 @@ func TestExpression(t *testing.T) {
 	}
 }
 
-func TestCallFunction(t *testing.T) {
+func TestParseCallFunction(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -97,7 +97,7 @@ func TestCallFunction(t *testing.T) {
 	}
 }
 
-func TestArrayVariable(t *testing.T) {
+func TestParseArrayVariable(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -122,7 +122,7 @@ func TestArrayVariable(t *testing.T) {
 	}
 }
 
-func TestArrayElement(t *testing.T) {
+func TestParseArrayElement(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -147,7 +147,7 @@ func TestArrayElement(t *testing.T) {
 	}
 }
 
-func TestStringExpression(t *testing.T) {
+func TestParseStringExpression(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string

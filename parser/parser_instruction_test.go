@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestINST0(t *testing.T) {
+func TestParseINST0(t *testing.T) {
 	input := `EXX
 LDI
 LDIR
@@ -58,7 +58,7 @@ OTDR
 	}
 }
 
-func TestINST1(t *testing.T) {
+func TestParseINST1(t *testing.T) {
 	input := `
 PUSH 1
 POP 2
@@ -103,7 +103,7 @@ RET 18
 	}
 }
 
-func TestINST2(t *testing.T) {
+func TestParseINST2(t *testing.T) {
 	input := `
 EX AF, AF'
 ADD A, 1
@@ -145,7 +145,7 @@ OUT (C), B
 	}
 }
 
-func TestIndirect(t *testing.T) {
+func TestParseIndirect(t *testing.T) {
 	input := `
 LD A, (HL)
 LD (HL), A

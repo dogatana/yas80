@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestNumberLiteral(t *testing.T) {
+func TestParseNumberLiteral(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -97,7 +97,7 @@ func testNumberLiteralStatement(t *testing.T, input string, node Node, expected 
 	}
 }
 
-func TestStringLiteral(t *testing.T) {
+func TestParseStringLiteral(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -134,7 +134,7 @@ func testStringLiteralStatement(t *testing.T, input string, node Node, expected 
 	}
 }
 
-func TestArrayLiteral(t *testing.T) {
+func TestParseArrayLiteral(t *testing.T) {
 	tests := []struct {
 		input    string
 		count    int
@@ -169,7 +169,7 @@ func TestArrayLiteral(t *testing.T) {
 	}
 }
 
-func TestLabelStatement(t *testing.T) {
+func TestParseLabelStatement(t *testing.T) {
 	tests := []struct {
 		input     string
 		TokenType int
@@ -200,7 +200,7 @@ func TestLabelStatement(t *testing.T) {
 	}
 }
 
-func TestDotIdent(t *testing.T) {
+func TestParseDotIdent(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string

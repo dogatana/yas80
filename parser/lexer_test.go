@@ -18,7 +18,7 @@ func testDisplayTokens(t *testing.T) {
 	}
 }
 
-func TestLexerSymbols(t *testing.T) {
+func TestLexSymbols(t *testing.T) {
 	input := " ( ) = - + | ^ * / & ! ~ << >> < <= == != >= > || && "
 	expected := []struct {
 		TokenType TokenType
@@ -74,7 +74,7 @@ func TestLexerSymbols(t *testing.T) {
 	}
 }
 
-func TestLexerBlankInput(t *testing.T) {
+func TestLexBlankInput(t *testing.T) {
 	tests := []struct {
 		input           string
 		expected_tokens []int
@@ -107,7 +107,7 @@ func TestLexerBlankInput(t *testing.T) {
 	}
 }
 
-func TestLexerInvalidCharacter(t *testing.T) {
+func TestLexInvalidCharacter(t *testing.T) {
 	input := " あ "
 
 	l := newLexerForTest(input)
@@ -120,7 +120,7 @@ func TestLexerInvalidCharacter(t *testing.T) {
 	}
 }
 
-func TestLexerString(t *testing.T) {
+func TestLexString(t *testing.T) {
 	tests := []struct {
 		input            string
 		expected_literal string
@@ -143,7 +143,7 @@ func TestLexerString(t *testing.T) {
 	}
 }
 
-func TestLexerNumber(t *testing.T) {
+func TestLexNumber(t *testing.T) {
 	tests := []struct {
 		input            string
 		expected_literal string
@@ -204,7 +204,7 @@ func TestLexInterface(t *testing.T) {
 	}
 }
 
-func TestLexerIdent(t *testing.T) {
+func TestLexIdent(t *testing.T) {
 	tests := []struct {
 		input           string
 		expectedType    TokenType
@@ -234,7 +234,7 @@ func TestLexerIdent(t *testing.T) {
 		}
 	}
 }
-func TestLexerZ80REG8(t *testing.T) {
+func TestLexZ80REG8(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected TokenSubType
@@ -272,7 +272,7 @@ func TestLexerZ80REG8(t *testing.T) {
 	}
 }
 
-func TestLexerZ80REG16(t *testing.T) {
+func TestLexZ80REG16(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected TokenSubType
@@ -304,7 +304,7 @@ func TestLexerZ80REG16(t *testing.T) {
 	}
 }
 
-func TestLexerZ80FLAG(t *testing.T) {
+func TestLexZ80FLAG(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected TokenSubType
@@ -338,7 +338,7 @@ func TestLexerZ80FLAG(t *testing.T) {
 	}
 }
 
-func TestZ80Instructions(t *testing.T) {
+func TestLexZ80Instructions(t *testing.T) {
 	input := readTestDataFile(t, "z80instruction.txt")
 
 	l := newLexerForTest(input)
@@ -407,7 +407,7 @@ func TestLexReservedWords(t *testing.T) {
 	}
 }
 
-func TestLexerDoller(t *testing.T) {
+func TestLexDoller(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected []TokenType
