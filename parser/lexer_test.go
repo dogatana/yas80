@@ -444,3 +444,33 @@ func TestLexDoller(t *testing.T) {
 		}
 	}
 }
+
+func TestLexLineContinuation(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected []TokenType
+	}{
+		{`ld \
+		a \
+		,\
+		b`, []TokenType{Z80_INST2, Z80_REG8, ',', Z80_REG8, EOL}},
+	}
+
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		for _, tokenType := range tt.expected {
+			tok := l.NextToken()
+			if tok.LineNumber == 0 {
+				fmt.Printf("input %q\n", tt.input)
+				t.Errorf("LineNumber not set. got %s", tok.String())
+			}
+			if tok.TokenType != tokenType {
+				fmt.Printf("input %q\n", tt.input)
+				t.Errorf("expected TokenType %s. got %#v", TokenLiteral(int(tokenType)), tok)
+			}
+			if tok.TokenType == EOL {
+				break
+			}
+		}
+	}
+}

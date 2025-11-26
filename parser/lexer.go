@@ -79,14 +79,13 @@ func NewLexer(filename string, fb *fileblock.FileBlock, logger *logger.Logger) *
 func (l *Lexer) Logger() *logger.Logger { return l.logger }
 
 func (l *Lexer) NextToken() Token {
-	// 空白をスキップ
-	l.skipWhitespace()
-
 	var literal string
 	var ch rune
 
 LINE_CONT:
-	// fmt.Printf("curChar %q, peekChar %q\n", string(l.curChar), string(l.peekChar()))
+	// 空白をスキップ
+	l.skipWhitespace()
+	fmt.Printf("curChar %q, peekChar %q\n", string(l.curChar), string(l.peekChar()))
 
 	// var tokType int
 	switch {
