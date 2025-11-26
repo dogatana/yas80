@@ -11,20 +11,20 @@ type MacroTableType map[string]*MacroStatement
 
 var macroTable MacroTableType = make(MacroTableType)
 
-func PreProrocess(log *logger.Logger, prog *Program) *Program {
+func PreProrocess(logger *logger.Logger, prog *Program) *Program {
 
 	// マクロ定義抽出
 	macroTable = make(map[string]*MacroStatement)
-	extractMacroDef(log, prog)
+	extractMacroDef(logger, prog)
 
 	// yacc でマクロ呼出し、関数呼出しを完全に区別できないので、
 	// マクロ定義 0 件でも MacroCall の書き換えは必要なのに注意
-	result := preprocessStatements(log, prog.Statements)
+	result := preprocessStatements(logger, prog.Statements)
 	return &Program{Statements: result}
 }
 
 // トップレベルからマクロ定義を抽出する
-func extractMacroDef(log *logger.Logger, prog *Program) {
+func extractMacroDef(logger *logger.Logger, prog *Program) {
 	for i, stmt := range prog.Statements {
 		macro, ok := stmt.(*MacroStatement)
 		if !ok {
@@ -33,7 +33,7 @@ func extractMacroDef(log *logger.Logger, prog *Program) {
 		name := macro.Name
 		if _, ok := macroTable[name]; ok {
 			// マクロ定義済み
-			log.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), macro.lineNumber)
+			logger.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), macro.lineNumber)
 		}
 		macroTable[name] = macro
 		// 登録後はNode削除
@@ -47,7 +47,7 @@ func extractMacroDef(log *logger.Logger, prog *Program) {
 }
 
 // Program.Statements, BlockStatement.Block の書き換え
-func preprocessStatements(log *logger.Logger, stmts []Node) []Node {
+func preprocessStatements(logger *logger.Logger, stmts []Node) []Node {
 	var result []Node
 
 	for i := 0; i < len(stmts); i++ {
@@ -57,7 +57,7 @@ func preprocessStatements(log *logger.Logger, stmts []Node) []Node {
 		switch stmt := node.(type) {
 		case *MacroStatement:
 			// マクロ定義はネスト不可
-			log.Error(fmt.Sprintf(errcode.EMACRO_NEST), stmt.lineNumber)
+			logger.Error(fmt.Sprintf(errcode.EMACRO_NEST), stmt.lineNumber)
 		case *MacroCallStatement:
 			name := stmt.Name
 			_, ok := macroTable[name]
@@ -137,7 +137,7 @@ func replaceMacroCall(stmt *MacroCallStatement) Statement {
 }
 
 // マクロ適用
-func expandMacroBody(log *logger.Logger, call *MacroCallStatement, def *MacroStatement) ([]Node, error) {
+func expandMacroBody(logger *logger.Logger, call *MacroCallStatement, def *MacroStatement) ([]Node, error) {
 
 	// 仮引数-実引数テーブル
 	var paramTable map[string]Expression = map[string]Expression{}
@@ -152,25 +152,25 @@ func expandMacroBody(log *logger.Logger, call *MacroCallStatement, def *MacroSta
 		}
 		if stmt.NodeType() == NODE_MACRO_STMT {
 			// マクロ定義はネスト不可
-			log.Error(fmt.Sprintf(errcode.EMACRO_NEST), stmt.LineNumber())
+			logger.Error(fmt.Sprintf(errcode.EMACRO_NEST), stmt.LineNumber())
 			continue
 		}
-		node, _ := modifyNode(log, stmt, paramTable)
+		node, _ := modifyNode(logger, stmt, paramTable)
 		result = append(result, node.(Statement))
 	}
 	return result, nil
 }
 
 // 仮引数を実引数で置き換え
-func modifyNode(log *logger.Logger, node Node, paramTable map[string]Expression) (Node, bool) {
+func modifyNode(logger *logger.Logger, node Node, paramTable map[string]Expression) (Node, bool) {
 	switch node := node.(type) {
 	case *LabelStatement:
 		// TODO ラベル結合演算対応の際に要修正
 		return node, false
 
 	case *Z80Instruction:
-		op1, mod1 := modifyNode(log, node.Op1, paramTable)
-		op2, mod2 := modifyNode(log, node.Op2, paramTable)
+		op1, mod1 := modifyNode(logger, node.Op1, paramTable)
+		op2, mod2 := modifyNode(logger, node.Op2, paramTable)
 		if !mod1 && !mod2 {
 			return node, false
 		}
@@ -180,22 +180,22 @@ func modifyNode(log *logger.Logger, node Node, paramTable map[string]Expression)
 			lineNumber: node.lineNumber}, true
 
 	case *ConstStatement:
-		v, mod := modifyNode(log, node.Value, paramTable)
+		v, mod := modifyNode(logger, node.Value, paramTable)
 		if !mod {
 			return node, false
 		}
 		return &ConstStatement{Name: node.Name, Value: v.(Expression), lineNumber: node.lineNumber}, false
 
 	case *InfixExpression:
-		op1, mod1 := modifyNode(log, node.Op1, paramTable)
-		op2, mod2 := modifyNode(log, node.Op2, paramTable)
+		op1, mod1 := modifyNode(logger, node.Op1, paramTable)
+		op2, mod2 := modifyNode(logger, node.Op2, paramTable)
 		if !mod1 && !mod2 {
 			return node, false
 		}
 		return &InfixExpression{Operator: node.Operator,
 			Op1: op1.(Expression), Op2: op2.(Expression), lineNumber: node.lineNumber}, true
 	case *PrefixExpression:
-		op, mod := modifyNode(log, node.Op, paramTable)
+		op, mod := modifyNode(logger, node.Op, paramTable)
 		if !mod {
 			return node, false
 		}
