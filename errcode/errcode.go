@@ -1,10 +1,9 @@
-package logger
+package errcode
 
 const (
 	// system
 	E000 = "[E]system error"
 	E001 = "[E]syntax error"
-
 	// user
 	E002 = "数値リテラル誤り: '%s'"
 	E003 = "配列名誤り"

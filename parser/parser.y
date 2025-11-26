@@ -4,7 +4,7 @@ package parser
 import (
 	"fmt"
 	"strings"
-	"yas80/logger"
+	"yas80/errcode"
 )
 
 // goyacc が __yyfmt__ を勝手に import することの対策
@@ -351,7 +351,7 @@ label		: IDENT ':'
 			| LOCAL_IDENT ':'
 			{
 				// info のみ表示し、処理継続
-				yylex.Error(logger.I001, $1.LineNumber)
+				yylex.Error(errcode.I001, $1.LineNumber)
 				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT
@@ -461,7 +461,7 @@ expr		: NUMBER
 				if err == nil {
 					$$ = &NumberLiteral{Value: int(n), lineNumber: $1.LineNumber}
 				} else {
-					$$ = &ParseError{Message: fmt.Sprintf(logger.E002, $1.Literal), lineNumber: $1.LineNumber}
+					$$ = &ParseError{Message: fmt.Sprintf(errcode.E002, $1.Literal), lineNumber: $1.LineNumber}
 				}
 			}
 			| STRING 		{ $$ = &StringLiteral{Value: $1.Literal, lineNumber: $1.LineNumber} }
@@ -509,24 +509,24 @@ indexed_expr: expr '[' ']'
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
 					yylex.Error(err.Message, err.LineNumber())
-					yylex.Error(logger.E003, $2.LineNumber)
+					yylex.Error(errcode.E003, $2.LineNumber)
 				} 
-				$$ = &ParseError{Message: logger.E004, lineNumber: $2.LineNumber}
+				$$ = &ParseError{Message: errcode.E004, lineNumber: $2.LineNumber}
 			}
 			| expr '[' expr ']'
 			{
 				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
-					yylex.Error(logger.E003, $2.LineNumber)
+					yylex.Error(errcode.E003, $2.LineNumber)
 					err := $1.(*ParseError)
 					yylex.Error(err.Message, err.LineNumber)
 
-					yylex.Error(logger.E005, $2.LineNumber)
+					yylex.Error(errcode.E005, $2.LineNumber)
 					$$ = $3
 				} else if $1.NodeType() == NODE_ERROR {
-					yylex.Error(logger.E003, $2.LineNumber)
+					yylex.Error(errcode.E003, $2.LineNumber)
 					$$ = $1
 				} else if $3.NodeType() == NODE_ERROR {
-					yylex.Error(logger.E005, $2.LineNumber)
+					yylex.Error(errcode.E005, $2.LineNumber)
 					$$ = $3
 				} else {
 					$$ = &IndexedExpression{Left: $1, Index: $3, lineNumber: $2.LineNumber}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"yas80/logger"
+	"yas80/errcode"
 )
 
 func parseInt(s string) (int64, error) {
@@ -187,14 +187,14 @@ func buildInfixExpression(opcode int, op1, op2 Expression, lineNumber int) Expre
 	num2, ok2 := op2.(*NumberLiteral)
 	if ok1 && ok2 {
 		if opcode == '/' && num2.Value == 0 {
-			return &ParseError{Message: logger.E015, lineNumber: lineNumber}
+			return &ParseError{Message: errcode.E015, lineNumber: lineNumber}
 		}
 
 		fn, ok := infixFuncs[opcode]
 		if ok {
 			return &NumberLiteral{Value: fn(num1.Value, num2.Value), lineNumber: lineNumber}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(logger.E016, TokenLiteral(opcode)), lineNumber: lineNumber}
+			return &ParseError{Message: fmt.Sprintf(errcode.E016, TokenLiteral(opcode)), lineNumber: lineNumber}
 		}
 	}
 	// 文字列演算(+)の畳み込み
@@ -232,7 +232,7 @@ func buildPrefixExpression(opcode int, op Expression, lineNumber int) Expression
 		if ok {
 			return &NumberLiteral{Value: fn(op.Value), lineNumber: lineNumber}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(logger.E008, rune(opcode)), lineNumber: lineNumber}
+			return &ParseError{Message: fmt.Sprintf(errcode.E008, rune(opcode)), lineNumber: lineNumber}
 		}
 	case *StringLiteral:
 		if opcode == '!' {
@@ -244,7 +244,7 @@ func buildPrefixExpression(opcode int, op Expression, lineNumber int) Expression
 			}
 			return &NumberLiteral{Value: result, lineNumber: lineNumber}
 		}
-		return &ParseError{Message: fmt.Sprintf(logger.E007, rune(opcode)), lineNumber: lineNumber}
+		return &ParseError{Message: fmt.Sprintf(errcode.E007, rune(opcode)), lineNumber: lineNumber}
 	}
 	return &PrefixExpression{Operator: opcode, Op: op, lineNumber: lineNumber}
 }

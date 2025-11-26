@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 	"strings"
+	"yas80/errcode"
 	"yas80/logger"
 	"yas80/object"
 	"yas80/parser"
@@ -62,7 +63,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		name := node.Name
 		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
 		if ok {
-			e.logger.Error(fmt.Sprintf(logger.E012, name), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(errcode.E012, name), node.LineNumber())
 			return object.ERROR
 		}
 		v := e.evalEnumStatement(node, env)
@@ -101,31 +102,31 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 			return &object.RefNotFoundObject{Names: []string{uname}}
 		} else if !ok {
 			// Pass2 の場合は ERROR を返す
-			e.logger.Error(fmt.Sprintf(logger.E009, uname), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(errcode.E009, uname), node.LineNumber())
 			return object.ERROR
 		}
 		sym, ok := (obj).(*object.SymbolObject)
 		if ok && sym.SymState == object.NOT_REGISTERED {
-			e.logger.Error(fmt.Sprintf(logger.E009, uname), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(errcode.E009, uname), node.LineNumber())
 			return object.ERROR
 		}
 		return obj
 	case *parser.DotIdent:
 		enum, ok := env.Get(node.Left)
 		if !ok {
-			e.logger.Error(fmt.Sprintf(logger.E010, node.Left), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(errcode.E010, node.Left), node.LineNumber())
 			return object.ERROR
 		}
 		v, ok := enum.(*object.EnumObject).Get(node.Right)
 		if !ok {
-			e.logger.Error(fmt.Sprintf(logger.E011, node.Left, node.Right), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(errcode.E011, node.Left, node.Right), node.LineNumber())
 			return object.ERROR
 		}
 		return v
 	case *parser.RegisterLiteral:
 		return object.Z80RgisterObjects[int(node.NodeSubType())]
 	default:
-		e.logger.Error(fmt.Sprintf(logger.E999, node), node.LineNumber())
+		e.logger.Error(fmt.Sprintf(errcode.E999, node), node.LineNumber())
 		return object.ERROR
 	}
 }
@@ -214,14 +215,14 @@ func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env *object.
 		case *object.SymbolObject:
 			if obj.SymType != object.LABEL || obj.LineNumber != node.LineNumber() || obj.SymState == object.VALUE_DETERMINED {
 				if !e.Pass1 {
-					e.logger.Error(fmt.Sprintf(logger.E032, name), node.LineNumber())
+					e.logger.Error(fmt.Sprintf(errcode.E032, name), node.LineNumber())
 				}
 				return object.ERROR
 			}
 			// fall through
 		default:
 			if !e.Pass1 {
-				e.logger.Error(fmt.Sprintf(logger.E032, name), node.LineNumber())
+				e.logger.Error(fmt.Sprintf(errcode.E032, name), node.LineNumber())
 			}
 			return object.ERROR
 		}
@@ -240,7 +241,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.
 
 	// 定義済みならエラー
 	if _, ok := env.Get(name); ok {
-		e.logger.Error(fmt.Sprintf(logger.E031, name), node.LineNumber())
+		e.logger.Error(fmt.Sprintf(errcode.E031, name), node.LineNumber())
 		return object.ERROR
 	}
 	v := e.Eval(node.Value, env)
@@ -253,7 +254,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.
 	case *object.RefNotFoundObject:
 		// 階層でチェックが入っているはずだが念のため
 		if !e.Pass1 {
-			e.logger.Error(fmt.Sprintf(logger.E009, strings.Join(v.Names, ", ")), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(errcode.E009, strings.Join(v.Names, ", ")), node.LineNumber())
 			return object.ERROR
 		}
 		// 未定義定数として登録
@@ -307,7 +308,7 @@ func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env *object.En
 	name := stmt.Name
 	_, ok := env.Get(name)
 	if ok {
-		e.logger.Error(fmt.Sprintf(logger.E018, name), stmt.LineNumber())
+		e.logger.Error(fmt.Sprintf(errcode.E018, name), stmt.LineNumber())
 		return object.NULL
 	}
 	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env}
@@ -334,7 +335,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 	for _, ele := range node.Elements.Elements {
 		eleName := ele.Name
 		if _, ok := enum[eleName]; ok {
-			e.logger.Error(fmt.Sprintf(logger.E013, node.Name, ele.Name), node.LineNumber())
+			e.logger.Error(fmt.Sprintf(errcode.E013, node.Name, ele.Name), node.LineNumber())
 			return object.ERROR
 		}
 		keys = append(keys, eleName)
@@ -353,7 +354,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.En
 		case object.STRING_OBJ:
 			enum[eleName] = v
 		default:
-			// e.logger.Error(fmt.Sprintf(logger.E014, v), ele.LineNumber())
+			// e.logger.Error(fmt.Sprintf(errcode.E014, v), ele.LineNumber())
 			return object.ERROR
 		}
 	}

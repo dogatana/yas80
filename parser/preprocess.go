@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"strings"
+	"yas80/errcode"
 	"yas80/logger"
 )
 
@@ -32,7 +33,7 @@ func extractMacroDef(log *logger.Logger, prog *Program) {
 		name := macro.Name
 		if _, ok := macroTable[name]; ok {
 			// マクロ定義済み
-			log.Error(fmt.Sprintf(logger.EMACRO_DUP, name), macro.lineNumber)
+			log.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), macro.lineNumber)
 		}
 		macroTable[name] = macro
 		// 登録後はNode削除
@@ -56,7 +57,7 @@ func preprocessStatements(log *logger.Logger, stmts []Node) []Node {
 		switch stmt := node.(type) {
 		case *MacroStatement:
 			// マクロ定義はネスト不可
-			log.Error(fmt.Sprintf(logger.EMACRO_NEST), stmt.lineNumber)
+			log.Error(fmt.Sprintf(errcode.EMACRO_NEST), stmt.lineNumber)
 		case *MacroCallStatement:
 			name := stmt.Name
 			_, ok := macroTable[name]
@@ -70,7 +71,7 @@ func preprocessStatements(log *logger.Logger, stmts []Node) []Node {
 			result = append(result, stmt)
 			// if len(stmt.Args.Expressions) != len(macroDef.Params) {
 			// 	// 仮引数、引数の数のチェック
-			// 	log.Error(fmt.Sprintf(logger.EMACRO_ARGS, name), stmt.lineNumber)
+			// 	log.Error(fmt.Sprintf(errcode.EMACRO_ARGS, name), stmt.lineNumber)
 			// 	return nil
 			// }
 			// // マクロ展開
@@ -151,7 +152,7 @@ func expandMacroBody(log *logger.Logger, call *MacroCallStatement, def *MacroSta
 		}
 		if stmt.NodeType() == NODE_MACRO_STMT {
 			// マクロ定義はネスト不可
-			log.Error(fmt.Sprintf(logger.EMACRO_NEST), stmt.LineNumber())
+			log.Error(fmt.Sprintf(errcode.EMACRO_NEST), stmt.LineNumber())
 			continue
 		}
 		node, _ := modifyNode(log, stmt, paramTable)
