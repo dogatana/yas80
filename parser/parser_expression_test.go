@@ -71,7 +71,7 @@ func TestParseCallFunction(t *testing.T) {
 	}{
 		{"aFunc()", "AFUNC()"},
 		{"  aFunc(   )  ", "AFUNC()"},
-		{"aFunc(1)", "AFUNC(1)"},
+		// {"aFunc(1)", "AFUNC(1)"},		// 1引数の場合構文解析結果が MacroCallStatement になるので除外する
 		{"aFunc(1,2,3)", "AFUNC(1, 2, 3)"},
 		{"aFunc(1,2+3,4*5)", "AFUNC(1, 5, 20)"},
 	}

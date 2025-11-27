@@ -51,13 +51,17 @@ func extractNames(obj object.Object) []string {
 }
 
 // location counter 初期化
-func initLocationCounter(env *object.Environment, addr int) {
-	env.GlobalSet("$", &object.NumberObject{Value: addr})
+func initLocationCounter(env object.Environment, addr int) {
+	obj, ok := env.Get("$")
+	if !ok {
+		panic("no $ in Environment")
+	}
+	obj.(*object.NumberObject).Value = addr
 }
 
 // location counter 取得
-func getLocationCounter(env *object.Environment) int {
-	counter, ok := env.GlobalGet("$")
+func getLocationCounter(env object.Environment) int {
+	counter, ok := env.Get("$")
 	if !ok {
 		panic("getLocationCounter failed")
 	}
@@ -66,13 +70,13 @@ func getLocationCounter(env *object.Environment) int {
 }
 
 // location counter 表示
-func printLocationCounter(env *object.Environment) {
+func printLocationCounter(env object.Environment) {
 	fmt.Printf("$ %04x\n", getLocationCounter(env))
 }
 
 // location counter 更新
-func advanceLocationCounter(env *object.Environment, n int) {
-	obj, ok := env.GlobalGet("$")
+func advanceLocationCounter(env object.Environment, n int) {
+	obj, ok := env.Get("$")
 	if !ok {
 		panic("getLocationCounter failed")
 	}

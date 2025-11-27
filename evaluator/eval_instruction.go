@@ -7,7 +7,7 @@ import (
 	"yas80/parser"
 )
 
-func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env *object.Environment) object.Object {
+func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env object.Environment) object.Object {
 	switch node.NodeType() {
 	case parser.Z80_INST0:
 		info := Z80CodeTable0[int(node.Opcode)]
@@ -26,7 +26,7 @@ func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env *object.
 	}
 }
 
-func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ *object.Environment) object.Object {
+func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ object.Environment) object.Object {
 	if node.Op1 == nil {
 		return &object.CodeObject{Line: node.LineNumber(), Code: []byte{0xc9}}
 	}
@@ -40,7 +40,7 @@ func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ *object.Environme
 	return object.ERROR
 }
 
-func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env *object.Environment) object.Object {
+func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env object.Environment) object.Object {
 	switch node.NodeSubType() {
 	case parser.Z80_INST_LD:
 		return e.evalZ80LD(node, env)
@@ -50,7 +50,7 @@ func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env *object
 	}
 }
 
-func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environment) object.Object {
+func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environment) object.Object {
 	op1 := e.Eval(node.Op1, env)
 
 	switch op1 := op1.(type) {
@@ -78,7 +78,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env *object.Environme
 	}
 }
 
-func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env *object.Environment) object.Object {
+func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
 	op2 := e.Eval(node.Op2, env)
 
 	switch op2 := op2.(type) {
@@ -140,7 +140,7 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 	}
 }
 
-func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, env *object.Environment) object.Object {
+func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
 	op2 := e.Eval(node.Op2, env)
 
 	switch op2 := op2.(type) {

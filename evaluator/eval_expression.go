@@ -8,7 +8,7 @@ import (
 )
 
 // 関数呼出し
-func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.Environment) object.Object {
+func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.Environment) object.Object {
 	obj := e.Eval(expr.Function, env)
 	if isError(obj) || isRefNotFound(obj) {
 		return obj
@@ -23,7 +23,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {
-		e.logger.Error(fmt.Sprintf(errcode.E021, fn.Name), expr.LineNumber())
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), expr.LineNumber())
 		return object.ERROR
 	}
 
@@ -62,7 +62,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env *object.
 }
 
 // 中置演算子式
-func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env *object.Environment, lineNumber int) object.Object {
+func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object.Environment, lineNumber int) object.Object {
 	op1 := unwrapSymbol(e.Eval(node.Op1, env))
 	op2 := unwrapSymbol(e.Eval(node.Op2, env))
 

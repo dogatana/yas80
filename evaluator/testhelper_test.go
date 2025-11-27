@@ -13,7 +13,7 @@ import (
 	"yas80/parser"
 )
 
-func evaluateInput(t *testing.T, input string, logger *logger.Logger, env *object.Environment) *object.ProgramObject {
+func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object.Environment) *object.ProgramObject {
 	progNode := parseTextForTest(t, input)
 
 	evaluator := New(logger)
