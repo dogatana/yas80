@@ -1,6 +1,9 @@
 package object
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Environment interface {
 	Get(name string) (Object, bool)
@@ -36,16 +39,16 @@ func CollectNames(env Environment) []string {
 
 func PrintEnv(env Environment) {
 	prefix := ""
-	for {
+	for i := 0; ; i++ {
 		switch cenv := env.(type) {
 		case *NormalEnvironment:
 			for k, v := range cenv.store {
-				fmt.Printf("%sENV[%s]=%s\n", prefix, k, v.String())
+				fmt.Printf("%s[%d]ENV[%s]=%s\n", prefix, i, k, v.String())
 			}
 			env = cenv.outer
 		case *AtLocalEnvironment:
 			for k, v := range cenv.store {
-				fmt.Printf("%s@ENV[%s]=%s\n", prefix, k, v.String())
+				fmt.Printf("%s[%d]@ENV[%s]=%s\n", prefix, i, k, v.String())
 			}
 			env = cenv.outer
 		default:
@@ -55,6 +58,7 @@ func PrintEnv(env Environment) {
 		if env == nil {
 			break
 		}
+		fmt.Println("---")
 	}
 }
 
@@ -111,19 +115,17 @@ func (e *AtLocalEnvironment) Get(name string) (Object, bool) {
 	var obj Object
 	var ok bool
 
-	if name[0] == '@' {
-		obj, ok = e.store[name]
+	obj, ok = e.store[name]
+	if ok {
 		return obj, ok
-	} else if e.outer != nil {
-		obj, ok = e.outer.Get(name)
-		return obj, ok
-	} else {
-		panic("no outer Environment")
 	}
+	return e.outer.Get(name)
 }
 
 func (e *AtLocalEnvironment) Set(name string, obj Object) Object {
-	if name[0] == '@' {
+	if strings.HasPrefix(name, "@@") {
+		e.store[name[2:]] = obj
+	} else if name[0] == '@' {
 		e.store[name] = obj
 	} else {
 		e.outer.Set(name, obj)

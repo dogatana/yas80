@@ -21,7 +21,7 @@ func New(logger *logger.Logger) *Evaluator {
 }
 
 // Eval
-func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Object {
+func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object {
 	if e.Debug > 0 {
 		fmt.Printf("eval %#v)\n", node)
 	}
@@ -57,6 +57,8 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 
 	case *parser.MacroStatement:
 		return e.evalMacroStatement(node, env)
+	case *parser.MacroCallStatement:
+		return e.evalMacroCallStatement(node, env)
 
 	case *parser.FuncStatement:
 		return e.evalFuncStatement(node, env)
@@ -65,7 +67,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 
 	case *parser.EnumStatement:
 		name := node.Name
-		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
+		_, ok := env.Get(name) // TODO enum 定義は常にグローバルスコープ
 		if ok {
 			e.logger.Error(fmt.Sprintf(errcode.E012, name), node.LineNumber())
 			return object.ERROR
@@ -73,7 +75,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		v := e.evalEnumStatement(node, env)
 		switch v.Type() {
 		case object.ENUM_OBJ:
-			env.GlobalSet(v.(*object.EnumObject).Name, v)
+			env.Set(v.(*object.EnumObject).Name, v)
 			return v
 		case object.NULL_OBJ: // TODO
 			return &object.NodeObject{Value: node}
@@ -139,7 +141,7 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 }
 
 // Program 評価
-func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) object.Object {
+func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) object.Object {
 	results := &object.ProgramObject{}
 
 	for i, stmt := range prog.Statements {
@@ -185,7 +187,7 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 }
 
 // 複合文 BlockStatement
-func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.Environment) object.Object {
+func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env object.Environment) object.Object {
 	block := &object.BlockObject{Block: []object.Object{}}
 
 	for _, stmt := range stmt.Block {
@@ -215,7 +217,7 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.
 }
 
 // マクロ定義文
-func (e *Evaluator) evalMacroStatement(node *parser.MacroStatement, env *object.Environment) object.Object {
+func (e *Evaluator) evalMacroStatement(node *parser.MacroStatement, env object.Environment) object.Object {
 	if _, ok := env.Get(node.Name); ok {
 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, node.Name), node.LineNumber())
 		return object.ERROR
@@ -225,8 +227,68 @@ func (e *Evaluator) evalMacroStatement(node *parser.MacroStatement, env *object.
 	return obj
 }
 
+// マクロ定義文
+func (e *Evaluator) evalMacroCallStatement(node *parser.MacroCallStatement, env object.Environment) object.Object {
+	obj, ok := env.Get(node.Name)
+	if !ok && len(node.Args.Expressions) == 1 {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_FUNC_NOT_FOUND, node.Name), node.LineNumber())
+		return object.ERROR
+	} else if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_FOUND, node.Name), node.LineNumber())
+		return object.ERROR
+	}
+	// 関数オブジェクトなら関数呼出し評価へ回す
+	// 文法定義上 1引数の関数呼出し式文は MacroCallStatement となるので、ここで置き換える
+
+	switch obj := obj.(type) {
+	case *object.FunctionObject:
+		funcall := &parser.CallExpression{
+			Function:  &parser.Ident{Name: node.Name},
+			Arguments: node.Args}
+		return e.evalCallExpression(funcall, env) // TODO linenumber はパッケージ外から設定できない
+	case *object.MacroObject:
+		return e.evalMacroBody(node, obj, env)
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, node.Name), node.LineNumber())
+		return object.ERROR
+	}
+}
+
+// マクロ Body 評価
+func (e *Evaluator) evalMacroBody(node *parser.MacroCallStatement, macro *object.MacroObject, env object.Environment) object.Object {
+	// 仮引数、引数の数のチェック
+	if len(node.Args.Expressions) != len(macro.Params) {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_ARG_COUNT, macro.Name), node.LineNumber())
+		return object.ERROR
+	}
+
+	// 引数を評価し、仮引数名で環境に設定
+	newEnv := object.NewAtLocalEnvironment(env)
+	for i, param := range macro.Params {
+		v := e.Eval(node.Args.Expressions[i], env)
+		if isError(v) || isRefNotFound(v) {
+			return v
+		}
+		newEnv.Set("@@"+param, v)
+	}
+
+	object.PrintEnv(newEnv)
+
+	// TODO 引数評価の前に設定しなくても良いか？
+	// マクロ展開の評価は Pass1 であっても未定義エラーを発生させる
+	savePass := e.Pass1
+	e.Pass1 = false
+	ret, ok := e.evalBlockStatement(macro.Body, newEnv).(*object.BlockObject)
+	if !ok {
+		panic(fmt.Sprintf("call macro %s returns %T(%#v)", macro.Name, ret, ret))
+	}
+
+	e.Pass1 = savePass
+	return ret
+}
+
 // ラベル定義文
-func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env *object.Environment) object.Object {
+func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.Environment) object.Object {
 	name := node.Value.Name
 	// pass2 で定義済みならエラー
 	if obj, ok := env.Get(name); ok {
@@ -255,7 +317,7 @@ func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env *object.
 }
 
 // const / equ 文
-func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.Environment) object.Object {
+func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.Environment) object.Object {
 	name := node.Name.Name
 
 	// 定義済みならエラー
@@ -305,7 +367,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env *object.
 }
 
 // if 文
-func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Environment) object.Object {
+func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env object.Environment) object.Object {
 	cond, ok := e.Eval(stmt.Condition, env).(*object.NumberObject)
 	if !ok {
 		return &object.NodeObject{Value: stmt, LineNumber: stmt.LineNumber()}
@@ -323,7 +385,7 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env *object.Enviro
 }
 
 // function 文
-func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env *object.Environment) object.Object {
+func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env object.Environment) object.Object {
 	name := stmt.Name
 	_, ok := env.Get(name)
 	if ok {
@@ -336,7 +398,7 @@ func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env *object.En
 }
 
 // return 文
-func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env *object.Environment) object.Object {
+func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env object.Environment) object.Object {
 	var ret object.Object
 	if stmt.Value == nil {
 		ret = object.NULL
@@ -347,7 +409,7 @@ func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env *objec
 }
 
 // enum 文
-func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env *object.Environment) object.Object {
+func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Environment) object.Object {
 	keys := []string{}
 	enum := map[string]object.Object{}
 	value := 0

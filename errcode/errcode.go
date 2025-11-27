@@ -12,7 +12,7 @@ const (
 	E006 = "間接指定オペランド誤り"
 	E007 = "'%c' は単項文字列演算子ではない"
 	E008 = "'%c' は単項数値演算子ではない"
-	E009 = "symbol '%s' は定義されていない"
+	E009 = "'%s' は未定義"
 	E010 = "enum '%s' は定義されていない"
 	E011 = "enum '%s.%s' は定義されていない"
 	E012 = "enum '%s' は定義済み"
@@ -22,10 +22,13 @@ const (
 	E016 = "不明な整数演算子 '%s'"
 	E017 = "'%s' はフラグでない"
 	E018 = "func '%s' は定義済み"
-	E019 = "関数呼出しには関数名が必要"
-	E020 = "func '%s' は未定義"
-	E021 = "func '%s' の仮引数の数と、関数呼出しの実引数の数が不一致"
+
+	E019            = "関数呼出しには関数名が必要"
+	E020            = "func '%s' は未定義"
+	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
+
 	E022 = "単項演算子 '%s' が使用できない型"
+
 	E023 = "E023 二項演算子 '%s' は使用不可"
 	E024 = "第1オペランド誤り"
 	E025 = "第2オペランド誤り"
@@ -37,10 +40,13 @@ const (
 	E031 = "const/equ '%s' を再定義不可" // label or const で定義済み
 	E032 = "label '%s' を再定義不可"     // label or const で定義済み
 
-	EMACRO_DUP  = "MACRO %s は定義済み"
-	EMACRO_NEST = "MACRO 定義はネスト不可"
-	EMACRO_ARGS = "MACRO %s の仮引数と引数の個数不一致"
-	EMACRO_DEF  = "%s は使用済みのため、MACRO として再定義不可"
+	EMACRO_FUNC_NOT_FOUND = "MACRO/FUNCTION %s は未定義"
+	EMACRO_NOT_FOUND      = "MACRO %s は未定義"
+	EMACRO_DUP            = "MACRO %s は定義済み" // TODO 最終的に不要
+	EMACRO_NEST           = "MACRO 定義はネスト不可" // TODO 最終的に不要
+	EMACRO_ARG_COUNT      = "MACRO %s の仮引数と引数の個数不一致"
+	EMACRO_DEF            = "%s は使用済みのため、MACRO として再定義不可"
+	EMACRO_NOT_MACRO      = "%s は MACRO 以外で定義済み"
 
 	E900 = "E900 内部エラー %s"
 	E999 = "[E]'%T' の評価は未実装"
