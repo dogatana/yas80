@@ -21,6 +21,7 @@ const (
 	RETURN_OBJ
 	BLOCK_OBJ
 	FUNC_OBJ
+	MACRO_OBJ
 	REF_NOTFOUND_OBJ
 	SYMBOL_OBJ
 	SYMBOL_EXPR_OBJ
@@ -218,7 +219,9 @@ type DeleltedObject struct {
 
 func (d *DeleltedObject) Type() ObjectType { return DELETE_OBJ }
 func (d *DeleltedObject) String() string {
-	return "DELETED(" + d.Node.String() + ")"
+	body := strings.Join(strings.Split(d.Node.String(), "\n"), " \\ ")
+
+	return "DELETED(" + body + ")"
 }
 
 // symbol
@@ -415,6 +418,27 @@ func (f *FunctionObject) String() string {
 	out.WriteRune('\n')
 	out.WriteString(f.Body.String() + "\n")
 	out.WriteString("ENDF")
+
+	return out.String()
+}
+
+// Macro
+type MacroObject struct {
+	Name   string
+	Params []string
+	Body   *parser.BlockStatement
+}
+
+func (mo *MacroObject) Type() ObjectType { return MACRO_OBJ }
+func (mo *MacroObject) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(mo.Name + " MACRO")
+	if len(mo.Params) > 0 {
+		out.WriteRune(' ')
+		out.WriteString(strings.Join(mo.Params, ", "))
+	}
+	out.WriteString(" \\ " + mo.Body.String() + " \\ ENDM")
 
 	return out.String()
 }

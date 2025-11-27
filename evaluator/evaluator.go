@@ -34,15 +34,6 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		return e.evalProgram(node, env)
 
 	// Statement
-	case *parser.ExpressionStatement:
-		e.lineNumber = node.LineNumber()
-		return e.Eval(node.Value, env)
-	case *parser.ReturnStatement:
-		return e.evalReturnStatement(node, env)
-	case *parser.IfStatement:
-		return e.evalIfStatement(node, env)
-	case *parser.FuncStatement:
-		return e.evalFuncStatement(node, env)
 	case *parser.Z80Instruction:
 		e.lineNumber = node.LineNumber()
 		obj := e.evalZ80Instruction(node, env)
@@ -52,13 +43,26 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 			advanceLocationCounter(env, code.Size())
 		}
 		return obj
+
 	case *parser.LabelStatement:
 		return e.evalLabelStatement(node, env)
 	case *parser.ConstStatement:
 		// const/equ は参照内容によって NumberObject/StringObject/SymbolObject/SymbolExprObject のいずれかになる
 		return e.evalConstStatement(node, env)
+
+	case *parser.IfStatement:
+		return e.evalIfStatement(node, env)
 	case *parser.BlockStatement:
 		return e.evalBlockStatement(node, env)
+
+	case *parser.MacroStatement:
+		return e.evalMacroStatement(node, env)
+
+	case *parser.FuncStatement:
+		return e.evalFuncStatement(node, env)
+	case *parser.ReturnStatement:
+		return e.evalReturnStatement(node, env)
+
 	case *parser.EnumStatement:
 		name := node.Name
 		_, ok := env.GlobalGet(name) // enum 定義は常にグローバルスコープ
@@ -76,6 +80,9 @@ func (e *Evaluator) Eval(node parser.Node, env *object.Environment) object.Objec
 		default:
 			return object.ERROR
 		}
+	case *parser.ExpressionStatement:
+		e.lineNumber = node.LineNumber()
+		return e.Eval(node.Value, env)
 
 	// Expression
 	case *parser.CallExpression:
@@ -170,7 +177,7 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env *object.Environment) o
 
 		// pass1 で無効化するステートメント
 		switch stmt := stmt.(type) {
-		case *parser.ConstStatement, *parser.FuncStatement:
+		case *parser.ConstStatement, *parser.FuncStatement, *parser.MacroStatement:
 			prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
 		}
 	}
@@ -207,6 +214,18 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env *object.
 	return block
 }
 
+// マクロ定義文
+func (e *Evaluator) evalMacroStatement(node *parser.MacroStatement, env *object.Environment) object.Object {
+	if _, ok := env.Get(node.Name); ok {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, node.Name), node.LineNumber())
+		return object.ERROR
+	}
+	obj := &object.MacroObject{Name: node.Name, Params: node.Params, Body: node.Body}
+	env.Set(node.Name, obj)
+	return obj
+}
+
+// ラベル定義文
 func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env *object.Environment) object.Object {
 	name := node.Value.Name
 	// pass2 で定義済みならエラー

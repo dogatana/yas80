@@ -40,6 +40,7 @@ const (
 	EMACRO_DUP  = "MACRO %s は定義済み"
 	EMACRO_NEST = "MACRO 定義はネスト不可"
 	EMACRO_ARGS = "MACRO %s の仮引数と引数の個数不一致"
+	EMACRO_DEF  = "%s は使用済みのため、MACRO として再定義不可"
 
 	E900 = "E900 内部エラー %s"
 	E999 = "[E]'%T' の評価は未実装"
