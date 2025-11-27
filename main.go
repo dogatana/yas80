@@ -123,7 +123,7 @@ func main() {
 	fmt.Println(prog.String())
 
 	fmt.Println("\n# env")
-	env.Print()
+	object.PrintEnv(env)
 
 	// eval env
 	fmt.Println("\n# eval env")
@@ -134,7 +134,7 @@ func main() {
 	fmt.Println("order:", order)
 
 	fmt.Println("\n# env after eval")
-	env.Print()
+	object.PrintEnv(env)
 
 	if len(log.Errors) > 0 {
 		fmt.Println("\n*** abort ***")
@@ -162,5 +162,5 @@ func main() {
 		fmt.Println(o.String())
 	}
 	fmt.Println("\n# final env")
-	env.Print()
+	object.PrintEnv(env)
 }
