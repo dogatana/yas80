@@ -12,15 +12,15 @@ type MacroTableType map[string]*MacroStatement
 var macroTable MacroTableType = make(MacroTableType)
 
 func PreProrocess(logger *logger.Logger, prog *Program) *Program {
+	return prog
+	// // マクロ定義抽出
+	// macroTable = make(map[string]*MacroStatement)
+	// extractMacroDef(logger, prog)
 
-	// マクロ定義抽出
-	macroTable = make(map[string]*MacroStatement)
-	extractMacroDef(logger, prog)
-
-	// yacc でマクロ呼出し、関数呼出しを完全に区別できないので、
-	// マクロ定義 0 件でも MacroCall の書き換えは必要なのに注意
-	result := preprocessStatements(logger, prog.Statements)
-	return &Program{Statements: result}
+	// // yacc でマクロ呼出し、関数呼出しを完全に区別できないので、
+	// // マクロ定義 0 件でも MacroCall の書き換えは必要なのに注意
+	// result := preprocessStatements(logger, prog.Statements)
+	// return &Program{Statements: result}
 }
 
 // トップレベルからマクロ定義を抽出する
