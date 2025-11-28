@@ -19,11 +19,11 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
-		e.logger.Error(errcode.E019, expr.LineNumber())
+		e.logger.Error(errcode.E019, expr.LineNumber)
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {
-		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), expr.LineNumber())
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), expr.LineNumber)
 		return object.ERROR
 	}
 

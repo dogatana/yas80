@@ -187,14 +187,14 @@ func buildInfixExpression(opcode int, op1, op2 Expression, lineNumber int) Expre
 	num2, ok2 := op2.(*NumberLiteral)
 	if ok1 && ok2 {
 		if opcode == '/' && num2.Value == 0 {
-			return &ParseError{Message: errcode.E015, lineNumber: lineNumber}
+			return &ParseError{Message: errcode.E015, LineNumber: lineNumber}
 		}
 
 		fn, ok := infixFuncs[opcode]
 		if ok {
-			return &NumberLiteral{Value: fn(num1.Value, num2.Value), lineNumber: lineNumber}
+			return &NumberLiteral{Value: fn(num1.Value, num2.Value), LineNumber: lineNumber}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(errcode.E016, TokenLiteral(opcode)), lineNumber: lineNumber}
+			return &ParseError{Message: fmt.Sprintf(errcode.E016, TokenLiteral(opcode)), LineNumber: lineNumber}
 		}
 	}
 	// 文字列演算(+)の畳み込み
@@ -203,7 +203,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression, lineNumber int) Expre
 	if ok1 && ok2 && opcode == '+' {
 		return &StringLiteral{Value: str1.Value + str2.Value}
 	}
-	return &InfixExpression{Operator: opcode, Op1: op1, Op2: op2, lineNumber: lineNumber}
+	return &InfixExpression{Operator: opcode, Op1: op1, Op2: op2, LineNumber: lineNumber}
 }
 
 // 数値リテラルの畳み込み(前置演算子)
@@ -230,9 +230,9 @@ func buildPrefixExpression(opcode int, op Expression, lineNumber int) Expression
 	case *NumberLiteral:
 		fn, ok := prefixFuncs[opcode]
 		if ok {
-			return &NumberLiteral{Value: fn(op.Value), lineNumber: lineNumber}
+			return &NumberLiteral{Value: fn(op.Value), LineNumber: lineNumber}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(errcode.E008, rune(opcode)), lineNumber: lineNumber}
+			return &ParseError{Message: fmt.Sprintf(errcode.E008, rune(opcode)), LineNumber: lineNumber}
 		}
 	case *StringLiteral:
 		if opcode == '!' {
@@ -242,11 +242,11 @@ func buildPrefixExpression(opcode int, op Expression, lineNumber int) Expression
 			} else {
 				result = 0
 			}
-			return &NumberLiteral{Value: result, lineNumber: lineNumber}
+			return &NumberLiteral{Value: result, LineNumber: lineNumber}
 		}
-		return &ParseError{Message: fmt.Sprintf(errcode.E007, rune(opcode)), lineNumber: lineNumber}
+		return &ParseError{Message: fmt.Sprintf(errcode.E007, rune(opcode)), LineNumber: lineNumber}
 	}
-	return &PrefixExpression{Operator: opcode, Op: op, lineNumber: lineNumber}
+	return &PrefixExpression{Operator: opcode, Op: op, LineNumber: lineNumber}
 }
 
 // elif の連鎖している if 文の最後を抽出する
