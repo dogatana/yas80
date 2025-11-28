@@ -11,21 +11,56 @@ import (
 
 const EOF = 0
 
+type FileBlockProvider func() *fileblock.FileBlock
+
+type LexerContext struct {
+	filename   string
+	lineNumber int
+	index      int
+	fileBlock  *fileblock.FileBlock
+	curChar    rune
+}
+
 // 最低限必要な構造体を定義
 type Lexer struct {
-	scanner    *bufio.Scanner
-	isEOF      bool
-	text       []byte
-	index      int
+	scanner *bufio.Scanner
+	isEOF   bool
+	text    []byte
+	//	index      int
 	curChar    rune
 	lineNumber int
 	filename   string
-	logger     *logger.Logger
-	program    *Program
+	//
+	logger   *logger.Logger
+	program  *Program
+	callback FileBlockProvider
+	ctx      *LexerContext
+}
+
+func NewLexer(filename string, fb *fileblock.FileBlock, logger *logger.Logger) *Lexer {
+	sb := bytes.NewReader(fb.Content)
+	ctx := &LexerContext{filename: fb.Filename, fileBlock: fb}
+	l := &Lexer{scanner: bufio.NewScanner(sb), program: &Program{}, ctx: ctx, logger: logger}
+	l.nextChar()
+	return l
 }
 
 // yyLexer インターフェースメソッド
 func (l *Lexer) Lex(lval *yySymType) int {
+	if l.ctx == nil {
+		l.ctx = &LexerContext{
+			fileBlock:  l.callback(),
+			index:      0,
+			curChar:    0,
+			lineNumber: 0,
+		}
+	}
+	if l.ctx.fileBlock == nil {
+		// これ以上 FileBlock が得られない場合 EOF
+		tok := Token{TokenType: 0, Literal: "[EOF]", LineNumber: l.lineNumber}
+		lval.token = tok
+		return int(tok.TokenSubType)
+	}
 	tok := l.NextToken()
 	lval.token = tok
 	return int(tok.TokenType)
@@ -67,13 +102,8 @@ func (l *Lexer) Error(msg string, args ...any) {
 	}
 }
 
-func NewLexer(filename string, fb *fileblock.FileBlock, logger *logger.Logger) *Lexer {
-	sb := bytes.NewReader(fb.Content)
-	l := &Lexer{scanner: bufio.NewScanner(sb), program: &Program{}}
-	l.nextChar()
-	l.filename = fb.Filename
-	l.logger = logger
-	return l
+func NewLexerProvider(callback FileBlockProvider, logger *logger.Logger) *Lexer {
+	return &Lexer{logger: logger}
 }
 
 func (l *Lexer) Logger() *logger.Logger { return l.logger }
@@ -264,7 +294,7 @@ func (l *Lexer) nextChar() {
 		l.curChar = EOF
 		return
 	}
-	if l.index == 0 {
+	if l.ctx.index == 0 {
 		scanned := l.scanner.Scan()
 		if !scanned {
 			if l.curChar != '\n' {
@@ -278,21 +308,21 @@ func (l *Lexer) nextChar() {
 		l.lineNumber++
 		l.text = []byte(l.scanner.Text())
 	}
-	if l.index >= len(l.text) {
+	if l.ctx.index >= len(l.text) {
 		l.curChar = '\n'
-		l.index = 0
+		l.ctx.index = 0
 		return
 	}
-	start := l.index
-	l.index += l.charSize(l.text[l.index])
-	l.curChar = []rune(string(l.text[start:l.index]))[0]
+	start := l.ctx.index
+	l.ctx.index += l.charSize(l.text[l.ctx.index])
+	l.curChar = []rune(string(l.text[start:l.ctx.index]))[0]
 }
 
 func (l *Lexer) peekChar() rune {
-	if l.index >= len(l.text) {
+	if l.ctx.index >= len(l.text) {
 		return '\n'
 	}
-	return rune(l.text[l.index])
+	return rune(l.text[l.ctx.index])
 }
 
 func (l *Lexer) skipWhitespace() {
@@ -302,19 +332,19 @@ func (l *Lexer) skipWhitespace() {
 }
 
 func (l *Lexer) readString() string {
-	startIndex := l.index
-	for l.index < len(l.text) && l.text[l.index] != '"' {
-		l.index++
+	startIndex := l.ctx.index
+	for l.ctx.index < len(l.text) && l.text[l.ctx.index] != '"' {
+		l.ctx.index++
 	}
-	return string(l.text[startIndex:l.index])
+	return string(l.text[startIndex:l.ctx.index])
 }
 
 func (l *Lexer) readWord() string {
-	startIndex := l.index - 1
-	for l.index < len(l.text) && l.isWordChar(rune(l.text[l.index])) {
-		l.index++
+	startIndex := l.ctx.index - 1
+	for l.ctx.index < len(l.text) && l.isWordChar(rune(l.text[l.ctx.index])) {
+		l.ctx.index++
 	}
-	return string(l.text[startIndex:l.index])
+	return string(l.text[startIndex:l.ctx.index])
 }
 
 func (l *Lexer) isDigit(ch rune) bool {
