@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"strings"
 	"yas80/fileblock"
@@ -23,20 +21,16 @@ type LexerContext struct {
 
 // 最低限必要な構造体を定義
 type Lexer struct {
-	scanner *bufio.Scanner
 	isEOF   bool
-	text    []byte
-
-	logger   *logger.Logger
-	program  *Program
-	callback FileBlockProvider
-	ctx      *LexerContext
+	logger  *logger.Logger
+	program *Program
+	//	callback FileBlockProvider
+	ctx *LexerContext
 }
 
 func NewLexer(fb *fileblock.FileBlock, logger *logger.Logger) *Lexer {
-	sb := bytes.NewReader(fb.Content)
-	ctx := &LexerContext{filename: fb.Filename, fileBlock: fb}
-	l := &Lexer{scanner: bufio.NewScanner(sb), program: &Program{}, ctx: ctx, logger: logger}
+	ctx := &LexerContext{filename: fb.Filename, lineNumber: 1, fileBlock: fb}
+	l := &Lexer{logger: logger, program: &Program{}, ctx: ctx}
 	l.nextChar()
 	return l
 }
@@ -290,35 +284,28 @@ func (l *Lexer) nextChar() {
 		l.ctx.curChar = EOF
 		return
 	}
-	if l.ctx.index == 0 {
-		scanned := l.scanner.Scan()
-		if !scanned {
-			if l.ctx.curChar != '\n' {
-				l.ctx.curChar = '\n'
-				return
-			}
-			l.ctx.curChar = EOF
-			l.isEOF = true
+	if l.ctx.index >= len(l.ctx.fileBlock.Content) {
+		if l.ctx.curChar != '\n' {
+			l.ctx.curChar = '\n'
 			return
 		}
-		l.ctx.lineNumber++
-		l.text = []byte(l.scanner.Text())
-	}
-	if l.ctx.index >= len(l.text) {
-		l.ctx.curChar = '\n'
-		l.ctx.index = 0
+		l.ctx.curChar = EOF
+		l.isEOF = true
 		return
 	}
 	start := l.ctx.index
-	l.ctx.index += l.charSize(l.text[l.ctx.index])
-	l.ctx.curChar = []rune(string(l.text[start:l.ctx.index]))[0]
+	l.ctx.index += l.charSize(l.ctx.fileBlock.Content[l.ctx.index])
+	l.ctx.curChar = []rune(string(l.ctx.fileBlock.Content[start:l.ctx.index]))[0]
+	if l.ctx.curChar == '\n' {
+		l.ctx.lineNumber++
+	}
 }
 
 func (l *Lexer) peekChar() rune {
-	if l.ctx.index >= len(l.text) {
+	if l.ctx.index >= len(l.ctx.fileBlock.Content) {
 		return '\n'
 	}
-	return rune(l.text[l.ctx.index])
+	return rune(l.ctx.fileBlock.Content[l.ctx.index])
 }
 
 func (l *Lexer) skipWhitespace() {
@@ -329,18 +316,18 @@ func (l *Lexer) skipWhitespace() {
 
 func (l *Lexer) readString() string {
 	startIndex := l.ctx.index
-	for l.ctx.index < len(l.text) && l.text[l.ctx.index] != '"' {
+	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.ctx.fileBlock.Content[l.ctx.index] != '"' {
 		l.ctx.index++
 	}
-	return string(l.text[startIndex:l.ctx.index])
+	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
 }
 
 func (l *Lexer) readWord() string {
 	startIndex := l.ctx.index - 1
-	for l.ctx.index < len(l.text) && l.isWordChar(rune(l.text[l.ctx.index])) {
+	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.isWordChar(rune(l.ctx.fileBlock.Content[l.ctx.index])) {
 		l.ctx.index++
 	}
-	return string(l.text[startIndex:l.ctx.index])
+	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
 }
 
 func (l *Lexer) isDigit(ch rune) bool {
