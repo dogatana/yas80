@@ -15,7 +15,7 @@ const EOF = 0
 type Lexer struct {
 	scanner    *bufio.Scanner
 	isEOF      bool
-	text       []rune
+	text       []byte
 	index      int
 	curChar    rune
 	lineNumber int
@@ -276,22 +276,23 @@ func (l *Lexer) nextChar() {
 			return
 		}
 		l.lineNumber++
-		l.text = []rune(l.scanner.Text())
+		l.text = []byte(l.scanner.Text())
 	}
 	if l.index >= len(l.text) {
 		l.curChar = '\n'
 		l.index = 0
 		return
 	}
-	l.curChar = l.text[l.index]
-	l.index++
+	start := l.index
+	l.index += l.charSize(l.text[l.index])
+	l.curChar = []rune(string(l.text[start:l.index]))[0]
 }
 
 func (l *Lexer) peekChar() rune {
 	if l.index >= len(l.text) {
 		return '\n'
 	}
-	return l.text[l.index]
+	return rune(l.text[l.index])
 }
 
 func (l *Lexer) skipWhitespace() {
@@ -310,7 +311,7 @@ func (l *Lexer) readString() string {
 
 func (l *Lexer) readWord() string {
 	startIndex := l.index - 1
-	for l.index < len(l.text) && l.isWordChar(l.text[l.index]) {
+	for l.index < len(l.text) && l.isWordChar(rune(l.text[l.index])) {
 		l.index++
 	}
 	return string(l.text[startIndex:l.index])
@@ -334,4 +335,21 @@ func (l *Lexer) isWordChar(ch rune) bool {
 
 func (l *Lexer) isOneCharToken(ch rune) bool {
 	return ch == '(' || ch == ')' || ch == ',' || ch == ':' || ch == '[' || ch == ']'
+}
+
+func (l *Lexer) charSize(ch byte) int {
+	switch {
+	case ch < 0x80:
+		return 1
+	case ch < 0xc2: // invalid utf-8
+		return 1
+	case ch < 0xe0:
+		return 2
+	case ch < 0xf0:
+		return 3
+	case ch < 0xf5:
+		return 4
+	default:
+		return 1 // invalid utf-8
+	}
 }
