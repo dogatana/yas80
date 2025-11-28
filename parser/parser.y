@@ -108,14 +108,15 @@ statement   : EOL { $$ = nil }
 			}
 			| instruction EOL	{ $$ = $1 }
 			| directive	 EOL	{ $$ = $1 }
-			| expr EOL			
-			{ 
-				if $1.NodeType() == NODE_ERROR {
-					$$ = $1
-				} else {
-					$$ = &ExpressionStatement{Value: $1, lineNumber: $2.LineNumber}
-				}
-			}
+//			| expr EOL			
+//			{ 
+//				$$ = &ParseError{Message: "式文は無効", lineNumber: $2.LineNumber}
+//				if $1.NodeType() == NODE_ERROR {
+//					$$ = $1
+//				} else {
+//					$$ = &ExpressionStatement{Value: $1, lineNumber: $2.LineNumber}
+//				}
+//			}
 			| error EOL
 			{
 				yylex.Error(__yyfmt__.Sprintf("[statement error] %s", $1.String()), $2.LineNumber)
@@ -436,7 +437,8 @@ operand	: '(' Z80_REG16 ')'
 			
 
 // expr エラー検出時は yylex.Error() を呼んで伝播を止める
-expr_list	: expr		// 最低でも 1 個の引数で必要
+expr_list	:   { $$ = &ExpressionList{Expressions: []Expression{}}}
+			| expr		// 最低でも 1 個の引数で必要
 			{ 
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
@@ -476,13 +478,13 @@ expr		: NUMBER
 				names := strings.Split(uname, ".")
 				$$ = &DotIdent{Name: uname, Left: names[0], Right: names[1], lineNumber: $1.LineNumber}
 			}
-			| IDENT '(' ')'
-			{
-				$$ = &CallExpression{
-					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT, lineNumber: $1.LineNumber}, 
-					Arguments: &ExpressionList{Expressions: []Expression{}},
-					lineNumber: $1.LineNumber}
-			}
+//			| IDENT '(' ')'
+//			{
+//				$$ = &CallExpression{
+//					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT, lineNumber: $1.LineNumber}, 
+//					Arguments: &ExpressionList{Expressions: []Expression{}},
+//					lineNumber: $1.LineNumber}
+//			}
 			| IDENT '(' expr_list ')'
 			{
 				$$ = &CallExpression{
@@ -490,7 +492,7 @@ expr		: NUMBER
 					Arguments: $3, 
 					lineNumber: $1.LineNumber}
 			}
-			| '[' ']'			{ $$ = &ArrayLiteral{Elements: &ExpressionList{Expressions: []Expression{}}, lineNumber: $1.LineNumber}}
+//			| '[' ']'			{ $$ = &ArrayLiteral{Elements: &ExpressionList{Expressions: []Expression{}}, lineNumber: $1.LineNumber}}
 			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2, lineNumber: $1.LineNumber} }
 			| indexed_expr 			{ $$ = $1}
 			| '(' expr ')'			{ $$ = $2}
