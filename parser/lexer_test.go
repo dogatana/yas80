@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -471,6 +472,36 @@ func TestLexLineContinuation(t *testing.T) {
 			if tok.TokenType == EOL {
 				break
 			}
+		}
+	}
+}
+
+func TestLexerLineNumber(t *testing.T) {
+	tests := []struct {
+		input string
+	}{
+		{"abc"},
+		{"abc \n def"},
+		{"abc \n def \n xyz"},
+		{"abc \\ def \\ xyz"},
+	}
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		ln := 1
+		for {
+			tok := l.NextToken()
+			if tok.TokenType == EOL {
+				continue
+			} else if tok.TokenType == EOF {
+				break
+			}
+			if tok.LineNumber != ln {
+				t.Errorf("LineNumber not %d. got %d", ln, tok.LineNumber)
+			}
+			if strings.Contains(tt.input, "\\") {
+				continue // マルチステートメントは同一行
+			}
+			ln++
 		}
 	}
 }
