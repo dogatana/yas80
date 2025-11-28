@@ -51,10 +51,10 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 		fmt.Printf("input %q\n", input)
 		t.Fatalf("not ProgramObject. got %T", obj)
 	}
-	if len(programObject.Objects) == 0 {
-		fmt.Printf("input %q\n", input)
-		t.Fatal("Eval() return 0 Objects")
-	}
+	// if len(programObject.Objects) == 0 {
+	// 	fmt.Printf("input %q\n", input)
+	// 	t.Fatal("Eval() return 0 Objects")
+	// }
 	return programObject
 }
 

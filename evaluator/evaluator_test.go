@@ -12,52 +12,61 @@ func TestEvalExpression(t *testing.T) {
 		input    string
 		expected int
 	}{
-		{"1", 1},
-		{"1 + 2", 3},
-		{"1 * 2", 2},
-		{"1 + 2 * 3", 7},
-		{`const val = 123 \ val`, 123},
-		{`const val = 11 \ val * val`, 121},
-		{`const val = 11 \ const val2 = val * val \ val2`, 121},
-		{"const val = 11 \r\n const val2 = val * val \r\n val2", 121},
+		{"const result = 1", 1},
+		{"const result = 1 + 2", 3},
+		{"const result = 1 * 2", 2},
+		{"const result = 1 + 2 * 3", 7},
+		{`const val = 123 \ const result = val`, 123},
+		{`const val = 11 \ const result = val * val`, 121},
+		{`const val = 11 \ const val2 = val * val \ const result = val2`, 121},
+		{"const val = 11 \r\n const val2 = val * val \r\n const result = val2", 121},
 	}
 
 	for _, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		prog := evaluateInput(t, tt.input, logger, env)
+		_ = evaluateInput(t, tt.input, logger, env)
 
-		last := prog.Objects[len(prog.Objects)-1]
-		testNumberObject(t, last, tt.expected, tt.input)
+		value, ok := env.Get("RESULT")
+		if !ok {
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatalf(`"RESULT" not in env`)
+		}
+		testNumberObject(t, value, tt.expected, tt.input)
 	}
 }
 
-func TestReturn(t *testing.T) {
+func TestFuncIfReturn(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
 	}{
-		{"1", 1},
-		{`1 \ 2 \ 3`, 3},
-		{`1 \ 2 \ return \ 3`, -1},
-		{`1 \ 2 \ return 99 \ 3`, 99},
-		{`1 \ if 1 \ if 2 \ 3 \ return 99 \ 4 \ endif \ return 98 \ 5 \ endif`, 99},
-		{`1 \ if 1 \ if 0 \ 3 \ return 99 \ 4 \ endif \ return 98 \ 5 \ endif`, 98},
+		{`function test() 1 \ const result = test()`, 1},
+		{`test func\ const aa=1 \ endf \ const result = test()`, -1},
+		{`test func\ const aa=1 \ return \ const aa=2\ endf \ const result = test()`, -1},
+		{`test func\ const aa=1 \ return 99 \ const aa=2 \ endf \ const result = test()`, 99},
+		{`test func\ if 1 \ if 2 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, 99},
+		{`test func\ if 1 \ if 0 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, 98},
 	}
 
 	for _, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		prog := evaluateInput(t, tt.input, logger, env)
+		_ = evaluateInput(t, tt.input, logger, env)
 
-		last := prog.Objects[len(prog.Objects)-1]
+		value, ok := env.Get("RESULT")
+		if !ok {
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatalf(`"RESULT" not in env`)
+		}
+
 		if tt.expected >= 0 {
-			testNumberObject(t, last, tt.expected, tt.input)
+			testNumberObject(t, value, tt.expected, tt.input)
 			continue
 		}
-		if last != object.NULL {
+		if value != object.NULL {
 			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("should be NULL. got %T(%#v)", last, last)
+			t.Errorf("should be NULL. got %T(%#v)", value, value)
 		}
 	}
 }
@@ -67,29 +76,31 @@ func TestIf(t *testing.T) {
 		input    string
 		expected int
 	}{
-		{`if 1 \ endif`, -1}, // -1 は NullObject とする
-		{`if 0 \ endif`, -1},
-		{`if 1 \ else \ endif`, -1},
-		{`if 0 \ else \ endif`, -1},
+		// 式文を文法から削除したことで一部のケースを除外
+		// {`if 1 \ endif`, -1}, // -1 は NullObject とする
+		// {`if 0 \ endif`, -1},
+		// {`if 1 \ else \ endif`, -1},
+		// {`if 0 \ else \ endif`, -1},
 
-		{`if 1 \ 100 \ endif`, 100},
-		{`if 0 \ 100 \ endif`, -1},
+		{`if 1 \ const result=100 \ endif`, 100},
+		{`if 0 \ const result=100 \ endif`, -1},
 
-		{`if 1 \ 100 \ else \ endif`, 100},
-		{`if 0 \ 100 \ else \ endif`, -1},
+		{`if 1 \ const result=100 \ else \ endif`, 100},
+		{`if 0 \ const result=100 \ else \ endif`, -1},
 
-		{`if 1 \ 100 \ else \ 200  \ endif`, 100},
-		{`if 0 \ 100 \ else \ 200  \ endif`, 200},
+		{`if 1 \ const result=100 \ else \ const result=200  \ endif`, 100},
+		{`if 0 \ const result=100 \ else \ const result=200  \ endif`, 200},
 
-		{`const val = 1 \ if val == 1 \ 100 \ elif val == 2 \ 200  \ endif`, 100},
-		{`const val = 2 \ if val == 1 \ 100 \ elif val == 2 \ 200  \ endif`, 200},
-		{`const val = 3 \ if val == 1 \ 100 \ elif val == 2 \ 200  \ endif`, -1},
+		{`const val = 1 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, 100},
+		{`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, 200},
+		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, -1},
 
-		{`const val = 3 \ if val == 1 \ 100 \ elif val == 2 \ 200  \ else \ 300 \ endif`, 300},
+		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ else \ const result=300 \ endif`, 300},
 
-		{`const val = 2 \ if val == 1 \ 100 \ elif val == 2 \ 200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
-		{`const val = 2 \ if val == 1 \ 100 \ elif val == 2 \ 200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
+		// {`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
+		// {`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
 	}
+	t.Fatal("const 再定義要修正")
 
 	for _, tt := range tests {
 		env := object.NewEnvironment(nil)
@@ -133,6 +144,7 @@ func TestFunc(t *testing.T) {
 			fib(5)
 			`, 8},
 	}
+	t.Fatal("const 再定義要修正")
 
 	for _, tt := range tests {
 		env := object.NewEnvironment(nil)
@@ -164,23 +176,24 @@ func TestClosure(t *testing.T) {
 			return inner
 		endf
 		const add3 = adder(3)
-		add3(10)
+		const result = add3(10)
 		`, 13},
 	}
 
 	for _, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		prog := evaluateInput(t, tt.input, logger, env)
+		_ = evaluateInput(t, tt.input, logger, env)
 
-		last := prog.Objects[len(prog.Objects)-1]
-		if tt.expected >= 0 {
-			testNumberObject(t, last, tt.expected, tt.input)
-			continue
-		}
-		if last != object.NULL {
+		value, ok := env.Get("RESULT")
+		if !ok {
 			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("should be NULL. got %T(%#v)", last, last)
+			t.Fatalf(`"RESULT" not in env`)
+		}
+
+		if tt.expected >= 0 {
+			testNumberObject(t, value, tt.expected, tt.input)
+			continue
 		}
 	}
 }
@@ -200,23 +213,24 @@ func TestFibFunc(t *testing.T) {
 				return fib(x - 1) + fib(x - 2)
 			endif
 		endf
-		fib(10)
+		const result = fib(10)
 		`, 89},
 	}
 
 	for _, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		prog := evaluateInput(t, tt.input, logger, env)
+		_ = evaluateInput(t, tt.input, logger, env)
 
-		last := prog.Objects[len(prog.Objects)-1]
-		if tt.expected >= 0 {
-			testNumberObject(t, last, tt.expected, tt.input)
-			continue
-		}
-		if last != object.NULL {
+		value, ok := env.Get("RESULT")
+		if !ok {
 			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("should be NULL. got %T(%#v)", last, last)
+			t.Fatalf(`"RESULT" not in env`)
+		}
+
+		if tt.expected >= 0 {
+			testNumberObject(t, value, tt.expected, tt.input)
+			continue
 		}
 	}
 }
@@ -226,20 +240,28 @@ func TestFunction(t *testing.T) {
 		input    string
 		expected int
 	}{
-		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(0, 0)`, 0xd000},
-		{`function vram(x, y) 0xd000 + y * 40 + x \ vram(39, 24)`, 0xd000 + 40*24 + 39},
-		{`function add1(x) x + 1 \ const fn = add1 \ fn(99)`, 100},
+		{`function vram(x, y) 0xd000 + y * 40 + x \ const result = vram(0, 0)`, 0xd000},
+		{`function vram(x, y) 0xd000 + y * 40 + x \ const result = vram(39, 24)`, 0xd000 + 40*24 + 39},
+		{`function add1(x) x + 1 \ const fn = add1 \ const result = fn(99)`, 100},
 		{`	function add1(x) x + 1
 			function double(fn, x) fn(fn(x))
-			double(add1, 98)`, 100},
+			const result = double(add1, 98)`, 100},
 	}
 
 	for _, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		prog := evaluateInput(t, tt.input, logger, env)
+		_ = evaluateInput(t, tt.input, logger, env)
 
-		last := prog.Objects[len(prog.Objects)-1]
-		testNumberObject(t, last, tt.expected, tt.input)
+		value, ok := env.Get("RESULT")
+		if !ok {
+			fmt.Printf("input %q\n", tt.input)
+			t.Fatalf(`"RESULT" not in env`)
+		}
+
+		if tt.expected >= 0 {
+			testNumberObject(t, value, tt.expected, tt.input)
+			continue
+		}
 	}
 }

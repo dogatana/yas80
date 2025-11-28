@@ -43,16 +43,38 @@ func splitTrim(input string) string {
 	return strings.Join(ret, "\n")
 }
 
-func testExpressionStatement(t *testing.T, input string, node Node) *ExpressionStatement {
-	stmt, ok := node.(*ExpressionStatement)
+func testAsignStatement(t *testing.T, input string, node Node) *AsignStatement {
+	stmt, ok := node.(*AsignStatement)
 	if !ok {
 		fmt.Printf("input %q\n", input)
-		t.Fatalf("not *ExpressionStatement. got %T", node)
-		return nil // ここへは到達しないが形式として必要
+		t.Fatalf("not *AsignStatement. got %T", node)
 	}
 	return stmt
 }
 
+func testNumberLiteral(t *testing.T, input string, node Node, expected int) {
+	literal, ok := node.(*NumberLiteral)
+	if !ok {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not *NumberLiteral. got %T", literal)
+	}
+	if literal.Value != expected {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not %d. got %d", expected, literal.Value)
+	}
+}
+
+func testStringLiteral(t *testing.T, input string, node Node, expected string) {
+	literal, ok := node.(*StringLiteral)
+	if !ok {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not *StringLiteral. got %T", literal)
+	}
+	if literal.Value != expected {
+		fmt.Printf("input %q\n", input)
+		t.Errorf("not %q. got %q", expected, literal.Value)
+	}
+}
 func readTestDataFile(t *testing.T, filename string) string {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {

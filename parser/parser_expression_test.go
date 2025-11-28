@@ -9,38 +9,38 @@ func TestParseExpression(t *testing.T) {
 		input    string
 		expected int
 	}{
-		{"1", 1},
-		{"-1", -1},
-		{"~0", -1},
-		{"~1", -2},
-		{"~-1", 0},
-		{"!0", 1},
-		{"!1", 0},
-		{"!-1", 0},
-		{"2 + 3", 5},
-		{"2 - 3", -1},
-		{"2 * 3", 6},
-		{"4 / 2", 2},
-		{"2 + 3 * 4", 14},
-		{"2 * 3 + 4", 10},
-		{"2 * (3 + 4)", 14},
-		{"0x55 | 0xaa", 255},
-		{"0x55 & 0xaa", 0},
-		{"0xf ^ 1", 14},
-		{"1 << 8", 256},
-		{"256 >> 4", 16},
-		{"1 > 0", 1},
-		{"1 >= 0", 1},
-		{"1 < 0", 0},
-		{"1 <= 0", 0},
-		{"2 > 3", 0},
-		{"2 >= 3", 0},
-		{"2 < 3", 1},
-		{"2 <= 3", 1},
-		{"2 != 3", 1},
-		{"2 == 3", 0},
-		{"100 || 0", 1},
-		{"100 && 0", 0},
+		{"a=1", 1},
+		{"a=-1", -1},
+		{"a=~0", -1},
+		{"a=~1", -2},
+		{"a=~-1", 0},
+		{"a=!0", 1},
+		{"a=!1", 0},
+		{"a=!-1", 0},
+		{"a=2 + 3", 5},
+		{"a=2 - 3", -1},
+		{"a=2 * 3", 6},
+		{"a=4 / 2", 2},
+		{"a=2 + 3 * 4", 14},
+		{"a=2 * 3 + 4", 10},
+		{"a=2 * (3 + 4)", 14},
+		{"a=0x55 | 0xaa", 255},
+		{"a=0x55 & 0xaa", 0},
+		{"a=0xf ^ 1", 14},
+		{"a=1 << 8", 256},
+		{"a=256 >> 4", 16},
+		{"a=1 > 0", 1},
+		{"a=1 >= 0", 1},
+		{"a=1 < 0", 0},
+		{"a=1 <= 0", 0},
+		{"a=2 > 3", 0},
+		{"a=2 >= 3", 0},
+		{"a=2 < 3", 1},
+		{"a=2 <= 3", 1},
+		{"a=2 != 3", 1},
+		{"a=2 == 3", 0},
+		{"a=100 || 0", 1},
+		{"a=100 && 0", 0},
 	}
 
 	for _, tt := range tests {
@@ -50,17 +50,8 @@ func TestParseExpression(t *testing.T) {
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
-		expr, ok := prog.Statements[0].(*ExpressionStatement)
-		if !ok {
-			t.Fatalf("parsing %s Statements[0] is not ExpressionStatement. got %T", tt.input, prog.Statements[0])
-		}
-		literal, ok := expr.Value.(*NumberLiteral)
-		if !ok {
-			t.Fatalf("parsing %s Statements[0].Expression is not Expression. got %T", tt.input, expr)
-		}
-		if literal.Value != tt.expected {
-			t.Errorf("parsing %s NumberLiteral.Value is not %d. got %#v", tt.input, tt.expected, literal.Value)
-		}
+		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		testNumberLiteral(t, tt.input, stmt.Value, tt.expected)
 	}
 }
 
@@ -69,11 +60,11 @@ func TestParseCallFunction(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"aFunc()", "AFUNC()"},
-		{"  aFunc(   )  ", "AFUNC()"},
-		// {"aFunc(1)", "AFUNC(1)"},		// 1引数の場合構文解析結果が MacroCallStatement になるので除外する
-		{"aFunc(1,2,3)", "AFUNC(1, 2, 3)"},
-		{"aFunc(1,2+3,4*5)", "AFUNC(1, 5, 20)"},
+		{"a=aFunc()", "AFUNC()"},
+		{"  a=aFunc(   )  ", "AFUNC()"},
+		{"a = aFunc(1)", "AFUNC(1)"},
+		{"a=aFunc(1,2,3)", "AFUNC(1, 2, 3)"},
+		{"a=aFunc(1,2+3,4*5)", "AFUNC(1, 5, 20)"},
 	}
 
 	for _, tt := range tests {
@@ -83,16 +74,9 @@ func TestParseCallFunction(t *testing.T) {
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
-		stmt, ok := prog.Statements[0].(*ExpressionStatement)
-		if !ok {
-			t.Fatalf("parsing %s Statements[0] is not ExpressionStatement . got %T", tt.input, prog.Statements[0])
-		}
-		call, ok := stmt.Value.(*CallExpression)
-		if !ok {
-			t.Fatalf("parsing %s Expression.Value is not CallExpression . got %T", tt.input, stmt.Value)
-		}
-		if call.String() != tt.expected {
-			t.Errorf("CallExpression.String() is not %q. got %q", tt.expected, call.String())
+		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		if stmt.Value.String() != tt.expected {
+			t.Errorf("stmt.Value.String() is not %q. got %q", tt.expected, stmt.Value.String())
 		}
 	}
 }
@@ -127,8 +111,8 @@ func TestParseArrayElement(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"a0 [ 123 ]", "A0[123]"},
-		{"a1 [ 1 + 2 * 3 ]", "A1[7]"},
+		{"a = a0 [ 123 ]", "A0[123]"},
+		{"a = a1 [ 1 + 2 * 3 ]", "A1[7]"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
@@ -137,12 +121,9 @@ func TestParseArrayElement(t *testing.T) {
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
-		stmt, ok := prog.Statements[0].(*ExpressionStatement)
-		if !ok {
-			t.Fatalf("parsing %s Statements[0] is not ExpressionStatement . got %T", tt.input, prog.Statements[0])
-		}
-		if stmt.String() != tt.expected {
-			t.Errorf("stmt.String() is not %q. got %q", tt.expected, stmt.String())
+		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		if stmt.Value.String() != tt.expected {
+			t.Errorf("stmt.String() is not %q. got %q", tt.expected, stmt.Value.String())
 		}
 	}
 }
@@ -152,9 +133,9 @@ func TestParseStringExpression(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{` "abc" `, "abc"},
-		{` "abc" + "def" `, "abcdef"},
-		{` "abc" + "@" + "def" `, "abc@def"},
+		{`a= "abc" `, "abc"},
+		{`a= "abc" + "def" `, "abcdef"},
+		{`a= "abc" + "@" + "def" `, "abc@def"},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
@@ -163,16 +144,7 @@ func TestParseStringExpression(t *testing.T) {
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
-		stmt, ok := prog.Statements[0].(*ExpressionStatement)
-		if !ok {
-			t.Fatalf("parsing %s Statements[0] is not ExpressionStatement . got %T", tt.input, prog.Statements[0])
-		}
-		str, ok := stmt.Value.(*StringLiteral)
-		if !ok {
-			t.Fatalf("Expression is not StringLiteral . got %T", stmt.Value)
-		}
-		if str.Value != tt.expected {
-			t.Errorf("StringLiteral.Value is not %q. got %q", tt.expected, str.Value)
-		}
+		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		testStringLiteral(t, tt.input, stmt.Value, tt.expected)
 	}
 }

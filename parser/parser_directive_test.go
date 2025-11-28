@@ -66,13 +66,13 @@ def = 1
 
 func TestParseReptStatement(t *testing.T) {
 	tests := []struct {
-		input    string
-		expected string
+		input     string
+		count     int
+		stmtCount int
 	}{
-		{`rept 1\ endr`, "REPT 1\nENDR"},
-		{` Rept 2 \\\\ endR`, "REPT 2\nENDR"},
-		{` REPT 3 \\\\ EndR`, "REPT 3\nENDR"},
-		{` REPT 4 \1\ 2\3 \ 4 \ EndR`, "REPT 4\n1\n2\n3\n4\nENDR"},
+		{`rept 1\ endr`, 1, 0},
+		{` Rept 2 \ a = 1 \ endR`, 2, 1},
+		{` REPT 3 \ a = 1 \ a = 2\ endr`, 3, 2},
 	}
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
@@ -86,13 +86,12 @@ func TestParseReptStatement(t *testing.T) {
 		if !ok {
 			t.Errorf("prog.Statements[0] not *RepeatStatment. got %T", stmt)
 		}
-		text := repeat.String()
-		if !strings.EqualFold(text, tt.expected) {
-			t.Errorf("exptected len %d. got %d", len(tt.expected), len(text))
-			fmt.Printf("expected\n%s\n", tt.expected)
-			// fmt.Println([]byte(tt.expected))
-			fmt.Printf("got\n%s\n", text)
-			// fmt.Println([]byte(text))
+		count := repeat.MaxCount.(*NumberLiteral).Value
+		if count != tt.count {
+			t.Errorf("exptected count %d. got %d", tt.count, count)
+		}
+		if len(repeat.Block.Block) != tt.stmtCount {
+			t.Errorf("must have %d statements. got %d", tt.stmtCount, len(repeat.Block.Block))
 		}
 	}
 }
@@ -111,40 +110,40 @@ func TestParseIfStatement(t *testing.T) {
 			`IF 1\ELSE\ENDIF`,
 		},
 		{
-			`if 1 \ 100 \ endif`,
-			`IF 1\100\ELSE\ENDIF`,
+			`if 1 \a = 100 \ endif`,
+			`IF 1\A = 100\ELSE\ENDIF`,
 		},
 		{
-			`if 1 \ 100 \ else \ endif`,
-			`IF 1\100\ELSE\ENDIF`,
+			`if 1 \ a=100 \ else \ endif`,
+			`IF 1\A = 100\ELSE\ENDIF`,
 		},
 		{
-			`if 1 \ 100 \ else \ 200 \  endif`,
-			`IF 1\100\ELSE\200\ENDIF`,
+			`if 1 \ a=100 \ else \ a=200 \  endif`,
+			`IF 1\A = 100\ELSE\A = 200\ENDIF`,
 		},
 		{
-			`if 1 \ 100 \ if 2 \ 200 \else \ 300 \ endif \ endif`,
-			`IF 1\100\IF 2\200\ELSE\300\ENDIF\ELSE\ENDIF`,
+			`if 1 \ a=100 \ if 2 \ a=200 \else \ a=300 \ endif \ endif`,
+			`IF 1\A = 100\IF 2\A = 200\ELSE\A = 300\ENDIF\ELSE\ENDIF`,
 		},
 		{
-			`if 1 \ 100 \ if 2 \ 200 \endif \ else \ 300 \ endif`,
-			`IF 1\100\IF 2\200\ELSE\ENDIF\ELSE\300\ENDIF`,
+			`if 1 \ a=100 \ if 2 \ a=200 \endif \ else \ a=300 \ endif`,
+			`IF 1\A = 100\IF 2\A = 200\ELSE\ENDIF\ELSE\A = 300\ENDIF`,
 		},
 		{
-			` if 1 \ 100 \ if 2 \ 200 \else \ 300 \endif \ else \ if 3 \ 400 \ else \ 500 \endif\endif`,
-			`IF 1\100\IF 2\200\ELSE\300\ENDIF\ELSE\IF 3\400\ELSE\500\ENDIF\ENDIF`,
+			` if 1 \ a=100 \ if 2 \ a=200 \else \ a=300 \endif \ else \ if 3 \ a=400 \ else \ a=500 \endif\endif`,
+			`IF 1\A = 100\IF 2\A = 200\ELSE\A = 300\ENDIF\ELSE\IF 3\A = 400\ELSE\A = 500\ENDIF\ENDIF`,
 		},
 		{
-			`if 1 \ 200 \ elif 2 \ 300 \ endif`,
-			`IF 1\200\ELSE\IF 2\300\ELSE\ENDif\ENDIF`,
+			`if 1 \ a=200 \ elif 2 \ a=300 \ endif`,
+			`IF 1\A = 200\ELSE\IF 2\A = 300\ELSE\ENDif\ENDIF`,
 		},
 		{
-			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \endif`,
-			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\ELSE\ENDIF\ENDIF\ENDIF\ENDIF`,
+			`if 1 \ a=100 \ elif 2 \ a=200 \ elif 3 \ a=300 \ elif 4 \ a=400 \endif`,
+			`IF 1\A = 100\ELSE\IF 2\A = 200\ELSE\IF 3\A = 300\ELSE\IF 4\A = 400\ELSE\ENDIF\ENDIF\ENDIF\ENDIF`,
 		},
 		{
-			`if 1 \ 100 \ elif 2 \ 200 \ elif 3 \ 300 \ elif 4 \ 400 \else\500\endif`,
-			`IF 1\100\ELSE\IF 2\200\ELSE\IF 3\300\ELSE\IF 4\400\ELSE\500\ENDIF\ENDIF\ENDIF\ENDIF`,
+			`if 1 \ a=100 \ elif 2 \ a=200 \ elif 3 \ a=300 \ elif 4 \ a=400 \else\a=500\endif`,
+			`IF 1\A = 100\ELSE\IF 2\A = 200\ELSE\IF 3\A = 300\ELSE\IF 4\A = 400\ELSE\A = 500\ENDIF\ENDIF\ENDIF\ENDIF`,
 		},
 	}
 	for _, tt := range tests {
