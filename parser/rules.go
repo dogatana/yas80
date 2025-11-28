@@ -42,7 +42,7 @@ var grammerRules map[int]string = map[int]string{
 	39: "enum_element:  IDENT '=' expr.",
 	40: "label:  IDENT ':'.",
 	41: "label:  LOCAL_IDENT ':'.",
-	42: "label:  LOCAL_IDENT.",
+	42: "label:  AT_IDENT ':'.",
 	43: "instruction:  Z80_INST0.",
 	44: "instruction:  Z80_INST1.",
 	45: "instruction:  Z80_INST1 operand.",

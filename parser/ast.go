@@ -51,6 +51,7 @@ const (
 	NODE_EXPR_LIST
 	NODE_LABEL
 	NODE_LOCAL_LABEL
+	NODE_AT_LABEL
 	NODE_INDIRECT // for Z80
 )
 
@@ -510,14 +511,14 @@ func (zi *Z80Instruction) String() string {
 
 // ラベル
 type Label struct {
-	nodeType   NodeType
+	LabelType  NodeSubType
 	Name       string
 	lineNumber int
 }
 
 func (le *Label) expressionNode()          {}
-func (le *Label) NodeType() NodeType       { return le.nodeType }
-func (le *Label) NodeSubType() NodeSubType { return 0 }
+func (le *Label) NodeType() NodeType       { return NODE_LABEL }
+func (le *Label) NodeSubType() NodeSubType { return le.LabelType }
 func (le *Label) LineNumber() int          { return le.lineNumber }
 func (le *Label) String() string           { return le.Name }
 

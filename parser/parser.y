@@ -347,18 +347,20 @@ enum_element : IDENT 			{ $$ = &EnumElement{Name: strings.ToUpper($1.Literal), V
 
 label		: IDENT ':'
 			{
-				$$ = &Label{nodeType: NODE_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
+				$$ = &Label{LabelType: NODE_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
 			}
 			| LOCAL_IDENT ':'
 			{
-				// info のみ表示し、処理継続
-				yylex.Error(errcode.I001, $1.LineNumber)
-				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
+				$$ = &Label{LabelType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
 			}
-			| LOCAL_IDENT
+			| AT_IDENT ':'
 			{
-				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
+				$$ = &Label{LabelType: NODE_AT_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
 			}
+//			| LOCAL_IDENT
+//			{
+//				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal), lineNumber: $1.LineNumber}
+//			}
 			;
 
 
