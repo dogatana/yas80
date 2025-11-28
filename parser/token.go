@@ -1,16 +1,18 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+)
 
+// TokenType, TokenType は grammer.y の %token で定義される
 type TokenType int
 type TokenSubType int
 
-// Type は yacc で定義
 type Token struct {
 	TokenType    TokenType
 	TokenSubType TokenSubType
 	Literal      string
-	LineNumber   int
+	Position     Position
 }
 
 func (t Token) String() string {
@@ -21,7 +23,7 @@ func (t Token) String() string {
 		tstName = "0"
 	}
 	return fmt.Sprintf("Token{TokenType: %s(%d), SubType: %s(%d), Literal: %q, LineNumber: %d}",
-		TokenLiteral(tt), tt, tstName, tst, t.Literal, t.LineNumber)
+		TokenLiteral(tt), tt, tstName, tst, t.Literal, t.Position.LineNumber)
 }
 
 var reservedWords map[string]Token = map[string]Token{
