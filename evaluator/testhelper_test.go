@@ -58,6 +58,35 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 	return programObject
 }
 
+func parseTextForTest(t *testing.T, input string) *parser.Program {
+	file := "<string>"
+	logger := logger.New(file)
+	fb := fileblock.New(file, []byte(input))
+	l := parser.NewLexer(fb, logger)
+	prog := parser.Parse(l)
+	ec, wc, _ := l.Logger().Count()
+	if ec > 0 || wc > 0 {
+		fmt.Printf("input %q\n", input)
+		l.Logger().Print()
+		t.Fatalf("Parse() %d errors and %d warnigs", ec, wc)
+	}
+
+	if len(prog.Statements) == 0 {
+		fmt.Printf("input %q\n", input)
+		t.Fatal("Parse() returns 0 statements")
+	}
+
+	prog = parser.PreProrocess(logger, prog)
+	ec, wc, _ = l.Logger().Count()
+	if ec > 0 || wc > 0 {
+		fmt.Printf("input %q\n", input)
+		l.Logger().Print()
+		t.Fatalf("PreProcess() %d errors and %d warnigs", ec, wc)
+	}
+
+	return prog
+}
+
 func checkDebug(e *Evaluator) {
 	val := os.Getenv("evaldebug")
 	if val == "" {
@@ -84,35 +113,6 @@ func testNumberObject(t *testing.T, obj object.Object, expected int, input strin
 		return false
 	}
 	return true
-}
-
-func parseTextForTest(t *testing.T, input string) *parser.Program {
-	file := "<string>"
-	es := logger.New(file)
-	fb := fileblock.New(file, []byte(input))
-	l := parser.NewLexer(file, fb, es)
-	prog := parser.Parse(l)
-	ec, wc, _ := l.Logger().Count()
-	if ec > 0 || wc > 0 {
-		fmt.Printf("input %q\n", input)
-		l.Logger().Print()
-		t.Fatalf("Parse() %d errors and %d warnigs", ec, wc)
-	}
-
-	if len(prog.Statements) == 0 {
-		fmt.Printf("input %q\n", input)
-		t.Fatal("Parse() returns 0 statements")
-	}
-
-	prog = parser.PreProrocess(es, prog)
-	ec, wc, _ = l.Logger().Count()
-	if ec > 0 || wc > 0 {
-		fmt.Printf("input %q\n", input)
-		l.Logger().Print()
-		t.Fatalf("PreProcess() %d errors and %d warnigs", ec, wc)
-	}
-
-	return prog
 }
 
 func readTestDataFile(t *testing.T, filename string) []byte {

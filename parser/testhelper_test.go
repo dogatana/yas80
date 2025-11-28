@@ -13,9 +13,9 @@ import (
 
 func newLexerForTest(input string) *Lexer {
 	file := "<string>"
-	es := logger.New(file)
+	logger := logger.New(file)
 	fb := fileblock.New(file, []byte(input))
-	return NewLexer(file, fb, es)
+	return NewLexer(fb, logger)
 }
 
 func ParseForTest(t *testing.T, lexer *Lexer, input string) *Program {

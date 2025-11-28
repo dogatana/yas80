@@ -33,7 +33,7 @@ type Lexer struct {
 	ctx      *LexerContext
 }
 
-func NewLexer(filename string, fb *fileblock.FileBlock, logger *logger.Logger) *Lexer {
+func NewLexer(fb *fileblock.FileBlock, logger *logger.Logger) *Lexer {
 	sb := bytes.NewReader(fb.Content)
 	ctx := &LexerContext{filename: fb.Filename, fileBlock: fb}
 	l := &Lexer{scanner: bufio.NewScanner(sb), program: &Program{}, ctx: ctx, logger: logger}

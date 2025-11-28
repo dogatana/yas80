@@ -32,7 +32,7 @@ func parse(logger *logger.Logger, input io.Reader, filename string) *parser.Prog
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
-	l := parser.NewLexer(filename, fb, logger)
+	l := parser.NewLexer(fb, logger)
 	return parser.Parse(l)
 }
 
