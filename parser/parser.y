@@ -86,7 +86,7 @@ program		: { }
 				if $2 == nil {
 					// do nothing
 				} else if $2.NodeType() == NODE_ERROR {
-					yylex.Error($2.(*ParseError).Message, $2.(*ParseError).LineNumber)
+					yylex.Error($2.(*ParseError).Message, $2.(*ParseError).Position.LineNumber)
 				} else {
 					prog := yylex.(*Lexer).program
 					prog.Statements = append(prog.Statements, $2)
@@ -97,12 +97,12 @@ program		: { }
 statement   : EOL { $$ = nil }
 			| label EOL 
 			{
-				$$ = &LabelStatement{Value: $1,LineNumber: $1.LineNumber}
+				$$ = &LabelStatement{Value: $1,Position: $1.Position}
 			}
 			| label instruction EOL
 			{ 
 				prog := yylex.(*Lexer).program
-				stmt := &LabelStatement{Value: $1,LineNumber: $1.LineNumber}
+				stmt := &LabelStatement{Value: $1,Position: $1.Position}
 				prog.Statements = append(prog.Statements, stmt)
 				$$ = $2 
 			}
@@ -110,11 +110,11 @@ statement   : EOL { $$ = nil }
 			| directive	 EOL	{ $$ = $1 }
 //			| expr EOL			
 //			{ 
-//				$$ = &ParseError{Message: "式文は無効",LineNumber: $2.LineNumber}
+//				$$ = &ParseError{Message: "式文は無効",Position: $2.Position}
 //				if $1.NodeType() == NODE_ERROR {
 //					$$ = $1
 //				} else {
-//					$$ = &ExpressionStatement{Value: $1,LineNumber: $2.LineNumber}
+//					$$ = &ExpressionStatement{Value: $1,Position: $2.Position}
 //				}
 //			}
 			| error EOL
@@ -128,7 +128,7 @@ directive	: CONST ident '=' expr
 				if $4.NodeType() == NODE_ERROR {
 					$$ =  $4
 				} else {
-					$$ = &ConstStatement{Name: &Ident{Name: $2.Name}, Value: $4,LineNumber: $1.Position.LineNumber}
+					$$ = &ConstStatement{Name: &Ident{Name: $2.Name}, Value: $4,Position: $1.Position}
 				}
 			}
 			| ident EQU expr		
@@ -136,26 +136,26 @@ directive	: CONST ident '=' expr
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					$$ = &ConstStatement{Name: &Ident{Name: $1.Name}, Value: $3,LineNumber: $2.Position.LineNumber}
+					$$ = &ConstStatement{Name: &Ident{Name: $1.Name}, Value: $3,Position: $2.Position}
 				}
 			}
 			| ident ENUM EOL enum_elements ENDE
 			{
-				$$ = &EnumStatement{Name: $1.Name, Elements: $4,LineNumber: $2.Position.LineNumber}
+				$$ = &EnumStatement{Name: $1.Name, Elements: $4,Position: $2.Position}
 			}
 			| VAR ident '=' expr
 			{
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4
 				} else {
-					$$ = &VariableStatement{Name: &Ident{Name: $2.Name}, Value: $4, LineNumber: $1.Position.LineNumber}
+					$$ = &VariableStatement{Name: &Ident{Name: $2.Name}, Value: $4, Position: $1.Position}
 				}
 			}
 			| expr '=' expr
 			{
 				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
 					$$ = $3
 
 				} else if $1.NodeType() == NODE_ERROR {
@@ -163,7 +163,7 @@ directive	: CONST ident '=' expr
 				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					$$ = &AsignStatement{Left: $1, Value: $3,LineNumber: $2.Position.LineNumber}
+					$$ = &AsignStatement{Left: $1, Value: $3,Position: $2.Position}
 				}
 			}
 			| REPT expr EOL block_statement ENDR
@@ -171,93 +171,93 @@ directive	: CONST ident '=' expr
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else {
-					$$ = &ReptStatement{MaxCount: $2, Block: $4,LineNumber: $1.Position.LineNumber}
+					$$ = &ReptStatement{MaxCount: $2, Block: $4,Position: $1.Position}
 				}
 			}
 			| IF expr EOL block_statement elseifs ENDIF
 			{
 				if $2.NodeType() == NODE_ERROR && $5.NodeType() == NODE_ERROR{
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
 					$$ = $5
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else if $5 == nil {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Node{}},LineNumber: $1.Position.LineNumber}
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Node{}}, Position: $1.Position}
 				} else if $5.NodeType() == NODE_ERROR {
 					$$ = $5
 				} else if $5.NodeType() == NODE_BLOCK_STMT {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5,LineNumber: $1.Position.LineNumber}
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5,Position: $1.Position}
 				} else {
-					$$ = &ParseError{Message: "IF error",LineNumber: $1.Position.LineNumber}
+					$$ = &ParseError{Message: "IF error",Position: $1.Position}
 				} 
 			}
 			| IF expr EOL block_statement elseifs ELSE block_statement ENDIF
 			{
 				if $2.NodeType() == NODE_ERROR && $5 != nil && $5.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
 					$$ = $5
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else if $5 == nil  && $7 == nil {
-					$$ = &IfStatement{ Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Node{}},LineNumber: $1.Position.LineNumber}
+					$$ = &IfStatement{ Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Node{}},Position: $1.Position}
 				} else if $5 == nil {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $7,LineNumber: $1.Position.LineNumber}
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $7,Position: $1.Position}
 				} else if $5.NodeType() == NODE_ERROR {
 					$$ = $5
 				}  else if block, ok := $5.(*BlockStatement); ok {
 					if len(block.Block) != 1 || block.Block[0].NodeType() != NODE_IF_STMT {
-						$$ = &ParseError{Message: "IF-ELSE error",LineNumber: $1.Position.LineNumber}
+						$$ = &ParseError{Message: "IF-ELSE error",Position: $1.Position}
 					} else {
 						last := getLastIfStatement(block.Block[0].(*IfStatement))
 						if last.NodeType() == NODE_ERROR {
 							$$ = last
 						} else {
 							last.(*IfStatement).Alternative = $7
-							$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5,LineNumber: $1.Position.LineNumber}
+							$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5,Position: $1.Position}
 						}
 					}
 				} else {
-					$$ = &ParseError{Message: "IF-ELSE error", LineNumber: $1.Position.LineNumber}
+					$$ = &ParseError{Message: "IF-ELSE error", Position: $1.Position}
 				}
 			}
 			| ident FUNC param_list EOL block_statement ENDF
 			{
-				$$ = &FuncStatement{Name: $1.Name, Params: $3, Block: $5, LineNumber: $2.Position.LineNumber}
+				$$ = &FuncStatement{Name: $1.Name, Params: $3, Block: $5, Position: $2.Position}
 			}
 			| FUNCTION ident '(' param_list ')' expr
 			{ 
 				$$ = &FuncStatement{
 					Name: $2.Name, Params: $4, 
 					Block: &BlockStatement{
-						Block: []Node {&ReturnStatement{Value: $6,LineNumber: $1.Position.LineNumber}}}, 
-						LineNumber: $1.Position.LineNumber}
+						Block: []Node {&ReturnStatement{Value: $6,Position: $1.Position}}}, 
+						Position: $1.Position}
 			}
-			| EXITM			{ $$ = &ExitmStatement{LineNumber: $1.Position.LineNumber}}
-			| RETURN		{ $$ = &ReturnStatement{Value: nil,LineNumber: $1.Position.LineNumber}} 
+			| EXITM			{ $$ = &ExitmStatement{Position: $1.Position}}
+			| RETURN		{ $$ = &ReturnStatement{Value: nil,Position: $1.Position}} 
 			| RETURN expr	
 			{ 
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else {
-					$$ = &ReturnStatement{Value: $2,LineNumber: $1.Position.LineNumber}} 
+					$$ = &ReturnStatement{Value: $2,Position: $1.Position}} 
 				}
-			| ident PROC	{ $$ = &ProcStatement{Name:$1.Name, IsStart: true,LineNumber: $2.Position.LineNumber }}
-			| ENDP 			{ $$ = &ProcStatement{IsStart: false,LineNumber: $1.Position.LineNumber}}
+			| ident PROC	{ $$ = &ProcStatement{Name:$1.Name, IsStart: true,Position: $2.Position }}
+			| ENDP 			{ $$ = &ProcStatement{IsStart: false,Position: $1.Position}}
 			| IDENT MACRO param_list EOL block_statement ENDM
 			{
 				// macro 定義は ident でなく IDENT 
-				$$ = &MacroStatement{Name: strings.ToUpper($1.Literal), Params: $3, Body: $5,LineNumber: $1.Position.LineNumber}
+				$$ = &MacroStatement{Name: strings.ToUpper($1.Literal), Params: $3, Body: $5,Position: $1.Position}
 			}
 			| IDENT expr_list 
 			{
-				$$ = &MacroCallStatement{Name: strings.ToUpper($1.Literal), Args: $2,LineNumber: $1.Position.LineNumber}
+				$$ = &MacroCallStatement{Name: strings.ToUpper($1.Literal), Args: $2,Position: $1.Position}
 			}
 			;
 	
-ident		: IDENT		 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,LineNumber: $1.Position.LineNumber}}
-			| LOCAL_IDENT	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,LineNumber: $1.Position.LineNumber}}
+ident		: IDENT		 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Position: $1.Position}}
+			| LOCAL_IDENT	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,Position: $1.Position}}
 			;
 param_list	: 			{ $$ = []string{}}
 			| IDENT		{ $$ = []string{strings.ToUpper($1.Literal)} }
@@ -271,7 +271,7 @@ param_list	: 			{ $$ = []string{}}
 elseifs		: { $$ = nil }
 			| elseifs ELIF expr EOL block_statement 
 			{ 
-				ifst := &IfStatement{Condition: $3, Consequence: $5, Alternative: &BlockStatement{Block:[]Node{}},LineNumber: $2.Position.LineNumber}
+				ifst := &IfStatement{Condition: $3, Consequence: $5, Alternative: &BlockStatement{Block:[]Node{}},Position: $2.Position}
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else if $1 == nil {
@@ -294,7 +294,7 @@ elseifs		: { $$ = nil }
 							stmt = block.Block[0].(*IfStatement)
 							continue
 						} else {
-							$$ = &ParseError{Message: fmt.Sprintf("elseif error %s", $1.String()),LineNumber: $2.Position.LineNumber}
+							$$ = &ParseError{Message: fmt.Sprintf("elseif error %s", $1.String()), Position: $2.Position}
 							break
 						}
 					}
@@ -311,7 +311,7 @@ block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
 					// do nothing
 				} else if $2.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
 				} else {
 					$1.Block = append($1.Block, $2.(Statement))
 					$$ = $1
@@ -326,40 +326,40 @@ enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			{
 				if $2.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
 				}
 				$1.Elements = append($1.Elements, $2.(*EnumElement))
 				$$ = $1
 			}
 			;
 
-enum_element : IDENT 			{ $$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: nil,LineNumber: $1.Position.LineNumber} }
+enum_element : IDENT 			{ $$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: nil,Position: $1.Position} }
 			| IDENT '=' expr	
 			{ 
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					stmt := &ExpressionStatement{Value:$3,LineNumber: $1.Position.LineNumber} 
-					$$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: stmt, LineNumber: $1.Position.LineNumber }
+					stmt := &ExpressionStatement{Value:$3,Position: $1.Position} 
+					$$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: stmt, Position: $1.Position }
 				}
 			}
 			;
 
 label		: IDENT ':'
 			{
-				$$ = &Label{LabelType: NODE_LABEL, Name: strings.ToUpper($1.Literal),LineNumber: $1.Position.LineNumber}
+				$$ = &Label{LabelType: NODE_LABEL, Name: strings.ToUpper($1.Literal),Position: $1.Position}
 			}
 			| LOCAL_IDENT ':'
 			{
-				$$ = &Label{LabelType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal),LineNumber: $1.Position.LineNumber}
+				$$ = &Label{LabelType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal),Position: $1.Position}
 			}
 			| AT_IDENT ':'
 			{
-				$$ = &Label{LabelType: NODE_AT_LABEL, Name: strings.ToUpper($1.Literal),LineNumber: $1.Position.LineNumber}
+				$$ = &Label{LabelType: NODE_AT_LABEL, Name: strings.ToUpper($1.Literal),Position: $1.Position}
 			}
 //			| LOCAL_IDENT
 //			{
-//				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal),LineNumber: $1.Position.LineNumber}
+//				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal),Position: $1.Position}
 //			}
 			;
 
@@ -367,12 +367,12 @@ label		: IDENT ':'
 instruction	: Z80_INST0
 			{
 				$$ = &Z80Instruction{
-					InstType: Z80_INST0, Opcode: int($1.TokenSubType),LineNumber: $1.Position.LineNumber} 
+					InstType: Z80_INST0, Opcode: int($1.TokenSubType),Position: $1.Position} 
 			}
 			| Z80_INST1
 			{
 				$$ = &Z80Instruction{
-						InstType: Z80_INST1, Opcode: int($1.TokenSubType),LineNumber: $1.Position.LineNumber}
+						InstType: Z80_INST1, Opcode: int($1.TokenSubType),Position: $1.Position}
 			}
 			| Z80_INST1 operand
 			{
@@ -381,7 +381,7 @@ instruction	: Z80_INST0
 				} else {
 					$$ = &Z80Instruction{InstType: Z80_INST1, Opcode: int($1.TokenSubType), 
 						Op1: $2, 
-						LineNumber: $1.Position.LineNumber }
+						Position: $1.Position }
 				}
 			}
 			| Z80_INST2 operand
@@ -391,14 +391,14 @@ instruction	: Z80_INST0
 				} else {
 					$$ = &Z80Instruction{InstType: Z80_INST2, Opcode: int($1.TokenSubType), 
 						Op2: $2,
-						LineNumber: $1.Position.LineNumber }
+						Position: $1.Position }
 				}
 			}
 			| Z80_INST2 operand ',' operand
 			{
 				if $2.NodeType() == NODE_ERROR && $4.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
 					$$ = $4
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
@@ -408,7 +408,7 @@ instruction	: Z80_INST0
 					$$ = &Z80Instruction{InstType: Z80_INST2, Opcode: int($1.TokenSubType), 
 							Op1: $2,
 							Op2: $4,
-							LineNumber: $1.Position.LineNumber }
+							Position: $1.Position }
 				}
 			}
 			;
@@ -417,21 +417,21 @@ instruction	: Z80_INST0
 operand	: '(' Z80_REG16 ')'
 			{ 
 				$$ = &IndirectExpression{Expression: 
-					&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType),LineNumber: $2.Position.LineNumber}}
+					&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType),Position: $2.Position}}
 			}
 			| '(' Z80_REG16 ADDSUB expr ')' 
 			{
 				$$ = &IndirectExpression{Expression: 
 						buildInfixExpression(
 							int($3.TokenSubType), 
-							&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType),LineNumber: $2.Position.LineNumber},
+							&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType),Position: $2.Position},
 							$4,
-							$2.Position.LineNumber)}
+							$2.Position)}
 			}
 			| '(' Z80_REG8 ')'
 			{ 
 				$$ = &IndirectExpression{Expression: 
-					&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType),LineNumber: $2.Position.LineNumber}}
+					&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType),Position: $2.Position}}
 			}
 			| '(' expr ')'		{ $$ = &IndirectExpression{Expression: $2} }
 			| expr 				{ $$ = $1 }
@@ -444,7 +444,7 @@ expr_list	:   { $$ = &ExpressionList{Expressions: []Expression{}}}
 			{ 
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
 				}
 				$$ = &ExpressionList{Expressions: []Expression{$1}}
 			}
@@ -452,7 +452,7 @@ expr_list	:   { $$ = &ExpressionList{Expressions: []Expression{}}}
 			{
 				if $3.NodeType() == NODE_ERROR {
 					err := $3.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
 				}
 				$1.Expressions = append($1.Expressions, $3)
 				$$ = $1
@@ -463,77 +463,77 @@ expr		: NUMBER
 			{
 				n, err := parseInt($1.Literal)
 				if err == nil {
-					$$ = &NumberLiteral{Value: int(n),LineNumber: $1.Position.LineNumber}
+					$$ = &NumberLiteral{Value: int(n),Position: $1.Position}
 				} else {
-					$$ = &ParseError{Message: fmt.Sprintf(errcode.E002, $1.Literal),LineNumber: $1.Position.LineNumber}
+					$$ = &ParseError{Message: fmt.Sprintf(errcode.E002, $1.Literal),Position: $1.Position}
 				}
 			}
-			| STRING 		{ $$ = &StringLiteral{Value: $1.Literal,LineNumber: $1.Position.LineNumber} }
-			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),LineNumber:$1.Position.LineNumber}}
-			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),LineNumber:$1.Position.LineNumber}}
-			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType),LineNumber:$1.Position.LineNumber}}
-			| IDENT 		{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,LineNumber: $1.Position.LineNumber} }
-			| LOCAL_IDENT 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,LineNumber: $1.Position.LineNumber} }
+			| STRING 		{ $$ = &StringLiteral{Value: $1.Literal,Position: $1.Position} }
+			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),Position:$1.Position}}
+			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),Position:$1.Position}}
+			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType),Position:$1.Position}}
+			| IDENT 		{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Position: $1.Position} }
+			| LOCAL_IDENT 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,Position: $1.Position} }
 			| DOT_IDENT
 			{
 				uname := strings.ToUpper($1.Literal)
 				names := strings.Split(uname, ".")
-				$$ = &DotIdent{Name: uname, Left: names[0], Right: names[1],LineNumber: $1.Position.LineNumber}
+				$$ = &DotIdent{Name: uname, Left: names[0], Right: names[1],Position: $1.Position}
 			}
 //			| IDENT '(' ')'
 //			{
 //				$$ = &CallExpression{
-//					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,LineNumber: $1.Position.LineNumber}, 
+//					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Position: $1.Position}, 
 //					Arguments: &ExpressionList{Expressions: []Expression{}},
-//					LineNumber: $1.Position.LineNumber}
+//					Position: $1.Position}
 //			}
 			| IDENT '(' expr_list ')'
 			{
 				$$ = &CallExpression{
-					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,LineNumber: $1.Position.LineNumber}, 
+					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Position: $1.Position}, 
 					Arguments: $3, 
-					LineNumber: $1.Position.LineNumber}
+					Position: $1.Position}
 			}
-//			| '[' ']'			{ $$ = &ArrayLiteral{Elements: &ExpressionList{Expressions: []Expression{}},LineNumber: $1.Position.LineNumber}}
-			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2,LineNumber: $1.Position.LineNumber} }
+//			| '[' ']'			{ $$ = &ArrayLiteral{Elements: &ExpressionList{Expressions: []Expression{}},Position: $1.Position}}
+			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2,Position: $1.Position} }
 			| indexed_expr 			{ $$ = $1}
 			| '(' expr ')'			{ $$ = $2}
-			| expr ADDSUB expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Position.LineNumber) }
-			| expr MULDIV expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Position.LineNumber) }
-			| expr COMP expr 		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Position.LineNumber) }
-			| expr SHIFT expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Position.LineNumber) }
-			| expr OR expr			{ $$ = buildInfixExpression(OR, $1, $3, $2.Position.LineNumber) }
-			| expr AND expr			{ $$ = buildInfixExpression(AND, $1, $3, $2.Position.LineNumber) }
-			| ADDSUB expr %prec UNARY	{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, $1.Position.LineNumber) }
-			| UNARY expr 			{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, $1.Position.LineNumber) }
+			| expr ADDSUB expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Position) }
+			| expr MULDIV expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Position) }
+			| expr COMP expr 		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Position) }
+			| expr SHIFT expr		{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Position) }
+			| expr OR expr			{ $$ = buildInfixExpression(OR, $1, $3, $2.Position) }
+			| expr AND expr			{ $$ = buildInfixExpression(AND, $1, $3, $2.Position) }
+			| ADDSUB expr %prec UNARY	{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, $1.Position) }
+			| UNARY expr 			{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, $1.Position) }
 			;
 
 indexed_expr: expr '[' ']'
 			{
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
-					yylex.Error(errcode.E003, $2.Position.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
+					yylex.Error(errcode.E003, $2.Position)
 				} 
-				$$ = &ParseError{Message: errcode.E004,LineNumber: $2.Position.LineNumber}
+				$$ = &ParseError{Message: errcode.E004,Position: $2.Position}
 			}
 			| expr '[' expr ']'
 			{
 				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
-					yylex.Error(errcode.E003, $2.Position.LineNumber)
+					yylex.Error(errcode.E003, $2.Position)
 					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.LineNumber)
+					yylex.Error(err.Message, err.Position.LineNumber)
 
-					yylex.Error(errcode.E005, $2.Position.LineNumber)
+					yylex.Error(errcode.E005, $2.Position)
 					$$ = $3
 				} else if $1.NodeType() == NODE_ERROR {
-					yylex.Error(errcode.E003, $2.Position.LineNumber)
+					yylex.Error(errcode.E003, $2.Position)
 					$$ = $1
 				} else if $3.NodeType() == NODE_ERROR {
-					yylex.Error(errcode.E005, $2.Position.LineNumber)
+					yylex.Error(errcode.E005, $2.Position)
 					$$ = $3
 				} else {
-					$$ = &IndexedExpression{Left: $1, Index: $3,LineNumber: $2.Position.LineNumber}
+					$$ = &IndexedExpression{Left: $1, Index: $3,Position: $2.Position}
 				}
 			}
 			;
