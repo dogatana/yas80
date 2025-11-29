@@ -23,7 +23,7 @@ doc/
 parser/rules.go
 
 !parser/testdata/*.txt
-GOYACC.md
-TODO.md
+
+*.md
 
 parser.go
