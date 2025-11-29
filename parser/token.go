@@ -24,7 +24,7 @@ type TokenContext struct {
 }
 
 func (tc TokenContext) String() string {
-	return fmt.Sprintf("%q(%d,%d)", tc.FileBlock.Filename, tc.LineNumber, tc.Start)
+	return fmt.Sprintf("@%q(%d,%d)", tc.FileBlock.Filename, tc.LineNumber, tc.Start)
 }
 
 func (t Token) String() string {
