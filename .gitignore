@@ -20,6 +20,7 @@ venv/
 *.lis
 
 doc/
+parser/rules.go
 
 !parser/testdata/*.txt
 GOYACC.md
