@@ -19,19 +19,23 @@ type Token struct {
 // ファイル内の位置
 type TokenContext struct {
 	FileBlock  *fileblock.FileBlock
-	LineNumber int
-	Index      int
+	LineNumber int // Token 行(1-)
+	Start      int // Token 開始桁(0-)
+}
+
+func (tc TokenContext) String() string {
+	return fmt.Sprintf("%q(%d,%d)", tc.FileBlock.Filename, tc.LineNumber, tc.Start)
 }
 
 func (t Token) String() string {
 	tt := int(t.TokenType)
 	tst := int(t.TokenSubType)
-	tstName := TokenLiteral(tst)
-	if tst == 0 {
-		tstName = "0"
+	tstName := ""
+	if tst != 0 {
+		tstName = fmt.Sprintf(", Sub: %s(%d)", TokenLiteral(tst), tst)
 	}
-	return fmt.Sprintf("Token{TokenType: %s(%d), SubType: %s(%d), Literal: %q, LineNumber: %d}",
-		TokenLiteral(tt), tt, tstName, tst, t.Literal, t.TokenContext.LineNumber)
+	return fmt.Sprintf("Token{%s(%d)%s, %q, %s}",
+		TokenLiteral(tt), tt, tstName, t.Literal, t.TokenContext.String())
 }
 
 var reservedWords map[string]Token = map[string]Token{
