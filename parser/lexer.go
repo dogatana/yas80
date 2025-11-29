@@ -19,15 +19,8 @@ type LexerContext struct {
 	curChar    rune
 }
 
-func (ctx *LexerContext) Position() Position {
-	return Position{FileBlock: ctx.fileBlock, LineNumber: ctx.lineNumber, Index: ctx.index}
-}
-
-// ファイル内の位置
-type Position struct {
-	FileBlock  *fileblock.FileBlock
-	LineNumber int
-	Index      int
+func (ctx *LexerContext) TokenContext() TokenContext {
+	return TokenContext{FileBlock: ctx.fileBlock, LineNumber: ctx.lineNumber, Index: ctx.index}
 }
 
 // 最低限必要な構造体を定義
@@ -35,8 +28,8 @@ type Lexer struct {
 	isEOF   bool
 	logger  *logger.Logger
 	program *Program
+	ctx     *LexerContext
 	//	callback FileBlockProvider
-	ctx *LexerContext
 }
 
 func NewLexer(fb *fileblock.FileBlock, logger *logger.Logger) *Lexer {
@@ -122,14 +115,14 @@ LINE_CONT:
 	switch {
 	case l.ctx.curChar == EOF:
 		// EOF
-		return Token{TokenType: 0, Literal: "[EOF]", Position: l.ctx.Position()}
+		return Token{TokenType: 0, Literal: "[EOF]", TokenContext: l.ctx.TokenContext()}
 	case l.ctx.curChar == ';':
 		// コメント
 		for l.ctx.curChar != '\n' && l.ctx.curChar != EOF {
 			l.nextChar()
 		}
 		l.nextChar()
-		return Token{TokenType: EOL, Literal: "\\n", Position: l.ctx.Position()}
+		return Token{TokenType: EOL, Literal: "\\n", TokenContext: l.ctx.TokenContext()}
 	case l.ctx.curChar == '\\' && l.peekChar() == '\n':
 		// 行継続
 		l.nextChar()
@@ -137,40 +130,40 @@ LINE_CONT:
 		goto LINE_CONT
 	case l.ctx.curChar == '\\':
 		// マルチステートメント
-		tok := Token{TokenType: EOL, Literal: "\\", Position: l.ctx.Position()}
+		tok := Token{TokenType: EOL, Literal: "\\", TokenContext: l.ctx.TokenContext()}
 		l.nextChar()
 		return tok
 	case l.ctx.curChar == '\n':
 		// EOL
 		l.nextChar()
-		return Token{TokenType: EOL, Literal: "\\n", Position: l.ctx.Position()}
+		return Token{TokenType: EOL, Literal: "\\n", TokenContext: l.ctx.TokenContext()}
 	case l.ctx.curChar == '"':
 		// 文字列リテラル
 		s := l.readString()
 		l.nextChar()
 		l.nextChar()
-		return Token{TokenType: STRING, Literal: s, Position: l.ctx.Position()}
+		return Token{TokenType: STRING, Literal: s, TokenContext: l.ctx.TokenContext()}
 	case l.ctx.curChar == '+' || l.ctx.curChar == '-' || l.ctx.curChar == '^': // ADDSUB
 		ch := l.ctx.curChar
 		l.nextChar()
-		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), Position: l.ctx.Position()}
+		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), TokenContext: l.ctx.TokenContext()}
 	case l.ctx.curChar == '*' || l.ctx.curChar == '/': // MULDIV
 		ch := l.ctx.curChar
 		l.nextChar()
-		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Position: l.ctx.Position()}
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), TokenContext: l.ctx.TokenContext()}
 	case l.isTowCharTokenStart(l.ctx.curChar):
 		tok := l.checkTwoCharToken(l.ctx.curChar)
-		tok.Position = l.ctx.Position()
+		tok.TokenContext = l.ctx.TokenContext()
 		return tok
 	case l.isOneCharToken(l.ctx.curChar):
 		// 1文字トークン
 		ch = l.ctx.curChar
 		l.nextChar()
-		return Token{TokenType: TokenType(ch), Literal: string(ch), Position: l.ctx.Position()}
+		return Token{TokenType: TokenType(ch), Literal: string(ch), TokenContext: l.ctx.TokenContext()}
 	case l.ctx.curChar == '~':
 		ch = l.ctx.curChar
 		l.nextChar()
-		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), Position: l.ctx.Position()}
+		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), TokenContext: l.ctx.TokenContext()}
 	case l.ctx.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
 		// 16進数リテラル(0x)
 		l.nextChar() // '0'をスキップ
@@ -178,10 +171,10 @@ LINE_CONT:
 		l.nextChar() // 'x'または'X'をスキップ
 		literal += l.readWord()
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Position: l.ctx.Position()}
+		return Token{TokenType: NUMBER, Literal: literal, TokenContext: l.ctx.TokenContext()}
 	case l.ctx.curChar == '$' && !l.isXDigit(l.peekChar()):
 		// $ ローケーションカウンタ
-		tok := Token{TokenType: IDENT, Literal: "$", Position: l.ctx.Position()}
+		tok := Token{TokenType: IDENT, Literal: "$", TokenContext: l.ctx.TokenContext()}
 		l.nextChar()
 		return tok
 	case l.ctx.curChar == '$' || l.ctx.curChar == '%':
@@ -190,12 +183,12 @@ LINE_CONT:
 		l.nextChar() // '$'をスキップ
 		literal += l.readWord()
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Position: l.ctx.Position()}
+		return Token{TokenType: NUMBER, Literal: literal, TokenContext: l.ctx.TokenContext()}
 	case l.isDigit(l.ctx.curChar):
 		// 10進、16進(0x)、2進(0b)、8進（0o)リテラル
 		literal = l.readWord()
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Position: l.ctx.Position()}
+		return Token{TokenType: NUMBER, Literal: literal, TokenContext: l.ctx.TokenContext()}
 	case l.isAlpha(l.ctx.curChar):
 		// IDENT、予約語
 		literal = l.readWord()
@@ -204,7 +197,7 @@ LINE_CONT:
 			l.nextChar()
 			literal += l.readWord()
 			l.nextChar()
-			return Token{TokenType: DOT_IDENT, Literal: literal, Position: l.ctx.Position()}
+			return Token{TokenType: DOT_IDENT, Literal: literal, TokenContext: l.ctx.TokenContext()}
 		}
 		l.nextChar()
 		// AF’の対処
@@ -215,17 +208,17 @@ LINE_CONT:
 		// z80 予約語
 		tok, ok := z80ReservedWords[strings.ToUpper(literal)]
 		if ok {
-			tok.Position = l.ctx.Position()
+			tok.TokenContext = l.ctx.TokenContext()
 			return tok
 		}
 		// yas80 予約語
 		tok, ok = reservedWords[strings.ToUpper(literal)]
 		if ok {
-			tok.Position = l.ctx.Position()
+			tok.TokenContext = l.ctx.TokenContext()
 			return tok
 		}
 		// これ以外は識別子
-		return Token{TokenType: IDENT, Literal: literal, Position: l.ctx.Position()}
+		return Token{TokenType: IDENT, Literal: literal, TokenContext: l.ctx.TokenContext()}
 	case l.ctx.curChar == '@' || l.ctx.curChar == '.':
 		prefix := l.ctx.curChar
 		literal = string(l.ctx.curChar)
@@ -233,15 +226,15 @@ LINE_CONT:
 		literal += l.readWord()
 		l.nextChar()
 		if prefix == '@' {
-			return Token{TokenType: AT_IDENT, Literal: literal, Position: l.ctx.Position()}
+			return Token{TokenType: AT_IDENT, Literal: literal, TokenContext: l.ctx.TokenContext()}
 		} else {
-			return Token{TokenType: LOCAL_IDENT, Literal: literal, Position: l.ctx.Position()}
+			return Token{TokenType: LOCAL_IDENT, Literal: literal, TokenContext: l.ctx.TokenContext()}
 		}
 
 	default:
 		literal = string(l.ctx.curChar)
 		l.nextChar()
-		return Token{TokenType: INVALID, Literal: literal, Position: l.ctx.Position()}
+		return Token{TokenType: INVALID, Literal: literal, TokenContext: l.ctx.TokenContext()}
 	}
 }
 
@@ -259,32 +252,32 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	switch {
 	// COMP
 	case ch1 == '<' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: LE, Literal: "<=", Position: l.ctx.Position()}
+		tok = Token{TokenType: COMP, TokenSubType: LE, Literal: "<=", TokenContext: l.ctx.TokenContext()}
 	case ch1 == '<' && ch2 == '<':
-		tok = Token{TokenType: SHIFT, TokenSubType: SL, Literal: "<<", Position: l.ctx.Position()}
+		tok = Token{TokenType: SHIFT, TokenSubType: SL, Literal: "<<", TokenContext: l.ctx.TokenContext()}
 	case ch1 == '>' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: GE, Literal: ">=", Position: l.ctx.Position()}
+		tok = Token{TokenType: COMP, TokenSubType: GE, Literal: ">=", TokenContext: l.ctx.TokenContext()}
 	case ch1 == '>' && ch2 == '>':
-		tok = Token{TokenType: SHIFT, TokenSubType: SR, Literal: ">>", Position: l.ctx.Position()}
+		tok = Token{TokenType: SHIFT, TokenSubType: SR, Literal: ">>", TokenContext: l.ctx.TokenContext()}
 	case ch1 == '<' || ch1 == '>':
-		tok = Token{TokenType: COMP, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Position: l.ctx.Position()}
+		tok = Token{TokenType: COMP, TokenSubType: TokenSubType(ch1), Literal: string(ch1), TokenContext: l.ctx.TokenContext()}
 	case ch1 == '=' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: EQ, Literal: "==", Position: l.ctx.Position()}
+		tok = Token{TokenType: COMP, TokenSubType: EQ, Literal: "==", TokenContext: l.ctx.TokenContext()}
 	case ch1 == '!' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: NEQ, Literal: "!=", Position: l.ctx.Position()}
+		tok = Token{TokenType: COMP, TokenSubType: NEQ, Literal: "!=", TokenContext: l.ctx.TokenContext()}
 	case ch1 == '!':
-		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Position: l.ctx.Position()}
+		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch1), Literal: string(ch1), TokenContext: l.ctx.TokenContext()}
 	case ch1 == '&' && ch2 == '&':
-		tok = Token{TokenType: AND, TokenSubType: 0, Literal: "&&", Position: l.ctx.Position()}
+		tok = Token{TokenType: AND, TokenSubType: 0, Literal: "&&", TokenContext: l.ctx.TokenContext()}
 	case ch1 == '&':
-		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Position: l.ctx.Position()}
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch1), Literal: string(ch1), TokenContext: l.ctx.TokenContext()}
 	case ch1 == '|' && ch2 == '|':
-		tok = Token{TokenType: OR, TokenSubType: 0, Literal: "||", Position: l.ctx.Position()}
+		tok = Token{TokenType: OR, TokenSubType: 0, Literal: "||", TokenContext: l.ctx.TokenContext()}
 	case ch1 == '|':
-		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Position: l.ctx.Position()}
+		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch1), Literal: string(ch1), TokenContext: l.ctx.TokenContext()}
 	default:
 		// 1文字トークンを返す
-		return Token{TokenType: TokenType(ch1), Literal: string(rune(ch1)), Position: l.ctx.Position()}
+		return Token{TokenType: TokenType(ch1), Literal: string(rune(ch1)), TokenContext: l.ctx.TokenContext()}
 	}
 	l.nextChar()
 	return tok

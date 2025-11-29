@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"yas80/fileblock"
 )
 
 // TokenType, TokenType は grammer.y の %token で定義される
@@ -12,7 +13,14 @@ type Token struct {
 	TokenType    TokenType
 	TokenSubType TokenSubType
 	Literal      string
-	Position     Position
+	TokenContext TokenContext
+}
+
+// ファイル内の位置
+type TokenContext struct {
+	FileBlock  *fileblock.FileBlock
+	LineNumber int
+	Index      int
 }
 
 func (t Token) String() string {
@@ -23,7 +31,7 @@ func (t Token) String() string {
 		tstName = "0"
 	}
 	return fmt.Sprintf("Token{TokenType: %s(%d), SubType: %s(%d), Literal: %q, LineNumber: %d}",
-		TokenLiteral(tt), tt, tstName, tst, t.Literal, t.Position.LineNumber)
+		TokenLiteral(tt), tt, tstName, tst, t.Literal, t.TokenContext.LineNumber)
 }
 
 var reservedWords map[string]Token = map[string]Token{

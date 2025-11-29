@@ -14,16 +14,16 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 		return obj
 	} else if obj == object.NULL {
 		panic("object is NULL") // TODO
-		// return &object.NodeObject{Value: expr, LineNumber: expr.Position.LineNumber()}
+		// return &object.NodeObject{Value: expr, LineNumber: expr.TokenContext.LineNumber()}
 	}
 
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
-		e.logger.Error(errcode.E019, expr.Position.LineNumber)
+		e.logger.Error(errcode.E019, expr.TokenContext.LineNumber)
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {
-		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), expr.Position.LineNumber)
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), expr.TokenContext.LineNumber)
 		return object.ERROR
 	}
 

@@ -98,8 +98,8 @@ func (p *Program) String() string {
 
 // Error(Expression, Statement)
 type ParseError struct {
-	Message  string
-	Position Position
+	Message      string
+	TokenContext TokenContext
 }
 
 func (pe *ParseError) statementNode()           {}
@@ -107,13 +107,13 @@ func (pe *ParseError) expressionNode()          {}
 func (pe *ParseError) NodeType() NodeType       { return NODE_ERROR }
 func (pe *ParseError) NodeSubType() NodeSubType { return 0 }
 func (pe *ParseError) String() string {
-	return fmt.Sprintf("%s %d", pe.Message, pe.Position.LineNumber)
+	return fmt.Sprintf("%s %d", pe.Message, pe.TokenContext.LineNumber)
 }
 
 // ラベル - 独立した文として生成
 type LabelStatement struct {
-	Value    *Label
-	Position Position
+	Value        *Label
+	TokenContext TokenContext
 }
 
 func (ls *LabelStatement) statementNode()           {}
@@ -142,9 +142,9 @@ func (ds *DeletedStatement) String() string {
 
 // TODO: 仮実装 - PROC/ENDPROC - それぞれ単一文として生成
 type ProcStatement struct {
-	Name     string
-	IsStart  bool
-	Position Position
+	Name         string
+	IsStart      bool
+	TokenContext TokenContext
 }
 
 func (ps *ProcStatement) statementNode()           {}
@@ -160,8 +160,8 @@ func (ps *ProcStatement) String() string {
 
 // 式文 - Expression Statement
 type ExpressionStatement struct {
-	Value    Expression
-	Position Position
+	Value        Expression
+	TokenContext TokenContext
 }
 
 func (es *ExpressionStatement) statementNode()           {}
@@ -171,9 +171,9 @@ func (es *ExpressionStatement) String() string           { return es.Value.Strin
 
 // enum 定義文
 type EnumStatement struct {
-	Name     string
-	Elements *EnumElements
-	Position Position
+	Name         string
+	Elements     *EnumElements
+	TokenContext TokenContext
 }
 
 func (es *EnumStatement) statementNode()           {}
@@ -207,9 +207,9 @@ func (ee *EnumElements) String() string {
 
 // enum 要素定義文
 type EnumElement struct {
-	Name     string
-	Value    Statement
-	Position Position
+	Name         string
+	Value        Statement
+	TokenContext TokenContext
 }
 
 func (ee *EnumElement) statementNode()           {}
@@ -225,9 +225,9 @@ func (ee *EnumElement) String() string {
 
 // rept statment
 type ReptStatement struct {
-	MaxCount Expression
-	Block    *BlockStatement
-	Position Position
+	MaxCount     Expression
+	Block        *BlockStatement
+	TokenContext TokenContext
 }
 
 func (rs *ReptStatement) statementNode()           {}
@@ -249,10 +249,10 @@ func (rs *ReptStatement) String() string {
 
 // if statement
 type IfStatement struct {
-	Condition   Expression
-	Consequence Node
-	Alternative Node
-	Position    Position
+	Condition    Expression
+	Consequence  Node
+	Alternative  Node
+	TokenContext TokenContext
 }
 
 func (is *IfStatement) statementNode()           {}
@@ -286,10 +286,10 @@ func (is *IfStatement) String() string {
 
 // func 文
 type FuncStatement struct {
-	Name     string
-	Params   []string
-	Block    *BlockStatement
-	Position Position
+	Name         string
+	Params       []string
+	Block        *BlockStatement
+	TokenContext TokenContext
 }
 
 func (fs *FuncStatement) statementNode()           {}
@@ -307,10 +307,10 @@ func (fs *FuncStatement) String() string {
 
 // macro 文
 type MacroStatement struct {
-	Name     string
-	Params   []string
-	Body     *BlockStatement
-	Position Position
+	Name         string
+	Params       []string
+	Body         *BlockStatement
+	TokenContext TokenContext
 }
 
 func (ms *MacroStatement) statementNode()           {}
@@ -328,9 +328,9 @@ func (ms *MacroStatement) String() string {
 
 // macro 文
 type MacroCallStatement struct {
-	Name     string
-	Args     *ExpressionList
-	Position Position
+	Name         string
+	Args         *ExpressionList
+	TokenContext TokenContext
 }
 
 func (mc *MacroCallStatement) statementNode()           {}
@@ -363,9 +363,9 @@ func (bs *BlockStatement) String() string {
 
 // 定数定義文 - CONST, EQU Statement
 type ConstStatement struct {
-	Name     *Ident
-	Value    Expression
-	Position Position
+	Name         *Ident
+	Value        Expression
+	TokenContext TokenContext
 }
 
 func (cs *ConstStatement) statementNode()           {}
@@ -384,9 +384,9 @@ func (cs *ConstStatement) String() string {
 
 // 変数定義文 - VAR
 type VariableStatement struct {
-	Name     *Ident
-	Value    Expression
-	Position Position
+	Name         *Ident
+	Value        Expression
+	TokenContext TokenContext
 }
 
 func (vs *VariableStatement) statementNode()           {}
@@ -405,9 +405,9 @@ func (vs *VariableStatement) String() string {
 
 // 変数代入文
 type AsignStatement struct {
-	Left     Expression
-	Value    Expression
-	Position Position
+	Left         Expression
+	Value        Expression
+	TokenContext TokenContext
 }
 
 func (as *AsignStatement) statementNode()           {}
@@ -425,7 +425,7 @@ func (as *AsignStatement) String() string {
 
 // Exitm 文
 type ExitmStatement struct {
-	Position Position
+	TokenContext TokenContext
 }
 
 func (es *ExitmStatement) statementNode()           {}
@@ -435,8 +435,8 @@ func (es *ExitmStatement) String() string           { return "EXITM" }
 
 // Exitm 文
 type ReturnStatement struct {
-	Value    Expression
-	Position Position
+	Value        Expression
+	TokenContext TokenContext
 }
 
 func (rs *ReturnStatement) statementNode()           {}
@@ -452,11 +452,11 @@ func (rs *ReturnStatement) String() string {
 
 // Z80 命令文 - Z80Instruction Statement
 type Z80Instruction struct {
-	InstType int
-	Opcode   int
-	Op1      Expression
-	Op2      Expression
-	Position Position
+	InstType     int
+	Opcode       int
+	Op1          Expression
+	Op2          Expression
+	TokenContext TokenContext
 }
 
 func (zi *Z80Instruction) statementNode() {}
@@ -489,9 +489,9 @@ func (zi *Z80Instruction) String() string {
 
 // ラベル
 type Label struct {
-	LabelType NodeSubType
-	Name      string
-	Position  Position
+	LabelType    NodeSubType
+	Name         string
+	TokenContext TokenContext
 }
 
 func (le *Label) expressionNode()          {}
@@ -501,8 +501,8 @@ func (le *Label) String() string           { return le.Name }
 
 // 数値
 type NumberLiteral struct {
-	Value    int
-	Position Position
+	Value        int
+	TokenContext TokenContext
 }
 
 func (nl *NumberLiteral) expressionNode()          {}
@@ -514,8 +514,8 @@ func (nl *NumberLiteral) String() string {
 
 // 文字列
 type StringLiteral struct {
-	Value    string
-	Position Position
+	Value        string
+	TokenContext TokenContext
 }
 
 func (sl *StringLiteral) expressionNode()          {}
@@ -527,8 +527,8 @@ func (sl *StringLiteral) String() string {
 
 // 配列
 type ArrayLiteral struct {
-	Elements *ExpressionList
-	Position Position
+	Elements     *ExpressionList
+	TokenContext TokenContext
 }
 
 func (al *ArrayLiteral) expressionNode()          {}
@@ -545,9 +545,9 @@ func (al *ArrayLiteral) String() string {
 
 // 添え字参照
 type IndexedExpression struct {
-	Left     Expression
-	Index    Expression
-	Position Position
+	Left         Expression
+	Index        Expression
+	TokenContext TokenContext
 }
 
 func (ie *IndexedExpression) expressionNode()          {}
@@ -570,7 +570,7 @@ func (ie *IndexedExpression) String() string {
 type RegisterLiteral struct {
 	RegisterType int
 	Register     int
-	Position     Position
+	TokenContext TokenContext
 }
 
 func (rl *RegisterLiteral) expressionNode()          {}
@@ -582,8 +582,8 @@ func (rl *RegisterLiteral) String() string {
 
 // フラグ
 type FlagLiteral struct {
-	Flag     int
-	Position Position
+	Flag         int
+	TokenContext TokenContext
 }
 
 func (fl *FlagLiteral) expressionNode()          {}
@@ -595,10 +595,10 @@ func (fl *FlagLiteral) String() string {
 
 // 識別子
 type Ident struct {
-	Name      string
-	IdentType int
-	Value     Expression
-	Position  Position
+	Name         string
+	IdentType    int
+	Value        Expression
+	TokenContext TokenContext
 }
 
 func (i *Ident) expressionNode()          {}
@@ -608,11 +608,11 @@ func (i *Ident) String() string           { return i.Name }
 
 // ドット識別子
 type DotIdent struct {
-	Name     string
-	Left     string
-	Right    string
-	Value    Expression
-	Position Position
+	Name         string
+	Left         string
+	Right        string
+	Value        Expression
+	TokenContext TokenContext
 }
 
 func (di *DotIdent) expressionNode()          {}
@@ -635,10 +635,10 @@ func (ie *IndirectExpression) String() string {
 
 // 中置演算子式
 type InfixExpression struct {
-	Operator int
-	Op1      Expression
-	Op2      Expression
-	Position Position
+	Operator     int
+	Op1          Expression
+	Op2          Expression
+	TokenContext TokenContext
 }
 
 func (ie *InfixExpression) expressionNode()          {}
@@ -667,9 +667,9 @@ func (ie *InfixExpression) String() string {
 
 // 前置演算子式
 type PrefixExpression struct {
-	Operator int
-	Op       Expression
-	Position Position
+	Operator     int
+	Op           Expression
+	TokenContext TokenContext
 }
 
 func (pe *PrefixExpression) expressionNode()          {}
@@ -688,9 +688,9 @@ func (pe *PrefixExpression) String() string {
 
 // 関数呼出し
 type CallExpression struct {
-	Function  Expression
-	Arguments *ExpressionList
-	Position  Position
+	Function     Expression
+	Arguments    *ExpressionList
+	TokenContext TokenContext
 }
 
 func (ce *CallExpression) expressionNode()          {}
