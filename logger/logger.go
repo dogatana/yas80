@@ -11,7 +11,11 @@ type ErrorMessage struct {
 }
 
 func (em *ErrorMessage) Error() string {
-	return fmt.Sprintf("%q:%d [ERROR] %s", em.Context.FileBlock.Filename, em.Context.Line, em.Message)
+	if em.Context == nil {
+		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, em.Message)
+	} else {
+		return fmt.Sprintf("%q:%d [ERROR] %s", em.Context.FileBlock.Filename, em.Context.Line, em.Message)
+	}
 }
 
 type WarningMessage struct {
@@ -20,7 +24,11 @@ type WarningMessage struct {
 }
 
 func (wm WarningMessage) Error() string {
-	return fmt.Sprintf("%q:%d [WARN] %s", wm.Context.FileBlock.Filename, wm.Context.Line, wm.Message)
+	if wm.Context == nil {
+		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, wm.Message)
+	} else {
+		return fmt.Sprintf("%q:%d [WARN] %s", wm.Context.FileBlock.Filename, wm.Context.Line, wm.Message)
+	}
 }
 
 type InfoMessage struct {
@@ -29,7 +37,11 @@ type InfoMessage struct {
 }
 
 func (im InfoMessage) Error() string {
-	return fmt.Sprintf("%q:%d [INFO] %s", im.Context.FileBlock.Filename, im.Context.Line, im.Message)
+	if im.Context == nil {
+		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, im.Message)
+	} else {
+		return fmt.Sprintf("%q:%d [INFO] %s", im.Context.FileBlock.Filename, im.Context.Line, im.Message)
+	}
 }
 
 type Logger struct {

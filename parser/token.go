@@ -23,8 +23,15 @@ func (t Token) String() string {
 	if tst != 0 {
 		tstName = fmt.Sprintf(", Sub: %s(%d)", TokenLiteral(tst), tst)
 	}
+
+	var ctx string
+	if t.Context == nil {
+		ctx = "<nil>"
+	} else {
+		ctx = t.Context.String()
+	}
 	return fmt.Sprintf("Token{%s(%d)%s, %q, %s}",
-		TokenLiteral(tt), tt, tstName, t.Literal, t.Context.String())
+		TokenLiteral(tt), tt, tstName, t.Literal, ctx)
 }
 
 var reservedWords map[string]Token = map[string]Token{
@@ -58,7 +65,7 @@ var reservedWords map[string]Token = map[string]Token{
 	"BLOCK": {TokenType: BLOCK, Literal: "BLOCK"},
 	"ENDB":  {TokenType: ENDB, Literal: "ENDB"},
 
-	"ENUM": {TokenType: ENUM, Literal: "ENDBLOCK"},
+	"ENUM": {TokenType: ENUM, Literal: "ENUM"},
 	"ENDE": {TokenType: ENDE, Literal: "ENDE"},
 
 	"FOR": {TokenType: FOR, Literal: "FOR"},
