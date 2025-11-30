@@ -1,35 +1,35 @@
 package logger
 
-import "fmt"
+import (
+	"fmt"
+	"yas80/fileblock"
+)
 
 type ErrorMessage struct {
-	Message    string
-	Filename   string
-	LineNumber int
+	Message string
+	Context *fileblock.Context
 }
 
 func (em *ErrorMessage) Error() string {
-	return fmt.Sprintf("%q:%d [ERROR] %s", em.Filename, em.LineNumber, em.Message)
+	return fmt.Sprintf("%q:%d [ERROR] %s", em.Context.FileBlock.Filename, em.Context.Line, em.Message)
 }
 
 type WarningMessage struct {
-	Message    string
-	Filename   string
-	LineNumber int
+	Message string
+	Context *fileblock.Context
 }
 
 func (wm WarningMessage) Error() string {
-	return fmt.Sprintf("%q:%d [WARN] %s", wm.Filename, wm.LineNumber, wm.Message)
+	return fmt.Sprintf("%q:%d [WARN] %s", wm.Context.FileBlock.Filename, wm.Context.Line, wm.Message)
 }
 
 type InfoMessage struct {
-	Message    string
-	Filename   string
-	LineNumber int
+	Message string
+	Context *fileblock.Context
 }
 
 func (im InfoMessage) Error() string {
-	return fmt.Sprintf("%q:%d [INFO] %s", im.Filename, im.LineNumber, im.Message)
+	return fmt.Sprintf("%q:%d [INFO] %s", im.Context.FileBlock.Filename, im.Context.Line, im.Message)
 }
 
 type Logger struct {
@@ -43,19 +43,19 @@ func New(filename string) *Logger {
 	return &Logger{Filename: filename}
 }
 
-func (l *Logger) Error(msg string, line int) error {
-	err := &ErrorMessage{msg, l.Filename, line}
+func (l *Logger) Error(msg string, ctx *fileblock.Context) error {
+	err := &ErrorMessage{Message: msg, Context: ctx}
 	l.Errors = append(l.Errors, err)
 	return err
 }
 
-func (l *Logger) Warning(msg string, line int) error {
-	err := &WarningMessage{msg, l.Filename, line}
+func (l *Logger) Warning(msg string, ctx *fileblock.Context) error {
+	err := &WarningMessage{Message: msg, Context: ctx}
 	l.Warnings = append(l.Warnings, err)
 	return err
 }
-func (l *Logger) Info(msg string, line int) error {
-	err := &InfoMessage{msg, l.Filename, line}
+func (l *Logger) Info(msg string, ctx *fileblock.Context) error {
+	err := &InfoMessage{Message: msg, Context: ctx}
 	l.Infomation = append(l.Infomation, err)
 	return err
 }

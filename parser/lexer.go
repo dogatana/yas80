@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 	"yas80/fileblock"
 	"yas80/logger"
@@ -62,38 +61,17 @@ func (l *Lexer) Lex(lval *yySymType) int {
 }
 
 // yyLexer インターフェースメソッド
-func (l *Lexer) Error(msg string, args ...any) {
-	var line int
-	var yyVAL, yylval *Token
-
-	switch len(args) {
-	case 0: // Error(msg)
-		line = l.ctx.lineNumber
-	case 1: // Error(msg, lineNumber)
-		n, ok := args[0].(int)
-		if !ok {
-			panic(fmt.Sprintf("[SYSTEM] invalid argument for Lexer.Error(string, %T(#%v))", args[0], args[0]))
-		}
-		line = n
-	case 2:
-		line = l.ctx.lineNumber
-		yyVAL = args[0].(*Token)
-		yylval = args[1].(*Token)
-		msg = modifyYaccError(msg, yyVAL, yylval)
-	default:
-		panic(fmt.Sprintf("[SYSTEM] too much args for Lexer.Error() %#v", args))
-	}
-
+func (l *Lexer) Error(msg string, ctx *fileblock.Context) {
 	if strings.HasPrefix(msg, "[I]") {
-		l.logger.Info(msg[3:], line)
+		l.logger.Info(msg[3:], ctx)
 	} else if strings.HasPrefix(msg, "[W]") {
-		l.logger.Warning(msg[3:], line)
+		l.logger.Warning(msg[3:], ctx)
 	} else if strings.HasPrefix(msg, "[E]") {
-		l.logger.Error(msg[3:], line)
+		l.logger.Error(msg[3:], ctx)
 	} else if msg[0] == '[' {
-		l.logger.Error(msg, line)
+		l.logger.Error(msg, ctx)
 	} else {
-		l.logger.Error(msg, line)
+		l.logger.Error(msg, ctx)
 	}
 }
 

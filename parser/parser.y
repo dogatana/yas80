@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"yas80/errcode"
+	"yas80/fileblock"
 )
 
 // goyacc が __yyfmt__ を勝手に import することの対策
@@ -86,7 +87,7 @@ program		: { }
 				if $2 == nil {
 					// do nothing
 				} else if $2.NodeType() == NODE_ERROR {
-					yylex.Error($2.(*ParseError).Message, $2.(*ParseError).Context.Line)
+					yylex.Error($2.(*ParseError).Message, $2.(*ParseError).Context)
 				} else {
 					prog := yylex.(*Lexer).program
 					prog.Statements = append(prog.Statements, $2)
@@ -119,7 +120,8 @@ statement   : EOL { $$ = nil }
 //			}
 			| error EOL
 			{
-				yylex.Error(__yyfmt__.Sprintf("[statement error] %s", $1.String()), $2.Context.Line)
+				// TODO $2 = EOL の Context で良いのか？
+				yylex.Error(__yyfmt__.Sprintf("[statement error] %s", $1.String()), $2.Context)
 			}
 			;
 
@@ -155,7 +157,7 @@ directive	: CONST ident '=' expr
 			{
 				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 					$$ = $3
 
 				} else if $1.NodeType() == NODE_ERROR {
@@ -178,7 +180,7 @@ directive	: CONST ident '=' expr
 			{
 				if $2.NodeType() == NODE_ERROR && $5.NodeType() == NODE_ERROR{
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 					$$ = $5
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
@@ -196,7 +198,7 @@ directive	: CONST ident '=' expr
 			{
 				if $2.NodeType() == NODE_ERROR && $5 != nil && $5.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 					$$ = $5
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
@@ -311,7 +313,7 @@ block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
 					// do nothing
 				} else if $2.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 				} else {
 					$1.Block = append($1.Block, $2.(Statement))
 					$$ = $1
@@ -326,7 +328,7 @@ enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			{
 				if $2.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 				}
 				$1.Elements = append($1.Elements, $2.(*EnumElement))
 				$$ = $1
@@ -398,7 +400,7 @@ instruction	: Z80_INST0
 			{
 				if $2.NodeType() == NODE_ERROR && $4.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 					$$ = $4
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2
@@ -444,7 +446,7 @@ expr_list	:   { $$ = &ExpressionList{Expressions: []Expression{}}}
 			{ 
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 				}
 				$$ = &ExpressionList{Expressions: []Expression{$1}}
 			}
@@ -452,7 +454,7 @@ expr_list	:   { $$ = &ExpressionList{Expressions: []Expression{}}}
 			{
 				if $3.NodeType() == NODE_ERROR {
 					err := $3.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 				}
 				$1.Expressions = append($1.Expressions, $3)
 				$$ = $1
@@ -512,7 +514,7 @@ indexed_expr: expr '[' ']'
 			{
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 					yylex.Error(errcode.E003, $2.Context)
 				} 
 				$$ = &ParseError{Message: errcode.E004,Context: $2.Context}
@@ -522,7 +524,7 @@ indexed_expr: expr '[' ']'
 				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
 					yylex.Error(errcode.E003, $2.Context)
 					err := $1.(*ParseError)
-					yylex.Error(err.Message, err.Context.Line)
+					yylex.Error(err.Message, err.Context)
 
 					yylex.Error(errcode.E005, $2.Context)
 					$$ = $3

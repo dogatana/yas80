@@ -14,7 +14,7 @@ patch_data: list[PatchData] = [
     # yyLexer.Error() の引数定義を修正
     PatchData(
         "\tError(s string)\n", 
-        "\tError(s string, args ...any) // # changed\n"
+        "\tError(s string, ctx *fileblock.Context) // # changed\n"
     ),
 
     # ステート遷移のデバッグ表示強化
@@ -38,7 +38,7 @@ patch_data: list[PatchData] = [
     ),
     PatchData(
         'yylex.Error(yyErrorMessage(yystate, yytoken))',
-        'yylex.Error(yyErrorMessage(yystate, yytoken, yyrcvr.lval.token))',
+        'yylex.Error(yyErrorMessage(yystate, yytoken, yyrcvr.lval.token), yyrcvr.lval.token.Context)',
     ),
     PatchData(
         '\t\t\t' 'if len(expected) == cap(expected) {\n'
