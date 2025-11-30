@@ -175,7 +175,7 @@ var infixFuncs map[int]infixFuncType = map[int]infixFuncType{
 	},
 }
 
-func buildInfixExpression(opcode int, op1, op2 Expression, position FBContext) Expression {
+func buildInfixExpression(opcode int, op1, op2 Expression, ctx *FBContext) Expression {
 	if op1.NodeType() == NODE_ERROR {
 		return op1
 	}
@@ -187,14 +187,14 @@ func buildInfixExpression(opcode int, op1, op2 Expression, position FBContext) E
 	num2, ok2 := op2.(*NumberLiteral)
 	if ok1 && ok2 {
 		if opcode == '/' && num2.Value == 0 {
-			return &ParseError{Message: errcode.E015, Context: position}
+			return &ParseError{Message: errcode.E015, Context: ctx}
 		}
 
 		fn, ok := infixFuncs[opcode]
 		if ok {
-			return &NumberLiteral{Value: fn(num1.Value, num2.Value), Context: position}
+			return &NumberLiteral{Value: fn(num1.Value, num2.Value), Context: ctx}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(errcode.E016, TokenLiteral(opcode)), Context: position}
+			return &ParseError{Message: fmt.Sprintf(errcode.E016, TokenLiteral(opcode)), Context: ctx}
 		}
 	}
 	// 文字列演算(+)の畳み込み
@@ -203,7 +203,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression, position FBContext) E
 	if ok1 && ok2 && opcode == '+' {
 		return &StringLiteral{Value: str1.Value + str2.Value}
 	}
-	return &InfixExpression{Operator: opcode, Op1: op1, Op2: op2, Context: position}
+	return &InfixExpression{Operator: opcode, Op1: op1, Op2: op2, Context: ctx}
 }
 
 // 数値リテラルの畳み込み(前置演算子)
@@ -222,7 +222,7 @@ var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
 	},
 }
 
-func buildPrefixExpression(opcode int, op Expression, pos FBContext) Expression {
+func buildPrefixExpression(opcode int, op Expression, ctx *FBContext) Expression {
 	if op.NodeType() == NODE_ERROR {
 		return op
 	}
@@ -230,9 +230,9 @@ func buildPrefixExpression(opcode int, op Expression, pos FBContext) Expression 
 	case *NumberLiteral:
 		fn, ok := prefixFuncs[opcode]
 		if ok {
-			return &NumberLiteral{Value: fn(op.Value), Context: pos}
+			return &NumberLiteral{Value: fn(op.Value), Context: ctx}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(errcode.E008, rune(opcode)), Context: pos}
+			return &ParseError{Message: fmt.Sprintf(errcode.E008, rune(opcode)), Context: ctx}
 		}
 	case *StringLiteral:
 		if opcode == '!' {
@@ -242,11 +242,11 @@ func buildPrefixExpression(opcode int, op Expression, pos FBContext) Expression 
 			} else {
 				result = 0
 			}
-			return &NumberLiteral{Value: result, Context: pos}
+			return &NumberLiteral{Value: result, Context: ctx}
 		}
-		return &ParseError{Message: fmt.Sprintf(errcode.E007, rune(opcode)), Context: pos}
+		return &ParseError{Message: fmt.Sprintf(errcode.E007, rune(opcode)), Context: ctx}
 	}
-	return &PrefixExpression{Operator: opcode, Op: op, Context: pos}
+	return &PrefixExpression{Operator: opcode, Op: op, Context: ctx}
 }
 
 // elif の連鎖している if 文の最後を抽出する

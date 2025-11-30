@@ -19,8 +19,8 @@ type LexerContext struct {
 	curChar    rune
 }
 
-func (ctx *LexerContext) toContext(start int) FBContext {
-	return FBContext{FileBlock: ctx.fileBlock, Line: ctx.lineNumber, Column: start}
+func (ctx *LexerContext) toContext(start int) *FBContext {
+	return &FBContext{FileBlock: ctx.fileBlock, Line: ctx.lineNumber, Column: start}
 }
 
 // 最低限必要な構造体を定義
