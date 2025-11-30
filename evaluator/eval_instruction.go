@@ -36,7 +36,7 @@ func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ object.Environmen
 		return &object.CodeObject{Line: node.Context.Line, Code: []byte{b}}
 	}
 	e.logger.Error(
-		fmt.Sprintf(errcode.E017, node.Op1.String()), node.Context.Line)
+		fmt.Sprintf(errcode.E017, node.Op1.String()), node.Context)
 	return object.ERROR
 }
 
@@ -45,7 +45,7 @@ func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env object.
 	case parser.Z80_INST_LD:
 		return e.evalZ80LD(node, env)
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.Line)
+		e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context)
 		return object.ERROR
 	}
 }
@@ -63,7 +63,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environmen
 			// LD rr, x
 			return e.evalZ80LD_reg16(node, op1, env)
 		}
-		e.logger.Error(errcode.E024, node.Context.Line)
+		e.logger.Error(errcode.E024, node.Context)
 		return object.ERROR
 	// case *object.IndirectExpression:
 	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
@@ -73,7 +73,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environmen
 			// pass1 の場合はダミーとして LD A, A を返す
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
 		}
-		e.logger.Error(errcode.E024, node.Context.Line)
+		e.logger.Error(errcode.E024, node.Context)
 		return object.ERROR
 	}
 }
@@ -85,17 +85,17 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 	case *object.RegisterObject:
 		// LD r, r'
 		if op2.RegisterType != parser.Z80_REG8 {
-			e.logger.Error(errcode.E025, node.Context.Line)
+			e.logger.Error(errcode.E025, node.Context)
 			return object.ERROR
 		}
 		r1, ok := Z80Reg8Index[int(op1.Register)]
 		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.E028, parser.TokenLiteral(op1.Register)), node.Context.Line)
+			e.logger.Error(fmt.Sprintf(errcode.E028, parser.TokenLiteral(op1.Register)), node.Context)
 			return object.ERROR
 		}
 		r2, ok := Z80Reg8Index[int(op2.Register)]
 		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.E028, parser.TokenLiteral(op2.Register)), node.Context.Line)
+			e.logger.Error(fmt.Sprintf(errcode.E028, parser.TokenLiteral(op2.Register)), node.Context)
 			return object.ERROR
 		}
 
@@ -105,7 +105,7 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 		// LD r, n
 		v, ok := e.intToByte(op2.Value)
 		if !ok {
-			e.logger.Warning(fmt.Sprintf(errcode.W001, op2.Value, op2.Value), node.Context.Line)
+			e.logger.Warning(fmt.Sprintf(errcode.W001, op2.Value, op2.Value), node.Context)
 		}
 		r1 := Z80Reg8Index[int(op1.Register)]
 		b := byte(0x06 | (r1 << 3))
@@ -118,7 +118,7 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 		if ok {
 			v, ok := e.intToByte(op2v.Value)
 			if !ok {
-				e.logger.Warning(fmt.Sprintf(errcode.W001, op2.Value, op2.Value), node.Context.Line)
+				e.logger.Warning(fmt.Sprintf(errcode.W001, op2.Value, op2.Value), node.Context)
 			}
 			r1 := Z80Reg8Index[int(op1.Register)]
 			b := byte(0x06 | (r1 << 3))
@@ -128,14 +128,14 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 			// pass1 の場合はダミーとして LD A, A を返す
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
 		}
-		e.logger.Error(errcode.E025, node.Context.Line)
+		e.logger.Error(errcode.E025, node.Context)
 		return object.ERROR
 	default:
 		if e.Pass1 {
 			// pass1 の場合はダミーとして LD A, A を返す
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
 		}
-		e.logger.Error(errcode.E025, node.Context.Line)
+		e.logger.Error(errcode.E025, node.Context)
 		return object.ERROR
 	}
 }
@@ -147,11 +147,11 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 	case *object.RegisterObject:
 		// LD rr, rr'
 		if op1.Register != parser.Z80_REG_SP {
-			e.logger.Error(errcode.E026, node.Context.Line)
+			e.logger.Error(errcode.E026, node.Context)
 			return object.ERROR
 		}
 		if op2.RegisterType != parser.Z80_REG16 {
-			e.logger.Error(errcode.E025, node.Context.Line)
+			e.logger.Error(errcode.E025, node.Context)
 			return object.ERROR
 		}
 		switch op2.Register {
@@ -162,14 +162,14 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		case parser.Z80_REG_IY:
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0xfd, 0xf9}}
 		default:
-			e.logger.Error(errcode.E027, node.Context.Line)
+			e.logger.Error(errcode.E027, node.Context)
 			return object.ERROR
 		}
 	case *object.NumberObject:
 		// LD rr, nn
 		v, ok := e.intToWord(op2.Value)
 		if !ok {
-			e.logger.Warning(fmt.Sprintf(errcode.W002, op2.Value, op2.Value), node.Context.Line)
+			e.logger.Warning(fmt.Sprintf(errcode.W002, op2.Value, op2.Value), node.Context)
 		}
 		r1 := Z80Reg16Index[int(op1.Register)]
 		b := byte(0x01 | (r1 << 4))
@@ -182,7 +182,7 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		if ok {
 			v, ok := e.intToWord(op2v.Value)
 			if !ok {
-				e.logger.Warning(fmt.Sprintf(errcode.W002, op2v.Value, op2v.Value), node.Context.Line)
+				e.logger.Warning(fmt.Sprintf(errcode.W002, op2v.Value, op2v.Value), node.Context)
 			}
 			r1 := Z80Reg16Index[int(op1.Register)]
 			b := byte(0x01 | (r1 << 4))
@@ -192,14 +192,14 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 			// pass1 の場合はダミーとして LD A, A を返す
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
 		}
-		e.logger.Error(errcode.E025, node.Context.Line)
+		e.logger.Error(errcode.E025, node.Context)
 		return object.ERROR
 	default:
 		if e.Pass1 {
 			// pass1 の場合はダミーとして LD HL, 0 を返す
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
 		}
-		e.logger.Error(errcode.E025, node.Context.Line)
+		e.logger.Error(errcode.E025, node.Context)
 		return object.ERROR
 	}
 }

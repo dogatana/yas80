@@ -10,9 +10,10 @@ import (
 )
 
 type Evaluator struct {
-	logger *logger.Logger
-	Pass1  bool
-	Debug  int
+	logger     *logger.Logger
+	Pass1      bool
+	Debug      int
+	lineNumber int
 }
 
 func New(logger *logger.Logger) *Evaluator {
@@ -81,26 +82,26 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 			return object.ERROR
 		}
 	case *parser.ExpressionStatement:
-		e.lineNumber = node.Context
+		e.lineNumber = node.Context.Line
 		return e.Eval(node.Value, env)
 
 	// Expression
 	case *parser.CallExpression:
 		return e.evalCallExpression(node, env)
 	case *parser.NumberLiteral:
-		return &object.NumberObject{Value: node.Value, LineNumber: node.Context}
+		return &object.NumberObject{Value: node.Value, LineNumber: node.Context.Line}
 	case *parser.StringLiteral:
-		return &object.StringObject{Value: node.Value, LineNumber: node.Context}
+		return &object.StringObject{Value: node.Value, LineNumber: node.Context.Line}
 	case *parser.FlagLiteral:
-		return &object.StringObject{Value: node.String(), LineNumber: node.Context}
+		return &object.StringObject{Value: node.String(), LineNumber: node.Context.Line}
 	case *parser.InfixExpression:
-		return e.evalInfixExpression(node, env, node.Context)
+		return e.evalInfixExpression(node, env, node.Context.Line)
 	case *parser.PrefixExpression:
 		v := e.Eval(node.Op, env)
 		if isError(v) || isRefNotFound(v) {
 			return v
 		}
-		return e.evalPrefixExpression(node.Operator, v, node.Context)
+		return e.evalPrefixExpression(node.Operator, v, node.Context.Line)
 	case *parser.Ident:
 		uname := node.Name
 		obj, ok := env.Get(uname)
@@ -133,7 +134,7 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 	case *parser.RegisterLiteral:
 		return object.Z80RgisterObjects[int(node.NodeSubType())]
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.E999, node), 0) // TODO
+		e.logger.Error(fmt.Sprintf(errcode.E999, node), nil) // TODO
 		return object.ERROR
 	}
 }
@@ -292,7 +293,7 @@ func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.E
 	if obj, ok := env.Get(name); ok {
 		switch obj := obj.(type) {
 		case *object.SymbolObject:
-			if obj.SymType != object.LABEL || obj.LineNumber != node.Context || obj.SymState == object.VALUE_DETERMINED {
+			if obj.SymType != object.LABEL || obj.LineNumber != node.Context.Line || obj.SymState == object.VALUE_DETERMINED {
 				if !e.Pass1 {
 					e.logger.Error(fmt.Sprintf(errcode.E032, name), node.Context)
 				}
@@ -309,7 +310,7 @@ func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.E
 	// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
 	// sym := &object.SymbolObject{
 	// 	Name: uname, Node: node.Value, Value: addr, SymState: object.VALUE_DETERMINED, DependsOn: []string{}}
-	sym := object.NewLabelSymbol(name, getLocationCounter(env), node.Context)
+	sym := object.NewLabelSymbol(name, getLocationCounter(env), node.Context.Line)
 	env.Set(name, sym)
 	return sym
 }
@@ -337,20 +338,20 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 			return object.ERROR
 		}
 		// 未定義定数として登録
-		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
+		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context.Line)
 		env.Set(name, sym)
 		return sym
 	case *object.SymbolObject:
 		// Symbo Object の場合は値を取得し新たに登録する
 		depends := make([]string, len(v.DependsOn)) // 他のシンボルの情報なので copy
 		copy(depends, v.DependsOn)
-		sym := object.NewNullConstSymbol(name, node.Value, depends, node.Context)
+		sym := object.NewNullConstSymbol(name, node.Value, depends, node.Context.Line)
 		env.Set(name, sym)
 		return sym
 
 	case *object.SymbolExprObject:
 		// Symbo Expression Object の場合は値を取得し新たに登録する
-		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
+		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context.Line)
 		env.Set(name, sym)
 		return sym
 	case *object.ErrorObject:
@@ -368,7 +369,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env object.Environment) object.Object {
 	cond, ok := e.Eval(stmt.Condition, env).(*object.NumberObject)
 	if !ok {
-		return &object.NodeObject{Value: stmt, LineNumber: stmt.Context}
+		return &object.NodeObject{Value: stmt, LineNumber: stmt.Context.Line}
 	}
 	if cond.Value != 0 {
 		if stmt.Consequence == nil {
@@ -403,7 +404,7 @@ func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env object
 	} else {
 		ret = e.Eval(stmt.Value, env)
 	}
-	return &object.ReturnObject{Value: ret, Context: stmt.Context}
+	return &object.ReturnObject{Value: ret, LineNumber: stmt.Context.Line}
 }
 
 // enum 文

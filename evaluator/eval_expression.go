@@ -74,7 +74,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 	case isString(op1) && isString(op2):
 		if node.Operator != '+' {
 			if !e.Pass1 {
-				e.logger.Error(errcode.E029, lineNumber)
+				e.logger.Error(errcode.E029, nil)
 			}
 			return object.ERROR
 		}
@@ -90,7 +90,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
 		}
 		if !e.Pass1 {
-			e.logger.Error(fmt.Sprintf(errcode.E023, parser.TokenLiteral(node.Operator)), lineNumber)
+			e.logger.Error(fmt.Sprintf(errcode.E023, parser.TokenLiteral(node.Operator)), nil)
 		}
 		return object.ERROR
 	}
@@ -108,7 +108,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 		return &object.NumberObject{Value: v1 * v2}
 	case '/':
 		if v2 == 0 {
-			e.logger.Error(errcode.E015, lineNumber)
+			e.logger.Error(errcode.E015, nil)
 			return object.ERROR
 		}
 		return &object.NumberObject{Value: v1 / v2}
@@ -140,7 +140,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 		return &object.NumberObject{Value: boolToInt(v1 != 1 && v2 != 1)}
 	default:
 		if !e.Pass1 {
-			e.logger.Error(fmt.Sprintf(errcode.E016, string(rune(opCode))), lineNumber)
+			e.logger.Error(fmt.Sprintf(errcode.E016, string(rune(opCode))), nil)
 		}
 		return object.ERROR
 	}
@@ -161,7 +161,7 @@ func (e *Evaluator) evalPrefixExpression(opCode int, op object.Object, lineNumbe
 			return &object.NumberObject{Value: boolToInt(op.Value == 0), LineNumber: lineNumber}
 		default:
 			if !e.Pass1 {
-				e.logger.Error(fmt.Sprintf(errcode.E008, rune(opCode)), lineNumber)
+				e.logger.Error(fmt.Sprintf(errcode.E008, rune(opCode)), nil)
 			}
 			return object.ERROR
 		}
@@ -170,7 +170,7 @@ func (e *Evaluator) evalPrefixExpression(opCode int, op object.Object, lineNumbe
 			return &object.NumberObject{Value: boolToInt(op.Value == ""), LineNumber: lineNumber}
 		}
 		if !e.Pass1 {
-			e.logger.Error(fmt.Sprintf(errcode.E007, rune(opCode)), lineNumber)
+			e.logger.Error(fmt.Sprintf(errcode.E007, rune(opCode)), nil)
 		}
 		return object.ERROR
 	case *object.RefNotFoundObject:
@@ -179,7 +179,7 @@ func (e *Evaluator) evalPrefixExpression(opCode int, op object.Object, lineNumbe
 		return op
 	}
 	if !e.Pass1 {
-		e.logger.Error(errcode.E022, lineNumber)
+		e.logger.Error(errcode.E022, nil)
 	}
 	return object.ERROR
 }

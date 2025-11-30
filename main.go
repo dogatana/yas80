@@ -129,7 +129,7 @@ func main() {
 	fmt.Println("\n# eval env")
 	order, err := eval.EvalEnv(env)
 	if err != nil {
-		log.Error(err.Error(), 0)
+		log.Error(err.Error(), nil)
 	}
 	fmt.Println("order:", order)
 
