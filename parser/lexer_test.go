@@ -60,7 +60,7 @@ func TestLexSymbols(t *testing.T) {
 
 	for _, e := range expected {
 		tok := l.NextToken()
-		if tok.TokenContext.LineNumber == 0 {
+		if tok.TokenContext.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != e.TokenType {
@@ -97,7 +97,7 @@ func TestLexBlankInput(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		for _, expected := range tt.expected_tokens {
 			tok := l.NextToken()
-			if tt.input != "" && tok.TokenContext.LineNumber == 0 {
+			if tt.input != "" && tok.TokenContext.Line == 0 {
 				fmt.Println("tokenize", tt.input)
 				t.Errorf("LineNumber not set. got %s", tok.String())
 			}
@@ -113,7 +113,7 @@ func TestLexInvalidCharacter(t *testing.T) {
 
 	l := newLexerForTest(input)
 	tok := l.NextToken()
-	if tok.TokenContext.LineNumber == 0 {
+	if tok.TokenContext.Line == 0 {
 		t.Errorf("LineNumber not set. got %s", tok.String())
 	}
 	if tok.TokenType != INVALID || tok.Literal != "あ" {
@@ -134,7 +134,7 @@ func TestLexString(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.TokenContext.LineNumber == 0 {
+		if tok.TokenContext.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != STRING || tok.Literal != tt.expected_literal {
@@ -174,7 +174,7 @@ func TestLexNumber(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.TokenContext.LineNumber == 0 {
+		if tok.TokenContext.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != NUMBER || tok.Literal != tt.expected_literal {
@@ -224,7 +224,7 @@ func TestLexIdent(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.TokenContext.LineNumber == 0 {
+		if tok.TokenContext.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != tt.expectedType {
@@ -258,7 +258,7 @@ func TestLexZ80REG8(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.TokenContext.LineNumber == 0 {
+		if tok.TokenContext.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != Z80_REG8 {
@@ -290,7 +290,7 @@ func TestLexZ80REG16(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.TokenContext.LineNumber == 0 {
+		if tok.TokenContext.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != Z80_REG16 {
@@ -324,7 +324,7 @@ func TestLexZ80FLAG(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
-		if tok.TokenContext.LineNumber == 0 {
+		if tok.TokenContext.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType != Z80_FLAG {
@@ -352,7 +352,7 @@ func TestLexZ80Instructions(t *testing.T) {
 			break
 		}
 
-		if tok.TokenContext.LineNumber == 0 {
+		if tok.TokenContext.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		expectedToken, ok := z80ReservedWords[tok.Literal]
@@ -386,7 +386,7 @@ func TestLexReservedWords(t *testing.T) {
 
 	for {
 		tok := l.NextToken()
-		if tok.TokenContext.LineNumber == 0 {
+		if tok.TokenContext.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		if tok.TokenType == EOL {
@@ -431,7 +431,7 @@ func TestLexDoller(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		for _, tokenType := range tt.expected {
 			tok := l.NextToken()
-			if tok.TokenContext.LineNumber == 0 {
+			if tok.TokenContext.Line == 0 {
 				fmt.Printf("input %q\n", tt.input)
 				t.Errorf("LineNumber not set. got %s", tok.String())
 			}
@@ -461,7 +461,7 @@ func TestLexLineContinuation(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		for _, tokenType := range tt.expected {
 			tok := l.NextToken()
-			if tok.TokenContext.LineNumber == 0 {
+			if tok.TokenContext.Line == 0 {
 				fmt.Printf("input %q\n", tt.input)
 				t.Errorf("LineNumber not set. got %s", tok.String())
 			}
@@ -495,8 +495,8 @@ func TestLexerLineNumber(t *testing.T) {
 			} else if tok.TokenType == EOF {
 				break
 			}
-			if tok.TokenContext.LineNumber != ln {
-				t.Errorf("LineNumber not %d. got %d", ln, tok.TokenContext.LineNumber)
+			if tok.TokenContext.Line != ln {
+				t.Errorf("LineNumber not %d. got %d", ln, tok.TokenContext.Line)
 			}
 			if strings.Contains(tt.input, "\\") {
 				continue // マルチステートメントは同一行

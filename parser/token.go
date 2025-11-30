@@ -18,13 +18,13 @@ type Token struct {
 
 // ファイル内の位置
 type TokenContext struct {
-	FileBlock  *fileblock.FileBlock
-	LineNumber int // Token 行(1-)
-	Start      int // Token 開始桁(0-)
+	FileBlock *fileblock.FileBlock
+	Line      int // Token 行(1-)
+	Column    int // Token 開始桁(0-)
 }
 
 func (tc TokenContext) String() string {
-	return fmt.Sprintf("@%q(%d,%d)", tc.FileBlock.Filename, tc.LineNumber, tc.Start)
+	return fmt.Sprintf("@%q(%d,%d)", tc.FileBlock.Filename, tc.Line, tc.Column)
 }
 
 func (t Token) String() string {
