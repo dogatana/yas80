@@ -260,6 +260,7 @@ directive	: CONST ident '=' expr
 	
 ident		: IDENT		 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Context: $1.Context}}
 			| LOCAL_IDENT	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,Context: $1.Context}}
+			| AT_IDENT		{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: AT_IDENT,Context: $1.Context}}
 			;
 param_list	: 			{ $$ = []string{}}
 			| IDENT		{ $$ = []string{strings.ToUpper($1.Literal)} }
