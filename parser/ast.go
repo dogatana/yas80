@@ -99,7 +99,7 @@ func (p *Program) String() string {
 // Error(Expression, Statement)
 type ParseError struct {
 	Message string
-	Context TokenContext
+	Context FBContext
 }
 
 func (pe *ParseError) statementNode()           {}
@@ -113,7 +113,7 @@ func (pe *ParseError) String() string {
 // ラベル - 独立した文として生成
 type LabelStatement struct {
 	Value   *Label
-	Context TokenContext
+	Context FBContext
 }
 
 func (ls *LabelStatement) statementNode()           {}
@@ -144,7 +144,7 @@ func (ds *DeletedStatement) String() string {
 type ProcStatement struct {
 	Name    string
 	IsStart bool
-	Context TokenContext
+	Context FBContext
 }
 
 func (ps *ProcStatement) statementNode()           {}
@@ -161,7 +161,7 @@ func (ps *ProcStatement) String() string {
 // 式文 - Expression Statement
 type ExpressionStatement struct {
 	Value   Expression
-	Context TokenContext
+	Context FBContext
 }
 
 func (es *ExpressionStatement) statementNode()           {}
@@ -173,7 +173,7 @@ func (es *ExpressionStatement) String() string           { return es.Value.Strin
 type EnumStatement struct {
 	Name     string
 	Elements *EnumElements
-	Context  TokenContext
+	Context  FBContext
 }
 
 func (es *EnumStatement) statementNode()           {}
@@ -209,7 +209,7 @@ func (ee *EnumElements) String() string {
 type EnumElement struct {
 	Name    string
 	Value   Statement
-	Context TokenContext
+	Context FBContext
 }
 
 func (ee *EnumElement) statementNode()           {}
@@ -227,7 +227,7 @@ func (ee *EnumElement) String() string {
 type ReptStatement struct {
 	MaxCount Expression
 	Block    *BlockStatement
-	Context  TokenContext
+	Context  FBContext
 }
 
 func (rs *ReptStatement) statementNode()           {}
@@ -252,7 +252,7 @@ type IfStatement struct {
 	Condition   Expression
 	Consequence Node
 	Alternative Node
-	Context     TokenContext
+	Context     FBContext
 }
 
 func (is *IfStatement) statementNode()           {}
@@ -289,7 +289,7 @@ type FuncStatement struct {
 	Name    string
 	Params  []string
 	Block   *BlockStatement
-	Context TokenContext
+	Context FBContext
 }
 
 func (fs *FuncStatement) statementNode()           {}
@@ -310,7 +310,7 @@ type MacroStatement struct {
 	Name    string
 	Params  []string
 	Body    *BlockStatement
-	Context TokenContext
+	Context FBContext
 }
 
 func (ms *MacroStatement) statementNode()           {}
@@ -330,7 +330,7 @@ func (ms *MacroStatement) String() string {
 type MacroCallStatement struct {
 	Name    string
 	Args    *ExpressionList
-	Context TokenContext
+	Context FBContext
 }
 
 func (mc *MacroCallStatement) statementNode()           {}
@@ -365,7 +365,7 @@ func (bs *BlockStatement) String() string {
 type ConstStatement struct {
 	Name    *Ident
 	Value   Expression
-	Context TokenContext
+	Context FBContext
 }
 
 func (cs *ConstStatement) statementNode()           {}
@@ -386,7 +386,7 @@ func (cs *ConstStatement) String() string {
 type VariableStatement struct {
 	Name    *Ident
 	Value   Expression
-	Context TokenContext
+	Context FBContext
 }
 
 func (vs *VariableStatement) statementNode()           {}
@@ -407,7 +407,7 @@ func (vs *VariableStatement) String() string {
 type AsignStatement struct {
 	Left    Expression
 	Value   Expression
-	Context TokenContext
+	Context FBContext
 }
 
 func (as *AsignStatement) statementNode()           {}
@@ -425,7 +425,7 @@ func (as *AsignStatement) String() string {
 
 // Exitm 文
 type ExitmStatement struct {
-	Context TokenContext
+	Context FBContext
 }
 
 func (es *ExitmStatement) statementNode()           {}
@@ -436,7 +436,7 @@ func (es *ExitmStatement) String() string           { return "EXITM" }
 // Exitm 文
 type ReturnStatement struct {
 	Value   Expression
-	Context TokenContext
+	Context FBContext
 }
 
 func (rs *ReturnStatement) statementNode()           {}
@@ -456,7 +456,7 @@ type Z80Instruction struct {
 	Opcode   int
 	Op1      Expression
 	Op2      Expression
-	Context  TokenContext
+	Context  FBContext
 }
 
 func (zi *Z80Instruction) statementNode() {}
@@ -491,7 +491,7 @@ func (zi *Z80Instruction) String() string {
 type Label struct {
 	LabelType NodeSubType
 	Name      string
-	Context   TokenContext
+	Context   FBContext
 }
 
 func (le *Label) expressionNode()          {}
@@ -502,7 +502,7 @@ func (le *Label) String() string           { return le.Name }
 // 数値
 type NumberLiteral struct {
 	Value   int
-	Context TokenContext
+	Context FBContext
 }
 
 func (nl *NumberLiteral) expressionNode()          {}
@@ -515,7 +515,7 @@ func (nl *NumberLiteral) String() string {
 // 文字列
 type StringLiteral struct {
 	Value   string
-	Context TokenContext
+	Context FBContext
 }
 
 func (sl *StringLiteral) expressionNode()          {}
@@ -528,7 +528,7 @@ func (sl *StringLiteral) String() string {
 // 配列
 type ArrayLiteral struct {
 	Elements *ExpressionList
-	Context  TokenContext
+	Context  FBContext
 }
 
 func (al *ArrayLiteral) expressionNode()          {}
@@ -547,7 +547,7 @@ func (al *ArrayLiteral) String() string {
 type IndexedExpression struct {
 	Left    Expression
 	Index   Expression
-	Context TokenContext
+	Context FBContext
 }
 
 func (ie *IndexedExpression) expressionNode()          {}
@@ -570,7 +570,7 @@ func (ie *IndexedExpression) String() string {
 type RegisterLiteral struct {
 	RegisterType int
 	Register     int
-	Context      TokenContext
+	Context      FBContext
 }
 
 func (rl *RegisterLiteral) expressionNode()          {}
@@ -583,7 +583,7 @@ func (rl *RegisterLiteral) String() string {
 // フラグ
 type FlagLiteral struct {
 	Flag    int
-	Context TokenContext
+	Context FBContext
 }
 
 func (fl *FlagLiteral) expressionNode()          {}
@@ -598,7 +598,7 @@ type Ident struct {
 	Name      string
 	IdentType int
 	Value     Expression
-	Context   TokenContext
+	Context   FBContext
 }
 
 func (i *Ident) expressionNode()          {}
@@ -612,7 +612,7 @@ type DotIdent struct {
 	Left    string
 	Right   string
 	Value   Expression
-	Context TokenContext
+	Context FBContext
 }
 
 func (di *DotIdent) expressionNode()          {}
@@ -638,7 +638,7 @@ type InfixExpression struct {
 	Operator int
 	Op1      Expression
 	Op2      Expression
-	Context  TokenContext
+	Context  FBContext
 }
 
 func (ie *InfixExpression) expressionNode()          {}
@@ -669,7 +669,7 @@ func (ie *InfixExpression) String() string {
 type PrefixExpression struct {
 	Operator int
 	Op       Expression
-	Context  TokenContext
+	Context  FBContext
 }
 
 func (pe *PrefixExpression) expressionNode()          {}
@@ -690,7 +690,7 @@ func (pe *PrefixExpression) String() string {
 type CallExpression struct {
 	Function  Expression
 	Arguments *ExpressionList
-	Context   TokenContext
+	Context   FBContext
 }
 
 func (ce *CallExpression) expressionNode()          {}

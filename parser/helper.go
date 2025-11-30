@@ -175,7 +175,7 @@ var infixFuncs map[int]infixFuncType = map[int]infixFuncType{
 	},
 }
 
-func buildInfixExpression(opcode int, op1, op2 Expression, position TokenContext) Expression {
+func buildInfixExpression(opcode int, op1, op2 Expression, position FBContext) Expression {
 	if op1.NodeType() == NODE_ERROR {
 		return op1
 	}
@@ -222,7 +222,7 @@ var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
 	},
 }
 
-func buildPrefixExpression(opcode int, op Expression, pos TokenContext) Expression {
+func buildPrefixExpression(opcode int, op Expression, pos FBContext) Expression {
 	if op.NodeType() == NODE_ERROR {
 		return op
 	}

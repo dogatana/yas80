@@ -13,17 +13,17 @@ type Token struct {
 	TokenType    TokenType
 	TokenSubType TokenSubType
 	Literal      string
-	Context      TokenContext
+	Context      FBContext
 }
 
 // ファイル内の位置
-type TokenContext struct {
+type FBContext struct {
 	FileBlock *fileblock.FileBlock
 	Line      int // Token 行(1-)
 	Column    int // Token 開始桁(0-)
 }
 
-func (tc TokenContext) String() string {
+func (tc FBContext) String() string {
 	return fmt.Sprintf("@%q(%d,%d)", tc.FileBlock.Filename, tc.Line, tc.Column)
 }
 
