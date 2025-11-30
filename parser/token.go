@@ -13,7 +13,7 @@ type Token struct {
 	TokenType    TokenType
 	TokenSubType TokenSubType
 	Literal      string
-	TokenContext TokenContext
+	Context      TokenContext
 }
 
 // ファイル内の位置
@@ -35,7 +35,7 @@ func (t Token) String() string {
 		tstName = fmt.Sprintf(", Sub: %s(%d)", TokenLiteral(tst), tst)
 	}
 	return fmt.Sprintf("Token{%s(%d)%s, %q, %s}",
-		TokenLiteral(tt), tt, tstName, t.Literal, t.TokenContext.String())
+		TokenLiteral(tt), tt, tstName, t.Literal, t.Context.String())
 }
 
 var reservedWords map[string]Token = map[string]Token{
