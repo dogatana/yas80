@@ -141,48 +141,89 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 
 // Program 評価
 func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) object.Object {
-	results := &object.ProgramObject{}
+	objects := []object.Object{}
+	stmts := []parser.Node{}
 
-	for i, stmt := range prog.Statements {
-		if e.Debug > 1 {
-			fmt.Println("eval stmt", stmt.String())
+	var obj object.Object
+
+	for i := 0; i < len(prog.Statements); i++ {
+		if e.Debug > 0 {
+			fmt.Printf("eval prog.Statements[%d]\n", i)
 		}
-		if stmt.NodeType() == parser.NODE_DELETED_STMT {
-			continue
-		}
-		obj := e.Eval(stmt, env)
-		switch obj := obj.(type) {
-		case *object.EnumObject:
-			for _, k := range obj.Keys {
-				results.Objects = append(results.Objects, obj.Value[k])
-			}
-		case *object.ReturnObject:
-			results.Objects = append(results.Objects, obj.Value)
-			return results
-		case *object.BlockObject:
-			if len(obj.Block) == 0 {
-				results.Objects = append(results.Objects, object.NULL)
+
+		node := prog.Statements[i]
+
+		switch stmt := node.(type) {
+		case *parser.Z80Instruction:
+			obj = e.evalZ80Instruction(stmt, env)
+			objects = append(objects, obj)
+			stmts = append(stmts, node)
+		case *parser.LabelStatement:
+			if stmt.Value.LabelType != parser.NODE_LABEL {
+				fmt.Println(stmt.Value.String())
+				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Value.Name), stmt.Context)
 				continue
 			}
-			ret, ok := obj.Block[len(obj.Block)-1].(*object.ReturnObject)
-			if ok {
-				obj.Block[len(obj.Block)-1] = ret.Value
-			}
-			results.Objects = append(results.Objects, obj.Block...)
-		// case *object.SymbolObject:
-		// 	prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
-		// 	results.Objects = append(results.Objects, obj)
-		default:
-			results.Objects = append(results.Objects, obj)
-		}
+			obj = e.evalLabelStatement(stmt, env)
+			objects = append(objects, obj)
+			stmts = append(stmts, node)
 
-		// pass1 で無効化するステートメント
-		switch stmt := stmt.(type) {
-		case *parser.ConstStatement, *parser.FuncStatement, *parser.MacroStatement:
-			prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
+		case *parser.MacroStatement:
+			// マクロ名は IDENT 由来であることは確定
+			if _, ok := env.Get(stmt.Name); ok {
+				e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, stmt.Name), stmt.Context)
+				return object.ERROR
+			}
+			obj := &object.MacroObject{Name: stmt.Name, Params: stmt.Params, Body: stmt.Body}
+			env.Set(stmt.Name, obj)
+			continue
+		case *parser.DeletedStatement:
+			continue
+		default:
+			e.logger.Info(fmt.Sprintf(errcode.E999, node), nil)
+			obj = e.Eval(node, env)
+			if obj == object.ERROR {
+				return obj
+			}
+			objects = append(objects, obj)
+			stmts = append(stmts, node)
 		}
 	}
-	return results
+	prog.Statements = stmts
+	return &object.ProgramObject{Objects: objects}
+
+	// 	obj := e.Eval(stmt, env)
+	// 	switch obj := obj.(type) {
+	// 	case *object.EnumObject:
+	// 		for _, k := range obj.Keys {
+	// 			results.Objects = append(results.Objects, obj.Value[k])
+	// 		}
+	// 	case *object.ReturnObject:
+	// 		results.Objects = append(results.Objects, obj.Value)
+	// 		return results
+	// 	case *object.BlockObject:
+	// 		if len(obj.Block) == 0 {
+	// 			results.Objects = append(results.Objects, object.NULL)
+	// 			continue
+	// 		}
+	// 		ret, ok := obj.Block[len(obj.Block)-1].(*object.ReturnObject)
+	// 		if ok {
+	// 			obj.Block[len(obj.Block)-1] = ret.Value
+	// 		}
+	// 		results.Objects = append(results.Objects, obj.Block...)
+	// 	// case *object.SymbolObject:
+	// 	// 	prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
+	// 	// 	results.Objects = append(results.Objects, obj)
+	// 	default:
+	// 		results.Objects = append(results.Objects, obj)
+	// 	}
+
+	// 	// pass1 で無効化するステートメント
+	// 	switch stmt := stmt.(type) {
+	// 	case *parser.ConstStatement, *parser.FuncStatement, *parser.MacroStatement:
+	// 		prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
+	// 	}
+	// }
 }
 
 // 複合文 BlockStatement

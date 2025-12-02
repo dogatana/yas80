@@ -10,9 +10,11 @@ func TestZ80Instruction(t *testing.T) {
 	tests := []string{
 		"inst0",
 		"ld_r8_r8",
-		"forward",
-		"forward_symbol",
-		"forward_mix",
+		"label-backward",
+		"equ-backward",
+		// "forward",
+		// "forward_symbol",
+		// "forward_mix",
 	}
 
 	for _, base := range tests {

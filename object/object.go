@@ -374,7 +374,7 @@ func (mo *MacroObject) String() string {
 		out.WriteRune(' ')
 		out.WriteString(strings.Join(mo.Params, ", "))
 	}
-	out.WriteString(" \\ " + mo.Body.String() + " \\ ENDM")
+	// out.WriteString(" \\ " + mo.Body.String() + " \\ ENDM")
 
 	return out.String()
 }

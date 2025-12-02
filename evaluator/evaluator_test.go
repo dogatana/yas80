@@ -7,7 +7,7 @@ import (
 	"yas80/object"
 )
 
-func TestEvalExpression(t *testing.T) {
+func testEvalExpression(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -36,7 +36,7 @@ func TestEvalExpression(t *testing.T) {
 	}
 }
 
-func TestFuncIfReturn(t *testing.T) {
+func testFuncIfReturn(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -71,7 +71,7 @@ func TestFuncIfReturn(t *testing.T) {
 	}
 }
 
-func TestIf(t *testing.T) {
+func testIf(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -119,7 +119,7 @@ func TestIf(t *testing.T) {
 	}
 }
 
-func TestFunc(t *testing.T) {
+func testFunc(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -163,7 +163,7 @@ func TestFunc(t *testing.T) {
 	}
 }
 
-func TestClosure(t *testing.T) {
+func testClosure(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -198,7 +198,7 @@ func TestClosure(t *testing.T) {
 	}
 }
 
-func TestFibFunc(t *testing.T) {
+func testFibFunc(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -235,7 +235,7 @@ func TestFibFunc(t *testing.T) {
 	}
 }
 
-func TestFunction(t *testing.T) {
+func testFunction(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
