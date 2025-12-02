@@ -97,19 +97,15 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		uname := node.Name
 		obj, ok := env.Get(uname)
 		if !ok && e.Pass1 {
-			// Pass1 の場合は未定義識別子を UndefinedObject として返す
+			// 未定義別子の場合
 			return &object.RefNotFoundObject{Names: []string{uname}}
-		} else if !ok {
-			// Pass2 の場合は ERROR を返す
-			e.logger.Error(fmt.Sprintf(errcode.E009, uname), node.Context)
-			return object.ERROR
 		}
 		sym, ok := (obj).(*object.SymbolObject)
-		if ok && sym.SymState == object.NOT_REGISTERED {
-			e.logger.Error(fmt.Sprintf(errcode.E009, uname), node.Context)
-			return object.ERROR
+		if ok {
+			return sym
 		}
-		return obj
+		e.logger.Error(fmt.Sprintf(errcode.E009, uname), node.Context)
+		return object.ERROR
 	case *parser.DotIdent:
 		enum, ok := env.Get(node.Left)
 		if !ok {

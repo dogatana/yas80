@@ -113,6 +113,9 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 	// case *object.IndirectExpression:
 	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
 	// 	return object.ERROR
+	case *object.RefNotFoundObject:
+		e.Resolved = false
+		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
 	case *object.SymbolObject:
 		op2v, ok := op2.Value.(*object.NumberObject)
 		if ok {
@@ -123,18 +126,15 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 			r1 := Z80Reg8Index[int(op1.Register)]
 			b := byte(0x06 | (r1 << 3))
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{b, v}}
-		}
-		if e.Pass1 {
-			// pass1 の場合はダミーとして LD A, A を返す
+		} else {
+			// ダミーとして LD A, A を返すとともに e.Resolved を false に
+			e.Resolved = false
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
+
 		}
-		e.logger.Error(errcode.E025, node.Context)
-		return object.ERROR
+
 	default:
-		if e.Pass1 {
-			// pass1 の場合はダミーとして LD A, A を返す
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
-		}
+
 		e.logger.Error(errcode.E025, node.Context)
 		return object.ERROR
 	}
@@ -177,6 +177,10 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 	// case *object.IndirectExpression:
 	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
 	// 	return object.ERROR
+	case *object.RefNotFoundObject:
+		e.Resolved = false
+		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
+
 	case *object.SymbolObject:
 		op2v, ok := op2.Value.(*object.NumberObject)
 		if ok {
@@ -187,18 +191,11 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 			r1 := Z80Reg16Index[int(op1.Register)]
 			b := byte(0x01 | (r1 << 4))
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{b, byte(v & 0xff), byte((v >> 8) & 0xff)}}
-		}
-		if e.Pass1 {
-			// pass1 の場合はダミーとして LD A, A を返す
+		} else {
+			e.Resolved = false
 			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
 		}
-		e.logger.Error(errcode.E025, node.Context)
-		return object.ERROR
 	default:
-		if e.Pass1 {
-			// pass1 の場合はダミーとして LD HL, 0 を返す
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
-		}
 		e.logger.Error(errcode.E025, node.Context)
 		return object.ERROR
 	}
