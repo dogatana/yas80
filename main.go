@@ -103,33 +103,50 @@ func main() {
 	// env 作成
 	env := object.NewEnvironment(nil)
 
-	// pass1 実行
-	fmt.Println("# pass1")
 	eval := evaluator.New(logger)
 	eval.Debug = getDebugEnv("evaldebug")
 
-	obj := eval.Eval(prog, env)
-	if obj == object.ERROR {
-		fmt.Printf("*** evaluate program returns ERROR")
-		os.Exit(1)
-	}
-	logger.Print()
-	progObj := obj.(*object.ProgramObject)
+	//
+	// eval 戦略
+	// 評価後 eval.Resolved が true ならコード生成完了とみなす
+	// true でないなら、規定回数（例: 256 とか 1,024) だけ eval を繰り返す
+	for i := 0; i < 256; i++ {
+		fmt.Printf("# eval[%d]\n", i)
+		eval.Resolved = true
+		obj := eval.Eval(prog, env)
+		logger.Print()
 
-	fmt.Printf("\n# %d objects\n", len(progObj.Objects))
-	for _, o := range progObj.Objects {
-		if o == nil {
-			fmt.Println("<nil>")
-		} else {
-			fmt.Println(o.String())
+		if obj == object.ERROR {
+			fmt.Printf("*** evaluate program returns ERROR")
+			os.Exit(1)
+		}
+
+		ec, _, _ := logger.Count()
+		if ec != 0 {
+			fmt.Println("*** Error")
+			os.Exit(1)
+
+		}
+		progObj := obj.(*object.ProgramObject)
+		fmt.Printf("\n# %d objects\n", len(progObj.Objects))
+		for _, o := range progObj.Objects {
+			if o == nil {
+				fmt.Println("<nil>")
+			} else {
+				fmt.Println(o.String())
+			}
+		}
+		fmt.Println("\n# ast after pass1")
+		fmt.Println(prog.String())
+
+		fmt.Println("\n# env")
+		object.PrintEnv(env)
+
+		if eval.Resolved {
+			break
 		}
 	}
-
-	fmt.Println("\n# ast after pass1")
-	fmt.Println(prog.String())
-
-	fmt.Println("\n# env")
-	object.PrintEnv(env)
+	fmt.Printf("eval.Resolved = %v\n", eval.Resolved)
 
 	// // eval env
 	// fmt.Println("\n# eval env")

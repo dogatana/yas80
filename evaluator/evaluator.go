@@ -13,6 +13,7 @@ type Evaluator struct {
 	logger     *logger.Logger
 	Pass1      bool
 	Debug      int
+	Resolved   bool
 	lineNumber int
 }
 
