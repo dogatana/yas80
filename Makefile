@@ -1,6 +1,7 @@
 SRC = main.go \
 	parser/token.go parser/lexer.go parser/z80.go \
-	parser/parser.go parser/ast.go parser/helper.go parser/rules.go \
+	parser/parser.go parser/ast.go parser/ast_node_literal.go \
+	parser/helper.go parser/rules.go \
 	parser/preprocess.go \
 	object/object.go  object/environment.go \
 	evaluator/evaluator.go evaluator/eval_instruction.go evaluator/eval_env.go \

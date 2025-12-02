@@ -143,6 +143,37 @@ func TestParseArrayLiteral(t *testing.T) {
 	}
 }
 
+func TestParseLabel(t *testing.T) {
+	tests := []struct {
+		input     string
+		labelType NodeSubType
+		name      string
+	}{
+		{"abc:", NODE_LABEL, "ABC"},
+		{".abc:", NODE_LOCAL_LABEL, ".ABC"},
+		{"@abc:", NODE_AT_LABEL, "@ABC"},
+	}
+	for _, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := ParseForTest(t, l, tt.input)
+		if len(prog.Statements) == 0 {
+			t.Fatal("statements empty")
+		}
+		stmt, ok := prog.Statements[0].(*LabelStatement)
+		if !ok {
+			t.Errorf("prog.Statemtes[0] is not LabelStatement. got %T", prog.Statements[0])
+		}
+		if stmt.Value.NodeType() != NODE_LABEL {
+			t.Errorf("Value.Nodetyp() not NODE_LABEL. got %s", nodeLiteral(int(stmt.Value.NodeType())))
+		}
+		if stmt.Value.NodeSubType() != tt.labelType {
+			t.Errorf("Value.Nodetyp() not %s. got %s", nodeLiteral(int(tt.labelType)), nodeLiteral(int(stmt.Value.NodeType())))
+		}
+		if stmt.Value.Name != tt.name {
+			t.Errorf("Value.Name not %q. got %q", tt.name, stmt.Value.Name)
+		}
+	}
+}
 func TestParseLabelStatement(t *testing.T) {
 	tests := []struct {
 		input     string

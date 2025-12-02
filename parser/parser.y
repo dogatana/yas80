@@ -98,12 +98,12 @@ program		: { }
 statement   : EOL { $$ = nil }
 			| label EOL 
 			{
-				$$ = &LabelStatement{Value: $1,Context: $1.Context}
+				$$ = &LabelStatement{Value: $1, Context: $1.Context}
 			}
 			| label instruction EOL
 			{ 
 				prog := yylex.(*Lexer).program
-				stmt := &LabelStatement{Value: $1,Context: $1.Context}
+				stmt := &LabelStatement{Value: $1, Context: $1.Context}
 				prog.Statements = append(prog.Statements, stmt)
 				$$ = $2 
 			}

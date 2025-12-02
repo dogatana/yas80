@@ -113,8 +113,9 @@ func (pe *ParseError) String() string {
 
 // ラベル - 独立した文として生成
 type LabelStatement struct {
-	Value   *Label
-	Context *fileblock.Context
+	Value    *Label
+	LabeType int
+	Context  *fileblock.Context
 }
 
 func (ls *LabelStatement) statementNode()           {}
@@ -128,17 +129,17 @@ func (ls *LabelStatement) String() string {
 	return out
 }
 
-// DeletedStatement
+// 評価中に削除された文
 type DeletedStatement struct {
-	Node Node
+	Node    Node
+	Context *fileblock.Context
 }
 
 func (ds *DeletedStatement) statementNode()           {}
 func (ds *DeletedStatement) NodeType() NodeType       { return NODE_DELETED_STMT }
 func (ds *DeletedStatement) NodeSubType() NodeSubType { return 0 }
 func (ds *DeletedStatement) String() string {
-	body := strings.Join(strings.Split(ds.Node.String(), "\n"), "\\")
-	return fmt.Sprintf("DELETED(%s)", body)
+	return fmt.Sprintf("DELETED{%T}", ds.Node)
 }
 
 // TODO: 仮実装 - PROC/ENDPROC - それぞれ単一文として生成
