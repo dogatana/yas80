@@ -12,6 +12,7 @@ func TestZ80Instruction(t *testing.T) {
 		"ld_r8_r8",
 		"label-backward",
 		"equ-backward",
+		"label-forward",
 		// "forward",
 		// "forward_symbol",
 		// "forward_mix",
