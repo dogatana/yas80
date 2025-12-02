@@ -20,7 +20,7 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 	checkDebug(evaluator)
 
 	// pass1
-	_ = evaluator.Eval(progNode, env)
+	obj := evaluator.Eval(progNode, env)
 	ec, wc, _ := logger.Count()
 	if ec > 0 || wc > 0 {
 		fmt.Printf("input %q\n", input)
@@ -29,32 +29,32 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 	}
 
 	// resolve forward reference
-	_, err := evaluator.EvalEnv(env)
-	if err != nil {
-		fmt.Println("input")
-		fmt.Println(input)
-		t.Fatalf("EvalEnv() error: %v", err)
-	}
+	// _, err := evaluator.EvalEnv(env)
+	// if err != nil {
+	// 	fmt.Println("input")
+	// 	fmt.Println(input)
+	// 	t.Fatalf("EvalEnv() error: %v", err)
+	// }
 
 	// pass2
-	evaluator.Pass1 = false
-	obj := evaluator.Eval(progNode, env)
-	ec, wc, _ = logger.Count()
-	if ec > 0 || wc > 0 {
-		fmt.Printf("input %q\n", input)
-		logger.Print()
-		t.Fatalf("Eval() %d errors and %d warnigs", ec, wc)
-	}
+	// evaluator.Pass1 = false
+	// obj := evaluator.Eval(progNode, env)
+	// ec, wc, _ = logger.Count()
+	// if ec > 0 || wc > 0 {
+	// 	fmt.Printf("input %q\n", input)
+	// 	logger.Print()
+	// 	t.Fatalf("Eval() %d errors and %d warnigs", ec, wc)
+	// }
 
 	programObject, ok := obj.(*object.ProgramObject)
 	if !ok {
 		fmt.Printf("input %q\n", input)
 		t.Fatalf("not ProgramObject. got %T", obj)
 	}
-	// if len(programObject.Objects) == 0 {
-	// 	fmt.Printf("input %q\n", input)
-	// 	t.Fatal("Eval() return 0 Objects")
-	// }
+	if len(programObject.Objects) == 0 {
+		fmt.Printf("input %q\n", input)
+		t.Fatal("Eval() return 0 Objects")
+	}
 	return programObject
 }
 

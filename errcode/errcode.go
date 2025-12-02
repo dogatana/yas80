@@ -38,7 +38,8 @@ const (
 	E029 = "文字列は '+' 演算子のみ使用可能"
 	E030 = "'%s' の定義に循環参照あり"
 	E031 = "const/equ '%s' を再定義不可" // label or const で定義済み
-	E032 = "label '%s' を再定義不可"     // label or const で定義済み
+
+	ELABEL_USED_NAME = "%s は利用済のため LABEL 定義不可" // symbol 以外で利用済
 
 	EMACRO_FUNC_NOT_FOUND = "MACRO/FUNCTION %s は未定義"
 	EMACRO_NOT_FOUND      = "MACRO %s は未定義"

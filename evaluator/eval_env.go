@@ -1,84 +1,79 @@
 package evaluator
 
-import (
-	"fmt"
-	"yas80/errcode"
-	"yas80/object"
-)
-
-func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
-	order, err := e.tSortEnv(env)
-	if err != nil {
-		return order, err
-	}
-
-	for _, name := range order {
-		obj, ok := env.Get(name)
-		if !ok {
-			return order, fmt.Errorf(errcode.E900, fmt.Sprintf(": could not get %s", name))
-		}
-		sym, ok := obj.(*object.SymbolObject)
-		if !ok {
-			continue
-		}
-		if sym.SymState == object.VALUE_DETERMINED {
-			env.Set(name, sym.Value)
-			continue
-		}
-		if sym.SymState == object.NOT_REGISTERED {
-			continue
-		}
-		if sym.Node != nil {
-			value := e.Eval(sym.Node, env)
-			if !isError(value) && !isRefNotFound(value) {
-				env.Set(name, value)
-			}
-		}
-		// return order, fmt.Errorf(errcode.E900, fmt.Sprintf(": could not eval '%s'", name))
-	}
-	return order, nil
-}
-
-// 環境をトポロジカルソート
-func (e *Evaluator) tSortEnv(env object.Environment) ([]string, error) {
-	visited := map[string]bool{}
-	visiting := map[string]bool{}
-	order := []string{}
-
-	var visit func(string) error
-	visit = func(name string) error {
-		if visiting[name] {
-			return fmt.Errorf(errcode.E030, name)
-		}
-		if visited[name] {
-			return nil
-		}
-		visiting[name] = true
-		obj, ok := env.Get(name)
-		if !ok {
-			// return fmt.Errorf(errcode.E009, name)
-			// 未定の場合、新たに UNKNOWN/NOT_REGISTERED として登録する
-			obj := object.NewUnknownSymbol(name, "", 0)
-			env.Set(name, obj)
-		}
-		sym, ok := obj.(*object.SymbolObject)
-		if ok {
-			for _, dep := range sym.DependsOn {
-				if err := visit(dep); err != nil {
-					return err
-				}
-			}
-		}
-		visited[name] = true
-		visiting[name] = false
-		order = append(order, name)
-		return nil
-	}
-
-	for _, name := range object.CollectNames(env) {
-		if err := visit(name); err != nil {
-			return nil, err
-		}
-	}
-	return order, nil
-}
+//func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
+//	order, err := e.tSortEnv(env)
+//	if err != nil {
+//		return order, err
+//	}
+//
+//	for _, name := range order {
+//		obj, ok := env.Get(name)
+//		if !ok {
+//			return order, fmt.Errorf(errcode.E900, fmt.Sprintf(": could not get %s", name))
+//		}
+//		sym, ok := obj.(*object.SymbolObject)
+//		if !ok {
+//			continue
+//		}
+//		if sym.SymState == object.VALUE_DETERMINED {
+//			env.Set(name, sym.Value)
+//			continue
+//		}
+//		if sym.SymState == object.NOT_REGISTERED {
+//			continue
+//		}
+//		if sym.Node != nil {
+//			value := e.Eval(sym.Node, env)
+//			if !isError(value) && !isRefNotFound(value) {
+//				env.Set(name, value)
+//			}
+//		}
+//		// return order, fmt.Errorf(errcode.E900, fmt.Sprintf(": could not eval '%s'", name))
+//	}
+//	return order, nil
+//}
+//
+//// 環境をトポロジカルソート
+//func (e *Evaluator) tSortEnv(env object.Environment) ([]string, error) {
+//	visited := map[string]bool{}
+//	visiting := map[string]bool{}
+//	order := []string{}
+//
+//	var visit func(string) error
+//	visit = func(name string) error {
+//		if visiting[name] {
+//			return fmt.Errorf(errcode.E030, name)
+//		}
+//		if visited[name] {
+//			return nil
+//		}
+//		visiting[name] = true
+//		obj, ok := env.Get(name)
+//		if !ok {
+//			// return fmt.Errorf(errcode.E009, name)
+//			// 未定の場合、新たに UNKNOWN/NOT_REGISTERED として登録する
+//			obj := object.NewUnknownSymbol(name, "", 0)
+//			env.Set(name, obj)
+//		}
+//		sym, ok := obj.(*object.SymbolObject)
+//		if ok {
+//			for _, dep := range sym.DependsOn {
+//				if err := visit(dep); err != nil {
+//					return err
+//				}
+//			}
+//		}
+//		visited[name] = true
+//		visiting[name] = false
+//		order = append(order, name)
+//		return nil
+//	}
+//
+//	for _, name := range object.CollectNames(env) {
+//		if err := visit(name); err != nil {
+//			return nil, err
+//		}
+//	}
+//	return order, nil
+//}
+//

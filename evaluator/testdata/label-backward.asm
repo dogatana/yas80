@@ -1,2 +1,7 @@
+	nop
+	nop
 addr:	ld a, a
-	ld hl, addr + 0x100
+	ld hl, addr
+	nop
+	nop
+	ld hl, addr + $1000

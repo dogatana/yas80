@@ -33,16 +33,6 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		initLocationCounter(env, 0)
 		return e.evalProgram(node, env)
 
-	// Statement
-	case *parser.Z80Instruction:
-		obj := e.evalZ80Instruction(node, env)
-		if obj.Type() == object.CODE_OBJ {
-			code := obj.(*object.CodeObject)
-			code.Addr = getLocationCounter(env)
-			advanceLocationCounter(env, code.Size())
-		}
-		return obj
-
 	case *parser.LabelStatement:
 		return e.evalLabelStatement(node, env)
 	case *parser.ConstStatement:
@@ -149,19 +139,28 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 	for i := 0; i < len(prog.Statements); i++ {
 		if e.Debug > 0 {
 			fmt.Printf("eval prog.Statements[%d]\n", i)
+			addr, _ := env.Get("$")
+			fmt.Printf("$ %s\n", addr.String())
 		}
 
 		node := prog.Statements[i]
 
 		switch stmt := node.(type) {
-		case *parser.Z80Instruction:
+		case *parser.Z80Instruction: // 毎回評価
 			obj = e.evalZ80Instruction(stmt, env)
+			if obj.Type() == object.CODE_OBJ {
+				code := obj.(*object.CodeObject)
+				code.Addr = getLocationCounter(env)
+				advanceLocationCounter(env, code.Size())
+			}
 			objects = append(objects, obj)
 			stmts = append(stmts, node)
+
 		case *parser.LabelStatement:
 			if stmt.Value.LabelType != parser.NODE_LABEL {
 				fmt.Println(stmt.Value.String())
 				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Value.Name), stmt.Context)
+				// エラーの場合は次回以降評価しない
 				continue
 			}
 			obj = e.evalLabelStatement(stmt, env)
@@ -169,16 +168,19 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 			stmts = append(stmts, node)
 
 		case *parser.MacroStatement:
-			// マクロ名は IDENT 由来であることは確定
 			if _, ok := env.Get(stmt.Name); ok {
 				e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, stmt.Name), stmt.Context)
-				return object.ERROR
+				// エラーの場合は次回以降評価しない
+				continue
 			}
+			// エラー出ない場合、環境に登録し、次回以降評価しない
 			obj := &object.MacroObject{Name: stmt.Name, Params: stmt.Params, Body: stmt.Body}
 			env.Set(stmt.Name, obj)
 			continue
+
 		case *parser.DeletedStatement:
 			continue
+
 		default:
 			e.logger.Info(fmt.Sprintf(errcode.E999, node), nil)
 			obj = e.Eval(node, env)
@@ -330,29 +332,28 @@ func (e *Evaluator) evalMacroBody(node *parser.MacroCallStatement, macro *object
 // ラベル定義文
 func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.Environment) object.Object {
 	name := node.Value.Name
-	// pass2 で定義済みならエラー
-	if obj, ok := env.Get(name); ok {
-		switch obj := obj.(type) {
-		case *object.SymbolObject:
-			if obj.SymType != object.LABEL || obj.LineNumber != node.Context.Line || obj.SymState == object.VALUE_DETERMINED {
-				if !e.Pass1 {
-					e.logger.Error(fmt.Sprintf(errcode.E032, name), node.Context)
-				}
-				return object.ERROR
-			}
-			// fall through
-		default:
-			if !e.Pass1 {
-				e.logger.Error(fmt.Sprintf(errcode.E032, name), node.Context)
-			}
-			return object.ERROR
-		}
+
+	printLocationCounter(env)
+	obj, ok := env.Get(name)
+	if !ok {
+		// 環境にないなら新規登録
+		sym := object.NewLabelSymbol(name, getLocationCounter(env), node.Context)
+		env.Set(name, sym)
+		return sym
 	}
-	// TODO: 変数の場合、条件アセンブルによってに時的確定かどうかを判別する必要あり
-	// sym := &object.SymbolObject{
-	// 	Name: uname, Node: node.Value, Value: addr, SymState: object.VALUE_DETERMINED, DependsOn: []string{}}
-	sym := object.NewLabelSymbol(name, getLocationCounter(env), node.Context.Line)
-	env.Set(name, sym)
+	sym, ok := obj.(*object.SymbolObject)
+	if !ok || sym.SymType != object.SYM_LABEL {
+		// Symbol で || LABEL でなけれがエラー
+		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED_NAME, name), node.Context)
+		return object.ERROR
+	}
+	if !sym.Context.Equal(node.Context) {
+		// ラベル 二重定義
+		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED_NAME, name), node.Context)
+		return object.ERROR
+	}
+	// 同じラベルなら値を更新
+	sym.Value.(*object.NumberObject).Value = getLocationCounter(env)
 	return sym
 }
 
@@ -379,20 +380,20 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 			return object.ERROR
 		}
 		// 未定義定数として登録
-		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context.Line)
+		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
 		env.Set(name, sym)
 		return sym
 	case *object.SymbolObject:
 		// Symbo Object の場合は値を取得し新たに登録する
 		depends := make([]string, len(v.DependsOn)) // 他のシンボルの情報なので copy
 		copy(depends, v.DependsOn)
-		sym := object.NewNullConstSymbol(name, node.Value, depends, node.Context.Line)
+		sym := object.NewNullConstSymbol(name, node.Value, depends, node.Context)
 		env.Set(name, sym)
 		return sym
 
 	case *object.SymbolExprObject:
 		// Symbo Expression Object の場合は値を取得し新たに登録する
-		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context.Line)
+		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
 		env.Set(name, sym)
 		return sym
 	case *object.ErrorObject:
