@@ -45,8 +45,10 @@ const (
 	EMACRO_DUP            = "MACRO %s は定義済み" // TODO 最終的に不要
 	EMACRO_NEST           = "MACRO 定義はネスト不可" // TODO 最終的に不要
 	EMACRO_ARG_COUNT      = "MACRO %s の仮引数と引数の個数不一致"
-	EMACRO_DEF            = "%s は使用済みのため、MACRO として再定義不可"
+	EMACRO_DEF            = "%s を MACRO として再定義不可"
 	EMACRO_NOT_MACRO      = "%s は MACRO 以外で定義済み"
+
+	EGLOBAL_NOT_ALLOWED = "%s はグローバルスコープで利用不可"
 
 	E900 = "E900 内部エラー %s"
 	E999 = "[E]'%T' の評価は未実装"
