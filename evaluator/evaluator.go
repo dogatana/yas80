@@ -349,7 +349,7 @@ func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.E
 	}
 	if !sym.Context.Equal(node.Context) {
 		// ラベル 二重定義
-		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED_NAME, name), node.Context)
+		e.logger.Error(fmt.Sprintf(errcode.ELABEL_DUP, name), node.Context)
 		return object.ERROR
 	}
 	// 同じラベルなら値を更新
