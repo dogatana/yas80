@@ -57,15 +57,15 @@ func main() {
 
 	parser.SetYYDebug(getDebugEnv("yydebug"))
 
-	// log 作成
-	log := logger.New(file)
+	// logger 作成
+	logger := logger.New(file)
 
 	// 構文解析開始
-	prog := parse(log, input, file)
+	prog := parse(logger, input, file)
 
 	// 構文解析直後の AST 表示
 	if getDebugEnv("astdebug") > 0 {
-		log.Print()
+		logger.Print()
 		fmt.Println("--")
 		for i, s := range prog.Statements {
 			fmt.Printf("%d: %#v\n", i, s)
@@ -78,8 +78,8 @@ func main() {
 	}
 	// プリプロセス
 	fmt.Println("\n# preprocess")
-	prog = parser.PreProrocess(log, prog)
-	log.Print()
+	prog = parser.PreProrocess(logger, prog)
+	logger.Print()
 
 	// プリプロセス直後の AST 表示
 	if getDebugEnv("astdebug") > 1 {
@@ -105,13 +105,19 @@ func main() {
 
 	// pass1 実行
 	fmt.Println("# pass1")
-	eval := evaluator.New(log)
+	eval := evaluator.New(logger)
 	eval.Debug = getDebugEnv("evaldebug")
 
-	objects := eval.Eval(prog, env).(*object.ProgramObject)
+	obj := eval.Eval(prog, env)
+	if obj == object.ERROR {
+		fmt.Printf("*** evaluate program returns ERROR")
+		os.Exit(1)
+	}
+	logger.Print()
+	progObj := obj.(*object.ProgramObject)
 
-	fmt.Printf("\n# %d objects\n", len(objects.Objects))
-	for _, o := range objects.Objects {
+	fmt.Printf("\n# %d objects\n", len(progObj.Objects))
+	for _, o := range progObj.Objects {
 		if o == nil {
 			fmt.Println("<nil>")
 		} else {
@@ -125,42 +131,42 @@ func main() {
 	fmt.Println("\n# env")
 	object.PrintEnv(env)
 
-	// eval env
-	fmt.Println("\n# eval env")
-	order, err := eval.EvalEnv(env)
-	if err != nil {
-		log.Error(err.Error(), nil)
-	}
-	fmt.Println("order:", order)
+	// // eval env
+	// fmt.Println("\n# eval env")
+	// order, err := eval.EvalEnv(env)
+	// if err != nil {
+	// 	log.Error(err.Error(), nil)
+	// }
+	// fmt.Println("order:", order)
 
-	fmt.Println("\n# env after eval")
-	object.PrintEnv(env)
+	// fmt.Println("\n# env after eval")
+	// object.PrintEnv(env)
 
-	if len(log.Errors) > 0 {
-		fmt.Println("\n*** abort ***")
-		log.Print()
-		os.Exit(1)
-	}
+	// if len(log.Errors) > 0 {
+	// 	fmt.Println("\n*** abort ***")
+	// 	log.Print()
+	// 	os.Exit(1)
+	// }
 
-	fmt.Println("\n# pass2")
-	eval.Pass1 = false
-	objects = eval.Eval(prog, env).(*object.ProgramObject)
-	log.Print()
+	// fmt.Println("\n# pass2")
+	// eval.Pass1 = false
+	// objects = eval.Eval(prog, env).(*object.ProgramObject)
+	// log.Print()
 
-	fmt.Println("\n# ast")
-	fmt.Println(prog.String())
+	// fmt.Println("\n# ast")
+	// fmt.Println(prog.String())
 
-	fmt.Printf("\n# %d objects\n", len(objects.Objects))
-	for _, o := range objects.Objects {
-		if o == nil {
-			fmt.Println("<nil>")
-			continue
-		}
-		if o.Type() == object.CODE_OBJ {
-			fmt.Print("code: ")
-		}
-		fmt.Println(o.String())
-	}
-	fmt.Println("\n# final env")
-	object.PrintEnv(env)
+	// fmt.Printf("\n# %d objects\n", len(objects.Objects))
+	// for _, o := range objects.Objects {
+	// 	if o == nil {
+	// 		fmt.Println("<nil>")
+	// 		continue
+	// 	}
+	// 	if o.Type() == object.CODE_OBJ {
+	// 		fmt.Print("code: ")
+	// 	}
+	// 	fmt.Println(o.String())
+	// }
+	// fmt.Println("\n# final env")
+	// object.PrintEnv(env)
 }
