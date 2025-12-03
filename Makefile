@@ -3,7 +3,7 @@ SRC = main.go \
 	parser/parser.go parser/ast.go parser/ast_node_literal.go \
 	parser/helper.go parser/rules.go \
 	parser/preprocess.go \
-	object/object.go  object/environment.go \
+	object/object.go  object/symbol.go object/z80register_flag.go object/environment.go \
 	evaluator/evaluator.go evaluator/eval_instruction.go evaluator/eval_env.go \
 	evaluator/z80code.go evaluator/helper.go \
 	logger/logger.go \
