@@ -27,6 +27,7 @@ const (
 	SYMBOL_OBJ
 	SYMBOL_EXPR_OBJ
 	DELETE_OBJ
+	VALUE_OBJ
 )
 
 type SymbolState int
@@ -100,6 +101,17 @@ func (p *ProgramObject) String() string {
 		results = append(results, result.String())
 	}
 	return strings.Join(results, "\n")
+}
+
+// value - list ファイル出力用
+type ValueObject struct {
+	Value   Object
+	Context *fileblock.Context
+}
+
+func (v *ValueObject) Type() ObjectType { return VALUE_OBJ }
+func (v *ValueObject) String() string {
+	return fmt.Sprintf("VALUE(%s)", v.Value.String())
 }
 
 // code

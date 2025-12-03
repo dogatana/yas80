@@ -108,16 +108,23 @@ func checkDebug(e *Evaluator) {
 	e.Debug = n
 }
 
-func testNumberObject(t *testing.T, obj object.Object, expected int, input string) bool {
+func testSymbolNumberObject(t *testing.T, testnum int, obj object.Object, expected int) bool {
+	sym, ok := obj.(*object.SymbolObject)
+	if !ok {
+		t.Errorf("[%d] Object not SymbolObject. got %T", testnum, obj)
+		return false
+	}
+	return testNumberObject(t, testnum, sym.Value, expected)
+}
+
+func testNumberObject(t *testing.T, testnum int, obj object.Object, expected int) bool {
 	number, ok := obj.(*object.NumberObject)
 	if !ok {
-		fmt.Printf("input %q\n", input)
-		t.Errorf("Object not NumberObject. got %T", obj)
+		t.Errorf("[%d] Object not NumberObject. got %T", testnum, obj)
 		return false
 	}
 	if number.Value != expected {
-		fmt.Printf("input %q\n", input)
-		t.Errorf("object is not %d. got %d", expected, number.Value)
+		t.Errorf("[%d] object is not %d. got %d", testnum, expected, number.Value)
 		return false
 	}
 	return true
@@ -148,12 +155,24 @@ func collectCode(prog *object.ProgramObject) []byte {
 	return result
 }
 
-func bytesEqual(sa, sb []byte) bool {
-	if len(sa) != len(sb) {
+func collectValue(prog *object.ProgramObject) []*object.ValueObject {
+	var result []*object.ValueObject
+	for _, obj := range prog.Objects {
+		value, ok := obj.(*object.ValueObject)
+		if !ok {
+			continue
+		}
+		result = append(result, value)
+	}
+	return result
+}
+
+func bytesEqual(v1, v2 []byte) bool {
+	if len(v1) != len(v2) {
 		return false
 	}
-	for i, b := range sa {
-		if b != sb[i] {
+	for i, v := range v1 {
+		if v != v2[i] {
 			return false
 		}
 	}

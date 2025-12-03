@@ -155,24 +155,25 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 
 		case *parser.LabelStatement:
 			if stmt.Value.LabelType != parser.NODE_LABEL {
+				// LOCAL/AT の場合は AST から LabelStatement を削除する
 				fmt.Println(stmt.Value.String())
 				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Value.Name), stmt.Context)
-				// エラーの場合は次回以降評価しない
 				continue
 			}
 			obj = e.evalLabelStatement(stmt, env)
-			objects = append(objects, obj)
+			// ValueObject にラップして返す
+			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			stmts = append(stmts, node)
 
 		case *parser.MacroStatement:
 			if _, ok := env.Get(stmt.Name); ok {
+				// 環境に登録済みなら AST から MacroStatement を削除する
 				e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, stmt.Name), stmt.Context)
-				// エラーの場合は次回以降評価しない
 				continue
 			}
-			// エラー出ない場合、環境に登録し、次回以降評価しない
 			obj := &object.MacroObject{Name: stmt.Name, Params: stmt.Params, Body: stmt.Body}
 			env.Set(stmt.Name, obj)
+			// AST から MacroStatement を削除する
 			continue
 
 		case *parser.DeletedStatement:
@@ -182,12 +183,13 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 			e.logger.Info(fmt.Sprintf(errcode.E999, node), nil)
 			obj = e.Eval(node, env)
 			if obj == object.ERROR {
-				return obj
+				continue
 			}
 			objects = append(objects, obj)
 			stmts = append(stmts, node)
 		}
 	}
+
 	prog.Statements = stmts
 	return &object.ProgramObject{Objects: objects}
 
@@ -330,7 +332,6 @@ func (e *Evaluator) evalMacroBody(node *parser.MacroCallStatement, macro *object
 func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.Environment) object.Object {
 	name := node.Value.Name
 
-	printLocationCounter(env)
 	obj, ok := env.Get(name)
 	if !ok {
 		// 環境にないなら新規登録
