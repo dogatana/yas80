@@ -163,14 +163,14 @@ func TestParseLabel(t *testing.T) {
 		if !ok {
 			t.Errorf("prog.Statemtes[0] is not LabelStatement. got %T", prog.Statements[0])
 		}
-		if stmt.Value.NodeType() != NODE_LABEL {
-			t.Errorf("Value.Nodetyp() not NODE_LABEL. got %s", nodeLiteral(int(stmt.Value.NodeType())))
+		if stmt.Name.NodeType() != NODE_LABEL {
+			t.Errorf("Value.Nodetyp() not NODE_LABEL. got %s", nodeLiteral(int(stmt.Name.NodeType())))
 		}
-		if stmt.Value.NodeSubType() != tt.labelType {
-			t.Errorf("Value.Nodetyp() not %s. got %s", nodeLiteral(int(tt.labelType)), nodeLiteral(int(stmt.Value.NodeType())))
+		if stmt.Name.NodeSubType() != tt.labelType {
+			t.Errorf("Value.Nodetyp() not %s. got %s", nodeLiteral(int(tt.labelType)), nodeLiteral(int(stmt.Name.NodeType())))
 		}
-		if stmt.Value.Name != tt.name {
-			t.Errorf("Value.Name not %q. got %q", tt.name, stmt.Value.Name)
+		if stmt.Name.Name != tt.name {
+			t.Errorf("Value.Name not %q. got %q", tt.name, stmt.Name.Name)
 		}
 	}
 }
@@ -197,7 +197,7 @@ func TestParseLabelStatement(t *testing.T) {
 			fmt.Printf("input %q\n", tt.input)
 			t.Errorf("prog.Statemtes[0] is not LabelStatement. got %T", prog.Statements[0])
 		}
-		name := stmt.Value.Name
+		name := stmt.Name.Name
 		if name != tt.expected {
 			fmt.Printf("input %q\n", tt.input)
 			t.Errorf("Label.Name is not %q. got %q", tt.expected, name)

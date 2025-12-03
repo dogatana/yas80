@@ -150,10 +150,10 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 			stmts = append(stmts, node)
 
 		case *parser.LabelStatement:
-			if stmt.Value.LabelType != parser.NODE_LABEL {
+			if stmt.Name.LabelType != parser.NODE_LABEL {
 				// LOCAL/AT の場合は AST から LabelStatement を削除する
-				fmt.Println(stmt.Value.String())
-				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Value.Name), stmt.Context)
+				fmt.Println(stmt.Name.String())
+				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Name.Name), stmt.Context)
 				continue
 			}
 			obj = e.evalLabelStatement(stmt, env)
@@ -326,7 +326,7 @@ func (e *Evaluator) evalMacroBody(node *parser.MacroCallStatement, macro *object
 
 // ラベル定義文
 func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.Environment) object.Object {
-	name := node.Value.Name
+	name := node.Name.Name
 
 	obj, ok := env.Get(name)
 	if !ok || obj.Type() == object.REF_NOTFOUND_OBJ {

@@ -113,7 +113,7 @@ func (pe *ParseError) String() string {
 
 // ラベル - 独立した文として生成
 type LabelStatement struct {
-	Value    *Label
+	Name     *Label
 	LabeType int
 	Context  *fileblock.Context
 }
@@ -122,7 +122,7 @@ func (ls *LabelStatement) statementNode()           {}
 func (ls *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
 func (ls *LabelStatement) NodeSubType() NodeSubType { return 0 }
 func (ls *LabelStatement) String() string {
-	out := ls.Value.Name
+	out := ls.Name.Name
 	if out[0] != '.' {
 		out += ":"
 	}
