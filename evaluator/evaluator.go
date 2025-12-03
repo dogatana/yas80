@@ -10,14 +10,13 @@ import (
 
 type Evaluator struct {
 	logger     *logger.Logger
-	Pass1      bool
 	Debug      int
 	Resolved   bool
 	lineNumber int
 }
 
 func New(logger *logger.Logger) *Evaluator {
-	return &Evaluator{logger: logger, Pass1: true}
+	return &Evaluator{logger: logger, Resolved: true}
 }
 
 // Eval
@@ -322,14 +321,10 @@ func (e *Evaluator) evalMacroBody(node *parser.MacroCallStatement, macro *object
 
 	// TODO 引数評価の前に設定しなくても良いか？
 	// マクロ展開の評価は Pass1 であっても未定義エラーを発生させる
-	savePass := e.Pass1
-	e.Pass1 = false
 	ret, ok := e.evalBlockStatement(macro.Body, newEnv).(*object.BlockObject)
 	if !ok {
 		panic(fmt.Sprintf("call macro %s returns %T(%#v)", macro.Name, ret, ret))
 	}
-
-	e.Pass1 = savePass
 	return ret
 }
 

@@ -38,15 +38,10 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 		newEnv.Set(param, v)
 	}
 
-	// 関数本体の評価は Pass1 であっても未定義エラーを発生させる
-	savePass := e.Pass1
-	e.Pass1 = false
-
 	ret, ok := e.evalBlockStatement(fn.Body.(*parser.BlockStatement), newEnv).(*object.BlockObject)
 	if !ok {
 		panic(fmt.Sprintf("call func %s returns %T(%#v)", fn.Name, ret, ret))
 	}
-	e.Pass1 = savePass
 
 	if len(ret.Block) == 0 {
 		return object.NULL
@@ -75,9 +70,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 		return e.evalNumberInfixExpression(node.Operator, op1, op2, lineNumber)
 	case isString(op1) && isString(op2):
 		if node.Operator != '+' {
-			if !e.Pass1 {
-				e.logger.Error(errcode.E029, nil)
-			}
+			e.logger.Error(errcode.E029, nil)
 			return object.ERROR
 		}
 		s1 := op1.(*object.StringObject).Value
@@ -92,9 +85,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 		if e.Debug > 0 {
 			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
 		}
-		if !e.Pass1 {
-			e.logger.Error(fmt.Sprintf(errcode.E023, parser.TokenLiteral(node.Operator)), nil)
-		}
+		e.logger.Error(fmt.Sprintf(errcode.E023, parser.TokenLiteral(node.Operator)), nil)
 		return object.ERROR
 	}
 }
@@ -142,9 +133,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 	case parser.AND:
 		return &object.NumberObject{Value: boolToInt(v1 != 1 && v2 != 1)}
 	default:
-		if !e.Pass1 {
-			e.logger.Error(fmt.Sprintf(errcode.E016, string(rune(opCode))), nil)
-		}
+		e.logger.Error(fmt.Sprintf(errcode.E016, string(rune(opCode))), nil)
 		return object.ERROR
 	}
 }

@@ -110,7 +110,8 @@ func main() {
 	// eval 戦略
 	// 評価後 eval.Resolved が true ならコード生成完了とみなす
 	// true でないなら、規定回数（例: 256 とか 1,024) だけ eval を繰り返す
-	for i := 0; i < 256; i++ {
+	var i int
+	for i = 0; i < 256; i++ {
 		fmt.Printf("# eval [#%d]\n", i)
 		eval.Resolved = true
 		obj := eval.Eval(prog, env)
@@ -146,44 +147,5 @@ func main() {
 			break
 		}
 	}
-	fmt.Printf("eval.Resolved = %v\n", eval.Resolved)
-
-	// // eval env
-	// fmt.Println("\n# eval env")
-	// order, err := eval.EvalEnv(env)
-	// if err != nil {
-	// 	log.Error(err.Error(), nil)
-	// }
-	// fmt.Println("order:", order)
-
-	// fmt.Println("\n# env after eval")
-	// object.PrintEnv(env)
-
-	// if len(log.Errors) > 0 {
-	// 	fmt.Println("\n*** abort ***")
-	// 	log.Print()
-	// 	os.Exit(1)
-	// }
-
-	// fmt.Println("\n# pass2")
-	// eval.Pass1 = false
-	// objects = eval.Eval(prog, env).(*object.ProgramObject)
-	// log.Print()
-
-	// fmt.Println("\n# ast")
-	// fmt.Println(prog.String())
-
-	// fmt.Printf("\n# %d objects\n", len(objects.Objects))
-	// for _, o := range objects.Objects {
-	// 	if o == nil {
-	// 		fmt.Println("<nil>")
-	// 		continue
-	// 	}
-	// 	if o.Type() == object.CODE_OBJ {
-	// 		fmt.Print("code: ")
-	// 	}
-	// 	fmt.Println(o.String())
-	// }
-	// fmt.Println("\n# final env")
-	// object.PrintEnv(env)
+	fmt.Printf("eval %d times, eval.Resolved = %v\n", i, eval.Resolved)
 }

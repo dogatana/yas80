@@ -75,11 +75,8 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environmen
 	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
 	// 	return object.ERROR
 	default:
-		if e.Pass1 {
-			// pass1 の場合はダミーとして LD A, A を返す
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
-		}
-		e.logger.Error(errcode.E024, node.Context)
+		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
+		// e.logger.Error(errcode.E024, node.Context)
 		return object.ERROR
 	}
 }
