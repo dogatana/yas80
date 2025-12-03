@@ -185,6 +185,21 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 			env.Set(stmt.Name, obj)
 			continue
 
+		case *parser.MacroCallStatement:
+			obj, ok := env.Get(stmt.Name)
+			if !ok {
+				e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_FOUND, stmt.Name), stmt.Context)
+				continue
+			}
+			macro, ok := obj.(*object.MacroObject)
+			if !ok {
+				e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, stmt.Name), stmt.Context)
+				continue
+			}
+			expanded := e.expandMacro(macro)
+			stmts = append(stmts, expanded...)
+			e.Resolved = false
+
 		default:
 			e.logger.Info(fmt.Sprintf(errcode.E999, node), nil)
 			obj = e.Eval(node, env)
