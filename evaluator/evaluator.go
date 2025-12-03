@@ -185,9 +185,6 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 			env.Set(stmt.Name, obj)
 			continue
 
-		case *parser.DeletedStatement:
-			continue
-
 		default:
 			e.logger.Info(fmt.Sprintf(errcode.E999, node), nil)
 			obj = e.Eval(node, env)

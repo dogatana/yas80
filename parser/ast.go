@@ -129,19 +129,6 @@ func (ls *LabelStatement) String() string {
 	return out
 }
 
-// 評価中に削除された文
-type DeletedStatement struct {
-	Node    Node
-	Context *fileblock.Context
-}
-
-func (ds *DeletedStatement) statementNode()           {}
-func (ds *DeletedStatement) NodeType() NodeType       { return NODE_DELETED_STMT }
-func (ds *DeletedStatement) NodeSubType() NodeSubType { return 0 }
-func (ds *DeletedStatement) String() string {
-	return fmt.Sprintf("DELETED{%T}", ds.Node)
-}
-
 // TODO: 仮実装 - PROC/ENDPROC - それぞれ単一文として生成
 type ProcStatement struct {
 	Name    string
