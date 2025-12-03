@@ -130,7 +130,7 @@ directive	: CONST ident '=' expr
 				if $4.NodeType() == NODE_ERROR {
 					$$ =  $4
 				} else {
-					$$ = &ConstStatement{Name: &Ident{Name: $2.Name}, Value: $4,Context: $1.Context}
+					$$ = &ConstStatement{Name: $2, Value: $4,Context: $1.Context}
 				}
 			}
 			| ident EQU expr		
@@ -138,7 +138,7 @@ directive	: CONST ident '=' expr
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					$$ = &ConstStatement{Name: &Ident{Name: $1.Name}, Value: $3,Context: $2.Context}
+					$$ = &ConstStatement{Name: $1, Value: $3,Context: $2.Context}
 				}
 			}
 			| ident ENUM EOL enum_elements ENDE
