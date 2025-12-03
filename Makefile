@@ -19,6 +19,10 @@ YOUT = parser/y.output
 main.exe: ${SRC}
 	go build -o $@
 
+clean:
+	rm main.exe
+	rm parser/parser.go
+
 ${PARSER}: ${YACC} ${PATCH}
 	goyacc -v ${YOUT} -o $@ ${YACC}
 	python ${PATCH} ${PARSER} ${PARSER} ${YOUT}

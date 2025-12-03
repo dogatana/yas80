@@ -2,7 +2,6 @@ package evaluator
 
 import (
 	"fmt"
-	"strings"
 	"yas80/errcode"
 	"yas80/logger"
 	"yas80/object"
@@ -139,6 +138,7 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 		node := prog.Statements[i]
 
 		switch stmt := node.(type) {
+		// 命令
 		case *parser.Z80Instruction: // 毎回評価
 			obj = e.evalZ80Instruction(stmt, env)
 			if obj.Type() == object.CODE_OBJ {
@@ -149,15 +149,25 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 			objects = append(objects, obj)
 			stmts = append(stmts, node)
 
+		// ラベル
 		case *parser.LabelStatement:
 			if stmt.Name.LabelType != parser.NODE_LABEL {
 				// LOCAL/AT の場合は AST から LabelStatement を削除する
-				fmt.Println(stmt.Name.String())
 				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Name.Name), stmt.Context)
 				continue
 			}
 			obj = e.evalLabelStatement(stmt, env)
 			// ValueObject にラップして返す
+			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
+			stmts = append(stmts, node)
+
+		// const/equ
+		case *parser.ConstStatement:
+			if stmt.Name.IdentType != parser.IDENT {
+				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Name.Name), stmt.Context)
+				continue
+			}
+			obj := e.evalConstStatement(stmt, env)
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			stmts = append(stmts, node)
 
@@ -356,35 +366,44 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 	name := node.Name.Name
 
 	// 定義済みならエラー
-	if _, ok := env.Get(name); ok {
-		e.logger.Error(fmt.Sprintf(errcode.E031, name), node.Context)
-		return object.ERROR
+	obj, ok := env.Get(name)
+	if ok {
+		switch obj := obj.(type) {
+		case *object.NumberObject, *object.StringObject:
+			// 定数として確定済
+			return &object.ValueObject{Value: obj, Context: node.Context}
+		case *object.SymbolObject:
+			if obj.Name != node.Name.Name || obj.Context != node.Context {
+				// 別シンボルなら二重定義エラー
+				e.logger.Error(fmt.Sprintf(errcode.ESYM_DUP, name), node.Context)
+				return object.ERROR
+			}
+			// 同一シンボルなら更新
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_USED_NAME, name), node.Context)
+			return object.ERROR
+		}
 	}
+
 	v := e.Eval(node.Value, env)
 
 	switch v := v.(type) {
 	case *object.NumberObject, *object.StringObject:
 		// 定数として確定
 		env.Set(name, v)
-		return v
+		return &object.ValueObject{Value: v, Context: node.Context}
 	case *object.RefNotFoundObject:
-		// 階層でチェックが入っているはずだが念のため
-		if !e.Pass1 {
-			e.logger.Error(fmt.Sprintf(errcode.E009, strings.Join(v.Names, ", ")), node.Context)
-			return object.ERROR
-		}
-		// 未定義定数として登録
 		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
 		env.Set(name, sym)
-		return sym
+		return &object.ValueObject{Value: object.NULL, Context: node.Context}
 	case *object.SymbolObject:
-		// Symbo Object の場合は値を取得し新たに登録する
-		depends := make([]string, len(v.DependsOn)) // 他のシンボルの情報なので copy
+		// 他のシンボルの場合は値をコピーして新規に登録
+		depends := make([]string, len(v.DependsOn)+1) // 他のシンボルの情報なので copy
 		copy(depends, v.DependsOn)
+		depends = append(depends, v.Name) // 参照シンボルの名前も追加
 		sym := object.NewNullConstSymbol(name, node.Value, depends, node.Context)
 		env.Set(name, sym)
 		return sym
-
 	case *object.SymbolExprObject:
 		// Symbo Expression Object の場合は値を取得し新たに登録する
 		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)

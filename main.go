@@ -111,7 +111,7 @@ func main() {
 	// 評価後 eval.Resolved が true ならコード生成完了とみなす
 	// true でないなら、規定回数（例: 256 とか 1,024) だけ eval を繰り返す
 	for i := 0; i < 256; i++ {
-		fmt.Printf("# eval[%d]\n", i)
+		fmt.Printf("# eval [#%d]\n", i)
 		eval.Resolved = true
 		obj := eval.Eval(prog, env)
 		logger.Print()
