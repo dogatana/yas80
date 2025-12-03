@@ -94,18 +94,14 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		}
 		return e.evalPrefixExpression(node.Operator, v, node.Context.Line)
 	case *parser.Ident:
-		uname := node.Name
-		obj, ok := env.Get(uname)
-		if !ok && e.Pass1 {
+		name := node.Name
+		obj, ok := env.Get(name)
+		if !ok {
 			// 未定義別子の場合
-			return &object.RefNotFoundObject{Names: []string{uname}}
+			obj = &object.RefNotFoundObject{Names: []string{name}}
+			env.Set(name, obj)
 		}
-		sym, ok := (obj).(*object.SymbolObject)
-		if ok {
-			return sym
-		}
-		e.logger.Error(fmt.Sprintf(errcode.E009, uname), node.Context)
-		return object.ERROR
+		return obj
 	case *parser.DotIdent:
 		enum, ok := env.Get(node.Left)
 		if !ok {
@@ -333,8 +329,8 @@ func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.E
 	name := node.Value.Name
 
 	obj, ok := env.Get(name)
-	if !ok {
-		// 環境にないなら新規登録
+	if !ok || obj.Type() == object.REF_NOTFOUND_OBJ {
+		// 環境にないか、RefNotFoundObject なら新規登録
 		sym := object.NewLabelSymbol(name, getLocationCounter(env), node.Context)
 		env.Set(name, sym)
 		return sym
