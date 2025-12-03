@@ -12,11 +12,20 @@ type Evaluator struct {
 	logger     *logger.Logger
 	Debug      int
 	Resolved   bool
+	Counter    func() int
 	lineNumber int
 }
 
 func New(logger *logger.Logger) *Evaluator {
-	return &Evaluator{logger: logger, Resolved: true}
+	return &Evaluator{logger: logger, Resolved: true, Counter: makeCounter(0)}
+}
+
+// start + 1 から順次生成するカウンタ
+func makeCounter(start int) func() int {
+	return func() int {
+		start++
+		return start
+	}
 }
 
 // Eval

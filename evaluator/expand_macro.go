@@ -9,12 +9,15 @@ import (
 
 func (e *Evaluator) expandMacro(macro *object.MacroObject) []parser.Node {
 	nodes := []parser.Node{}
+	seq := e.Counter()
 
 	for _, stmt := range macro.Body.Block {
-		nodes = append(nodes, e.replaceAtIdent(stmt, macro.Name, 1))
+		nodes = append(nodes, e.replaceAtIdent(stmt, macro.Name, seq))
 	}
+
+	fmt.Println("expanded")
 	for i, n := range nodes {
-		fmt.Printf("%d: %s\n", i, n.String())
+		fmt.Printf("[%d] %s\n", i, n.String())
 	}
 	return nodes
 }
