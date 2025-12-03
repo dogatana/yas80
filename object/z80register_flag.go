@@ -2,6 +2,23 @@ package object
 
 import "yas80/parser"
 
+// レジスタ
+type RegisterObject struct {
+	RegisterType int
+	Register     int
+}
+
+func (f *RegisterObject) Type() ObjectType { return REGISTER_OBJ }
+func (f *RegisterObject) String() string   { return parser.Z80Opcode2Name(f.Register) }
+
+// フラグ
+type FlagObject struct {
+	Flag int
+}
+
+func (f *FlagObject) Type() ObjectType { return REGISTER_OBJ }
+func (r *FlagObject) String() string   { return parser.Z80Opcode2Name(r.Flag) }
+
 // Z80 Regisers and Flags
 var (
 	Z80_REG_A   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_A}
@@ -27,18 +44,18 @@ var (
 	Z80_REG_DE   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_DE}
 	Z80_REG_HL   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_HL}
 
-	Z80_FLAG_C  = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_C}
-	Z80_FLAG_NC = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_NC}
-	Z80_FLAG_Z  = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_Z}
-	Z80_FLAG_NZ = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_NZ}
-	Z80_FLAG_PO = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_PO}
-	Z80_FLAG_PE = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_PE}
-	Z80_FLAG_P  = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_P}
-	Z80_FLAG_M  = &RegisterObject{RegisterType: parser.Z80_FLAG, Register: parser.Z80_FLAG_M}
+	Z80_FLAG_C  = &FlagObject{Flag: parser.Z80_FLAG}
+	Z80_FLAG_NC = &FlagObject{Flag: parser.Z80_FLAG}
+	Z80_FLAG_Z  = &FlagObject{Flag: parser.Z80_FLAG}
+	Z80_FLAG_NZ = &FlagObject{Flag: parser.Z80_FLAG}
+	Z80_FLAG_PO = &FlagObject{Flag: parser.Z80_FLAG}
+	Z80_FLAG_PE = &FlagObject{Flag: parser.Z80_FLAG}
+	Z80_FLAG_P  = &FlagObject{Flag: parser.Z80_FLAG}
+	Z80_FLAG_M  = &FlagObject{Flag: parser.Z80_FLAG}
 )
 
 // TokenSubtype to Object
-var Z80RgisterObjects map[int]Object = map[int]Object{
+var Z80RegisterFlagObjects map[int]Object = map[int]Object{
 	parser.Z80_REG_A:   Z80_REG_A,
 	parser.Z80_REG_B:   Z80_REG_B,
 	parser.Z80_REG_C:   Z80_REG_C,
@@ -62,6 +79,7 @@ var Z80RgisterObjects map[int]Object = map[int]Object{
 	parser.Z80_REG_DE:   Z80_REG_DE,
 	parser.Z80_REG_HL:   Z80_REG_HL,
 
+	parser.Z80_FLAG_C:  Z80_FLAG_C,
 	parser.Z80_FLAG_NC: Z80_FLAG_NC,
 	parser.Z80_FLAG_Z:  Z80_FLAG_Z,
 	parser.Z80_FLAG_NZ: Z80_FLAG_NZ,

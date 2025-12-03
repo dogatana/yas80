@@ -180,15 +180,6 @@ type IdentObject struct {
 	LineNumber int
 }
 
-// レジスタ
-type RegisterObject struct {
-	RegisterType int
-	Register     int
-}
-
-func (r *RegisterObject) Type() ObjectType { return REGISTER_OBJ }
-func (r *RegisterObject) String() string   { return parser.Z80Opcode2Name(r.Register) }
-
 // Node
 type NodeObject struct {
 	Value      parser.Node
