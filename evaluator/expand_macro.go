@@ -90,7 +90,7 @@ func (e *Evaluator) replaceAtIdent(node parser.Node, name string, seq int) parse
 
 		}
 		if node.Op2 != nil {
-			op2 := e.replaceAtIdent(node.Op1, name, seq)
+			op2 := e.replaceAtIdent(node.Op2, name, seq)
 			new.Op2 = op2.(parser.Expression)
 
 		}
