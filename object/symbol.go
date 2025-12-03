@@ -64,7 +64,7 @@ func NewLabelSymbol(name string, addr int, ctx *fileblock.Context) *SymbolObject
 	return &SymbolObject{Name: name,
 		SymType:  SYM_LABEL,
 		SymState: VALUE_TENTATIVE,
-		Value:    &NumberObject{Value: addr, LineNumber: ctx.Line},
+		Value:    &NumberObject{Value: addr, Context: ctx},
 		Context:  ctx,
 	}
 }

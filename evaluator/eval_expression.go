@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 	"yas80/errcode"
+	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -149,39 +150,43 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 }
 
 // 前置演算子式
-func (e *Evaluator) evalPrefixExpression(opCode int, op object.Object, lineNumber int) object.Object {
+func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env object.Environment, ctx *fileblock.Context) object.Object {
+	opcode := expr.Operator
+
+	op := e.Eval(expr.Op, env)
+	if isError(op) {
+		return op
+	}
+	if isRefNotFound(op) {
+		e.Resolved = false
+		return op
+	}
+
 	switch op := op.(type) {
 	case *object.NumberObject:
-		switch opCode {
+		switch opcode {
 		case '+':
-			return &object.NumberObject{Value: op.Value, LineNumber: lineNumber}
+			return &object.NumberObject{Value: op.Value, Context: ctx}
 		case '-':
-			return &object.NumberObject{Value: -op.Value, LineNumber: lineNumber}
+			return &object.NumberObject{Value: -op.Value, Context: ctx}
 		case '~':
-			return &object.NumberObject{Value: op.Value ^ -1, LineNumber: lineNumber}
+			return &object.NumberObject{Value: op.Value ^ -1, Context: ctx}
 		case '!':
-			return &object.NumberObject{Value: boolToInt(op.Value == 0), LineNumber: lineNumber}
+			return &object.NumberObject{Value: boolToInt(op.Value == 0), Context: ctx}
 		default:
-			if !e.Pass1 {
-				e.logger.Error(fmt.Sprintf(errcode.E008, rune(opCode)), nil)
-			}
+			e.logger.Error(fmt.Sprintf(errcode.E008, rune(opcode)), ctx)
 			return object.ERROR
 		}
 	case *object.StringObject:
-		if opCode == '!' {
-			return &object.NumberObject{Value: boolToInt(op.Value == ""), LineNumber: lineNumber}
+		if opcode == '!' {
+			return &object.NumberObject{Value: boolToInt(op.Value == ""), Context: ctx}
 		}
-		if !e.Pass1 {
-			e.logger.Error(fmt.Sprintf(errcode.E007, rune(opCode)), nil)
-		}
+		e.logger.Error(fmt.Sprintf(errcode.E007, rune(opcode)), ctx)
 		return object.ERROR
-	case *object.RefNotFoundObject:
-		return op
 	case *object.SymbolExprObject:
 		return op
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.E022, parser.TokenLiteral(opcode)), ctx)
+		return object.ERROR
 	}
-	if !e.Pass1 {
-		e.logger.Error(errcode.E022, nil)
-	}
-	return object.ERROR
 }
