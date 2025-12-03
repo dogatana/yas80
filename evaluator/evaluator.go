@@ -109,7 +109,7 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 
 	// 式
 	case *parser.InfixExpression:
-		return e.evalInfixExpression(node, env, node.Context.Line)
+		return e.evalInfixExpression(node, env, node.Context)
 	case *parser.PrefixExpression:
 		return e.evalPrefixExpression(node, env, node.Context)
 

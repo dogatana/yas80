@@ -59,7 +59,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 }
 
 // 中置演算子式
-func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object.Environment, lineNumber int) object.Object {
+func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object.Environment, ctx *fileblock.Context) object.Object {
 	op1 := unwrapSymbol(e.Eval(node.Op1, env))
 	op2 := unwrapSymbol(e.Eval(node.Op2, env))
 
@@ -67,7 +67,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 	case isError(op1) || isError(op2):
 		return object.ERROR
 	case isNumber(op1) && isNumber(op2):
-		return e.evalNumberInfixExpression(node.Operator, op1, op2, lineNumber)
+		return e.evalNumberInfixExpression(node.Operator, op1, op2, ctx)
 	case isString(op1) && isString(op2):
 		if node.Operator != '+' {
 			e.logger.Error(errcode.E029, nil)
@@ -90,48 +90,48 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 	}
 }
 
-func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, lineNumber int) object.Object {
+func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, ctx *fileblock.Context) object.Object {
 	v1 := op1.(*object.NumberObject).Value
 	v2 := op2.(*object.NumberObject).Value
 	switch opCode {
 	case '+':
-		return &object.NumberObject{Value: v1 + v2}
+		return &object.NumberObject{Value: v1 + v2, Context: ctx}
 	case '-':
-		return &object.NumberObject{Value: v1 - v2}
+		return &object.NumberObject{Value: v1 - v2, Context: ctx}
 	case '*':
-		return &object.NumberObject{Value: v1 * v2}
+		return &object.NumberObject{Value: v1 * v2, Context: ctx}
 	case '/':
 		if v2 == 0 {
 			e.logger.Error(errcode.E015, nil)
 			return object.ERROR
 		}
-		return &object.NumberObject{Value: v1 / v2}
+		return &object.NumberObject{Value: v1 / v2, Context: ctx}
 	case parser.SL:
-		return &object.NumberObject{Value: v1 << v2}
+		return &object.NumberObject{Value: v1 << v2, Context: ctx}
 	case parser.SR:
-		return &object.NumberObject{Value: v1 >> v2}
+		return &object.NumberObject{Value: v1 >> v2, Context: ctx}
 	case '&':
-		return &object.NumberObject{Value: v1 & v2}
+		return &object.NumberObject{Value: v1 & v2, Context: ctx}
 	case '|':
-		return &object.NumberObject{Value: v1 | v2}
+		return &object.NumberObject{Value: v1 | v2, Context: ctx}
 	case '^':
-		return &object.NumberObject{Value: v1 ^ v2}
+		return &object.NumberObject{Value: v1 ^ v2, Context: ctx}
 	case parser.EQ:
-		return &object.NumberObject{Value: boolToInt(v1 == v2)}
+		return &object.NumberObject{Value: boolToInt(v1 == v2), Context: ctx}
 	case parser.NEQ:
-		return &object.NumberObject{Value: boolToInt(v1 != v2)}
+		return &object.NumberObject{Value: boolToInt(v1 != v2), Context: ctx}
 	case '<':
-		return &object.NumberObject{Value: boolToInt(v1 < v2)}
+		return &object.NumberObject{Value: boolToInt(v1 < v2), Context: ctx}
 	case parser.LE:
-		return &object.NumberObject{Value: boolToInt(v1 <= v2)}
+		return &object.NumberObject{Value: boolToInt(v1 <= v2), Context: ctx}
 	case '>':
-		return &object.NumberObject{Value: boolToInt(v1 > v2)}
+		return &object.NumberObject{Value: boolToInt(v1 > v2), Context: ctx}
 	case parser.GE:
-		return &object.NumberObject{Value: boolToInt(v1 >= v2)}
+		return &object.NumberObject{Value: boolToInt(v1 >= v2), Context: ctx}
 	case parser.OR:
-		return &object.NumberObject{Value: boolToInt(v1 != 0 || v2 != 0)}
+		return &object.NumberObject{Value: boolToInt(v1 != 0 || v2 != 0), Context: ctx}
 	case parser.AND:
-		return &object.NumberObject{Value: boolToInt(v1 != 1 && v2 != 1)}
+		return &object.NumberObject{Value: boolToInt(v1 != 1 && v2 != 1), Context: ctx}
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.E016, string(rune(opCode))), nil)
 		return object.ERROR
