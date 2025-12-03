@@ -33,12 +33,6 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		initLocationCounter(env, 0)
 		return e.evalProgram(node, env)
 
-	case *parser.LabelStatement:
-		return e.evalLabelStatement(node, env)
-	case *parser.ConstStatement:
-		// const/equ は参照内容によって NumberObject/StringObject/SymbolObject/SymbolExprObject のいずれかになる
-		return e.evalConstStatement(node, env)
-
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
 	case *parser.BlockStatement:
@@ -76,32 +70,28 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		return e.Eval(node.Value, env)
 
 	// Expression
-	case *parser.CallExpression:
-		return e.evalCallExpression(node, env)
+	// 各種リテラル
 	case *parser.NumberLiteral:
-		return &object.NumberObject{Value: node.Value, LineNumber: node.Context.Line}
+		return &object.NumberObject{Value: node.Value, Context: node.Context}
 	case *parser.StringLiteral:
-		return &object.StringObject{Value: node.Value, LineNumber: node.Context.Line}
-	case *parser.InfixExpression:
-		return e.evalInfixExpression(node, env, node.Context.Line)
-	case *parser.PrefixExpression:
-		v := e.Eval(node.Op, env)
-		if isError(v) || isRefNotFound(v) {
-			e.Resolved = false
-			return v
-		}
-		return e.evalPrefixExpression(node.Operator, v, node.Context.Line)
+		return &object.StringObject{Value: node.Value, Context: node.Context}
+	case *parser.RegisterLiteral:
+		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
+	case *parser.FlagLiteral:
+		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
+
+	// 識別子
 	case *parser.Ident:
 		name := node.Name
 		obj, ok := env.Get(name)
 		if !ok {
-			// 未定義別子の場合
+			// 未定義の場合
 			obj = &object.RefNotFoundObject{Names: []string{name}}
 			env.Set(name, obj)
 			e.Resolved = false
 		}
 		return obj
-	case *parser.DotIdent:
+	case *parser.DotIdent: // TODO enum か proc.local かの識別必要
 		enum, ok := env.Get(node.Left)
 		if !ok {
 			e.logger.Error(fmt.Sprintf(errcode.E010, node.Left), node.Context)
@@ -113,10 +103,17 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 			return object.ERROR
 		}
 		return v
-	case *parser.RegisterLiteral:
-		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
-	case *parser.FlagLiteral:
-		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
+
+	// 関数呼出し
+	case *parser.CallExpression:
+		return e.evalCallExpression(node, env)
+
+	// 式
+	case *parser.InfixExpression:
+		return e.evalInfixExpression(node, env, node.Context.Line)
+	case *parser.PrefixExpression:
+		return e.evalPrefixExpression(node, env, node.Context)
+
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.E999, node), nil) // TODO
 		return object.ERROR

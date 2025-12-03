@@ -157,8 +157,8 @@ func (r *ReturnObject) String() string {
 
 // 数値
 type NumberObject struct {
-	Value      int
-	LineNumber int
+	Value   int
+	Context *fileblock.Context
 }
 
 func (n *NumberObject) Type() ObjectType { return NUMBER_OBJ }
@@ -166,8 +166,8 @@ func (n *NumberObject) String() string   { return fmt.Sprintf("%d(0x%x)", n.Valu
 
 // 文字列
 type StringObject struct {
-	Value      string
-	LineNumber int
+	Value   string
+	Context *fileblock.Context
 }
 
 func (s *StringObject) Type() ObjectType { return STRING_OBJ }
