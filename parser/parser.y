@@ -475,8 +475,7 @@ expr		: NUMBER
 			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),Context:$1.Context}}
 			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),Context:$1.Context}}
 			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType),Context:$1.Context}}
-			| IDENT 		{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Context: $1.Context} }
-			| LOCAL_IDENT 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,Context: $1.Context} }
+			| ident { $$ = $1}
 			| DOT_IDENT
 			{
 				uname := strings.ToUpper($1.Literal)
