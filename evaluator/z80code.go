@@ -61,3 +61,14 @@ var Z80Reg16Index map[int]byte = map[int]byte{
 	parser.Z80_REG_HL: 2,
 	parser.Z80_REG_SP: 3,
 }
+
+var Z80FlagIndex map[int]byte = map[int]byte{
+	parser.Z80_FLAG_NZ: 0,
+	parser.Z80_FLAG_Z:  1,
+	parser.Z80_FLAG_NC: 2,
+	parser.Z80_REG_C:   3, // lexer では C を Register トークンとして処理するため
+	parser.Z80_FLAG_PO: 4,
+	parser.Z80_FLAG_PE: 5,
+	parser.Z80_FLAG_P:  6,
+	parser.Z80_FLAG_M:  7,
+}

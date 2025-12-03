@@ -82,13 +82,12 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		return &object.NumberObject{Value: node.Value, LineNumber: node.Context.Line}
 	case *parser.StringLiteral:
 		return &object.StringObject{Value: node.Value, LineNumber: node.Context.Line}
-	case *parser.FlagLiteral:
-		return &object.StringObject{Value: node.String(), LineNumber: node.Context.Line}
 	case *parser.InfixExpression:
 		return e.evalInfixExpression(node, env, node.Context.Line)
 	case *parser.PrefixExpression:
 		v := e.Eval(node.Op, env)
 		if isError(v) || isRefNotFound(v) {
+			e.Resolved = false
 			return v
 		}
 		return e.evalPrefixExpression(node.Operator, v, node.Context.Line)
@@ -99,6 +98,7 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 			// 未定義別子の場合
 			obj = &object.RefNotFoundObject{Names: []string{name}}
 			env.Set(name, obj)
+			e.Resolved = false
 		}
 		return obj
 	case *parser.DotIdent:
@@ -114,7 +114,9 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		}
 		return v
 	case *parser.RegisterLiteral:
-		return object.Z80RgisterObjects[int(node.NodeSubType())]
+		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
+	case *parser.FlagLiteral:
+		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.E999, node), nil) // TODO
 		return object.ERROR
@@ -369,7 +371,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 	obj, ok := env.Get(name)
 	if ok {
 		switch obj := obj.(type) {
-		case *object.NumberObject, *object.StringObject:
+		case *object.NumberObject, *object.StringObject, *object.RegisterObject:
 			// 定数として確定済
 			return &object.ValueObject{Value: obj, Context: node.Context}
 		case *object.SymbolObject:
@@ -379,6 +381,8 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 				return object.ERROR
 			}
 			// 同一シンボルなら更新
+		case *object.RefNotFoundObject:
+			// 未定で登録済なら更新
 		default:
 			e.logger.Error(fmt.Sprintf(errcode.ESYM_USED_NAME, name), node.Context)
 			return object.ERROR
@@ -401,7 +405,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 		depends := make([]string, len(v.DependsOn)+1) // 他のシンボルの情報なので copy
 		copy(depends, v.DependsOn)
 		depends = append(depends, v.Name) // 参照シンボルの名前も追加
-		sym := object.NewNullConstSymbol(name, node.Value, depends, node.Context)
+		sym := object.NewConstSymbol(name, v.Value, depends, node.Context)
 		env.Set(name, sym)
 		return sym
 	case *object.SymbolExprObject:

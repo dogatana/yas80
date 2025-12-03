@@ -11,6 +11,7 @@ import (
 func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.Environment) object.Object {
 	obj := e.Eval(expr.Function, env)
 	if isError(obj) || isRefNotFound(obj) {
+		e.Resolved = false
 		return obj
 	} else if obj == object.NULL {
 		panic("object is NULL") // TODO
@@ -82,6 +83,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 		s2 := op2.(*object.StringObject).Value
 		return &object.StringObject{Value: s1 + " " + s2}
 	case isRefNotFound(op1) || isRefNotFound(op2):
+		e.Resolved = false
 		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
 	case isSymolOrSymbolExpr(op1) || isSymolOrSymbolExpr(op2):
 		return &object.SymbolExprObject{Names: mergeNames(op1, op2)}

@@ -13,12 +13,14 @@ func TestZ80Instruction(t *testing.T) {
 		"label-backward",
 		"equ-backward",
 		"label-forward",
-		// "forward",
-		// "forward_symbol",
-		// "forward_mix",
+		"equ-forward",
+		"ret-cc",
+		"forward",
+		"forward_symbol",
+		"forward_mix",
 	}
 
-	for _, base := range tests {
+	for testnum, base := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		input := string(readTestDataFile(t, base+".asm"))
@@ -30,7 +32,7 @@ func TestZ80Instruction(t *testing.T) {
 
 		if !bytesEqual(result, expected) {
 			// t.Errorf("output mismatch (-want +got):\n%s", cmp.Diff(expected, result))
-			t.Errorf("expected %d bytes. got %d bytes", len(expected), len(result))
+			t.Errorf("[%d] expected %d bytes. got %d bytes", testnum, len(expected), len(result))
 		}
 	}
 }

@@ -27,17 +27,23 @@ func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env object.E
 }
 
 func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ object.Environment) object.Object {
-	if node.Op1 == nil {
+	op1 := node.Op1
+	// RET
+	if op1 == nil {
 		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0xc9}}
 	}
-	if node.Op1.NodeType() == parser.Z80_FLAG {
-		flag := int(node.Op1.NodeSubType()) - parser.Z80_FLAG_NZ
-		b := byte(0xc0 | flag<<3)
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{b}}
+	// RET cc
+	index := -1
+	if op1.NodeType() == parser.Z80_FLAG || op1.NodeType() == parser.Z80_REG8 {
+		index = int(op1.NodeSubType())
 	}
-	e.logger.Error(
-		fmt.Sprintf(errcode.E017, node.Op1.String()), node.Context)
-	return object.ERROR
+	flag, ok := Z80FlagIndex[index]
+	if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.E017, node.Op1.String()), node.Context)
+		return object.ERROR
+	}
+	b := byte(0xc0 | flag<<3)
+	return &object.CodeObject{Line: node.Context.Line, Code: []byte{b}}
 }
 
 func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env object.Environment) object.Object {
