@@ -32,13 +32,20 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		initLocationCounter(env, 0)
 		return e.evalProgram(node, env)
 
+	case *parser.Z80Instruction:
+		return e.evalZ80Instruction(node, env)
+	case *parser.LabelStatement:
+		return e.evalLabelStatement(node, env)
+	case *parser.ConstStatement:
+		return e.evalConstStatement(node, env)
+
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
-	case *parser.BlockStatement:
-		return e.evalBlockStatement(node, env)
-
 	case *parser.MacroStatement:
 		return e.evalMacroStatement(node, env)
+
+	case *parser.BlockStatement:
+		return e.evalBlockStatement(node, env)
 	case *parser.MacroCallStatement:
 		return e.evalMacroCallStatement(node, env)
 
@@ -137,8 +144,8 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 
 		switch stmt := node.(type) {
 		// 命令
-		case *parser.Z80Instruction: // 毎回評価
-			obj = e.evalZ80Instruction(stmt, env)
+		case *parser.Z80Instruction:
+			obj = e.Eval(stmt, env)
 			if obj.Type() == object.CODE_OBJ {
 				code := obj.(*object.CodeObject)
 				code.Addr = getLocationCounter(env)
@@ -154,7 +161,7 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Name.Name), stmt.Context)
 				continue
 			}
-			obj = e.evalLabelStatement(stmt, env)
+			obj = e.Eval(stmt, env)
 			// ValueObject にラップして返す
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			stmts = append(stmts, node)
@@ -165,19 +172,17 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Name.Name), stmt.Context)
 				continue
 			}
-			obj := e.evalConstStatement(stmt, env)
+			obj := e.Eval(stmt, env)
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			stmts = append(stmts, node)
 
 		case *parser.MacroStatement:
 			if _, ok := env.Get(stmt.Name); ok {
-				// 環境に登録済みなら AST から MacroStatement を削除する
 				e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, stmt.Name), stmt.Context)
 				continue
 			}
 			obj := &object.MacroObject{Name: stmt.Name, Params: stmt.Params, Body: stmt.Body}
 			env.Set(stmt.Name, obj)
-			// AST から MacroStatement を削除する
 			continue
 
 		case *parser.DeletedStatement:
@@ -196,39 +201,6 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 
 	prog.Statements = stmts
 	return &object.ProgramObject{Objects: objects}
-
-	// 	obj := e.Eval(stmt, env)
-	// 	switch obj := obj.(type) {
-	// 	case *object.EnumObject:
-	// 		for _, k := range obj.Keys {
-	// 			results.Objects = append(results.Objects, obj.Value[k])
-	// 		}
-	// 	case *object.ReturnObject:
-	// 		results.Objects = append(results.Objects, obj.Value)
-	// 		return results
-	// 	case *object.BlockObject:
-	// 		if len(obj.Block) == 0 {
-	// 			results.Objects = append(results.Objects, object.NULL)
-	// 			continue
-	// 		}
-	// 		ret, ok := obj.Block[len(obj.Block)-1].(*object.ReturnObject)
-	// 		if ok {
-	// 			obj.Block[len(obj.Block)-1] = ret.Value
-	// 		}
-	// 		results.Objects = append(results.Objects, obj.Block...)
-	// 	// case *object.SymbolObject:
-	// 	// 	prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
-	// 	// 	results.Objects = append(results.Objects, obj)
-	// 	default:
-	// 		results.Objects = append(results.Objects, obj)
-	// 	}
-
-	// 	// pass1 で無効化するステートメント
-	// 	switch stmt := stmt.(type) {
-	// 	case *parser.ConstStatement, *parser.FuncStatement, *parser.MacroStatement:
-	// 		prog.Statements[i] = &parser.DeletedStatement{Node: stmt}
-	// 	}
-	// }
 }
 
 // 複合文 BlockStatement
