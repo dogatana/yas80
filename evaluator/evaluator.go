@@ -42,7 +42,13 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		return e.evalProgram(node, env)
 
 	case *parser.Z80Instruction:
-		return e.evalZ80Instruction(node, env)
+		obj := e.evalZ80Instruction(node, env)
+		if obj.Type() == object.CODE_OBJ {
+			code := obj.(*object.CodeObject)
+			code.Addr = getLocationCounter(env)
+			advanceLocationCounter(env, code.Size())
+		}
+		return obj
 	case *parser.LabelStatement:
 		return e.evalLabelStatement(node, env)
 	case *parser.ConstStatement:
@@ -155,11 +161,6 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 		// 命令
 		case *parser.Z80Instruction:
 			obj = e.Eval(stmt, env)
-			if obj.Type() == object.CODE_OBJ {
-				code := obj.(*object.CodeObject)
-				code.Addr = getLocationCounter(env)
-				advanceLocationCounter(env, code.Size())
-			}
 			objects = append(objects, obj)
 			stmts = append(stmts, node)
 
