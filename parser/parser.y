@@ -102,9 +102,7 @@ statement   : EOL { $$ = nil }
 			}
 			| label instruction EOL
 			{ 
-				prog := yylex.(*Lexer).program
-				stmt := &LabelStatement{Name: $1, Context: $1.Context}
-				prog.Statements = append(prog.Statements, stmt)
+				$2.(*Z80Instruction).Label = $1
 				$$ = $2 
 			}
 			| instruction EOL	{ $$ = $1 }

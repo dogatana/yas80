@@ -185,22 +185,26 @@ func TestParseLabelStatement(t *testing.T) {
 		// {".abc ", DOT_IDENT, ".ABC"}, // ラベルには : を必須としたので除外
 		{".abc: ld a,a", DOT_IDENT, ".ABC"},
 	}
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tt.input)
 		if len(prog.Statements) == 0 {
 			fmt.Printf("input %q\n", tt.input)
 			t.Fatal("statements empty")
 		}
-		stmt, ok := prog.Statements[0].(*LabelStatement)
-		if !ok {
-			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("prog.Statemtes[0] is not LabelStatement. got %T", prog.Statements[0])
-		}
-		name := stmt.Name.Name
-		if name != tt.expected {
-			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("Label.Name is not %q. got %q", tt.expected, name)
+		switch stmt := prog.Statements[0].(type) {
+		case *LabelStatement:
+			name := stmt.Name.Name
+			if name != tt.expected {
+				t.Errorf("[%d] Label.Name is not %q. got %q", tn, tt.expected, name)
+			}
+		case *Z80Instruction:
+			name := stmt.Label.Name
+			if name != tt.expected {
+				t.Errorf("[%d] Label.Name is not %q. got %q", tn, tt.expected, name)
+			}
+		default:
+			t.Errorf("[%d] not *LabeStatement nor Z80Instruction", tn)
 		}
 	}
 }

@@ -113,14 +113,13 @@ func (pe *ParseError) String() string {
 
 // ラベル - 独立した文として生成
 type LabelStatement struct {
-	Name     *Label
-	LabeType int
-	Context  *fileblock.Context
+	Name    *Label
+	Context *fileblock.Context
 }
 
 func (ls *LabelStatement) statementNode()           {}
 func (ls *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
-func (ls *LabelStatement) NodeSubType() NodeSubType { return 0 }
+func (ls *LabelStatement) NodeSubType() NodeSubType { return ls.Name.LabelType }
 func (ls *LabelStatement) String() string {
 	out := ls.Name.Name
 	if out[0] != '.' {
@@ -441,6 +440,7 @@ func (rs *ReturnStatement) String() string {
 
 // Z80 命令文 - Z80Instruction Statement
 type Z80Instruction struct {
+	Label    *Label
 	InstType int
 	Opcode   int
 	Op1      Expression
@@ -458,6 +458,9 @@ func (zi *Z80Instruction) NodeSubType() NodeSubType {
 func (zi *Z80Instruction) String() string {
 	var out bytes.Buffer
 
+	if zi.Label != nil {
+		out.WriteString(zi.Label.Name + ": ")
+	}
 	out.WriteString(Z80Opcode2Name(zi.Opcode))
 	switch {
 	case zi.Op1 == nil && zi.Op2 == nil:

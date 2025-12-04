@@ -8,6 +8,9 @@ import (
 )
 
 func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env object.Environment) object.Object {
+	if node.Label != nil {
+		e.evalLabel(node.Label, env)
+	}
 	switch node.NodeType() {
 	case parser.Z80_INST0:
 		info := Z80CodeTable0[int(node.Opcode)]

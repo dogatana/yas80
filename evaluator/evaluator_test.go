@@ -10,40 +10,41 @@ func TestEvalLabelStatement(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
+		names []string
 		value []int
 	}{
 		{`addr1: ld hl, $1234 \ addr2: ld a, a \ addr3: ld hl, $5678`,
 			[]byte{0x21, 0x34, 0x12, 0x7f, 0x21, 0x78, 0x56},
+			[]string{"ADDR1", "ADDR2", "ADDR3"},
 			[]int{0, 3, 4},
 		},
 		{`addr1: ld a, a\ addr2: ld hl, $1234 \ addr3: ld hl, $5678`,
 			[]byte{0x7f, 0x21, 0x34, 0x12, 0x21, 0x78, 0x56},
+			[]string{"ADDR1", "ADDR2", "ADDR3"},
 			[]int{0, 1, 4},
 		},
 		{`addr1: ld hl, $1234 \ addr2: ld hl, $5678 \ addr3: ld hl, $9abc`,
 			[]byte{0x21, 0x34, 0x12, 0x21, 0x78, 0x56, 0x21, 0xbc, 0x9a},
+			[]string{"ADDR1", "ADDR2", "ADDR3"},
 			[]int{0, 3, 6},
 		},
 	}
 
-	for testnum, tt := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		prog := evaluateInput(t, tt.input, logger, env)
 
 		code := collectCode(prog)
 		if len(code) != len(tt.code) && !bytesEqual(code, tt.code) {
-			t.Errorf("[%d] generated code differ", testnum)
+			t.Errorf("[%d] generated code differ", tn)
 		}
-		values := collectValue(prog)
-		if len(values) != len(tt.value) {
-			t.Errorf("[%d] not %d ValueObject. got %d", testnum, len(tt.value), len(values))
-		}
-		if len(values) != len(tt.value) {
-			t.Errorf("[%d] not %d ValueObject. got %d", testnum, len(tt.value), len(values))
-		}
-		for i, v := range values {
-			testSymbolNumberObject(t, testnum, v.Value, tt.value[i])
+		for i, name := range tt.names {
+			if v, ok := env.Get(name); !ok {
+				t.Errorf("[%d] no %q in env", tn, name)
+			} else {
+				testSymbolNumberObject(t, tn, v, tt.value[i])
+			}
 		}
 	}
 }
@@ -63,16 +64,16 @@ func testEvalExpression(t *testing.T) {
 		{"const val = 11 \r\n const val2 = val * val \r\n const result = val2", 121},
 	}
 
-	for testnum, tt := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		_ = evaluateInput(t, tt.input, logger, env)
 
 		value, ok := env.Get("RESULT")
 		if !ok {
-			t.Fatalf(`[%d] "RESULT" not in env`, testnum)
+			t.Fatalf(`[%d] "RESULT" not in env`, tn)
 		}
-		testNumberObject(t, testnum, value, tt.expected)
+		testNumberObject(t, tn, value, tt.expected)
 	}
 }
 
@@ -89,22 +90,22 @@ func testFuncIfReturn(t *testing.T) {
 		{`test func\ if 1 \ if 0 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, 98},
 	}
 
-	for testnum, tt := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		_ = evaluateInput(t, tt.input, logger, env)
 
 		value, ok := env.Get("RESULT")
 		if !ok {
-			t.Fatalf(`[%d] "RESULT" not in env`, testnum)
+			t.Fatalf(`[%d] "RESULT" not in env`, tn)
 		}
 
 		if tt.expected >= 0 {
-			testNumberObject(t, testnum, value, tt.expected)
+			testNumberObject(t, tn, value, tt.expected)
 			continue
 		}
 		if value != object.NULL {
-			t.Errorf("[%d] should be NULL. got %T(%#v)", testnum, value, value)
+			t.Errorf("[%d] should be NULL. got %T(%#v)", tn, value, value)
 		}
 	}
 }
@@ -140,18 +141,18 @@ func testIf(t *testing.T) {
 	}
 	t.Fatal("const 再定義要修正")
 
-	for testnum, tt := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		prog := evaluateInput(t, tt.input, logger, env)
 
 		last := prog.Objects[len(prog.Objects)-1]
 		if tt.expected >= 0 {
-			testNumberObject(t, testnum, last, tt.expected)
+			testNumberObject(t, tn, last, tt.expected)
 			continue
 		}
 		if last != object.NULL {
-			t.Errorf("[%d] should be NULL. got %T(%#v)", testnum, last, last)
+			t.Errorf("[%d] should be NULL. got %T(%#v)", tn, last, last)
 		}
 	}
 }
@@ -183,18 +184,18 @@ func testFunc(t *testing.T) {
 	}
 	t.Fatal("const 再定義要修正")
 
-	for testnum, tt := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		prog := evaluateInput(t, tt.input, logger, env)
 
 		last := prog.Objects[len(prog.Objects)-1]
 		if tt.expected >= 0 {
-			testNumberObject(t, testnum, last, tt.expected)
+			testNumberObject(t, tn, last, tt.expected)
 			continue
 		}
 		if last != object.NULL {
-			t.Errorf("[%d] should be NULL. got %T(%#v)", testnum, last, last)
+			t.Errorf("[%d] should be NULL. got %T(%#v)", tn, last, last)
 		}
 	}
 }
@@ -216,18 +217,18 @@ func testClosure(t *testing.T) {
 		`, 13},
 	}
 
-	for testnum, tt := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
 		_ = evaluateInput(t, tt.input, logger, env)
 
 		value, ok := env.Get("RESULT")
 		if !ok {
-			t.Fatalf(`[%d]"RESULT" not in env`, testnum)
+			t.Fatalf(`[%d]"RESULT" not in env`, tn)
 		}
 
 		if tt.expected >= 0 {
-			testNumberObject(t, testnum, value, tt.expected)
+			testNumberObject(t, tn, value, tt.expected)
 			continue
 		}
 	}

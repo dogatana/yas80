@@ -323,24 +323,28 @@ func (e *Evaluator) evalMacroBody(node *parser.MacroCallStatement, macro *object
 
 // ラベル定義文
 func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.Environment) object.Object {
-	name := node.Name.Name
+	return e.evalLabel(node.Name, env)
+}
+
+func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) object.Object {
+	name := label.Name
 
 	obj, ok := env.Get(name)
 	if !ok || obj.Type() == object.REF_NOTFOUND_OBJ {
 		// 環境にないか、RefNotFoundObject なら新規登録
-		sym := object.NewLabelSymbol(name, getLocationCounter(env), node.Context)
+		sym := object.NewLabelSymbol(name, getLocationCounter(env), label.Context)
 		env.Set(name, sym)
 		return sym
 	}
 	sym, ok := obj.(*object.SymbolObject)
 	if !ok || sym.SymType != object.SYM_LABEL {
 		// Symbol で || LABEL でなけれがエラー
-		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED_NAME, name), node.Context)
+		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED_NAME, name), label.Context)
 		return object.ERROR
 	}
-	if !sym.Context.Equal(node.Context) {
+	if !sym.Context.Equal(label.Context) {
 		// ラベル 二重定義
-		e.logger.Error(fmt.Sprintf(errcode.ELABEL_DUP, name), node.Context)
+		e.logger.Error(fmt.Sprintf(errcode.ELABEL_DUP, name), label.Context)
 		return object.ERROR
 	}
 	// 同じラベルなら値を更新
