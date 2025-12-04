@@ -79,8 +79,6 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environmen
 	// 	return object.ERROR
 	default:
 		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
-		// e.logger.Error(errcode.E024, node.Context)
-		return object.ERROR
 	}
 }
 
