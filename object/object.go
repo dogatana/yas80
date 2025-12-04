@@ -182,12 +182,11 @@ type IdentObject struct {
 
 // Node
 type NodeObject struct {
-	Value      parser.Node
-	LineNumber int
+	Node parser.Node
 }
 
 func (n *NodeObject) Type() ObjectType { return NODE_OBJ }
-func (n *NodeObject) String() string   { return n.Value.String() }
+func (n *NodeObject) String() string   { return n.Node.String() }
 
 // ENUM
 type EnumObject struct {

@@ -50,13 +50,13 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
-	case *parser.MacroStatement:
-		return e.evalMacroStatement(node, env)
+	// case *parser.MacroStatement:
+	// 	return e.evalMacroStatement(node, env)
 
 	case *parser.BlockStatement:
 		return e.evalBlockStatement(node, env)
-	case *parser.MacroCallStatement:
-		return e.evalMacroCallStatement(node, env)
+	case *parser.ExpandedMacroCallStatement:
+		return e.evalExpandedMacroCallStatement(node, env)
 
 	case *parser.FuncStatement:
 		return e.evalFuncStatement(node, env)
@@ -76,7 +76,7 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 			env.Set(v.(*object.EnumObject).Name, v)
 			return v
 		case object.NULL_OBJ: // TODO
-			return &object.NodeObject{Value: node}
+			return &object.NodeObject{Node: node}
 		default:
 			return object.ERROR
 		}
@@ -185,6 +185,7 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			stmts = append(stmts, node)
 
+		// マクロ定義
 		case *parser.MacroStatement:
 			if _, ok := env.Get(stmt.Name); ok {
 				e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, stmt.Name), stmt.Context)
@@ -194,6 +195,7 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 			env.Set(stmt.Name, obj)
 			continue
 
+		// マクロ呼出し
 		case *parser.MacroCallStatement:
 			obj, ok := env.Get(stmt.Name)
 			if !ok {
@@ -205,9 +207,36 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 				e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, stmt.Name), stmt.Context)
 				continue
 			}
+			if len(stmt.Args.Expressions) != len(macro.Params) {
+				e.logger.Error(fmt.Sprintf(errcode.EMACRO_ARG_COUNT, stmt.Name), stmt.Context)
+				continue
+			}
+			// マクロ展開（@ident を置換した AST）
 			expanded := e.expandMacro(macro)
-			stmts = append(stmts, expanded...)
+			extCall := &parser.ExpandedMacroCallStatement{
+				Name:    stmt.Name,
+				Params:  macro.Params,
+				Args:    stmt.Args,
+				Body:    &parser.BlockStatement{Block: expanded},
+				Context: stmt.Context}
+			stmts = append(stmts, extCall)
 			e.Resolved = false
+
+		case *parser.ExpandedMacroCallStatement:
+			obj := e.Eval(stmt, env)
+			if isError(obj) {
+				return object.ERROR
+			}
+			if isRefNotFound(obj) {
+				e.Resolved = false
+				return obj
+			}
+			if obj, ok := obj.(*object.BlockObject); !ok {
+				panic(fmt.Sprintf("evalExpandedMacroCallStatement returns %T", obj))
+			} else {
+				objects = append(objects, obj.Block...)
+			}
+			stmts = append(stmts, stmt)
 
 		default:
 			e.logger.Info(fmt.Sprintf(errcode.E999, node), nil)
@@ -254,72 +283,43 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env object.E
 	return block
 }
 
-// マクロ定義文
-func (e *Evaluator) evalMacroStatement(node *parser.MacroStatement, env object.Environment) object.Object {
-	if _, ok := env.Get(node.Name); ok {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, node.Name), node.Context)
-		return object.ERROR
-	}
-	obj := &object.MacroObject{Name: node.Name, Params: node.Params, Body: node.Body}
-	env.Set(node.Name, obj)
-	return obj
-}
+// // マクロ定義文
+// func (e *Evaluator) evalMacroStatement(node *parser.MacroStatement, env object.Environment) object.Object {
+// 	if _, ok := env.Get(node.Name); ok {
+// 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, node.Name), node.Context)
+// 		return object.ERROR
+// 	}
+// 	obj := &object.MacroObject{Name: node.Name, Params: node.Params, Body: node.Body}
+// 	env.Set(node.Name, obj)
+// 	return obj
+// }
 
-// マクロ定義文
-func (e *Evaluator) evalMacroCallStatement(node *parser.MacroCallStatement, env object.Environment) object.Object {
-	obj, ok := env.Get(node.Name)
-	if !ok && len(node.Args.Expressions) == 1 {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_FUNC_NOT_FOUND, node.Name), node.Context)
-		return object.ERROR
-	} else if !ok {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_FOUND, node.Name), node.Context)
-		return object.ERROR
-	}
-	// 関数オブジェクトなら関数呼出し評価へ回す
-	// 文法定義上 1引数の関数呼出し式文は MacroCallStatement となるので、ここで置き換える
+// // マクロ定義文
+// func (e *Evaluator) evalMacroCallStatement(node *parser.MacroCallStatement, env object.Environment) object.Object {
+// 	obj, ok := env.Get(node.Name)
+// 	if !ok && len(node.Args.Expressions) == 1 {
+// 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_FUNC_NOT_FOUND, node.Name), node.Context)
+// 		return object.ERROR
+// 	} else if !ok {
+// 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_FOUND, node.Name), node.Context)
+// 		return object.ERROR
+// 	}
+// 	// 関数オブジェクトなら関数呼出し評価へ回す
+// 	// 文法定義上 1引数の関数呼出し式文は MacroCallStatement となるので、ここで置き換える
 
-	switch obj := obj.(type) {
-	case *object.FunctionObject:
-		funcall := &parser.CallExpression{
-			Function:  &parser.Ident{Name: node.Name},
-			Arguments: node.Args}
-		return e.evalCallExpression(funcall, env) // TODO linenumber はパッケージ外から設定できない
-	case *object.MacroObject:
-		return e.evalMacroBody(node, obj, env)
-	default:
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, node.Name), node.Context)
-		return object.ERROR
-	}
-}
-
-// マクロ Body 評価
-func (e *Evaluator) evalMacroBody(node *parser.MacroCallStatement, macro *object.MacroObject, env object.Environment) object.Object {
-	// 仮引数、引数の数のチェック
-	if len(node.Args.Expressions) != len(macro.Params) {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_ARG_COUNT, macro.Name), node.Context)
-		return object.ERROR
-	}
-
-	// 引数を評価し、仮引数名で環境に設定
-	newEnv := object.NewAtLocalEnvironment(env)
-	for i, param := range macro.Params {
-		v := e.Eval(node.Args.Expressions[i], env)
-		if isError(v) || isRefNotFound(v) {
-			return v
-		}
-		newEnv.Set("@@"+param, v)
-	}
-
-	object.PrintEnv(newEnv)
-
-	// TODO 引数評価の前に設定しなくても良いか？
-	// マクロ展開の評価は Pass1 であっても未定義エラーを発生させる
-	ret, ok := e.evalBlockStatement(macro.Body, newEnv).(*object.BlockObject)
-	if !ok {
-		panic(fmt.Sprintf("call macro %s returns %T(%#v)", macro.Name, ret, ret))
-	}
-	return ret
-}
+// 	switch obj := obj.(type) {
+// 	case *object.FunctionObject:
+// 		funcall := &parser.CallExpression{
+// 			Function:  &parser.Ident{Name: node.Name},
+// 			Arguments: node.Args}
+// 		return e.evalCallExpression(funcall, env) // TODO linenumber はパッケージ外から設定できない
+// 	case *object.MacroObject:
+// 		return e.evalMacroBody(node, obj, env)
+// 	default:
+// 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, node.Name), node.Context)
+// 		return object.ERROR
+// 	}
+// }
 
 // ラベル定義文
 func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.Environment) object.Object {
@@ -417,7 +417,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env object.Environment) object.Object {
 	cond, ok := e.Eval(stmt.Condition, env).(*object.NumberObject)
 	if !ok {
-		return &object.NodeObject{Value: stmt, LineNumber: stmt.Context.Line}
+		return &object.NodeObject{Node: stmt}
 	}
 	if cond.Value != 0 {
 		if stmt.Consequence == nil {
@@ -475,7 +475,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Env
 		v := e.Eval(ele.Value, env)
 		switch v.Type() {
 		case object.NULL_OBJ:
-			enum[eleName] = &object.NodeObject{Value: ele.Value}
+			enum[eleName] = &object.NodeObject{Node: ele.Value}
 		case object.NUMBER_OBJ:
 			enum[eleName] = v
 			value = v.(*object.NumberObject).Value + 1

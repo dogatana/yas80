@@ -35,6 +35,7 @@ const (
 	NODE_PROC_STMT
 	NODE_MACRO_STMT
 	NODE_MACRO_CALL_STMT
+	NODE_EXPANDED_MACRO_CALL_STMT
 
 	// expression
 	NODE_EXPR
@@ -293,7 +294,7 @@ func (fs *FuncStatement) String() string {
 	return out.String()
 }
 
-// macro 文
+// macro 定義文
 type MacroStatement struct {
 	Name    string
 	Params  []string
@@ -314,7 +315,7 @@ func (ms *MacroStatement) String() string {
 	return out.String()
 }
 
-// macro 文
+// macro 呼出し Parse 後
 type MacroCallStatement struct {
 	Name    string
 	Args    *ExpressionList
@@ -330,6 +331,26 @@ func (mc *MacroCallStatement) String() string {
 		args = append(args, arg.String())
 	}
 	return fmt.Sprintf("MACRO %s CALL with %s", mc.Name, strings.Join(args, ","))
+}
+
+// macro 呼出し Evaluator 内で変換
+type ExpandedMacroCallStatement struct {
+	Name    string
+	Params  []string
+	Args    *ExpressionList
+	Body    *BlockStatement
+	Context *fileblock.Context
+}
+
+func (em *ExpandedMacroCallStatement) statementNode()           {}
+func (em *ExpandedMacroCallStatement) NodeType() NodeType       { return NODE_MACRO_CALL_STMT }
+func (em *ExpandedMacroCallStatement) NodeSubType() NodeSubType { return 0 }
+func (em *ExpandedMacroCallStatement) String() string {
+	args := []string{}
+	for _, arg := range em.Args.Expressions {
+		args = append(args, arg.String())
+	}
+	return fmt.Sprintf("EXPANDED MACRO %s CALL with %s", em.Name, strings.Join(args, ","))
 }
 
 // block statement
