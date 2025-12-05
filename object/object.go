@@ -28,6 +28,7 @@ const (
 	SYMBOL_EXPR_OBJ
 	DELETE_OBJ
 	VALUE_OBJ
+	EXITM_OBJ
 )
 
 // 同一判定のため定数的に定義しておく
@@ -140,6 +141,13 @@ func (d *DeleltedObject) String() string {
 
 	return "DELETED(" + body + ")"
 }
+
+// exitm
+type ExitmObject struct {
+}
+
+func (e *ExitmObject) Type() ObjectType { return EXITM_OBJ }
+func (e *ExitmObject) String() string   { return "EXITM" }
 
 // return
 type ReturnObject struct {
