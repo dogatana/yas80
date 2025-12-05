@@ -28,7 +28,7 @@ func (e *Evaluator) evalExpandedMacroCallStatement(stmt *parser.ExpandedMacroCal
 	return ret
 }
 
-// 複合文 BlockStatement
+// macro 用 BlockStatement 評価
 func (e *Evaluator) evalMacroBlockStatement(block *parser.BlockStatement, env object.Environment) object.Object {
 	ret := &object.BlockObject{Block: []object.Object{}}
 	nodes := []parser.Node{}
@@ -51,11 +51,28 @@ func (e *Evaluator) evalMacroBlockStatement(block *parser.BlockStatement, env ob
 			e.logger.Warning(fmt.Sprintf(errcode.WMACRO_NOT_ALLOWED, "ENUM 文"), stmt.Context)
 			continue
 
-		case *parser.ExitmStatement:
-			block.Block = nodes
-			return ret
+		case *parser.IfStatement:
+			obj := e.evalIfStatementWithFunc(stmt, env, e.evalMacroBlockStatement)
+			if isError(obj) {
+				continue
+			}
+			nodes = append(nodes, stmt)
+			if isRefNotFound(obj) {
+				continue
+			}
+			if obj, ok := obj.(*object.BlockObject); ok {
+				ret.Block = append(ret.Block, obj.Block...)
+				if ret.Block[len(ret.Block)-1].Type() == object.EXITM_OBJ {
+					goto BREAK
+				}
+			}
+			ret.Block = append(ret.Block, obj)
 
-			//ネストした IF の中の EXITM を動作させるには？
+		case *parser.ExitmStatement:
+			// exitm で BlockStatement を書き換えて戻る
+			nodes = append(nodes, stmt)
+			ret.Block = append(ret.Block, &object.ExitmObject{})
+			goto BREAK
 
 		case *parser.MacroCallStatement:
 			obj := e.Eval(node, env)
@@ -68,6 +85,7 @@ func (e *Evaluator) evalMacroBlockStatement(block *parser.BlockStatement, env ob
 			}
 			nodes = append(nodes, expanded.Node)
 			e.Resolved = false
+
 		default:
 			obj := e.Eval(node, env)
 			if isError(obj) {
@@ -77,6 +95,7 @@ func (e *Evaluator) evalMacroBlockStatement(block *parser.BlockStatement, env ob
 			ret.Block = append(ret.Block, obj)
 		}
 	}
+BREAK:
 	block.Block = nodes
 	return ret
 }
