@@ -104,3 +104,14 @@ func unwrapSymbol(obj object.Object) object.Object {
 	}
 	return obj
 }
+
+func isTruthy(obj object.Object) bool {
+	switch obj := obj.(type) {
+	case *object.NumberObject:
+		return obj.Value != 0
+	case *object.StringObject:
+		return obj.Value != ""
+	default:
+		return false
+	}
+}
