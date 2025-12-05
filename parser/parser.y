@@ -235,6 +235,18 @@ directive	: CONST ident '=' expr
 						Context: $1.Context}
 			}
 			| EXITM			{ $$ = &ExitmStatement{Context: $1.Context}}
+			| EXITM IF expr
+			{
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					ctx := $1.Context
+					$$ = &IfStatement{
+						Condition: $3,
+						Consequence: &BlockStatement{Block: []Node{&ExitmStatement{Context: ctx}}},
+						Alternative:  &BlockStatement{Block: []Node{}}}
+				}
+			}
 			| RETURN		{ $$ = &ReturnStatement{Value: nil,Context: $1.Context}} 
 			| RETURN expr	
 			{ 
