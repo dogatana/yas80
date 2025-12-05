@@ -88,7 +88,6 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 			Args:    node.Args,
 			Body:    &parser.BlockStatement{Block: expanded},
 			Context: node.Context}
-		e.Resolved = false
 		return &object.NodeObject{Node: extCall}
 
 	case *parser.IfStatement:

@@ -53,6 +53,7 @@ const (
 	EMACRO_NOT_MACRO      = "%s は MACRO 以外で定義済み"
 
 	EGLOBAL_NOT_ALLOWED = "%s はグローバルスコープで利用不可"
+	WMACRO_NOT_ALLOWED  = "%s は MACRO スコープでは無視"
 
 	E900 = "E900 内部エラー %s"
 	E999 = "[E]'%T' の評価は未実装"
