@@ -130,8 +130,8 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 
 // 中置演算子式
 func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object.Environment, ctx *fileblock.Context) object.Object {
-	op1 := unwrapSymbol(e.evalExpression(node.Op1, env, ctx))
-	op2 := unwrapSymbol(e.evalExpression(node.Op2, env, ctx))
+	op1 := e.evalExpression(node.Op1, env, ctx)
+	op2 := e.evalExpression(node.Op2, env, ctx)
 
 	switch {
 	case isError(op1) || isError(op2):
@@ -212,7 +212,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env object.Environment, ctx *fileblock.Context) object.Object {
 	opcode := expr.Operator
 
-	op := unwrapSymbol(e.evalExpression(expr.Op, env, ctx))
+	op := e.evalExpression(expr.Op, env, ctx)
 	if isError(op) {
 		return op
 	}

@@ -60,7 +60,7 @@ func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env object.
 }
 
 func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environment) object.Object {
-	op1 := unwrapSymbol(e.evalExpression(node.Op1, env, node.Context))
+	op1 := e.evalExpression(node.Op1, env, node.Context)
 
 	switch op1 := op1.(type) {
 	case *object.RegisterObject:
@@ -83,7 +83,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environmen
 }
 
 func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
-	op2 := unwrapSymbol(e.evalExpression(node.Op2, env, node.Context))
+	op2 := e.evalExpression(node.Op2, env, node.Context)
 
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:
@@ -136,7 +136,7 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 }
 
 func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
-	op2 := unwrapSymbol(e.evalExpression(node.Op2, env, node.Context))
+	op2 := e.evalExpression(node.Op2, env, node.Context)
 
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:
