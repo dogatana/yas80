@@ -121,13 +121,6 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 		e.Resolved = false
 		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
 
-	case *object.SymbolObject, *object.SymbolExprObject:
-		// Symbol がリテラルなら最初に unwrapSymbol しているので、NULL のはず
-
-		// ダミーとして LD A, A を返すとともに e.Resolved を false に
-		e.Resolved = false
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
-
 	default:
 
 		e.logger.Error(errcode.E025, node.Context)
@@ -176,11 +169,6 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		e.Resolved = false
 		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
 
-	case *object.SymbolObject, *object.SymbolExprObject:
-		// Symbol がリテラルなら最初に unwrapSymbol しているので、NULL のはず
-		// ダミーとして LD HL,0 を返すとともに e.Resolved を false へ
-		e.Resolved = false
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
 	default:
 		fmt.Printf("%#v\n", op2)
 		e.logger.Error(errcode.E025, node.Context)

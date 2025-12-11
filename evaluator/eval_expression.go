@@ -136,6 +136,10 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 	switch {
 	case isError(op1) || isError(op2):
 		return object.ERROR
+	case isRefNotFound(op1) || isRefNotFound(op2):
+		e.Resolved = false
+		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
+
 	case isNumber(op1) && isNumber(op2):
 		return e.evalNumberInfixExpression(node.Operator, op1, op2, ctx)
 	case isString(op1) && isString(op2):
@@ -146,11 +150,6 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 		s1 := op1.(*object.StringObject).Value
 		s2 := op2.(*object.StringObject).Value
 		return &object.StringObject{Value: s1 + " " + s2}
-	case isRefNotFound(op1) || isRefNotFound(op2):
-		e.Resolved = false
-		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
-	case isSymolOrSymbolExpr(op1) || isSymolOrSymbolExpr(op2):
-		return &object.SymbolExprObject{Names: mergeNames(op1, op2)}
 	default:
 		if e.Debug > 0 {
 			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
@@ -242,8 +241,7 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env obje
 		}
 		e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_STRING, rune(opcode)), ctx)
 		return object.ERROR
-	case *object.SymbolExprObject, *object.SymbolObject:
-		return op
+
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
 		return object.ERROR

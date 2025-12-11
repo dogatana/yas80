@@ -193,30 +193,18 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 	v := e.evalExpression(node.Value, env, node.Context)
 
 	switch v := v.(type) {
+	case *object.ErrorObject:
+		return object.ERROR
+	case *object.RefNotFoundObject:
+		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
+		env.Set(name, sym)
+		return &object.ValueObject{Value: object.NULL, Context: node.Context}
+
 	case *object.NumberObject, *object.StringObject, *object.RegisterObject, *object.FlagObject:
 		// リテラルを値とする Symbol を作成し環境へ登録
 		sym := object.NewConstSymbol(name, v, []string{}, node.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: node.Context}
-	case *object.RefNotFoundObject:
-		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
-		env.Set(name, sym)
-		return &object.ValueObject{Value: object.NULL, Context: node.Context}
-	case *object.SymbolObject:
-		// 他のシンボルの場合は値をコピーして新規に登録
-		depends := make([]string, len(v.DependsOn)+1) // 他のシンボルの情報なので copy
-		copy(depends, v.DependsOn)
-		depends = append(depends, v.Name) // 参照シンボルの名前も追加
-		sym := object.NewConstSymbol(name, v.Value, depends, node.Context)
-		env.Set(name, sym)
-		return sym
-	case *object.SymbolExprObject:
-		// Symbo Expression Object の場合は値を取得し新たに登録する
-		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
-		env.Set(name, sym)
-		return sym
-	case *object.ErrorObject:
-		return object.ERROR
 	default:
 		if e.Debug > 0 {
 			fmt.Printf("const %s = %#v\n", name, v)
