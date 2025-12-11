@@ -145,8 +145,8 @@ func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) objec
 	name := label.Name
 
 	obj, ok := env.Get(name)
-	if !ok || obj.Type() == object.REF_NOTFOUND_OBJ {
-		// 環境にないか、RefNotFoundObject なら新規登録
+	if !ok {
+		// 環境にないなら新規登録
 		sym := object.NewLabelSymbol(name, getLocationCounter(env), label.Context)
 		env.Set(name, sym)
 		return sym
