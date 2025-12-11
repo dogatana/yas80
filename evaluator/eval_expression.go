@@ -11,7 +11,7 @@ import (
 // 関数呼出し
 func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.Environment) object.Object {
 	obj := e.Eval(expr.Function, env)
-	if isError(obj) || isRefNotFound(obj) {
+	if isError(obj) || isRefNotFound(obj) { // TODO: エラーとRefNotFound を分ける
 		e.Resolved = false
 		return obj
 	} else if obj == object.NULL {
@@ -172,8 +172,8 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env obje
 		}
 		e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_STRING, rune(opcode)), ctx)
 		return object.ERROR
-	case *object.SymbolExprObject:
-		return op // TODO
+	case *object.SymbolExprObject, *object.SymbolObject:
+		return op
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
 		return object.ERROR
