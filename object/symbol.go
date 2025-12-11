@@ -105,8 +105,7 @@ func NewUnknownSymbol(name, depend string, ctx *fileblock.Context) *SymbolObject
 
 // symbol expressoin
 type SymbolExprObject struct {
-	Names      []string
-	LineNumber int
+	Names []string
 }
 
 func (s *SymbolExprObject) Type() ObjectType { return SYMBOL_EXPR_OBJ }
