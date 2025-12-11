@@ -12,7 +12,7 @@ func (e *Evaluator) evalExpandedMacroCallStatement(stmt *parser.ExpandedMacroCal
 	// 引数を評価し、仮引数名で環境に設定
 	newEnv := object.NewMacroEnvironment(env)
 	for i, param := range stmt.Params {
-		v := e.Eval(stmt.Args.Expressions[i], env)
+		v := e.evalExpression(stmt.Args.Expressions[i], env, stmt.Context)
 		if isError(v) || isRefNotFound(v) {
 			return v
 		}

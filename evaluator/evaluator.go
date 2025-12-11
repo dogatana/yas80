@@ -122,53 +122,8 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 			return object.ERROR
 		}
 
-	// Expression
-	// 各種リテラル
-	case *parser.NumberLiteral:
-		return &object.NumberObject{Value: node.Value, Context: node.Context}
-	case *parser.StringLiteral:
-		return &object.StringObject{Value: node.Value, Context: node.Context}
-	case *parser.RegisterLiteral:
-		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
-	case *parser.FlagLiteral:
-		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
-
-	// 識別子
-	case *parser.Ident:
-		name := node.Name
-		obj, ok := env.Get(name)
-		if !ok {
-			// 未定義の場合
-			obj = &object.RefNotFoundObject{Names: []string{name}}
-			// env.Set(name, obj)
-			e.Resolved = false
-		}
-		return obj
-	case *parser.DotIdent: // TODO enum か proc.local かの識別必要
-		enum, ok := env.Get(node.Left)
-		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.E010, node.Left), node.Context)
-			return object.ERROR
-		}
-		v, ok := enum.(*object.EnumObject).Get(node.Right)
-		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.E011, node.Left, node.Right), node.Context)
-			return object.ERROR
-		}
-		return v
-
-	// 関数呼出し
-	case *parser.CallExpression:
-		return e.evalCallExpression(node, env)
-
-	// 式
-	case *parser.InfixExpression:
-		return e.evalInfixExpression(node, env, node.Context)
-	case *parser.PrefixExpression:
-		return e.evalPrefixExpression(node, env, node.Context)
-
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.E999, node), nil) // TODO
+		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil) // TODO
 		return object.ERROR
 	}
 }
@@ -248,7 +203,7 @@ func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) ob
 			stmts = append(stmts, stmt)
 
 		default:
-			e.logger.Info(fmt.Sprintf(errcode.E999, node), nil)
+			e.logger.Info(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil)
 			obj = e.Eval(node, env)
 			if obj == object.ERROR {
 				continue
@@ -351,7 +306,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 		}
 	}
 
-	v := e.Eval(node.Value, env)
+	v := e.evalExpression(node.Value, env, node.Context)
 
 	switch v := v.(type) {
 	case *object.NumberObject, *object.StringObject:
@@ -388,7 +343,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 
 // if 文
 func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env object.Environment) object.Object {
-	cond, ok := e.Eval(stmt.Condition, env).(*object.NumberObject)
+	cond, ok := e.evalExpression(stmt.Condition, env, stmt.Context).(*object.NumberObject)
 	if !ok {
 		return &object.NodeObject{Node: stmt}
 	}
@@ -412,7 +367,7 @@ func (e *Evaluator) evalIfStatementWithFunc(
 	env object.Environment,
 	fn evalBlockStatementFunc) object.Object {
 
-	cond := e.Eval(stmt.Condition, env)
+	cond := e.evalExpression(stmt.Condition, env, stmt.Context)
 	if isError(cond) || isRefNotFound(cond) {
 		return cond
 	}
@@ -445,7 +400,7 @@ func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env object
 	if stmt.Value == nil {
 		ret = object.NULL
 	} else {
-		ret = e.Eval(stmt.Value, env)
+		ret = e.evalExpression(stmt.Value, env, stmt.Context)
 	}
 	return &object.ReturnObject{Value: ret, LineNumber: stmt.Context.Line}
 }
@@ -467,7 +422,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Env
 			value += 1
 			continue
 		}
-		v := e.Eval(ele.Value, env)
+		v := e.evalExpression(ele.Value, env, node.Context)
 		switch v.Type() {
 		case object.NULL_OBJ:
 			enum[eleName] = &object.NodeObject{Node: ele.Value}

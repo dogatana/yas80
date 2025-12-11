@@ -54,13 +54,13 @@ func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env object.
 	case parser.Z80_INST_LD:
 		return e.evalZ80LD(node, env)
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context)
+		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), node.Context)
 		return object.ERROR
 	}
 }
 
 func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environment) object.Object {
-	op1 := e.Eval(node.Op1, env)
+	op1 := e.evalExpression(node.Op1, env, node.Context)
 
 	switch op1 := op1.(type) {
 	case *object.RegisterObject:
@@ -83,7 +83,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environmen
 }
 
 func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
-	op2 := e.Eval(node.Op2, env)
+	op2 := e.evalExpression(node.Op2, env, node.Context)
 
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:
@@ -145,7 +145,7 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 }
 
 func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
-	op2 := e.Eval(node.Op2, env)
+	op2 := e.evalExpression(node.Op2, env, node.Context)
 
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:

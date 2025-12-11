@@ -59,8 +59,9 @@ const (
 	EGLOBAL_NOT_ALLOWED = "%s はグローバルスコープで利用不可"
 	WMACRO_NOT_ALLOWED  = "%s は MACRO スコープでは無視"
 
-	E900 = "E900 内部エラー %s"
-	E999 = "[E]'%T' の評価は未実装"
+	E900           = "E900 内部エラー %s"
+	ENOT_IMPL_EXPR = "未実装エラー: evalExression(%T)"
+	ENOT_IMPL_STMT = "未実装エラー: eval(%T')"
 
 	// warning
 	W001 = "数値 '%d(0x%x)' をバイト範囲に丸めました"

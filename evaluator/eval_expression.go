@@ -8,9 +8,68 @@ import (
 	"yas80/parser"
 )
 
+// 式評価
+func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx *fileblock.Context) object.Object {
+
+	switch node := node.(type) {
+
+	// 各種リテラル
+	case *parser.NumberLiteral:
+		return &object.NumberObject{Value: node.Value, Context: ctx}
+	case *parser.StringLiteral:
+		return &object.StringObject{Value: node.Value, Context: ctx}
+	case *parser.RegisterLiteral:
+		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
+	case *parser.FlagLiteral:
+		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
+
+	// 識別子
+	case *parser.Ident:
+		name := node.Name
+		obj, ok := env.Get(name)
+		if !ok {
+			// 未定義の場合
+			obj = &object.RefNotFoundObject{Names: []string{name}}
+			// env.Set(name, obj)
+			e.Resolved = false
+		}
+		return obj
+
+	// enum or proc.local
+	case *parser.DotIdent: // TODO enum か proc.local かの識別必要
+		enum, ok := env.Get(node.Left)
+		if !ok {
+			e.logger.Error(fmt.Sprintf(errcode.E010, node.Left), ctx)
+			return object.ERROR
+		}
+		v, ok := enum.(*object.EnumObject).Get(node.Right)
+		if !ok {
+			e.logger.Error(fmt.Sprintf(errcode.E011, node.Left, node.Right), ctx)
+			return object.ERROR
+		}
+		return v
+
+	// 関数呼出し
+	case *parser.CallExpression:
+		return e.evalCallExpression(node, env, ctx)
+
+	// 中置演算子
+	case *parser.InfixExpression:
+		return e.evalInfixExpression(node, env, ctx)
+
+	// 前置演算子
+	case *parser.PrefixExpression:
+		return e.evalPrefixExpression(node, env, ctx)
+
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_EXPR, node), ctx)
+		return object.ERROR
+	}
+}
+
 // 関数呼出し
-func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.Environment) object.Object {
-	obj := e.Eval(expr.Function, env)
+func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.Environment, ctx *fileblock.Context) object.Object {
+	obj := e.evalExpression(expr.Function, env, ctx)
 	if isError(obj) || isRefNotFound(obj) { // TODO: エラーとRefNotFound を分ける
 		e.Resolved = false
 		return obj
@@ -21,17 +80,17 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
-		e.logger.Error(errcode.E019, expr.Context)
+		e.logger.Error(errcode.E019, ctx)
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {
-		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), expr.Context)
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), ctx)
 		return object.ERROR
 	}
 
 	newEnv := object.NewEnvironment(fn.Env)
 	for i, param := range fn.Params {
-		v := e.Eval(expr.Arguments.Expressions[i], env)
+		v := e.evalExpression(expr.Arguments.Expressions[i], env, nil) // TODO nil
 		if isError(v) || isRefNotFound(v) {
 			return v
 		}
@@ -60,8 +119,8 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 
 // 中置演算子式
 func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object.Environment, ctx *fileblock.Context) object.Object {
-	op1 := unwrapSymbol(e.Eval(node.Op1, env))
-	op2 := unwrapSymbol(e.Eval(node.Op2, env))
+	op1 := unwrapSymbol(e.evalExpression(node.Op1, env, ctx))
+	op2 := unwrapSymbol(e.evalExpression(node.Op2, env, ctx))
 
 	switch {
 	case isError(op1) || isError(op2):
@@ -142,7 +201,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env object.Environment, ctx *fileblock.Context) object.Object {
 	opcode := expr.Operator
 
-	op := unwrapSymbol(e.Eval(expr.Op, env))
+	op := unwrapSymbol(e.evalExpression(expr.Op, env, ctx))
 	if isError(op) {
 		return op
 	}
