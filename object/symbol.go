@@ -102,13 +102,3 @@ func NewUnknownSymbol(name, depend string, ctx *fileblock.Context) *SymbolObject
 	}
 	return sym
 }
-
-// symbol expressoin
-type SymbolExprObject struct {
-	Names []string
-}
-
-func (s *SymbolExprObject) Type() ObjectType { return SYMBOL_EXPR_OBJ }
-func (s *SymbolExprObject) String() string {
-	return fmt.Sprintf("SYMBOL_EXPR{Names: [%s]}", strings.Join(s.Names, ", "))
-}

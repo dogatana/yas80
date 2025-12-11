@@ -23,10 +23,6 @@ func isRefNotFound(obj object.Object) bool {
 	return obj.Type() == object.REF_NOTFOUND_OBJ
 }
 
-func isSymolOrSymbolExpr(obj object.Object) bool {
-	return obj.Type() == object.SYMBOL_OBJ || obj.Type() == object.SYMBOL_EXPR_OBJ
-}
-
 // 依存先の識別子を抽出する: 重複する名は後段のソートでユニークになる
 func mergeNames(obj1, obj2 object.Object) []string {
 	names := []string{}
@@ -40,8 +36,6 @@ func mergeNames(obj1, obj2 object.Object) []string {
 func extractNames(obj object.Object) []string {
 	switch obj := obj.(type) {
 	case *object.RefNotFoundObject:
-		return obj.Names
-	case *object.SymbolExprObject:
 		return obj.Names
 	case *object.SymbolObject:
 		return []string{obj.Name}
