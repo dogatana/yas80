@@ -9,11 +9,10 @@ import (
 )
 
 type Evaluator struct {
-	logger     *logger.Logger
-	Debug      int
-	Resolved   bool
-	Counter    func() int
-	lineNumber int
+	logger   *logger.Logger
+	Debug    int
+	Resolved bool
+	Counter  func() int
 }
 
 func New(logger *logger.Logger) *Evaluator {
