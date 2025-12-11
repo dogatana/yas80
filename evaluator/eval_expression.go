@@ -70,7 +70,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 		return e.evalNumberInfixExpression(node.Operator, op1, op2, ctx)
 	case isString(op1) && isString(op2):
 		if node.Operator != '+' {
-			e.logger.Error(errcode.E029, nil)
+			e.logger.Error(errcode.EBIN_OP_STRING, ctx)
 			return object.ERROR
 		}
 		s1 := op1.(*object.StringObject).Value
@@ -85,7 +85,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 		if e.Debug > 0 {
 			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
 		}
-		e.logger.Error(fmt.Sprintf(errcode.E023, parser.TokenLiteral(node.Operator)), nil)
+		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_TYPE, parser.TokenLiteral(node.Operator)), ctx)
 		return object.ERROR
 	}
 }
@@ -102,7 +102,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 		return &object.NumberObject{Value: v1 * v2, Context: ctx}
 	case '/':
 		if v2 == 0 {
-			e.logger.Error(errcode.E015, nil)
+			e.logger.Error(errcode.EBIN_OP_DIVZERO, nil)
 			return object.ERROR
 		}
 		return &object.NumberObject{Value: v1 / v2, Context: ctx}
@@ -133,7 +133,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 	case parser.AND:
 		return &object.NumberObject{Value: boolToInt(v1 != 1 && v2 != 1), Context: ctx}
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.E016, string(rune(opCode))), nil)
+		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_NUMBER, string(rune(opCode))), nil)
 		return object.ERROR
 	}
 }
@@ -163,19 +163,19 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env obje
 		case '!':
 			return &object.NumberObject{Value: boolToInt(op.Value == 0), Context: ctx}
 		default:
-			e.logger.Error(fmt.Sprintf(errcode.E008, rune(opcode)), ctx)
+			e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_NUMBER, rune(opcode)), ctx)
 			return object.ERROR
 		}
 	case *object.StringObject:
 		if opcode == '!' {
 			return &object.NumberObject{Value: boolToInt(op.Value == ""), Context: ctx}
 		}
-		e.logger.Error(fmt.Sprintf(errcode.E007, rune(opcode)), ctx)
+		e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_STRING, rune(opcode)), ctx)
 		return object.ERROR
 	case *object.SymbolExprObject:
-		return op
+		return op // TODO
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.E022, parser.TokenLiteral(opcode)), ctx)
+		e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
 		return object.ERROR
 	}
 }

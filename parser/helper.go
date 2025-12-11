@@ -188,14 +188,14 @@ func buildInfixExpression(opcode int, op1, op2 Expression, ctx *fileblock.Contex
 	num2, ok2 := op2.(*NumberLiteral)
 	if ok1 && ok2 {
 		if opcode == '/' && num2.Value == 0 {
-			return &ParseError{Message: errcode.E015, Context: ctx}
+			return &ParseError{Message: errcode.EBIN_OP_DIVZERO, Context: ctx}
 		}
 
 		fn, ok := infixFuncs[opcode]
 		if ok {
 			return &NumberLiteral{Value: fn(num1.Value, num2.Value), Context: ctx}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(errcode.E016, TokenLiteral(opcode)), Context: ctx}
+			return &ParseError{Message: fmt.Sprintf(errcode.EBIN_OP_NUMBER, TokenLiteral(opcode)), Context: ctx}
 		}
 	}
 	// 文字列演算(+)の畳み込み
@@ -233,7 +233,7 @@ func buildPrefixExpression(opcode int, op Expression, ctx *fileblock.Context) Ex
 		if ok {
 			return &NumberLiteral{Value: fn(op.Value), Context: ctx}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(errcode.E008, rune(opcode)), Context: ctx}
+			return &ParseError{Message: fmt.Sprintf(errcode.EUNARY_OP_NUMBER, rune(opcode)), Context: ctx}
 		}
 	case *StringLiteral:
 		if opcode == '!' {
@@ -245,7 +245,7 @@ func buildPrefixExpression(opcode int, op Expression, ctx *fileblock.Context) Ex
 			}
 			return &NumberLiteral{Value: result, Context: ctx}
 		}
-		return &ParseError{Message: fmt.Sprintf(errcode.E007, rune(opcode)), Context: ctx}
+		return &ParseError{Message: fmt.Sprintf(errcode.EUNARY_OP_STRING, rune(opcode)), Context: ctx}
 	}
 	return &PrefixExpression{Operator: opcode, Op: op, Context: ctx}
 }
