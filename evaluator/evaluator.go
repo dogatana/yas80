@@ -122,9 +122,6 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		default:
 			return object.ERROR
 		}
-	case *parser.ExpressionStatement:
-		e.lineNumber = node.Context.Line
-		return e.Eval(node.Value, env)
 
 	// Expression
 	// 各種リテラル

@@ -107,15 +107,6 @@ statement   : EOL { $$ = nil }
 			}
 			| instruction EOL	{ $$ = $1 }
 			| directive	 EOL	{ $$ = $1 }
-//			| expr EOL			
-//			{ 
-//				$$ = &ParseError{Message: "式文は無効",Context: $2.Context}
-//				if $1.NodeType() == NODE_ERROR {
-//					$$ = $1
-//				} else {
-//					$$ = &ExpressionStatement{Value: $1,Context: $2.Context}
-//				}
-//			}
 			| error EOL
 			{
 				// TODO $2 = EOL の Context で良いのか？
