@@ -140,7 +140,7 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 		if !ok {
 			// 未定義の場合
 			obj = &object.RefNotFoundObject{Names: []string{name}}
-			env.Set(name, obj)
+			// env.Set(name, obj)
 			e.Resolved = false
 		}
 		return obj
