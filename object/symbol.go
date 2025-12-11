@@ -72,7 +72,7 @@ func NewLabelSymbol(name string, addr int, ctx *fileblock.Context) *SymbolObject
 func NewConstSymbol(name string, value Object, depends []string, ctx *fileblock.Context) *SymbolObject {
 	return &SymbolObject{Name: name,
 		SymType:   SYM_CONST,
-		SymState:  VALUE_NULL,
+		SymState:  VALUE_TENTATIVE,
 		Value:     value,
 		DependsOn: depends,
 		Context:   ctx,

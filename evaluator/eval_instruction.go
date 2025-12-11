@@ -60,7 +60,7 @@ func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env object.
 }
 
 func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environment) object.Object {
-	op1 := e.evalExpression(node.Op1, env, node.Context)
+	op1 := unwrapSymbol(e.evalExpression(node.Op1, env, node.Context))
 
 	switch op1 := op1.(type) {
 	case *object.RegisterObject:
@@ -83,7 +83,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environmen
 }
 
 func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
-	op2 := e.evalExpression(node.Op2, env, node.Context)
+	op2 := unwrapSymbol(e.evalExpression(node.Op2, env, node.Context))
 
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:
@@ -120,22 +120,13 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 	case *object.RefNotFoundObject:
 		e.Resolved = false
 		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
-	case *object.SymbolObject:
-		op2v, ok := op2.Value.(*object.NumberObject)
-		if ok {
-			v, ok := e.intToByte(op2v.Value)
-			if !ok {
-				e.logger.Warning(fmt.Sprintf(errcode.W001, op2.Value, op2.Value), node.Context)
-			}
-			r1 := Z80Reg8Index[int(op1.Register)]
-			b := byte(0x06 | (r1 << 3))
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{b, v}}
-		} else {
-			// ダミーとして LD A, A を返すとともに e.Resolved を false に
-			e.Resolved = false
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
 
-		}
+	case *object.SymbolObject, *object.SymbolExprObject:
+		// Symbol がリテラルなら最初に unwrapSymbol しているので、NULL のはず
+
+		// ダミーとして LD A, A を返すとともに e.Resolved を false に
+		e.Resolved = false
+		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
 
 	default:
 
@@ -145,7 +136,7 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 }
 
 func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
-	op2 := e.evalExpression(node.Op2, env, node.Context)
+	op2 := unwrapSymbol(e.evalExpression(node.Op2, env, node.Context))
 
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:
@@ -185,21 +176,13 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		e.Resolved = false
 		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
 
-	case *object.SymbolObject:
-		op2v, ok := op2.Value.(*object.NumberObject)
-		if ok {
-			v, ok := e.intToWord(op2v.Value)
-			if !ok {
-				e.logger.Warning(fmt.Sprintf(errcode.W002, op2v.Value, op2v.Value), node.Context)
-			}
-			r1 := Z80Reg16Index[int(op1.Register)]
-			b := byte(0x01 | (r1 << 4))
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{b, byte(v & 0xff), byte((v >> 8) & 0xff)}}
-		} else {
-			e.Resolved = false
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
-		}
+	case *object.SymbolObject, *object.SymbolExprObject:
+		// Symbol がリテラルなら最初に unwrapSymbol しているので、NULL のはず
+		// ダミーとして LD HL,0 を返すとともに e.Resolved を false へ
+		e.Resolved = false
+		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
 	default:
+		fmt.Printf("%#v\n", op2)
 		e.logger.Error(errcode.E025, node.Context)
 		return object.ERROR
 	}

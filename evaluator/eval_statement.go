@@ -175,9 +175,6 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 	obj, ok := env.Get(name)
 	if ok {
 		switch obj := obj.(type) {
-		case *object.NumberObject, *object.StringObject, *object.RegisterObject:
-			// 定数として確定済
-			return &object.ValueObject{Value: obj, Context: node.Context}
 		case *object.SymbolObject:
 			if obj.Name != node.Name.Name || obj.Context != node.Context {
 				// 別シンボルなら二重定義エラー
@@ -196,9 +193,10 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 	v := e.evalExpression(node.Value, env, node.Context)
 
 	switch v := v.(type) {
-	case *object.NumberObject, *object.StringObject:
-		// 定数として確定
-		env.Set(name, v)
+	case *object.NumberObject, *object.StringObject, *object.RegisterObject, *object.FlagObject:
+		// リテラルを値とする Symbol を作成し環境へ登録
+		sym := object.NewConstSymbol(name, v, []string{}, node.Context)
+		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: node.Context}
 	case *object.RefNotFoundObject:
 		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
