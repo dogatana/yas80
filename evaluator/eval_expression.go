@@ -29,11 +29,22 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 		obj, ok := env.Get(name)
 		if !ok {
 			// 未定義の場合
-			obj = &object.RefNotFoundObject{Names: []string{name}}
-			// env.Set(name, obj)
 			e.Resolved = false
+			return &object.RefNotFoundObject{Names: []string{name}}
 		}
-		return obj
+
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok {
+			// SymbolObject 以外ならそのまま返す
+			return obj
+		}
+
+		if sym.Value != object.NULL {
+			// 値が NULL でないなら value を返す
+			return sym.Value
+		}
+		// 値が NULL なら RefNotFound にして返す
+		return &object.RefNotFoundObject{Names: append(sym.DependsOn, sym.Name)}
 
 	// enum or proc.local
 	case *parser.DotIdent: // TODO enum か proc.local かの識別必要

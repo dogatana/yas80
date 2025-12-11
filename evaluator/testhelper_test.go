@@ -108,6 +108,15 @@ func checkDebug(e *Evaluator) {
 	e.Debug = n
 }
 
+func evalValue(obj object.Object) object.Object {
+	switch obj := obj.(type) {
+	case *object.SymbolObject:
+		return obj.Value
+	default:
+		return obj
+	}
+}
+
 func testSymbolNumberObject(t *testing.T, testnum int, obj object.Object, expected int) bool {
 	sym, ok := obj.(*object.SymbolObject)
 	if !ok {

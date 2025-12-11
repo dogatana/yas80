@@ -49,7 +49,7 @@ func TestEvalLabelStatement(t *testing.T) {
 	}
 }
 
-func testEvalExpression(t *testing.T) {
+func TestEvalExpression(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -69,15 +69,17 @@ func testEvalExpression(t *testing.T) {
 		logger := logger.New("<eval test>")
 		_ = evaluateInput(t, tt.input, logger, env)
 
-		value, ok := env.Get("RESULT")
+		obj, ok := env.Get("RESULT")
 		if !ok {
 			t.Fatalf(`[%d] "RESULT" not in env`, tn)
 		}
+
+		value := evalValue(obj)
 		testNumberObject(t, tn, value, tt.expected)
 	}
 }
 
-func testFuncIfReturn(t *testing.T) {
+func TestFuncIfReturn(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -95,10 +97,11 @@ func testFuncIfReturn(t *testing.T) {
 		logger := logger.New("<eval test>")
 		_ = evaluateInput(t, tt.input, logger, env)
 
-		value, ok := env.Get("RESULT")
+		obj, ok := env.Get("RESULT")
 		if !ok {
 			t.Fatalf(`[%d] "RESULT" not in env`, tn)
 		}
+		value := evalValue(obj)
 
 		if tt.expected >= 0 {
 			testNumberObject(t, tn, value, tt.expected)
@@ -139,20 +142,23 @@ func testIf(t *testing.T) {
 		// {`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
 		// {`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
 	}
-	t.Fatal("const 再定義要修正")
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		prog := evaluateInput(t, tt.input, logger, env)
+		_ = evaluateInput(t, tt.input, logger, env)
 
-		last := prog.Objects[len(prog.Objects)-1]
-		if tt.expected >= 0 {
-			testNumberObject(t, tn, last, tt.expected)
-			continue
+		obj, ok := env.Get("RESULT")
+		if !ok {
+			t.Fatalf(`[%d] "RESULT" not in env`, tn)
 		}
-		if last != object.NULL {
-			t.Errorf("[%d] should be NULL. got %T(%#v)", tn, last, last)
+		value := evalValue(obj)
+
+		if tt.expected >= 0 {
+			testNumberObject(t, tn, value, tt.expected)
+			continue
+		} else {
+			t.Errorf("[%d] should be NULL. got %T(%#v)", tn, obj, obj)
 		}
 	}
 }
@@ -162,16 +168,15 @@ func testFunc(t *testing.T) {
 		input    string
 		expected int
 	}{
-		{`retNULL func \ 100 \ endf \ RETNULL()`, -1}, // -1 は NullObject とする
-		{`ret100 func \ return 100 \ endf \ ret100()`, 100},
-		{`ret100 func \ 1 \ 2 \ return 100 \ 4 \ endf \ ret100()`, 100},
-		{`abs func arg \ 1 \ return arg \ 2 \ endf \  abs(123)`, 123},
-		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \ endif \ endf \ abs(100)`, 100},
-		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \  endif \endf \ abs(-100)`, 100},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ deep(1)`, -1},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ deep(2)`, 777},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ deep(3)`, 888},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ deep(4)`, 999},
+		{`ret100 func \ return 100 \ endf \ const result = ret100()`, 100},
+		{`ret100 func \ 1 \ 2 \ return 100 \ 4 \ endf \ const result = ret100()`, 100},
+		{`abs func arg \ 1 \ return arg \ 2 \ endf \  const result = abs(123)`, 123},
+		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \ endif \ endf \ const result = abs(100)`, 100},
+		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \  endif \endf \ const result = abs(-100)`, 100},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(1)`, -1},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(2)`, 777},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(3)`, 888},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(4)`, 999},
 		{`	fib func x
 					if x < 2
 						return 1
@@ -179,28 +184,31 @@ func testFunc(t *testing.T) {
 						return fib(x - 1) + fib(x - 2)
 					endif
 				endf
-			fib(5)
+			const result = fib(5)
 			`, 8},
 	}
-	t.Fatal("const 再定義要修正")
+	// t.Fatal("const 再定義要修正")
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		prog := evaluateInput(t, tt.input, logger, env)
+		_ = evaluateInput(t, tt.input, logger, env)
 
-		last := prog.Objects[len(prog.Objects)-1]
-		if tt.expected >= 0 {
-			testNumberObject(t, tn, last, tt.expected)
-			continue
+		obj, ok := env.Get("RESULT")
+		if !ok {
+			t.Fatalf(`[%d] "RESULT" not in env`, tn)
 		}
-		if last != object.NULL {
-			t.Errorf("[%d] should be NULL. got %T(%#v)", tn, last, last)
+		value := evalValue(obj)
+
+		if tt.expected >= 0 {
+			testNumberObject(t, tn, value, tt.expected)
+		} else if value != object.NULL {
+			t.Errorf("[%d] should be NULL. got %T(%#v)", tn, obj, obj)
 		}
 	}
 }
 
-func testClosure(t *testing.T) {
+func TestClosure(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -222,10 +230,12 @@ func testClosure(t *testing.T) {
 		logger := logger.New("<eval test>")
 		_ = evaluateInput(t, tt.input, logger, env)
 
-		value, ok := env.Get("RESULT")
+		obj, ok := env.Get("RESULT")
 		if !ok {
 			t.Fatalf(`[%d]"RESULT" not in env`, tn)
 		}
+
+		value := evalValue(obj)
 
 		if tt.expected >= 0 {
 			testNumberObject(t, tn, value, tt.expected)
@@ -234,7 +244,7 @@ func testClosure(t *testing.T) {
 	}
 }
 
-func testFibFunc(t *testing.T) {
+func TestFibFunc(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -258,10 +268,11 @@ func testFibFunc(t *testing.T) {
 		logger := logger.New("<eval test>")
 		_ = evaluateInput(t, tt.input, logger, env)
 
-		value, ok := env.Get("RESULT")
+		obj, ok := env.Get("RESULT")
 		if !ok {
 			t.Fatalf(`[%d] "RESULT" not in env`, testnum)
 		}
+		value := evalValue(obj)
 
 		if tt.expected >= 0 {
 			testNumberObject(t, testnum, value, tt.expected)
@@ -270,7 +281,7 @@ func testFibFunc(t *testing.T) {
 	}
 }
 
-func testFunction(t *testing.T) {
+func TestFunction(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
@@ -288,10 +299,11 @@ func testFunction(t *testing.T) {
 		logger := logger.New("<eval test>")
 		_ = evaluateInput(t, tt.input, logger, env)
 
-		value, ok := env.Get("RESULT")
+		obj, ok := env.Get("RESULT")
 		if !ok {
 			t.Fatalf(`[%d] "RESULT" not in env`, testnum)
 		}
+		value := evalValue(obj)
 
 		if tt.expected >= 0 {
 			testNumberObject(t, testnum, value, tt.expected)
