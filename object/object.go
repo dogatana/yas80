@@ -115,7 +115,7 @@ type ErrorObject struct {
 func (e *ErrorObject) Type() ObjectType { return ERROR_OBJ }
 func (e *ErrorObject) String() string   { return "ERROR" }
 
-// pass1 で右辺式で識別が見つからない場合に使用
+// 右辺値で識別子が見つからない場合に使用
 type RefNotFoundObject struct {
 	Names []string
 }
