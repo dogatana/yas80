@@ -75,7 +75,7 @@ func (e *Evaluator) evalMacroBlockStatement(block *parser.BlockStatement, env ob
 			goto BREAK
 
 		case *parser.MacroCallStatement:
-			obj := e.Eval(node, env)
+			obj := e.evalStatement(node, env)
 			if isError(obj) {
 				continue
 			}
@@ -87,7 +87,7 @@ func (e *Evaluator) evalMacroBlockStatement(block *parser.BlockStatement, env ob
 			e.Resolved = false
 
 		default:
-			obj := e.Eval(node, env)
+			obj := e.evalStatement(node, env)
 			if isError(obj) {
 				continue
 			}

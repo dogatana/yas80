@@ -1,0 +1,327 @@
+package evaluator
+
+import (
+	"fmt"
+	"yas80/errcode"
+	"yas80/object"
+	"yas80/parser"
+)
+
+// evalStatement
+func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) object.Object {
+
+	switch node := node.(type) {
+
+	// Z80 命令
+	case *parser.Z80Instruction:
+		obj := e.evalZ80Instruction(node, env)
+		if obj.Type() == object.CODE_OBJ {
+			code := obj.(*object.CodeObject)
+			code.Addr = getLocationCounter(env)
+			advanceLocationCounter(env, code.Size())
+		}
+		return obj
+
+	// ラベル定義
+	case *parser.LabelStatement:
+		return e.evalLabelStatement(node, env)
+	// 定数定義
+	case *parser.ConstStatement:
+		return e.evalConstStatement(node, env)
+
+	// マクロ定義
+	case *parser.MacroStatement:
+		if _, ok := env.Get(node.Name); ok {
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, node.Name), node.Context)
+			return object.ERROR
+		}
+		obj := &object.MacroObject{Name: node.Name, Params: node.Params, Body: node.Body}
+		env.Set(node.Name, obj)
+		return obj // 形式上必要
+
+	// マクロ呼出し
+	case *parser.MacroCallStatement:
+		obj, ok := env.Get(node.Name)
+		if !ok {
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_FOUND, node.Name), node.Context)
+			return object.ERROR
+		}
+		macro, ok := obj.(*object.MacroObject)
+		if !ok {
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, node.Name), node.Context)
+			return object.ERROR
+		}
+		if len(node.Args.Expressions) != len(macro.Params) {
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_ARG_COUNT, node.Name), node.Context)
+			return object.ERROR
+		}
+		// マクロ展開（@ident を置換した AST）
+		expanded := e.expandMacro(macro)
+		extCall := &parser.ExpandedMacroCallStatement{
+			Name:    node.Name,
+			Params:  macro.Params,
+			Args:    node.Args,
+			Body:    &parser.BlockStatement{Block: expanded},
+			Context: node.Context}
+		return &object.NodeObject{Node: extCall}
+
+	case *parser.IfStatement:
+		return e.evalIfStatement(node, env)
+	// case *parser.MacroStatement:
+	// 	return e.evalMacroStatement(node, env)
+
+	case *parser.BlockStatement:
+		return e.evalBlockStatement(node, env)
+	case *parser.ExpandedMacroCallStatement:
+		return e.evalExpandedMacroCallStatement(node, env)
+
+	case *parser.FuncStatement:
+		return e.evalFuncStatement(node, env)
+	case *parser.ReturnStatement:
+		return e.evalReturnStatement(node, env)
+
+	case *parser.EnumStatement:
+		name := node.Name
+		_, ok := env.Get(name) // TODO enum 定義は常にグローバルスコープ
+		if ok {
+			e.logger.Error(fmt.Sprintf(errcode.E012, name), node.Context)
+			return object.ERROR
+		}
+		v := e.evalEnumStatement(node, env)
+		switch v.Type() {
+		case object.ENUM_OBJ:
+			env.Set(v.(*object.EnumObject).Name, v)
+			return v
+		case object.NULL_OBJ: // TODO
+			return &object.NodeObject{Node: node}
+		default:
+			return object.ERROR
+		}
+
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil) // TODO
+		return object.ERROR
+	}
+}
+
+// 複合文 BlockStatement
+func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env object.Environment) object.Object {
+	block := &object.BlockObject{Block: []object.Object{}}
+
+	for i, node := range stmt.Block {
+		obj := e.evalStatement(node, env)
+		switch obj := obj.(type) {
+		case *object.EnumObject:
+			for _, k := range obj.Keys {
+				block.Block = append(block.Block, obj.Value[k])
+			}
+		case *object.ReturnObject:
+			block.Block = append(block.Block, obj)
+			return block
+		case *object.BlockObject:
+			if len(obj.Block) == 0 {
+				block.Block = append(block.Block, object.NULL)
+				continue
+			}
+			block.Block = append(block.Block, obj.Block...)
+			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ {
+				return block
+			}
+		case *object.NodeObject:
+			stmt.Block[i] = obj.Node
+		default:
+			block.Block = append(block.Block, obj)
+		}
+	}
+	return block
+}
+
+// ラベル定義文
+func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.Environment) object.Object {
+	return e.evalLabel(node.Name, env)
+}
+
+func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) object.Object {
+	name := label.Name
+
+	obj, ok := env.Get(name)
+	if !ok || obj.Type() == object.REF_NOTFOUND_OBJ {
+		// 環境にないか、RefNotFoundObject なら新規登録
+		sym := object.NewLabelSymbol(name, getLocationCounter(env), label.Context)
+		env.Set(name, sym)
+		return sym
+	}
+	sym, ok := obj.(*object.SymbolObject)
+	if !ok || sym.SymType != object.SYM_LABEL {
+		// Symbol で || LABEL でなけれがエラー
+		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED_NAME, name), label.Context)
+		return object.ERROR
+	}
+	if !sym.Context.Equal(label.Context) {
+		// ラベル 二重定義
+		e.logger.Error(fmt.Sprintf(errcode.ELABEL_DUP, name), label.Context)
+		return object.ERROR
+	}
+	// 同じラベルなら値を更新
+	sym.Value.(*object.NumberObject).Value = getLocationCounter(env)
+	return sym
+}
+
+// const / equ 文
+func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.Environment) object.Object {
+	name := node.Name.Name
+
+	// 定義済みならエラー
+	obj, ok := env.Get(name)
+	if ok {
+		switch obj := obj.(type) {
+		case *object.NumberObject, *object.StringObject, *object.RegisterObject:
+			// 定数として確定済
+			return &object.ValueObject{Value: obj, Context: node.Context}
+		case *object.SymbolObject:
+			if obj.Name != node.Name.Name || obj.Context != node.Context {
+				// 別シンボルなら二重定義エラー
+				e.logger.Error(fmt.Sprintf(errcode.ESYM_DUP, name), node.Context)
+				return object.ERROR
+			}
+			// 同一シンボルなら更新
+		case *object.RefNotFoundObject:
+			// 未定で登録済なら更新
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_USED_NAME, name), node.Context)
+			return object.ERROR
+		}
+	}
+
+	v := e.evalExpression(node.Value, env, node.Context)
+
+	switch v := v.(type) {
+	case *object.NumberObject, *object.StringObject:
+		// 定数として確定
+		env.Set(name, v)
+		return &object.ValueObject{Value: v, Context: node.Context}
+	case *object.RefNotFoundObject:
+		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
+		env.Set(name, sym)
+		return &object.ValueObject{Value: object.NULL, Context: node.Context}
+	case *object.SymbolObject:
+		// 他のシンボルの場合は値をコピーして新規に登録
+		depends := make([]string, len(v.DependsOn)+1) // 他のシンボルの情報なので copy
+		copy(depends, v.DependsOn)
+		depends = append(depends, v.Name) // 参照シンボルの名前も追加
+		sym := object.NewConstSymbol(name, v.Value, depends, node.Context)
+		env.Set(name, sym)
+		return sym
+	case *object.SymbolExprObject:
+		// Symbo Expression Object の場合は値を取得し新たに登録する
+		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
+		env.Set(name, sym)
+		return sym
+	case *object.ErrorObject:
+		return object.ERROR
+	default:
+		if e.Debug > 0 {
+			fmt.Printf("const %s = %#v\n", name, v)
+		}
+		env.Set(name, v)
+		return v
+	}
+}
+
+// if 文
+func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env object.Environment) object.Object {
+	cond, ok := e.evalExpression(stmt.Condition, env, stmt.Context).(*object.NumberObject)
+	if !ok {
+		return &object.NodeObject{Node: stmt}
+	}
+	if cond.Value != 0 {
+		if stmt.Consequence == nil {
+			return object.NULL
+		}
+		return e.evalStatement(stmt.Consequence, env)
+	} else if stmt.Alternative == nil {
+		return object.NULL
+	} else {
+		return e.evalStatement(stmt.Alternative, env)
+	}
+}
+
+type evalBlockStatementFunc func(block *parser.BlockStatement, env object.Environment) object.Object
+
+// block 評価関数指定の If 文評価
+func (e *Evaluator) evalIfStatementWithFunc(
+	stmt *parser.IfStatement,
+	env object.Environment,
+	fn evalBlockStatementFunc) object.Object {
+
+	cond := e.evalExpression(stmt.Condition, env, stmt.Context)
+	if isError(cond) || isRefNotFound(cond) {
+		return cond
+	}
+
+	if isTruthy(cond) {
+		return fn(stmt.Consequence.(*parser.BlockStatement), env)
+	} else if stmt.Alternative != nil {
+		return fn(stmt.Alternative.(*parser.BlockStatement), env)
+	} else {
+		return object.NULL
+	}
+}
+
+// function 文
+func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env object.Environment) object.Object {
+	name := stmt.Name
+	_, ok := env.Get(name)
+	if ok {
+		e.logger.Error(fmt.Sprintf(errcode.E018, name), stmt.Context)
+		return object.NULL
+	}
+	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env}
+	env.Set(name, obj)
+	return obj
+}
+
+// return 文
+func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env object.Environment) object.Object {
+	var ret object.Object
+	if stmt.Value == nil {
+		ret = object.NULL
+	} else {
+		ret = e.evalExpression(stmt.Value, env, stmt.Context)
+	}
+	return &object.ReturnObject{Value: ret, LineNumber: stmt.Context.Line}
+}
+
+// enum 文
+func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Environment) object.Object {
+	keys := []string{}
+	enum := map[string]object.Object{}
+	value := 0
+	for _, ele := range node.Elements.Elements {
+		eleName := ele.Name
+		if _, ok := enum[eleName]; ok {
+			e.logger.Error(fmt.Sprintf(errcode.E013, node.Name, ele.Name), node.Context)
+			return object.ERROR
+		}
+		keys = append(keys, eleName)
+		if ele.Value == nil {
+			enum[eleName] = &object.NumberObject{Value: value}
+			value += 1
+			continue
+		}
+		v := e.evalExpression(ele.Value, env, node.Context)
+		switch v.Type() {
+		case object.NULL_OBJ:
+			enum[eleName] = &object.NodeObject{Node: ele.Value}
+		case object.NUMBER_OBJ:
+			enum[eleName] = v
+			value = v.(*object.NumberObject).Value + 1
+		case object.STRING_OBJ:
+			enum[eleName] = v
+		default:
+			// e.logger.Error(fmt.Sprintf(errcode.E014, v), ele.LineNumber())
+			return object.ERROR
+		}
+	}
+	return &object.EnumObject{Name: node.Name, Value: enum, Keys: keys}
+}
