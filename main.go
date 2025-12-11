@@ -114,7 +114,7 @@ func main() {
 	for i = 0; i < 256; i++ {
 		fmt.Printf("# eval [#%d]\n", i)
 		eval.Resolved = true
-		obj := eval.Eval(prog, env)
+		obj := eval.EvalProgram(prog, env)
 		logger.Print()
 
 		if obj == object.ERROR {

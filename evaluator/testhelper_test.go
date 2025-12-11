@@ -24,12 +24,12 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 	for i := 0; i < 256; i++ {
 
 		evaluator.Resolved = true
-		obj = evaluator.Eval(progNode, env)
+		obj = evaluator.EvalProgram(progNode, env)
 		ec, wc, _ := logger.Count()
 		if ec > 0 || wc > 0 {
 			fmt.Printf("input %q\n", input)
 			logger.Print()
-			t.Fatalf("Eval() %d errors and %d warnigs", ec, wc)
+			t.Fatalf("EvalProgram() %d errors and %d warnigs", ec, wc)
 		}
 		if evaluator.Resolved {
 			break

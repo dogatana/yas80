@@ -34,12 +34,6 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 	}
 	switch node := node.(type) {
 
-	// Program
-	case *parser.Program:
-		// 一旦 0 に初期化し ORG 他で上書きする
-		initLocationCounter(env, 0)
-		return e.evalProgram(node, env)
-
 	case *parser.Z80Instruction:
 		obj := e.evalZ80Instruction(node, env)
 		if obj.Type() == object.CODE_OBJ {
@@ -129,11 +123,14 @@ func (e *Evaluator) Eval(node parser.Node, env object.Environment) object.Object
 }
 
 // Program 評価
-func (e *Evaluator) evalProgram(prog *parser.Program, env object.Environment) object.Object {
+func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) object.Object {
 	objects := []object.Object{}
 	stmts := []parser.Node{}
 
 	var obj object.Object
+
+	// 一旦 0 に初期化し ORG 他で上書きする
+	initLocationCounter(env, 0)
 
 	for i := 0; i < len(prog.Statements); i++ {
 		if e.Debug > 0 {
