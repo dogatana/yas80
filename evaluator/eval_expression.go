@@ -142,7 +142,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env object.Environment, ctx *fileblock.Context) object.Object {
 	opcode := expr.Operator
 
-	op := e.Eval(expr.Op, env)
+	op := unwrapSymbol(e.Eval(expr.Op, env))
 	if isError(op) {
 		return op
 	}
