@@ -44,40 +44,30 @@ func (s *SymbolObject) String() string {
 }
 
 func NewLabelSymbol(name string, addr int, ctx *fileblock.Context) *SymbolObject {
-	return &SymbolObject{Name: name,
+	return &SymbolObject{
+		Name:    name,
 		SymType: SYM_LABEL,
 		Value:   &NumberObject{Value: addr, Context: ctx},
 		Context: ctx,
 	}
 }
 
-func NewConstSymbol(name string, value Object, depends []string, ctx *fileblock.Context) *SymbolObject {
+func NewConstSymbol(name string, node parser.Node, value Object, depends []string, ctx *fileblock.Context) *SymbolObject {
 	return &SymbolObject{Name: name,
 		SymType:   SYM_CONST,
+		Node:      node,
 		Value:     value,
 		DependsOn: depends,
 		Context:   ctx,
 	}
 }
 
-func NewNullConstSymbol(name string, node parser.Node, depends []string, ctx *fileblock.Context) *SymbolObject {
-	return &SymbolObject{Name: name,
-		SymType:   SYM_CONST,
-		Node:      node,
-		Value:     NULL,
-		DependsOn: depends,
-		Context:   ctx,
-	}
-}
-
 func NewUnknownSymbol(name, depend string, ctx *fileblock.Context) *SymbolObject {
-	sym := &SymbolObject{Name: name,
+	return &SymbolObject{
+		Name:      name,
 		SymType:   SYM_UNKNOWN,
+		Value:     NULL,
 		DependsOn: []string{},
 		Context:   ctx,
 	}
-	if depend != "" {
-		sym.DependsOn = append(sym.DependsOn, depend)
-	}
-	return sym
 }

@@ -195,14 +195,15 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 	switch v := v.(type) {
 	case *object.ErrorObject:
 		return object.ERROR
+
 	case *object.RefNotFoundObject:
-		sym := object.NewNullConstSymbol(name, node.Value, v.Names, node.Context)
+		sym := object.NewConstSymbol(name, node.Value, object.NULL, v.Names, node.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: object.NULL, Context: node.Context}
 
 	case *object.NumberObject, *object.StringObject, *object.RegisterObject, *object.FlagObject:
 		// リテラルを値とする Symbol を作成し環境へ登録
-		sym := object.NewConstSymbol(name, v, []string{}, node.Context)
+		sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: node.Context}
 	default:
