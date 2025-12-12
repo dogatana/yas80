@@ -7,22 +7,6 @@ import (
 	"yas80/parser"
 )
 
-type SymbolState int
-
-const (
-	NOT_REGISTERED SymbolState = -1 + iota
-	VALUE_NULL
-	VALUE_TENTATIVE
-	VALUE_DETERMINED
-)
-
-var symbolStateNames map[SymbolState]string = map[SymbolState]string{
-	NOT_REGISTERED:   "NotRegistered",
-	VALUE_NULL:       "NullValue",
-	VALUE_TENTATIVE:  "TentativeValue",
-	VALUE_DETERMINED: "Determined",
-}
-
 type SymbolType int
 
 const (
@@ -43,7 +27,6 @@ var symbolTypeNames map[SymbolType]string = map[SymbolType]string{
 type SymbolObject struct {
 	Name      string
 	SymType   SymbolType
-	SymState  SymbolState
 	Node      parser.Node
 	Value     Object
 	DependsOn []string
@@ -52,8 +35,8 @@ type SymbolObject struct {
 
 func (s *SymbolObject) Type() ObjectType { return SYMBOL_OBJ }
 func (s *SymbolObject) String() string {
-	str := fmt.Sprintf("Symbol{Name:%q, SymType: %s, SymState: %s, Value: %T",
-		s.Name, symbolTypeNames[s.SymType], symbolStateNames[s.SymState], s.Value)
+	str := fmt.Sprintf("Symbol{Name:%q, SymType: %s, Value: %T",
+		s.Name, symbolTypeNames[s.SymType], s.Value)
 	if len(s.DependsOn) > 0 {
 		str += ", [" + strings.Join(s.DependsOn, ",") + "]"
 	}
@@ -62,17 +45,15 @@ func (s *SymbolObject) String() string {
 
 func NewLabelSymbol(name string, addr int, ctx *fileblock.Context) *SymbolObject {
 	return &SymbolObject{Name: name,
-		SymType:  SYM_LABEL,
-		SymState: VALUE_TENTATIVE,
-		Value:    &NumberObject{Value: addr, Context: ctx},
-		Context:  ctx,
+		SymType: SYM_LABEL,
+		Value:   &NumberObject{Value: addr, Context: ctx},
+		Context: ctx,
 	}
 }
 
 func NewConstSymbol(name string, value Object, depends []string, ctx *fileblock.Context) *SymbolObject {
 	return &SymbolObject{Name: name,
 		SymType:   SYM_CONST,
-		SymState:  VALUE_TENTATIVE,
 		Value:     value,
 		DependsOn: depends,
 		Context:   ctx,
@@ -82,7 +63,6 @@ func NewConstSymbol(name string, value Object, depends []string, ctx *fileblock.
 func NewNullConstSymbol(name string, node parser.Node, depends []string, ctx *fileblock.Context) *SymbolObject {
 	return &SymbolObject{Name: name,
 		SymType:   SYM_CONST,
-		SymState:  VALUE_NULL,
 		Node:      node,
 		Value:     NULL,
 		DependsOn: depends,
@@ -93,7 +73,6 @@ func NewNullConstSymbol(name string, node parser.Node, depends []string, ctx *fi
 func NewUnknownSymbol(name, depend string, ctx *fileblock.Context) *SymbolObject {
 	sym := &SymbolObject{Name: name,
 		SymType:   SYM_UNKNOWN,
-		SymState:  NOT_REGISTERED,
 		DependsOn: []string{},
 		Context:   ctx,
 	}
