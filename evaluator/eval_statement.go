@@ -151,6 +151,14 @@ func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) objec
 		env.Set(name, sym)
 		return sym
 	}
+
+	if isRefNotFound(obj) {
+		// 前方参照シンボルなら上書き
+		sym := object.NewLabelSymbol(name, getLocationCounter(env), label.Context)
+		env.Set(name, sym)
+		return sym
+	}
+
 	sym, ok := obj.(*object.SymbolObject)
 	if !ok || sym.SymType != object.SYM_LABEL {
 		// Symbol で || LABEL でなけれがエラー

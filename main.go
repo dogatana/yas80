@@ -116,6 +116,7 @@ func main() {
 		eval.Resolved = true
 		obj := eval.EvalProgram(prog, env)
 		logger.Print()
+		object.PrintEnv(env)
 
 		if obj == object.ERROR {
 			fmt.Printf("*** evaluate program returns ERROR")
