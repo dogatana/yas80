@@ -112,7 +112,7 @@ func main() {
 	// true でないなら、規定回数（例: 256 とか 1,024) だけ eval を繰り返す
 	var i int
 	for i = 0; i < 256; i++ {
-		fmt.Printf("# eval [#%d]\n", i)
+		fmt.Printf("# [#%d] EvalProgrram\n", i)
 		eval.Resolved = true
 		obj := eval.EvalProgram(prog, env)
 		logger.Print()
@@ -129,7 +129,7 @@ func main() {
 
 		}
 		progObj := obj.(*object.ProgramObject)
-		fmt.Printf("\n# %d objects\n", len(progObj.Objects))
+		fmt.Printf("\n# [%d] %d objects\n", i, len(progObj.Objects))
 		for _, o := range progObj.Objects {
 			if o == nil {
 				fmt.Println("<nil>")
@@ -137,11 +137,20 @@ func main() {
 				fmt.Println(o.String())
 			}
 		}
-		fmt.Println("\n# ast after pass1")
+		fmt.Printf("\n# [%d] ast\n", i)
 		fmt.Println(prog.String())
 
-		fmt.Println("\n# env")
+		fmt.Printf("\n# [%d] env\n", i)
 		object.PrintEnv(env)
+
+		eval.CheckSymbols(env)
+
+		ec, _, _ = logger.Count()
+		if ec > 0 {
+			fmt.Println("*** abort")
+			logger.Print()
+			os.Exit(1)
+		}
 
 		if eval.Resolved {
 			break
