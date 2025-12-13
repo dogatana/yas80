@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -110,10 +111,11 @@ func main() {
 	// 評価後 eval.Resolved が true ならコード生成完了とみなす
 	// true でないなら、規定回数（例: 256 とか 1,024) だけ eval を繰り返す
 	var i int
+	var obj object.Object
 	for i = 0; i < 256; i++ {
 		fmt.Printf("# [#%d] EvalProgrram\n", i)
 		eval.Resolved = true
-		obj := eval.EvalProgram(prog, env)
+		obj = eval.EvalProgram(prog, env)
 		logger.Print()
 		object.PrintEnv(env)
 
@@ -145,14 +147,26 @@ func main() {
 			break
 		}
 	}
+	fmt.Printf("eval %d times, eval.Resolved = %v\n", i, eval.Resolved)
+
 	// eval 戦略
-	// 仮コード生成によってラベルアドレスが本来のものと異なる場合があるため、最後にもう一度評価の必要あり
+	// 仮コード生成によってラベルアドレスが本来のものと異なる場合があるため
+	// コードが安定するまで規定回数、評価を繰り返す
 	// 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
-	fmt.Println("# finalize")
-	obj := eval.EvalProgram(prog, env)
+	fmt.Println("\n# finalize")
+	code := evaluator.CollectCode(obj.(*object.ProgramObject))
+	codeStable := false
+	for i := 0; i < 256 && !codeStable; i++ {
+		obj := eval.EvalProgram(prog, env)
+		newCode := evaluator.CollectCode(obj.(*object.ProgramObject))
+		codeStable = bytes.Equal(code, newCode)
+		if !codeStable {
+			code = newCode
+		}
+	}
+	fmt.Printf("finalize %d times, codeStable %v\n", i, codeStable)
 	showResult(-1, prog, obj, env)
 
-	fmt.Printf("eval %d times, eval.Resolved = %v\n", i, eval.Resolved)
 }
 
 func showResult(count int, prog *parser.Program, obj object.Object, env object.Environment) {

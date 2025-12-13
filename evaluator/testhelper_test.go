@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,10 +22,10 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 
 	evaluator.Resolved = true
 	var obj object.Object
-	for i := 0; i < 256; i++ {
-
+	var i int
+	for i = 0; i < 256; i++ {
 		evaluator.Resolved = true
-		evaluator.EvalProgram(progNode, env)
+		obj = evaluator.EvalProgram(progNode, env)
 		evaluator.EvalEnv(env)
 		evaluator.CheckSymbols(env)
 		ec, wc, _ := logger.Count()
@@ -38,7 +39,16 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 		}
 	}
 	// finalize
-	obj = evaluator.EvalProgram(progNode, env)
+	code := CollectCode(obj.(*object.ProgramObject))
+	codeStable := false
+	for i = 0; i < 256 && !codeStable; i++ {
+		obj = evaluator.EvalProgram(progNode, env)
+		newCode := CollectCode(obj.(*object.ProgramObject))
+		codeStable = bytes.Equal(code, newCode)
+		if !codeStable {
+			code = newCode
+		}
+	}
 
 	programObject, ok := obj.(*object.ProgramObject)
 	if !ok {
