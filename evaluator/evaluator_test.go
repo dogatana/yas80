@@ -35,7 +35,7 @@ func TestEvalLabelStatement(t *testing.T) {
 		logger := logger.New("<eval test>")
 		prog := evaluateInput(t, tt.input, logger, env)
 
-		code := collectCode(prog)
+		code := CollectCode(prog)
 		if len(code) != len(tt.code) && !bytesEqual(code, tt.code) {
 			t.Errorf("[%d] generated code differ", tn)
 		}

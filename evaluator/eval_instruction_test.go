@@ -29,7 +29,7 @@ func TestZ80Instruction(t *testing.T) {
 
 		prog := evaluateInput(t, input, logger, env)
 		logger.Print()
-		result := collectCode(prog)
+		result := CollectCode(prog)
 
 		if !bytesEqual(result, expected) {
 			// t.Errorf("output mismatch (-want +got):\n%s", cmp.Diff(expected, result))

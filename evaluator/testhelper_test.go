@@ -138,18 +138,6 @@ func readTestDataFile(t *testing.T, filename string) []byte {
 	return data
 }
 
-func collectCode(prog *object.ProgramObject) []byte {
-	var result []byte
-	for _, obj := range prog.Objects {
-		code, ok := obj.(*object.CodeObject)
-		if !ok {
-			continue
-		}
-		result = append(result, code.Code...)
-	}
-	return result
-}
-
 func collectValue(prog *object.ProgramObject) []*object.ValueObject {
 	var result []*object.ValueObject
 	for _, obj := range prog.Objects {
