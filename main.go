@@ -129,21 +129,7 @@ func main() {
 			os.Exit(1)
 
 		}
-		progObj := obj.(*object.ProgramObject)
-		fmt.Printf("\n# [%d] %d objects\n", i, len(progObj.Objects))
-		for _, o := range progObj.Objects {
-			if o == nil {
-				fmt.Println("<nil>")
-			} else {
-				fmt.Println(o.String())
-			}
-		}
-		fmt.Printf("\n# [%d] ast\n", i)
-		fmt.Println(prog.String())
-
-		fmt.Printf("\n# [%d] env\n", i)
-		object.PrintEnv(env)
-
+		showResult(i, prog, obj, env)
 		eval.CheckSymbols(env)
 
 		ec, _, _ = logger.Count()
@@ -157,5 +143,31 @@ func main() {
 			break
 		}
 	}
+	fmt.Println("# finalize")
+	obj := eval.EvalProgram(prog, env)
+	showResult(-1, prog, obj, env)
+
 	fmt.Printf("eval %d times, eval.Resolved = %v\n", i, eval.Resolved)
+}
+
+func showResult(count int, prog *parser.Program, obj object.Object, env object.Environment) {
+	path := ""
+	if count >= 0 {
+		path = fmt.Sprintf("[%d] ", count)
+	}
+	progObj := obj.(*object.ProgramObject)
+	fmt.Printf("\n# %s%d objects\n", path, len(progObj.Objects))
+	for _, o := range progObj.Objects {
+		if o == nil {
+			fmt.Println("<nil>")
+		} else {
+			fmt.Println(o.String())
+		}
+	}
+	fmt.Printf("\n# %sast\n", path)
+	fmt.Println(prog.String())
+
+	fmt.Printf("\n# %senv\n", path)
+	object.PrintEnv(env)
+
 }
