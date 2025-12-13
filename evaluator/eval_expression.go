@@ -46,7 +46,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 			return sym.Value
 		}
 		// 値が NULL なら RefNotFound にして返す
-		return &object.RefNotFoundObject{Names: []string{sym.Name}, Context: node.Context}
+		return &object.RefNotFoundObject{Names: []string{sym.Name}}
 		// return &object.RefNotFoundObject{Names: append(sym.DependsOn, sym.Name)}
 
 	// enum or proc.local

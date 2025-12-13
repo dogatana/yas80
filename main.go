@@ -130,6 +130,7 @@ func main() {
 
 		}
 		showResult(i, prog, obj, env)
+		eval.EvalEnv(env)
 		eval.CheckSymbols(env)
 
 		ec, _, _ = logger.Count()

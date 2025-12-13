@@ -117,8 +117,7 @@ func (e *ErrorObject) String() string   { return "ERROR" }
 
 // 右辺値で識別子が見つからない場合に使用
 type RefNotFoundObject struct {
-	Names   []string
-	Context *fileblock.Context
+	Names []string
 }
 
 func (r *RefNotFoundObject) Type() ObjectType { return REF_NOTFOUND_OBJ }
