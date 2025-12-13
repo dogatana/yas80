@@ -58,6 +58,7 @@ const (
 	EMACRO_ARG_COUNT      = "MACRO %s の仮引数と引数の個数不一致"
 	EMACRO_DEF            = "%s を MACRO として再定義不可"
 	EMACRO_NOT_MACRO      = "%s は MACRO 以外で定義済み"
+	EMACRO_CYCLIC         = "MACRO %s の展開が再帰"
 
 	EGLOBAL_NOT_ALLOWED = "%s はグローバルスコープで利用不可"
 	WMACRO_NOT_ALLOWED  = "%s は MACRO スコープでは無視"

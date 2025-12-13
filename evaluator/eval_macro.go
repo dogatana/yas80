@@ -7,8 +7,16 @@ import (
 	"yas80/parser"
 )
 
+// マクロ展開が再帰しているかのチェック用
+var expandingMacro map[string]bool = map[string]bool{}
+
 // マクロ Body 評価
 func (e *Evaluator) evalExpandedMacroCallStatement(stmt *parser.ExpandedMacroCallStatement, env object.Environment) object.Object {
+	if expandingMacro[stmt.Name] {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_CYCLIC, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+	expandingMacro[stmt.Name] = true
 	// 引数を評価し、仮引数名で環境に設定
 	newEnv := object.NewMacroEnvironment(env)
 	for i, param := range stmt.Params {
@@ -25,6 +33,7 @@ func (e *Evaluator) evalExpandedMacroCallStatement(stmt *parser.ExpandedMacroCal
 	if !ok {
 		panic(fmt.Sprintf("call macro %s returns %T(%#v)", stmt.Name, ret, ret))
 	}
+	expandingMacro[stmt.Name] = false
 	return ret
 }
 
