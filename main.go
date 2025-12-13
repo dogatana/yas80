@@ -106,7 +106,6 @@ func main() {
 	eval := evaluator.New(logger)
 	eval.Debug = getDebugEnv("evaldebug")
 
-	//
 	// eval 戦略
 	// 評価後 eval.Resolved が true ならコード生成完了とみなす
 	// true でないなら、規定回数（例: 256 とか 1,024) だけ eval を繰り返す
@@ -132,6 +131,8 @@ func main() {
 		showResult(i, prog, obj, env)
 		eval.EvalEnv(env)
 		eval.CheckSymbols(env)
+		fmt.Println("# after EvalEnv")
+		object.PrintEnv(env)
 
 		ec, _, _ = logger.Count()
 		if ec > 0 {
@@ -144,6 +145,9 @@ func main() {
 			break
 		}
 	}
+	// eval 戦略
+	// 仮コード生成によってラベルアドレスが本来のものと異なる場合があるため、最後にもう一度評価の必要あり
+	// 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
 	fmt.Println("# finalize")
 	obj := eval.EvalProgram(prog, env)
 	showResult(-1, prog, obj, env)
