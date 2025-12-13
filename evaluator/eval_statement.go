@@ -152,24 +152,22 @@ func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) objec
 		return sym
 	}
 
-	if isRefNotFound(obj) {
-		// 前方参照シンボルなら上書き
-		sym := object.NewLabelSymbol(name, getLocationCounter(env), label.Context)
-		env.Set(name, sym)
-		return sym
-	}
-
 	sym, ok := obj.(*object.SymbolObject)
-	if !ok || sym.SymType != object.SYM_LABEL {
+	if !ok {
 		// Symbol で || LABEL でなけれがエラー
 		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED_NAME, name), label.Context)
 		return object.ERROR
 	}
-	if !sym.Context.Equal(label.Context) {
+	if sym.SymType == object.SYM_LABEL && !sym.Context.Equal(label.Context) {
 		// ラベル 二重定義
 		e.logger.Error(fmt.Sprintf(errcode.ELABEL_DUP, name), label.Context)
 		return object.ERROR
 	}
+	if sym.SymType == object.SYM_UNKNOWN {
+		sym = object.NewLabelSymbol(name, 0, label.Context)
+		env.Set(name, sym)
+	}
+	// SYM_UNKNOWN の場合も上書き
 	// 同じラベルなら値を更新
 	sym.Value.(*object.NumberObject).Value = getLocationCounter(env)
 	return sym
@@ -184,7 +182,9 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 	if ok {
 		switch obj := obj.(type) {
 		case *object.SymbolObject:
-			if obj.Name != node.Name.Name || obj.Context != node.Context {
+			if obj.SymType == object.SYM_UNKNOWN {
+				// 不明シンボンルなら更新
+			} else if obj.Name != node.Name.Name || obj.Context != node.Context {
 				// 別シンボルなら二重定義エラー
 				e.logger.Error(fmt.Sprintf(errcode.ESYM_DUP, name), node.Context)
 				return object.ERROR

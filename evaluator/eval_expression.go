@@ -30,10 +30,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 		if !ok {
 			// 未定義の場合
 			e.Resolved = false
-			// sym := object.NewUnknownSymbol(name, node.Context)
-			sym := &object.RefNotFoundObject{Names: []string{name}, Context: node.Context}
+			sym := object.NewUnknownSymbol(name, node.Context)
 			env.Set(name, sym)
-			return sym
+			return &object.RefNotFoundObject{Names: []string{name}}
 		}
 
 		sym, ok := obj.(*object.SymbolObject)
