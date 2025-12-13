@@ -24,7 +24,9 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 	for i := 0; i < 256; i++ {
 
 		evaluator.Resolved = true
-		obj = evaluator.EvalProgram(progNode, env)
+		evaluator.EvalProgram(progNode, env)
+		evaluator.EvalEnv(env)
+		evaluator.CheckSymbols(env)
 		ec, wc, _ := logger.Count()
 		if ec > 0 || wc > 0 {
 			fmt.Printf("input %q\n", input)
@@ -34,25 +36,9 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 		if evaluator.Resolved {
 			break
 		}
-
-		// resolve forward reference
-		// _, err := evaluator.EvalEnv(env)
-		// if err != nil {
-		// 	fmt.Println("input")
-		// 	fmt.Println(input)
-		// 	t.Fatalf("EvalEnv() error: %v", err)
-		// }
-
-		// pass2
-		// evaluator.Pass1 = false
-		// obj := evaluator.Eval(progNode, env)
-		// ec, wc, _ = logger.Count()
-		// if ec > 0 || wc > 0 {
-		// 	fmt.Printf("input %q\n", input)
-		// 	logger.Print()
-		// 	t.Fatalf("Eval() %d errors and %d warnigs", ec, wc)
-		// }
 	}
+	// finalize
+	obj = evaluator.EvalProgram(progNode, env)
 
 	programObject, ok := obj.(*object.ProgramObject)
 	if !ok {
@@ -182,6 +168,7 @@ func bytesEqual(v1, v2 []byte) bool {
 	}
 	for i, v := range v1 {
 		if v != v2[i] {
+			fmt.Printf("[%d] %02x %02x\n", i, v, v2[i])
 			return false
 		}
 	}
