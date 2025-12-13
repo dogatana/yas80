@@ -64,10 +64,27 @@ func (e *Evaluator) tSortEnv(env object.Environment) ([]string, error) {
 		return nil
 	}
 
-	for _, name := range object.CollectNames(env) {
+	for _, name := range e.collectSymbolNames(env) {
 		if err := visit(name); err != nil {
 			return nil, err
 		}
 	}
 	return order, nil
+}
+
+func (e *Evaluator) collectSymbolNames(env object.Environment) []string {
+	names := []string{}
+
+	for {
+		for _, obj := range env.Store() {
+			if sym, ok := obj.(*object.SymbolObject); ok {
+				names = append(names, sym.Name)
+			}
+		}
+		env = env.Outer()
+		if env == nil {
+			break
+		}
+	}
+	return names
 }
