@@ -31,7 +31,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 			// 未定義の場合
 			e.Resolved = false
 			// sym := object.NewUnknownSymbol(name, node.Context)
-			sym := &object.RefNotFoundObject{Names: []string{name}}
+			sym := &object.RefNotFoundObject{Names: []string{name}, Context: node.Context}
 			env.Set(name, sym)
 			return sym
 		}
@@ -47,7 +47,8 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 			return sym.Value
 		}
 		// 値が NULL なら RefNotFound にして返す
-		return &object.RefNotFoundObject{Names: append(sym.DependsOn, sym.Name)}
+		return &object.RefNotFoundObject{Names: []string{sym.Name}, Context: node.Context}
+		// return &object.RefNotFoundObject{Names: append(sym.DependsOn, sym.Name)}
 
 	// enum or proc.local
 	case *parser.DotIdent: // TODO enum か proc.local かの識別必要
