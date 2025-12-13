@@ -108,22 +108,6 @@ func (e *MacroEnvironment) Set(name string, obj Object) Object {
 func (e *MacroEnvironment) Outer() Environment       { return e.outer }
 func (e *MacroEnvironment) Store() map[string]Object { return e.store }
 
-// ユーティリティ
-func CollectNames(env Environment) []string {
-	names := []string{}
-
-	for {
-		for name := range env.Store() {
-			names = append(names, name)
-		}
-		env = env.Outer()
-		if env == nil {
-			break
-		}
-	}
-	return names
-}
-
 func PrintEnv(env Environment) {
 	prefix := ""
 	for i := 0; ; i++ {
