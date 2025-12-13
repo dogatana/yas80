@@ -17,7 +17,7 @@ func TestReadBlock(t *testing.T) {
 	expected := bytes.ReplaceAll(readTestDataFile(t, "utf8.txt"), []byte{13, 10}, []byte{10})
 
 	for _, filename := range tests {
-		path := testDataFilePath(t, filename)
+		path := testGetDataFilePath(t, filename)
 		fb, err := NewFromFile(path)
 		if err != nil {
 			t.Fatalf("NewFromFile(%q) returns %q", filename, err.Error())
@@ -41,7 +41,7 @@ func TestReadBlockError(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		path := testDataFilePath(t, tt.filename)
+		path := testGetDataFilePath(t, tt.filename)
 		_, err := NewFromFile(path)
 		if err == nil {
 			t.Errorf("NewFromFile(%q) returns no error", tt.filename)
@@ -78,7 +78,7 @@ func readTestDataFile(t *testing.T, filename string) []byte {
 	return data
 }
 
-func testDataFilePath(t *testing.T, filename string) string {
+func testGetDataFilePath(t *testing.T, filename string) string {
 	_, file, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("runtime.Caller(0) failed")
