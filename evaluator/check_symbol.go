@@ -7,35 +7,51 @@ import (
 )
 
 func (e *Evaluator) CheckSymbols(env object.Environment) {
-	symbols := collectNullSymbols(env)
-
-	_ = e.undefSymExists(symbols, env)
+	e.checkRefNotFound(env)
+	e.checkCyclic(env)
+	// symbols := collectNullSymbols(env)
+	// _ = e.undefSymExists(symbols, env)
 }
 
-func collectNullSymbols(env object.Environment) []*object.SymbolObject {
-	symbols := []*object.SymbolObject{}
-	for _, v := range env.Store() {
-		if sym, ok := v.(*object.SymbolObject); !ok {
-			continue
-		} else if sym.Value != object.NULL {
-			continue
-		} else {
-			symbols = append(symbols, sym)
+func (e *Evaluator) checkRefNotFound(env object.Environment) {
+	for k, v := range env.Store() {
+		if obj, ok := v.(*object.RefNotFoundObject); ok {
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_NOT_FOUND, k), obj.Context)
 		}
 	}
-	return symbols
 }
 
-func (e *Evaluator) undefSymExists(syms []*object.SymbolObject, env object.Environment) bool {
-	ret := false
+func (e *Evaluator) checkCyclic(env object.Environment) {
+	visited := map[string]bool{}
+	visiting := map[string]bool{}
 
-	for _, sym := range syms {
-		for _, name := range sym.DependsOn {
-			if _, ok := env.Get(name); !ok {
-				e.logger.Error(fmt.Sprintf(errcode.ESYM_NOT_FOUND, name), sym.Context)
-				ret = true
+	var visit func(sym *object.SymbolObject, name string)
+	visit = func(sym *object.SymbolObject, name string) {
+		fmt.Println("visit", name)
+		if visiting[name] {
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_CYCLIC, name), sym.Context)
+			return
+		}
+		if visited[name] {
+			return
+		}
+		visiting[name] = true
+		if obj, ok := env.Get(name); ok {
+			if newSym, ok := obj.(*object.SymbolObject); ok {
+				for _, dep := range newSym.DependsOn {
+					visit(newSym, dep)
+				}
 			}
 		}
+		visited[name] = true
+		visiting[name] = false
 	}
-	return ret
+
+	for name, obj := range env.Store() {
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok || sym.Value != object.NULL {
+			continue
+		}
+		visit(sym, name)
+	}
 }

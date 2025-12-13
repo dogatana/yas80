@@ -8,7 +8,7 @@ SRC = main.go \
 	evaluator/eval_statement.go evaluator/eval_instruction.go \
 	evaluator/expand_macro.go evaluator/eval_macro.go \
 	evaluator/eval_expression.go \
-	evaluator/eval_env.go \
+	evaluator/eval_env.go evaluator/check_symbol.go \
 	evaluator/z80code.go evaluator/helper.go \
 	logger/logger.go \
 	errcode/errcode.go \

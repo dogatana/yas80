@@ -205,7 +205,9 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 		return object.ERROR
 
 	case *object.RefNotFoundObject:
-		sym := object.NewConstSymbol(name, node.Value, object.NULL, v.Names, node.Context)
+		names := removeSelfName(v.Names, name)
+		sym := object.NewConstSymbol(name, node.Value, object.NULL, names, node.Context)
+		// sym := object.NewConstSymbol(name, node.Value, object.NULL, v.Names, node.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: object.NULL, Context: node.Context}
 
@@ -221,6 +223,22 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 		env.Set(name, v)
 		return v
 	}
+}
+
+func removeSelfName(names []string, name string) []string {
+	nmap := map[string]bool{}
+	for _, n := range names {
+		nmap[n] = true
+	}
+	nmap[name] = false
+
+	result := []string{}
+	for k, v := range nmap {
+		if v {
+			result = append(result, k)
+		}
+	}
+	return result
 }
 
 // if 文

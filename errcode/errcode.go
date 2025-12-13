@@ -45,6 +45,7 @@ const (
 	ESYM_DUP       = "CONST/EQU '%s' は定義済み"
 	ESYM_USED_NAME = "%s は利用済のため CONST/EQU 定義不可"
 	ESYM_NOT_FOUND = "未定義シンボル %s"
+	ESYM_CYCLIC    = "循環参照シンボル %s"
 
 	ELABEL_DUP       = "LABEL %s は定義済み"        // symbol 以外で利用済
 	ELABEL_USED_NAME = "%s は利用済のため LABEL 定義不可" // symbol 以外で利用済
