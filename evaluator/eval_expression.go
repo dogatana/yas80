@@ -41,8 +41,12 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 			return obj
 		}
 
+		// _ ならそのまま返す
+		if sym.Name == "_" {
+			return sym
+		}
+		// 値が NULL でないなら value を返す
 		if sym.Value != object.NULL {
-			// 値が NULL でないなら value を返す
 			return sym.Value
 		}
 		// 値が NULL なら RefNotFound にして返す

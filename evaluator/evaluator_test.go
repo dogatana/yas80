@@ -113,16 +113,16 @@ func TestFuncIfReturn(t *testing.T) {
 	}
 }
 
-func testIf(t *testing.T) {
+func TestIf(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
 	}{
-		// 式文を文法から削除したことで一部のケースを除外
-		// {`if 1 \ endif`, -1}, // -1 は NullObject とする
-		// {`if 0 \ endif`, -1},
-		// {`if 1 \ else \ endif`, -1},
-		// {`if 0 \ else \ endif`, -1},
+		// 式文を除外したことで -1 は RESULT が未定義の意味に変更
+		{`if 1 \ endif`, -1},
+		{`if 0 \ endif`, -1},
+		{`if 1 \ else \ endif`, -1},
+		{`if 0 \ else \ endif`, -1},
 
 		{`if 1 \ const result=100 \ endif`, 100},
 		{`if 0 \ const result=100 \ endif`, -1},
@@ -137,10 +137,7 @@ func testIf(t *testing.T) {
 		{`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, 200},
 		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, -1},
 
-		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ else \ const result=300 \ endif`, 300},
-
-		// {`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
-		// {`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ return 999 \ 250  \ else \ 300 \ endif`, 999},
+		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ else \ const result=300 \ endif`, 300},
 	}
 
 	for tn, tt := range tests {
@@ -149,28 +146,28 @@ func testIf(t *testing.T) {
 		_ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
+		if tt.expected < 0 {
+			if ok {
+				t.Errorf("[%d] RESULT should not be in env", tn)
+			}
+			continue
+		}
 		if !ok {
 			t.Fatalf(`[%d] "RESULT" not in env`, tn)
 		}
 		value := evalValue(obj)
-
-		if tt.expected >= 0 {
-			testNumberObject(t, tn, value, tt.expected)
-			continue
-		} else {
-			t.Errorf("[%d] should be NULL. got %T(%#v)", tn, obj, obj)
-		}
+		testNumberObject(t, tn, value, tt.expected)
 	}
 }
 
-func testFunc(t *testing.T) {
+func TestFunc(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
 	}{
 		{`ret100 func \ return 100 \ endf \ const result = ret100()`, 100},
-		{`ret100 func \ 1 \ 2 \ return 100 \ 4 \ endf \ const result = ret100()`, 100},
-		{`abs func arg \ 1 \ return arg \ 2 \ endf \  const result = abs(123)`, 123},
+		{`ret100 func \ _=1 \ _=2 \ return 100 \ _=4 \ endf \ const result = ret100()`, 100},
+		{`abs func arg \ _=1 \ return arg \ _=2 \ endf \  const result = abs(123)`, 123},
 		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \ endif \ endf \ const result = abs(100)`, 100},
 		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \  endif \endf \ const result = abs(-100)`, 100},
 		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(1)`, -1},

@@ -16,11 +16,16 @@ type Environment interface {
 // for Global
 func NewEnvironment(outer Environment) Environment {
 	env := &NormalEnvironment{store: make(map[string]Object), outer: outer}
-	// 最上位の環境には $ を設定しておく
+	// 最上位の環境にはシステム変数を定義しておく
 	if outer == nil {
-		env.Set("$", &NumberObject{Value: 0})
+		setupSystemVariables(env)
 	}
 	return env
+}
+
+func setupSystemVariables(env Environment) {
+	env.Set("$", &NumberObject{Value: 0})
+	env.Set("_", &SymbolObject{Name: "_", SymType: SYM_VAR, Value: NULL})
 }
 
 // for Proc

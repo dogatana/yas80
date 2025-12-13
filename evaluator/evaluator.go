@@ -75,6 +75,12 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			stmts = append(stmts, node)
 
+		// 代入
+		case *parser.AssignStatement:
+			obj := e.evalStatement(stmt, env)
+			objects = append(objects, obj)
+			stmts = append(stmts, node)
+
 		// マクロ定義
 		case *parser.MacroStatement:
 			e.evalStatement(stmt, env)

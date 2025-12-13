@@ -65,6 +65,38 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 			Context: node.Context}
 		return &object.NodeObject{Node: extCall}
 
+	case *parser.AssignStatement:
+		fmt.Printf("left %#v\n", node.Left)
+		target := e.evalExpression(node.Left, env, node.Context)
+		fmt.Printf("target %#v\n", target)
+
+		if isError(target) {
+			return object.ERROR
+		}
+		sym, ok := target.(*object.SymbolObject)
+		if !ok {
+			e.logger.Error(errcode.EASSIGN_INVALID_TAGET, node.Context)
+			return object.ERROR
+		}
+		if sym.Name != "_" && sym.SymType != object.SYM_VAR {
+			e.logger.Error(errcode.EASSIGN_INVALID_TAGET, node.Context)
+			return object.ERROR
+		}
+
+		value := e.evalExpression(node.Value, env, node.Context)
+		if isError(value) {
+			return object.ERROR
+		} else if isRefNotFound(value) {
+			e.logger.Error(errcode.EASSIGN_INVALID_VALUE, node.Context)
+			return object.ERROR
+		}
+
+		if sym.Name != "_" {
+			e.logger.Error("_ 以外への代入は未実装", node.Context)
+			return object.ERROR
+		}
+		return &object.ValueObject{Value: value, Context: node.Context}
+
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
 	// case *parser.MacroStatement:

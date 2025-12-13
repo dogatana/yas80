@@ -18,6 +18,9 @@ func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
 		if !ok {
 			continue
 		}
+		if sym.Name == "=" || sym.Name[0] == '$' {
+			continue
+		}
 		if sym.Value != object.NULL {
 			continue
 		}
@@ -78,7 +81,9 @@ func (e *Evaluator) collectSymbolNames(env object.Environment) []string {
 	for {
 		for _, obj := range env.Store() {
 			if sym, ok := obj.(*object.SymbolObject); ok {
-				names = append(names, sym.Name)
+				if sym.Name != "_" && sym.Name[0] != '$' {
+					names = append(names, sym.Name)
+				}
 			}
 		}
 		env = env.Outer()

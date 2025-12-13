@@ -15,6 +15,8 @@ func (e *Evaluator) checkUnknwonAndNullSymbol(env object.Environment) {
 	for name, obj := range env.Store() {
 		if sym, ok := obj.(*object.SymbolObject); !ok {
 			continue
+		} else if sym.Name == "_" || sym.Name[0] == '$' {
+			continue
 		} else if sym.SymType == object.SYM_UNKNOWN {
 			e.logger.Error(fmt.Sprintf(errcode.ESYM_NOT_FOUND, name), sym.Context)
 		} else if sym.Value == object.NULL {
@@ -51,7 +53,7 @@ func (e *Evaluator) checkCyclic(env object.Environment) {
 
 	for name, obj := range env.Store() {
 		sym, ok := obj.(*object.SymbolObject)
-		if !ok || sym.Value != object.NULL {
+		if !ok || sym.Name != "_" && sym.Name[0] != '$' && sym.Value != object.NULL {
 			continue
 		}
 		visit(sym, name)

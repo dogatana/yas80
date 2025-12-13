@@ -42,6 +42,9 @@ const (
 	E028 = "'%s' は指定不可"
 	E030 = "'%s' の定義に循環参照あり"
 
+	EASSIGN_INVALID_TAGET = "変数/_ 以外へは代入不可"
+	EASSIGN_INVALID_VALUE = "代入右辺式の値が未確定"
+
 	ESYM_DUP            = "CONST/EQU '%s' は定義済み"
 	ESYM_USED_NAME      = "%s は利用済のため CONST/EQU 定義不可"
 	ESYM_NOT_FOUND      = "シンボル %s は未定義"
