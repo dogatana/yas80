@@ -23,7 +23,7 @@ const (
 	NODE_EXPR_STMT
 	NODE_CONST_STMT
 	NODE_VAR_STMT
-	NODE_ASIGN_STMT
+	NODE_ASSIGN_STMT
 	NODE_ENUM_STMT
 	NODE_ENUM_ELEMENTS_STMT
 	NODE_REPT_STMT
@@ -413,16 +413,16 @@ func (vs *VariableStatement) String() string {
 }
 
 // 変数代入文
-type AsignStatement struct {
+type AssignStatement struct {
 	Left    Expression
 	Value   Expression
 	Context *fileblock.Context
 }
 
-func (as *AsignStatement) statementNode()           {}
-func (as *AsignStatement) NodeType() NodeType       { return NODE_ASIGN_STMT }
-func (as *AsignStatement) NodeSubType() NodeSubType { return 0 }
-func (as *AsignStatement) String() string {
+func (as *AssignStatement) statementNode()           {}
+func (as *AssignStatement) NodeType() NodeType       { return NODE_ASSIGN_STMT }
+func (as *AssignStatement) NodeSubType() NodeSubType { return 0 }
+func (as *AssignStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString(as.Left.String())

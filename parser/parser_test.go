@@ -79,7 +79,7 @@ func TestParseNumberLiteral(t *testing.T) {
 			fmt.Printf("input %q\n", tt.input)
 			t.Fatalf("%d statements", len(prog.Statements))
 		}
-		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		stmt := testAssignStatement(t, tt.input, prog.Statements[0])
 		testNumberLiteral(t, tt.input, stmt.Value, tt.expected)
 	}
 }
@@ -103,7 +103,7 @@ func TestParseStringLiteral(t *testing.T) {
 			fmt.Println("parsing", tt.input)
 			t.Fatalf("%d statements", len(prog.Statements))
 		}
-		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		stmt := testAssignStatement(t, tt.input, prog.Statements[0])
 		testStringLiteral(t, tt.input, stmt.Value, tt.expected)
 	}
 }
@@ -121,7 +121,7 @@ func TestParseArrayLiteral(t *testing.T) {
 	for _, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tt.input)
-		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		stmt := testAssignStatement(t, tt.input, prog.Statements[0])
 
 		array, ok := stmt.Value.(*ArrayLiteral)
 		if !ok {
@@ -225,7 +225,7 @@ func TestParseDotIdent(t *testing.T) {
 			fmt.Printf("input %q\n", tt.input)
 			t.Fatal("statements empty")
 		}
-		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		stmt := testAssignStatement(t, tt.input, prog.Statements[0])
 		ident, ok := stmt.Value.(*DotIdent)
 		if !ok {
 			fmt.Printf("input %q\n", tt.input)

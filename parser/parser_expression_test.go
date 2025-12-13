@@ -50,7 +50,7 @@ func TestParseExpression(t *testing.T) {
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
-		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		stmt := testAssignStatement(t, tt.input, prog.Statements[0])
 		testNumberLiteral(t, tt.input, stmt.Value, tt.expected)
 	}
 }
@@ -74,7 +74,7 @@ func TestParseCallFunction(t *testing.T) {
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
-		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		stmt := testAssignStatement(t, tt.input, prog.Statements[0])
 		if stmt.Value.String() != tt.expected {
 			t.Errorf("stmt.Value.String() is not %q. got %q", tt.expected, stmt.Value.String())
 		}
@@ -121,7 +121,7 @@ func TestParseArrayElement(t *testing.T) {
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
-		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		stmt := testAssignStatement(t, tt.input, prog.Statements[0])
 		if stmt.Value.String() != tt.expected {
 			t.Errorf("stmt.String() is not %q. got %q", tt.expected, stmt.Value.String())
 		}
@@ -144,7 +144,7 @@ func TestParseStringExpression(t *testing.T) {
 		if len(prog.Statements) != 1 {
 			t.Fatalf("parsing %s returns %d statements. not 1", tt.input, len(prog.Statements))
 		}
-		stmt := testAsignStatement(t, tt.input, prog.Statements[0])
+		stmt := testAssignStatement(t, tt.input, prog.Statements[0])
 		testStringLiteral(t, tt.input, stmt.Value, tt.expected)
 	}
 }

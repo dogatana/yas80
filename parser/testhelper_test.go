@@ -43,11 +43,11 @@ func splitTrim(input string) string {
 	return strings.Join(ret, "\n")
 }
 
-func testAsignStatement(t *testing.T, input string, node Node) *AsignStatement {
-	stmt, ok := node.(*AsignStatement)
+func testAssignStatement(t *testing.T, input string, node Node) *AssignStatement {
+	stmt, ok := node.(*AssignStatement)
 	if !ok {
 		fmt.Printf("input %q\n", input)
-		t.Fatalf("not *AsignStatement. got %T", node)
+		t.Fatalf("not *AssignStatement. got %T", node)
 	}
 	return stmt
 }

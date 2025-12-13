@@ -10,7 +10,7 @@ var nodeLiteralTable map[int]string = map[int]string{
 	NODE_EXPR_STMT:          "NODE_EXPR_STMT",
 	NODE_CONST_STMT:         "NODE_CONST_STMT",
 	NODE_VAR_STMT:           "NODE_VAR_STMT",
-	NODE_ASIGN_STMT:         "NODE_ASIGN_STMT",
+	NODE_ASSIGN_STMT:        "NODE_ASSIGN_STMT",
 	NODE_ENUM_STMT:          "NODE_ENUM_STMT",
 	NODE_ENUM_ELEMENTS_STMT: "NODE_ENUM_ELEMENTS_STMT",
 	NODE_REPT_STMT:          "NODE_REPT_STMT",

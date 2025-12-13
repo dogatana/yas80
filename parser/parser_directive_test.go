@@ -249,7 +249,7 @@ func TestParseVarStatement(t *testing.T) {
 	}
 }
 
-func TestParseAsignStatement(t *testing.T) {
+func TestParseAssignStatement(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -267,9 +267,9 @@ func TestParseAsignStatement(t *testing.T) {
 			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
 		}
 		stmt := prog.Statements[0]
-		varStmt, ok := stmt.(*AsignStatement)
+		varStmt, ok := stmt.(*AssignStatement)
 		if !ok {
-			t.Errorf("prog.Statements[0] not *AsignStatement. got %T", stmt)
+			t.Errorf("prog.Statements[0] not *AssignStatement. got %T", stmt)
 		}
 
 		text := varStmt.String()

@@ -154,7 +154,7 @@ directive	: CONST ident '=' expr
 				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					$$ = &AsignStatement{Left: $1, Value: $3,Context: $2.Context}
+					$$ = &AssignStatement{Left: $1, Value: $3,Context: $2.Context}
 				}
 			}
 			| REPT expr EOL block_statement ENDR
