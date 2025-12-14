@@ -51,6 +51,10 @@ const (
 	ESYM_CYCLIC         = "シンボル %s の定義が循環参照を含む"
 	ESYM_NOT_DETERMINED = "シンボル %s の値を確定できない"
 
+	ESYM_CONCAT_NOTSYM = "シンボル結合にはシンボルが必要"
+	ESYM_CONCAT_EXPR   = "シンボル結合式の誤り"
+	ESYM_CONCAT_TYPE   = "シンボル結合は数値、文字列のみ可能"
+
 	ELABEL_DUP       = "LABEL %s は定義済み"        // symbol 以外で利用済
 	ELABEL_USED_NAME = "%s は利用済のため LABEL 定義不可" // symbol 以外で利用済
 
