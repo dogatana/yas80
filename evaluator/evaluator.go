@@ -72,7 +72,8 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 
 			ident, ok := stmt.Name.(*parser.Ident)
 			if !ok {
-				panic("*parser.ConstStatement")
+				// シンボル結合演算式の右辺値でエラーの場合
+				return object.ERROR
 			}
 
 			if ident.IdentType != parser.IDENT {
