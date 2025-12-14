@@ -13,7 +13,6 @@ const (
 	ERROR_OBJ
 	NUMBER_OBJ
 	STRING_OBJ
-	IDENT_OBJ
 	ENUM_OBJ
 	REGISTER_OBJ
 	CODE_OBJ
@@ -179,13 +178,6 @@ type StringObject struct {
 
 func (s *StringObject) Type() ObjectType { return STRING_OBJ }
 func (s *StringObject) String() string   { return fmt.Sprintf("%q", s.Value) }
-
-// 識別子
-type IdentObject struct {
-	Name       string
-	Value      Object
-	LineNumber int
-}
 
 // Node
 type NodeObject struct {
