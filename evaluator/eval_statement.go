@@ -207,7 +207,9 @@ func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) objec
 
 // const / equ 文
 func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.Environment) object.Object {
-	name := node.Name.Name
+
+	id := node.Name.(*parser.Ident)
+	name := id.Name
 
 	// 定義済みならエラー
 	obj, ok := env.Get(name)
@@ -216,7 +218,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 		case *object.SymbolObject:
 			if obj.SymType == object.SYM_UNKNOWN {
 				// 不明シンボンルなら更新
-			} else if obj.Name != node.Name.Name || obj.Context != node.Context {
+			} else if obj.Name != id.Name || obj.Context != node.Context {
 				// 別シンボルなら二重定義エラー
 				e.logger.Error(fmt.Sprintf(errcode.ESYM_DUP, name), node.Context)
 				return object.ERROR
