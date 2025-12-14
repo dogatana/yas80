@@ -71,7 +71,7 @@ var _ = __yyfmt__.Sprintf
 %token<token> error
 
 // 演算の優先度の指定
-%left CONCAT
+%nonassoc CONCAT
 %left OR              // ||
 %left AND             // &&
 %left COMP            // == != < <= > >=
