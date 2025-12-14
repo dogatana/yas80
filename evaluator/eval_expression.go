@@ -178,7 +178,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 		return &object.NumberObject{Value: v1 * v2, Context: ctx}
 	case '/':
 		if v2 == 0 {
-			e.logger.Error(errcode.EBIN_OP_DIVZERO, nil)
+			e.logger.Error(errcode.EBIN_OP_DIVZERO, ctx)
 			return object.ERROR
 		}
 		return &object.NumberObject{Value: v1 / v2, Context: ctx}
