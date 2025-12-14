@@ -219,7 +219,7 @@ LINE_CONT:
 
 // 2文字トークンの最初の文字か
 func (l *Lexer) isTowCharTokenStart(c rune) bool {
-	return c == '=' || c == '<' || c == '>' || c == '!' || c == '|' || c == '&'
+	return c == '=' || c == '<' || c == '>' || c == '!' || c == '|' || c == '&' || c == '#'
 }
 
 // 2文字トークンのチェック
@@ -254,6 +254,8 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 		tok = Token{TokenType: OR, TokenSubType: 0, Literal: "||", Context: l.ctx.toContext(l.start)}
 	case ch1 == '|':
 		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Context: l.ctx.toContext(l.start)}
+	case ch1 == '#' && ch2 == '#':
+		tok = Token{TokenType: CONCAT, TokenSubType: 0, Literal: "##", Context: l.ctx.toContext(l.start)}
 	default:
 		// 1文字トークンを返す
 		return Token{TokenType: TokenType(ch1), Literal: string(rune(ch1)), Context: l.ctx.toContext(l.start)}

@@ -20,7 +20,7 @@ func testDisplayTokens(t *testing.T) {
 }
 
 func TestLexSymbols(t *testing.T) {
-	input := " ( ) = - + | ^ * / & ! ~ << >> < <= == != >= > || && "
+	input := " ( ) = - + | ^ * / & ! ~ << >> < <= == != >= > || && ## "
 	expected := []struct {
 		TokenType TokenType
 		SubType   TokenSubType
@@ -54,6 +54,8 @@ func TestLexSymbols(t *testing.T) {
 
 		{OR, 0, "||"},
 		{AND, 0, "&&"},
+
+		{CONCAT, 0, "##"},
 	}
 
 	l := newLexerForTest(input)
@@ -67,10 +69,10 @@ func TestLexSymbols(t *testing.T) {
 			t.Errorf("expected Token.TokenType %s. got %s", TokenLiteral(int(e.TokenType)), tok.String())
 		}
 		if e.SubType != 0 && tok.TokenSubType != e.SubType {
-			t.Errorf("expected Token.SubType %s. got %s", TokenLiteral(int(tok.TokenSubType)), tok.String())
+			t.Errorf("expected Token.SubType %s. got %s", TokenLiteral(int(e.SubType)), tok.String())
 		}
 		if tok.Literal != e.Literal {
-			t.Errorf("expected Token.Literal %q. got %s", tok.Literal, tok.String())
+			t.Errorf("expected Token.Literal %q. got %s", e.Literal, tok.String())
 		}
 	}
 }
