@@ -15,10 +15,9 @@ func (e *Evaluator) expandMacro(macro *object.MacroObject, env object.Environmen
 		nodes = append(nodes, e.replaceAtIdent(stmt, macro.Name, seq, env))
 	}
 
-	fmt.Println("expanded")
-	for i, n := range nodes {
-		fmt.Printf("[%d] %s\n", i, n.String())
-	}
+	// for i, n := range nodes {
+	// 	fmt.Printf("[%d] %s\n", i, n.String())
+	// }
 	return nodes
 }
 
@@ -38,7 +37,6 @@ func (e *Evaluator) replaceAtIdent(node parser.Node, macroName string, seq int, 
 
 		new := *node
 		new.Name = &label
-		fmt.Printf("new %#v(%s)\n", new, new.String())
 		return &new
 
 	case *parser.ConstStatement:
@@ -59,7 +57,6 @@ func (e *Evaluator) replaceAtIdent(node parser.Node, macroName string, seq int, 
 
 		new := *node
 		new.Name = &ident
-		fmt.Printf("new %#v(%s)\n", new, new.String())
 		return &new
 
 	case *parser.VariableStatement:

@@ -31,7 +31,6 @@ func (e *Evaluator) checkCyclic(env object.Environment) {
 
 	var visit func(sym *object.SymbolObject, name string)
 	visit = func(sym *object.SymbolObject, name string) {
-		fmt.Println("visit", name)
 		if visiting[name] {
 			e.logger.Error(fmt.Sprintf(errcode.ESYM_CYCLIC, name), sym.Context)
 			return

@@ -66,9 +66,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 		return &object.NodeObject{Node: extCall}
 
 	case *parser.AssignStatement:
-		fmt.Printf("left %#v\n", node.Left)
 		target := e.evalExpression(node.Left, env, node.Context)
-		fmt.Printf("target %#v\n", target)
 
 		if isError(target) {
 			return object.ERROR

@@ -27,7 +27,7 @@ func (e *Evaluator) evalExpandedMacroCallStatement(stmt *parser.ExpandedMacroCal
 		newEnv.Set("@@"+param, v)
 	}
 
-	object.PrintEnv(newEnv)
+	// object.PrintEnv(newEnv)
 
 	ret, ok := e.evalMacroBlockStatement(stmt.Body, newEnv).(*object.BlockObject)
 	if !ok {
