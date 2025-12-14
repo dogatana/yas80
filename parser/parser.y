@@ -136,9 +136,11 @@ directive	: CONST ident '=' expr
 					$$ = &ConstStatement{Name: id, Value: $6, Context: $1.Context}
 				}
 			}
-			| ident EQU expr		
+			| expr EQU expr		
 			{ 
-				if $3.NodeType() == NODE_ERROR {
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1
+				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
 					$$ = &ConstStatement{Name: $1, Value: $3,Context: $2.Context}

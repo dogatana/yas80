@@ -42,6 +42,9 @@ func TestConstStatement(t *testing.T) {
 		{"const abc ## 123 = 456", "ABC123", 456},
 		{"const abc ## (100 + 23) = 456", "ABC123", 456},
 		{"const abc ## (100 + 23) = def ## 456 \\ const def ## (400 + 56) = 999", "ABC123", 999},
+		{"abc ## 123 equ 456", "ABC123", 456},
+		{"abc ## (100 + 23) equ 456", "ABC123", 456},
+		{"abc ## (100 + 23) equ def ## 456 \\ const def ## (400 + 56) = 999", "ABC123", 999},
 	}
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
