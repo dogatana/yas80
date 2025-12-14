@@ -23,8 +23,12 @@ func TestParseConstStatement(t *testing.T) {
 	}
 	for i, stmt := range prog.Statements {
 		cs := stmt.(*ConstStatement)
-		if cs.Name.Name != expected[i].Name {
-			t.Errorf("expected Name %q. got %q", expected[i].Name, cs.Name)
+		ident, ok := cs.Name.(*Ident)
+		if !ok {
+			t.Fatalf("Name must be Ident. got %T", cs.Name)
+		}
+		if ident.Name != expected[i].Name {
+			t.Errorf("expected Name %q. got %q", expected[i].Name, ident.Name)
 		}
 		v, ok := cs.Value.(*NumberLiteral)
 		if !ok {

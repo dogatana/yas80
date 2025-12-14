@@ -56,7 +56,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 			return object.ERROR
 		}
 		// マクロ展開（@ident を置換した AST）
-		expanded := e.expandMacro(macro)
+		expanded := e.expandMacro(macro, env)
 		extCall := &parser.ExpandedMacroCallStatement{
 			Name:    node.Name,
 			Params:  macro.Params,

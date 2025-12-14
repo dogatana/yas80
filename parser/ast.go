@@ -372,7 +372,7 @@ func (bs *BlockStatement) String() string {
 
 // 定数定義文 - CONST, EQU Statement
 type ConstStatement struct {
-	Name    *Ident
+	Name    Expression
 	Value   Expression
 	Context *fileblock.Context
 }
@@ -384,7 +384,7 @@ func (cs *ConstStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("CONST ")
-	out.WriteString(cs.Name.Name)
+	out.WriteString(cs.Name.String())
 	out.WriteString(" = ")
 	out.WriteString(cs.Value.String())
 

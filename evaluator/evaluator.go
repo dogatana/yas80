@@ -67,8 +67,16 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 
 		// const/equ
 		case *parser.ConstStatement:
-			if stmt.Name.IdentType != parser.IDENT {
-				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Name.Name), stmt.Context)
+			e.concatenateSymbol(&stmt.Name, env, stmt.Context)
+			e.concatenateSymbol(&stmt.Value, env, stmt.Context)
+
+			ident, ok := stmt.Name.(*parser.Ident)
+			if !ok {
+				panic("*parser.ConstStatement")
+			}
+
+			if ident.IdentType != parser.IDENT {
+				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, ident.Name), stmt.Context)
 				continue
 			}
 			obj := e.evalStatement(stmt, env)

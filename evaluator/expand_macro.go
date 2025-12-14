@@ -7,12 +7,12 @@ import (
 	"yas80/parser"
 )
 
-func (e *Evaluator) expandMacro(macro *object.MacroObject) []parser.Node {
+func (e *Evaluator) expandMacro(macro *object.MacroObject, env object.Environment) []parser.Node {
 	nodes := []parser.Node{}
 	seq := e.Counter()
 
 	for _, stmt := range macro.Body.Block {
-		nodes = append(nodes, e.replaceAtIdent(stmt, macro.Name, seq))
+		nodes = append(nodes, e.replaceAtIdent(stmt, macro.Name, seq, env))
 	}
 
 	fmt.Println("expanded")
@@ -22,7 +22,7 @@ func (e *Evaluator) expandMacro(macro *object.MacroObject) []parser.Node {
 	return nodes
 }
 
-func (e *Evaluator) replaceAtIdent(node parser.Node, macroName string, seq int) parser.Node {
+func (e *Evaluator) replaceAtIdent(node parser.Node, macroName string, seq int, env object.Environment) parser.Node {
 	if node == nil {
 		return node
 	}
@@ -42,10 +42,18 @@ func (e *Evaluator) replaceAtIdent(node parser.Node, macroName string, seq int) 
 		return &new
 
 	case *parser.ConstStatement:
-		if !needReplace(node.Name.Name) {
+		e.concatenateSymbol(&node.Name, env, node.Context)
+		e.concatenateSymbol(&node.Value, env, node.Context)
+
+		id, ok := node.Name.(*parser.Ident)
+		if !ok {
+			panic("*parser.ConstStatement")
+		}
+
+		if !needReplace(id.Name) {
 			return node
 		}
-		ident := *node.Name
+		ident := *id
 		ident.Name = replacedName(seq, macroName, ident.Name)
 		ident.IdentType = parser.IDENT
 
@@ -65,9 +73,9 @@ func (e *Evaluator) replaceAtIdent(node parser.Node, macroName string, seq int) 
 		return &new
 
 	case *parser.IfStatement:
-		cond := e.replaceAtIdent(node.Condition, macroName, seq)
-		conseq := e.replaceAtIdent(node.Consequence, macroName, seq)
-		alt := e.replaceAtIdent(node.Alternative, macroName, seq)
+		cond := e.replaceAtIdent(node.Condition, macroName, seq, env)
+		conseq := e.replaceAtIdent(node.Consequence, macroName, seq, env)
+		alt := e.replaceAtIdent(node.Alternative, macroName, seq, env)
 
 		new := *node
 		new.Condition = cond.(parser.Expression)
@@ -78,19 +86,19 @@ func (e *Evaluator) replaceAtIdent(node parser.Node, macroName string, seq int) 
 	case *parser.BlockStatement:
 		nodes := []parser.Node{}
 		for _, stmt := range node.Block {
-			nodes = append(nodes, e.replaceAtIdent(stmt, macroName, seq))
+			nodes = append(nodes, e.replaceAtIdent(stmt, macroName, seq, env))
 		}
 		return &parser.BlockStatement{Block: nodes}
 
 	case *parser.Z80Instruction:
 		new := *node
 		if node.Op1 != nil {
-			op1 := e.replaceAtIdent(node.Op1, macroName, seq)
+			op1 := e.replaceAtIdent(node.Op1, macroName, seq, env)
 			new.Op1 = op1.(parser.Expression)
 
 		}
 		if node.Op2 != nil {
-			op2 := e.replaceAtIdent(node.Op2, macroName, seq)
+			op2 := e.replaceAtIdent(node.Op2, macroName, seq, env)
 			new.Op2 = op2.(parser.Expression)
 
 		}

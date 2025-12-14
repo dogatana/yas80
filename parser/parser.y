@@ -54,6 +54,8 @@ var _ = __yyfmt__.Sprintf
 %token<token> CONST VAR EQU
 %token<token> FUNCTION // 1行関数
 
+%token<token> CONCAT // 識別子結合 ident ## expr
+
 %token<token> IF ELSE ELIF ENDIF
 %token<token> MACRO ENDM EXITM
 %token<token> REPT ENDR
@@ -69,6 +71,7 @@ var _ = __yyfmt__.Sprintf
 %token<token> error
 
 // 演算の優先度の指定
+%left CONCAT
 %left OR              // ||
 %left AND             // &&
 %left COMP            // == != < <= > >=
@@ -120,6 +123,17 @@ directive	: CONST ident '=' expr
 					$$ =  $4
 				} else {
 					$$ = &ConstStatement{Name: $2, Value: $4,Context: $1.Context}
+				}
+			}
+			| CONST ident CONCAT expr '=' expr
+			{ 
+				if $4.NodeType() == NODE_ERROR {
+					$$ =  $4
+				} else if $6.NodeType() == NODE_ERROR {
+					$$ = $6
+				} else {
+					id := buildInfixExpression(CONCAT, $2, $4, $1.Context)
+					$$ = &ConstStatement{Name: id, Value: $6, Context: $1.Context}
 				}
 			}
 			| ident EQU expr		
@@ -477,6 +491,16 @@ expr		: NUMBER
 			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),Context:$1.Context}}
 			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType),Context:$1.Context}}
 			| ident { $$ = $1}
+			| IDENT CONCAT expr
+			{
+				id := &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Context: $1.Context}
+			 	$$ = buildInfixExpression(CONCAT, id, $3, $1.Context)
+			}
+			| LOCAL_IDENT CONCAT expr
+			{
+				id := &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,Context: $1.Context}
+			 	$$ = buildInfixExpression(CONCAT, id, $3, $1.Context)
+			}
 			| DOT_IDENT
 			{
 				uname := strings.ToUpper($1.Literal)

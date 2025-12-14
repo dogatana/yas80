@@ -22,6 +22,8 @@ venv/
 doc/
 parser/rules.go
 
+.vscode/launch.json
+
 !parser/testdata/*.txt
 
 *.md

@@ -2,7 +2,11 @@ package evaluator
 
 import (
 	"fmt"
+	"strings"
+	"yas80/errcode"
+	"yas80/fileblock"
 	"yas80/object"
+	"yas80/parser"
 )
 
 // 各種 object 判定
@@ -107,4 +111,45 @@ func CollectCode(prog *object.ProgramObject) []byte {
 		result = append(result, code.Code...)
 	}
 	return result
+}
+
+// シンボル結合処理
+func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env object.Environment, ctx *fileblock.Context) bool {
+	switch expr := (*ptr).(type) {
+	case *parser.InfixExpression:
+		if expr.Operator != parser.CONCAT {
+			return e.concatenateSymbol(&expr.Op1, env, ctx) || e.concatenateSymbol(&expr.Op2, env, ctx)
+		}
+		ident, ok := expr.Op1.(*parser.Ident)
+		if !ok {
+			panic("not ident")
+			// TODO: parser の段階でここには来ないはず
+			// e.logger.Error(errcode.ESYM_CONCAT_NOTSYM, ctx)
+			// return false
+		}
+		suffix := ""
+		op2 := e.evalExpression(expr.Op2, env, ctx)
+		switch op2 := op2.(type) {
+		case *object.ErrorObject:
+			return false
+		case *object.RefNotFoundObject:
+			names := strings.Join(op2.Names, ", ")
+			e.logger.Error(fmt.Sprintf(errcode.E009, names), ctx)
+			return false
+		case *object.NumberObject:
+			suffix = fmt.Sprintf("%d", op2.Value)
+		case *object.StringObject:
+			suffix = op2.Value
+		default:
+			e.logger.Error(errcode.ESYM_CONCAT_TYPE, ctx)
+			return false
+		}
+		ident.Name += suffix
+		*ptr = ident
+		return true
+	case *parser.PrefixExpression:
+		return e.concatenateSymbol(&expr.Op, env, ctx)
+	default:
+		return false
+	}
 }
