@@ -55,15 +55,22 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 			e.logger.Error(fmt.Sprintf(errcode.EMACRO_ARG_COUNT, node.Name), node.Context)
 			return object.ERROR
 		}
-		// マクロ展開（@ident を置換した AST）
-		expanded := e.expandMacro(macro, env)
-		extCall := &parser.ExpandedMacroCallStatement{
-			Name:    node.Name,
-			Params:  macro.Params,
-			Args:    node.Args,
-			Body:    &parser.BlockStatement{Block: expanded},
-			Context: node.Context}
-		return &object.NodeObject{Node: extCall}
+		// // マクロ展開（@ident を置換した AST）
+		// expanded := e.expandMacro(macro, env)
+		// extCall := &parser.ExpandedMacroCallStatement{
+		// 	Name:    node.Name,
+		// 	Params:  macro.Params,
+		// 	Args:    node.Args,
+		// 	Body:    &parser.BlockStatement{Block: expanded},
+		// 	Context: node.Context}
+		// return &object.NodeObject{Node: extCall}
+		expanded := e.expandMacro(node, macro, env)
+		fmt.Println("-- expand start")
+		for _, e := range expanded {
+			fmt.Println(e.String())
+		}
+		fmt.Println("-- expand end")
+		return &object.NodesObject{Nodes: expanded}
 
 	case *parser.AssignStatement:
 		target := e.evalExpression(node.Left, env, node.Context)

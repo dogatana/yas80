@@ -98,26 +98,10 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 		// マクロ呼出し
 		case *parser.MacroCallStatement:
 			obj := e.evalStatement(stmt, env)
-			if obj.Type() == object.NODE_OBJ {
-				stmts = append(stmts, obj.(*object.NodeObject).Node)
+			if obj.Type() == object.NODES_OBJ {
+				stmts = append(stmts, obj.(*object.NodesObject).Nodes...)
 				e.Resolved = false
 			}
-
-		case *parser.ExpandedMacroCallStatement:
-			obj := e.evalStatement(stmt, env)
-			if isError(obj) {
-				return object.ERROR
-			}
-			if isRefNotFound(obj) {
-				e.Resolved = false
-				return obj
-			}
-			if obj, ok := obj.(*object.BlockObject); !ok {
-				panic(fmt.Sprintf("evalExpandedMacroCallStatement returns %T", obj))
-			} else {
-				objects = append(objects, obj.Block...)
-			}
-			stmts = append(stmts, stmt)
 
 		default:
 			e.logger.Info(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil)

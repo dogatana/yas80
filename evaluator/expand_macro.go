@@ -2,127 +2,86 @@ package evaluator
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
 	"yas80/object"
 	"yas80/parser"
 )
 
-func (e *Evaluator) expandMacro(macro *object.MacroObject, env object.Environment) []parser.Node {
+func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, env object.Environment) []parser.Node {
 	nodes := []parser.Node{}
 	seq := e.Counter()
 
+	// 仮引数と引数Node の紐づけ
+	args := map[string]parser.Expression{}
+	for i, param := range macro.Params {
+		args[param] = mcall.Args.Expressions[i]
+	}
+
+	replace := replaceNameInMacro(args, seq, mcall.Name)
+
 	for _, stmt := range macro.Body.Block {
-		newStmt := e.replaceAtIdent(stmt, macro.Name, seq, env)
-		if newStmt == nil || reflect.ValueOf(newStmt).IsNil() {
-			continue
+		switch stmt := stmt.(type) {
+		case *parser.LabelStatement:
+			news := *stmt
+			var expr parser.Expression = news.Name
+			replace(&expr)
+			news.Name = expr.(*parser.Label)
+			nodes = append(nodes, &news)
+		case *parser.ConstStatement:
+			news := *stmt
+			replace(&news.Name)
+			replace(&news.Value)
+			nodes = append(nodes, &news)
+		case *parser.Z80Instruction:
+			news := *stmt
+			if news.Label != nil {
+				var expr parser.Expression = news.Label
+				replace(&expr)
+				news.Label = expr.(*parser.Label)
+			}
+			replace(&news.Op1)
+			replace(&news.Op2)
+			fmt.Println(news.String())
+			nodes = append(nodes, &news)
+		default:
+			nodes = append(nodes, stmt)
 		}
-		nodes = append(nodes, newStmt)
 	}
-	fmt.Println("expanded --")
-	for _, n := range nodes {
-		fmt.Println(n.String())
-	}
-	fmt.Println("--")
 	return nodes
 }
 
-func (e *Evaluator) replaceAtIdent(node parser.Node, macroName string, seq int, env object.Environment) parser.Node {
-	if node == nil {
-		return node
+func replaceNameInMacro(args map[string]parser.Expression, seq int, macroName string) func(ptr *parser.Expression) {
+	var replacer func(ptr *parser.Expression)
+	replacer = func(ptr *parser.Expression) {
+		switch expr := (*ptr).(type) {
+		case *parser.Label:
+			if expr.Name[0] == '@' {
+				newLabel := *expr
+				newLabel.Name = replacedName(seq, macroName, expr.Name)
+				newLabel.LabelType = parser.NODE_LABEL
+				*ptr = &newLabel
+			} else if arg, ok := args[expr.Name]; ok {
+				*ptr = arg
+			}
+
+		case *parser.Ident:
+			if expr.Name[0] == '@' {
+				newIdent := *expr
+				newIdent.Name = replacedName(seq, macroName, expr.Name)
+				newIdent.IdentType = parser.IDENT
+				*ptr = &newIdent
+			} else if arg, ok := args[expr.Name]; ok {
+				*ptr = arg
+			}
+
+		case *parser.InfixExpression:
+			newe := *expr
+			replacer(&newe.Op1)
+			replacer(&newe.Op2)
+			*ptr = &newe
+		default:
+		}
 	}
-
-	switch node := node.(type) {
-	case *parser.LabelStatement:
-		if !needReplace(node.Name.Name) {
-			return node
-		}
-		label := *node.Name
-		label.Name = replacedName(seq, macroName, label.Name)
-		label.LabelType = parser.NODE_LABEL
-
-		new := *node
-		new.Name = &label
-		return &new
-
-	case *parser.ConstStatement:
-		// e.concatenateSymbol(&node.Name, env, node.Context)
-		// e.concatenateSymbol(&node.Value, env, node.Context)
-
-		id, ok := node.Name.(*parser.Ident)
-		if !ok {
-			return node
-			// panic("*parser.ConstStatement")
-		}
-
-		if !needReplace(id.Name) {
-			return node
-		}
-		ident := *id
-		ident.Name = replacedName(seq, macroName, ident.Name)
-		ident.IdentType = parser.IDENT
-
-		new := *node
-		new.Name = &ident
-		return &new
-
-	case *parser.VariableStatement:
-		if !needReplace(node.Name.Name) {
-			return node
-		}
-		ident := *node.Name
-		ident.Name = replacedName(seq, macroName, ident.Name)
-		new := *node
-		new.Name = &ident
-		return &new
-
-	case *parser.IfStatement:
-		cond := e.replaceAtIdent(node.Condition, macroName, seq, env)
-		conseq := e.replaceAtIdent(node.Consequence, macroName, seq, env)
-		alt := e.replaceAtIdent(node.Alternative, macroName, seq, env)
-
-		new := *node
-		new.Condition = cond.(parser.Expression)
-		new.Consequence = conseq
-		new.Alternative = alt
-		return &new
-
-	case *parser.BlockStatement:
-		nodes := []parser.Node{}
-		for _, stmt := range node.Block {
-			nodes = append(nodes, e.replaceAtIdent(stmt, macroName, seq, env))
-		}
-		return &parser.BlockStatement{Block: nodes}
-
-	case *parser.Z80Instruction:
-		new := *node
-		if node.Op1 != nil {
-			op1 := e.replaceAtIdent(node.Op1, macroName, seq, env)
-			new.Op1 = op1.(parser.Expression)
-
-		}
-		if node.Op2 != nil {
-			op2 := e.replaceAtIdent(node.Op2, macroName, seq, env)
-			new.Op2 = op2.(parser.Expression)
-
-		}
-		return &new
-
-	case *parser.Ident:
-		if !needReplace(node.Name) {
-			return node
-		}
-		new := *node
-		new.Name = replacedName(seq, macroName, node.Name)
-		return &new
-
-	default:
-		return node
-	}
-}
-
-func needReplace(name string) bool {
-	return name[0] == '@' && !strings.HasPrefix(name, "@@")
+	return replacer
 }
 
 // @name => @<seq>_<macro>_name

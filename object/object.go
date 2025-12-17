@@ -18,6 +18,7 @@ const (
 	CODE_OBJ
 	PROGRAM_OBJ
 	NODE_OBJ
+	NODES_OBJ
 	RETURN_OBJ
 	BLOCK_OBJ
 	FUNC_OBJ
@@ -186,6 +187,14 @@ type NodeObject struct {
 
 func (n *NodeObject) Type() ObjectType { return NODE_OBJ }
 func (n *NodeObject) String() string   { return n.Node.String() }
+
+// Nodes
+type NodesObject struct {
+	Nodes []parser.Node
+}
+
+func (n *NodesObject) Type() ObjectType { return NODES_OBJ }
+func (n *NodesObject) String() string   { return fmt.Sprintf("NODES(%v)", n.Nodes) }
 
 // ENUM
 type EnumObject struct {
