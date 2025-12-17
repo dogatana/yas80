@@ -10,6 +10,34 @@ import (
 // マクロ展開が再帰しているかのチェック用
 var expandingMacro map[string]bool = map[string]bool{}
 
+// マクロ評価（展開のみで引数は評価しない）
+func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env object.Environment) object.Object {
+	obj, ok := env.Get(stmt.Name)
+	if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_FOUND, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+	macro, ok := obj.(*object.MacroObject)
+	if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+	if len(stmt.Args.Expressions) != len(macro.Params) {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_ARG_COUNT, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+
+	if expandingMacro[stmt.Name] {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_CYCLIC, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+	expandingMacro[stmt.Name] = true
+	nodes := e.expandMacro(stmt, macro)
+	expandingMacro[stmt.Name] = false
+
+	return nodes
+}
+
 // マクロ Body 評価
 func (e *Evaluator) evalExpandedMacroCallStatement(stmt *parser.ExpandedMacroCallStatement, env object.Environment) object.Object {
 	if expandingMacro[stmt.Name] {

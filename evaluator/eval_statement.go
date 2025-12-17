@@ -41,21 +41,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 
 	// マクロ呼出し
 	case *parser.MacroCallStatement:
-		obj, ok := env.Get(node.Name)
-		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_FOUND, node.Name), node.Context)
-			return object.ERROR
-		}
-		macro, ok := obj.(*object.MacroObject)
-		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, node.Name), node.Context)
-			return object.ERROR
-		}
-		if len(node.Args.Expressions) != len(macro.Params) {
-			e.logger.Error(fmt.Sprintf(errcode.EMACRO_ARG_COUNT, node.Name), node.Context)
-			return object.ERROR
-		}
-		return e.expandMacro(node, macro)
+		return e.evalMacroCallStatement(node, env)
 
 	// 代入文
 	case *parser.AssignStatement:
@@ -90,16 +76,13 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
-	// case *parser.MacroStatement:
-	// 	return e.evalMacroStatement(node, env)
 
 	case *parser.BlockStatement:
 		return e.evalBlockStatement(node, env)
-	case *parser.ExpandedMacroCallStatement:
-		return e.evalExpandedMacroCallStatement(node, env)
 
 	case *parser.FuncStatement:
 		return e.evalFuncStatement(node, env)
+
 	case *parser.ReturnStatement:
 		return e.evalReturnStatement(node, env)
 
