@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"yas80/object"
 	"yas80/parser"
@@ -12,12 +13,17 @@ func (e *Evaluator) expandMacro(macro *object.MacroObject, env object.Environmen
 	seq := e.Counter()
 
 	for _, stmt := range macro.Body.Block {
-		nodes = append(nodes, e.replaceAtIdent(stmt, macro.Name, seq, env))
+		newStmt := e.replaceAtIdent(stmt, macro.Name, seq, env)
+		if newStmt == nil || reflect.ValueOf(newStmt).IsNil() {
+			continue
+		}
+		nodes = append(nodes, newStmt)
 	}
-
-	// for i, n := range nodes {
-	// 	fmt.Printf("[%d] %s\n", i, n.String())
-	// }
+	fmt.Println("expanded --")
+	for _, n := range nodes {
+		fmt.Println(n.String())
+	}
+	fmt.Println("--")
 	return nodes
 }
 
@@ -40,12 +46,13 @@ func (e *Evaluator) replaceAtIdent(node parser.Node, macroName string, seq int, 
 		return &new
 
 	case *parser.ConstStatement:
-		e.concatenateSymbol(&node.Name, env, node.Context)
-		e.concatenateSymbol(&node.Value, env, node.Context)
+		// e.concatenateSymbol(&node.Name, env, node.Context)
+		// e.concatenateSymbol(&node.Value, env, node.Context)
 
 		id, ok := node.Name.(*parser.Ident)
 		if !ok {
-			panic("*parser.ConstStatement")
+			return node
+			// panic("*parser.ConstStatement")
 		}
 
 		if !needReplace(id.Name) {

@@ -205,8 +205,13 @@ func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) objec
 
 // const / equ 文
 func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.Environment) object.Object {
+	// e.concatenateSymbol(&node.Name, env, node.Context)
+	// e.concatenateSymbol(&node.Value, env, node.Context)
 
-	id := node.Name.(*parser.Ident)
+	id, ok := node.Name.(*parser.Ident)
+	if !ok {
+		return object.ERROR
+	}
 	name := id.Name
 
 	// 定義済みならエラー
