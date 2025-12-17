@@ -98,6 +98,9 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 		// マクロ呼出し
 		case *parser.MacroCallStatement:
 			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				return object.ERROR
+			}
 			if obj.Type() == object.NODES_OBJ {
 				stmts = append(stmts, obj.(*object.NodesObject).Nodes...)
 				e.Resolved = false

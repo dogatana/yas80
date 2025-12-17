@@ -6,7 +6,7 @@ import (
 	"yas80/parser"
 )
 
-func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, env object.Environment) []parser.Node {
+func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject) object.Object {
 	nodes := []parser.Node{}
 	seq := e.Counter()
 
@@ -46,7 +46,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 			nodes = append(nodes, stmt)
 		}
 	}
-	return nodes
+	return &object.NodesObject{Nodes: nodes}
 }
 
 func replaceNameInMacro(args map[string]parser.Expression, seq int, macroName string) func(ptr *parser.Expression) {
