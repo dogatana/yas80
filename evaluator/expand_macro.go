@@ -106,5 +106,5 @@ func replaceNameInMacro(args map[string]parser.Expression, seq int, macroName st
 
 // @name => @<seq>_<macro>_name
 func replacedName(seq int, macroName, name string) string {
-	return fmt.Sprintf("__%d_%s_%s", seq, macroName, string(name[1:]))
+	return fmt.Sprintf("__%d_%s@%s", seq, macroName, string(name[1:]))
 }
