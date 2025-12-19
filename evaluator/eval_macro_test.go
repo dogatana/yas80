@@ -54,6 +54,14 @@ func TestExitm(t *testing.T) {
 			0x21, 0x01, 0x00, // ld hl, 1
 		},
 		},
+		{
+			`test macro arg \ if arg > 0 \ ld a, 1 \ else \ ld a, $ff \ endif \ endm \ test 1`,
+			[]byte{0x3E, 0x01},
+		},
+		{
+			`test macro arg \ if arg > 0 \ ld a, 1 \ else \ ld a, $ff \ endif \ endm \ test -1`,
+			[]byte{0x3E, 0xFF},
+		},
 	}
 
 	for tn, tt := range tests {

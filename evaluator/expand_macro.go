@@ -19,34 +19,54 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	replace := replaceNameInMacro(args, seq, mcall.Name)
 
 	for _, stmt := range macro.Body.Block {
-		switch stmt := stmt.(type) {
-		case *parser.LabelStatement:
-			news := *stmt
-			var expr parser.Expression = news.Name
-			replace(&expr)
-			news.Name = expr.(*parser.Label)
-			nodes = append(nodes, &news)
-		case *parser.ConstStatement:
-			news := *stmt
-			replace(&news.Name)
-			replace(&news.Value)
-			nodes = append(nodes, &news)
-		case *parser.Z80Instruction:
-			news := *stmt
-			if news.Label != nil {
-				var expr parser.Expression = news.Label
-				replace(&expr)
-				news.Label = expr.(*parser.Label)
-			}
-			replace(&news.Op1)
-			replace(&news.Op2)
-			fmt.Println(news.String())
-			nodes = append(nodes, &news)
-		default:
-			nodes = append(nodes, stmt)
-		}
+		news := e.replaceStatement(stmt.(parser.Statement), replace)
+		nodes = append(nodes, news)
 	}
 	return &object.NodesObject{Nodes: nodes}
+}
+
+func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *parser.Expression)) parser.Statement {
+	switch stmt := stmt.(type) {
+	case *parser.LabelStatement:
+		news := *stmt
+		var expr parser.Expression = news.Name
+		replace(&expr)
+		news.Name = expr.(*parser.Label)
+		return &news
+	case *parser.ConstStatement:
+		news := *stmt
+		replace(&news.Name)
+		replace(&news.Value)
+		return &news
+	case *parser.Z80Instruction:
+		news := *stmt
+		if news.Label != nil {
+			var expr parser.Expression = news.Label
+			replace(&expr)
+			news.Label = expr.(*parser.Label)
+		}
+		replace(&news.Op1)
+		replace(&news.Op2)
+		return &news
+	case *parser.IfStatement:
+		news := *stmt
+		replace(&news.Condition)
+		if news.Consequence != nil {
+			e.replaceStatement(news.Consequence.(parser.Statement), replace)
+		}
+		if news.Alternative != nil {
+			e.replaceStatement(news.Alternative.(parser.Statement), replace)
+		}
+		return &news
+	case *parser.BlockStatement:
+		news := *stmt
+		for i, s := range news.Block {
+			news.Block[i] = e.replaceStatement(s.(parser.Statement), replace)
+		}
+		return &news
+	default:
+		return stmt
+	}
 }
 
 func replaceNameInMacro(args map[string]parser.Expression, seq int, macroName string) func(ptr *parser.Expression) {

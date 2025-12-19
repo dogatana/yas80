@@ -110,7 +110,11 @@ func (pe *ParseError) expressionNode()          {}
 func (pe *ParseError) NodeType() NodeType       { return NODE_ERROR }
 func (pe *ParseError) NodeSubType() NodeSubType { return 0 }
 func (pe *ParseError) String() string {
-	return fmt.Sprintf("%s %d", pe.Message, pe.Context.Line)
+	if pe.Context == nil {
+		return pe.Message
+	} else {
+		return fmt.Sprintf("%s %d", pe.Message, pe.Context.Line)
+	}
 }
 
 // ラベル - 独立した文として生成

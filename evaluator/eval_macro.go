@@ -72,22 +72,23 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 			e.logger.Warning(fmt.Sprintf(errcode.WMACRO_NOT_ALLOWED, "ENUM 文"), stmt.Context)
 			continue
 
-		// case *parser.IfStatement:
-		// 	obj := e.evalIfStatementWithFunc(stmt, env, e.evalMacroBlockStatement)
-		// 	if isError(obj) {
-		// 		continue
-		// 	}
-		// 	nodes = append(nodes, stmt)
-		// 	if isRefNotFound(obj) {
-		// 		continue
-		// 	}
-		// 	if obj, ok := obj.(*object.BlockObject); ok {
-		// 		ret.Block = append(ret.Block, obj.Block...)
-		// 		if ret.Block[len(ret.Block)-1].Type() == object.EXITM_OBJ {
-		// 			goto BREAK
-		// 		}
-		// 	}
-		// 	ret.Block = append(ret.Block, obj)
+		case *parser.IfStatement:
+			obj := e.evalIfStatementWithFunc(stmt, env, e.evalMacroBlockStatement)
+			if isError(obj) {
+				continue
+			}
+			stmts = append(stmts, stmt)
+			if isRefNotFound(obj) {
+				continue
+			}
+			bo, ok := obj.(*object.BlockObject)
+			if !ok {
+				panic("not block object")
+			}
+			objects = append(objects, bo.Block...)
+			if objects[len(objects)-1].Type() == object.EXITM_OBJ {
+				goto BREAK
+			}
 
 		case *parser.ExitmStatement:
 			stmts = append(stmts, stmt)
@@ -102,9 +103,14 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 			if obj.Type() != object.NODES_OBJ {
 				panic("not nodes object")
 			}
-			stmts = append(stmts, &parser.MacroBlockStatement{
-				Name:  stmt.Name,
-				Block: obj.(*object.NodesObject).Nodes})
+			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.NodesObject).Nodes}
+			// fmt.Println("-- expanded")
+			// for _, n := range bs.Block {
+			// 	fmt.Println(n.String())
+			// }
+			// fmt.Println("-- expanded")
+
+			stmts = append(stmts, bs)
 			e.Resolved = false
 
 		// マクロ ブロック (展開済み)

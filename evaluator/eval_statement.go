@@ -272,7 +272,7 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env object.Environ
 	}
 }
 
-type evalBlockStatementFunc func(block *parser.BlockStatement, env object.Environment) object.Object
+type evalBlockStatementFunc func(block parser.Node, env object.Environment) object.Object
 
 // block 評価関数指定の If 文評価
 func (e *Evaluator) evalIfStatementWithFunc(
@@ -286,9 +286,9 @@ func (e *Evaluator) evalIfStatementWithFunc(
 	}
 
 	if isTruthy(cond) {
-		return fn(stmt.Consequence.(*parser.BlockStatement), env)
+		return fn(stmt.Consequence, env)
 	} else if stmt.Alternative != nil {
-		return fn(stmt.Alternative.(*parser.BlockStatement), env)
+		return fn(stmt.Alternative, env)
 	} else {
 		return object.NULL
 	}

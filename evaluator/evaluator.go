@@ -104,9 +104,14 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 			if obj.Type() != object.NODES_OBJ {
 				panic("not nodes object")
 			}
-			stmts = append(stmts, &parser.MacroBlockStatement{
-				Name:  stmt.Name,
-				Block: obj.(*object.NodesObject).Nodes})
+			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.NodesObject).Nodes}
+			// fmt.Println("-- expanded")
+			// for _, n := range bs.Block {
+			// 	fmt.Println(n.String())
+			// }
+			// fmt.Println("-- expanded")
+
+			stmts = append(stmts, bs)
 			e.Resolved = false
 
 		// マクロブロック (展開済みマクロ)
