@@ -67,6 +67,7 @@ var Z80FlagIndex map[int]byte = map[int]byte{
 	parser.Z80_FLAG_Z:  1,
 	parser.Z80_FLAG_NC: 2,
 	parser.Z80_REG_C:   3, // lexer では C を Register トークンとして処理するため
+	parser.Z80_FLAG_C:  3, // リテラル CY を指定した場合
 	parser.Z80_FLAG_PO: 4,
 	parser.Z80_FLAG_PE: 5,
 	parser.Z80_FLAG_P:  6,
