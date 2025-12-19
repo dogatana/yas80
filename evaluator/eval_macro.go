@@ -39,11 +39,22 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 }
 
 // macro 用 BlockStatement 評価
-func (e *Evaluator) evalMacroBlockStatement(block *parser.MacroBlockStatement, env object.Environment) []object.Object {
+func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environment) []object.Object {
+	var block []parser.Node
+
+	switch node := node.(type) {
+	case *parser.MacroBlockStatement:
+		block = node.Block
+	case *parser.BlockStatement:
+		block = node.Block
+	default:
+		panic("invalid node type in evalMacroBlockStatement")
+	}
+
 	objects := []object.Object{}
 	stmts := []parser.Node{}
 
-	for _, node := range block.Block {
+	for _, node := range block {
 		switch stmt := node.(type) {
 		case *parser.ReturnStatement:
 			e.logger.Warning(fmt.Sprintf(errcode.WMACRO_NOT_ALLOWED, "RETURN 文"), stmt.Context)
@@ -116,6 +127,13 @@ func (e *Evaluator) evalMacroBlockStatement(block *parser.MacroBlockStatement, e
 		}
 	}
 BREAK:
-	block.Block = stmts
+	switch node := node.(type) {
+	case *parser.MacroBlockStatement:
+		node.Block = stmts
+	case *parser.BlockStatement:
+		node.Block = stmts
+	default:
+		panic("invalid node type in evalMacroBlockStatement")
+	}
 	return objects
 }
