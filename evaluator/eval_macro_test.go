@@ -114,3 +114,38 @@ func TestMacroIf(t *testing.T) {
 		}
 	}
 }
+
+func TestMacroIfExitmLocal(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+	}{
+		{
+			`test macro arg \ if arg == 0 \ const @abc = arg \ elif arg == 1 \ const @abc = arg * 16 \ else \ const @abc = arg * 256\ endif \ ld hl, @abc \ endm \ test 0`,
+			[]byte{0x21, 0x00, 0x00},
+		},
+		{
+			`test macro arg \ if arg == 0 \ const @abc = arg \ elif arg == 1 \ const @abc = arg * 16 \ else \ const @abc = arg * 256\ endif \ ld hl, @abc \ endm \ test 1`,
+			[]byte{0x21, 0x10, 0x00}, // ld hl, 16
+		},
+		{
+			`test macro arg \ if arg == 0 \ const @abc = arg \ elif arg == 1 \ const @abc = arg * 16 \ else \ const @abc = arg * 256\ endif \ ld hl, @abc \ endm \ test 2`,
+			[]byte{0x21, 0x00, 0x02}, // ld hl, 512
+		},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logger.New("<eval test>")
+		input := tt.input
+		expected := tt.code
+
+		prog := evaluateInput(t, input, logger, env)
+		logger.Print()
+		result := CollectCode(prog)
+
+		if !bytesEqual(result, expected) {
+			t.Errorf("[%d] expected %d bytes. got %d bytes", tn, len(expected), len(result))
+		}
+	}
+}
