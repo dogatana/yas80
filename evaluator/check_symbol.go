@@ -18,7 +18,7 @@ func (e *Evaluator) checkUnknwonAndNullSymbol(env object.Environment) {
 		} else if sym.Name == "_" || sym.Name[0] == '$' {
 			continue
 		} else if sym.SymType == object.SYM_UNKNOWN {
-			e.logger.Error(fmt.Sprintf(errcode.ESYM_NOT_FOUND, name), sym.Context)
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), sym.Context)
 		} else if sym.Value == object.NULL {
 			e.logger.Error(fmt.Sprintf(errcode.ESYM_NOT_DETERMINED, name), sym.Context)
 		}

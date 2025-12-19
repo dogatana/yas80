@@ -47,7 +47,7 @@ const (
 
 	ESYM_DUP            = "CONST/EQU '%s' は定義済み"
 	ESYM_USED_NAME      = "%s は利用済のため CONST/EQU 定義不可"
-	ESYM_NOT_FOUND      = "シンボル %s は未定義"
+	ESYM_UNDEF          = "シンボル %s は未定義"
 	ESYM_CYCLIC         = "シンボル %s の定義が循環参照を含む"
 	ESYM_NOT_DETERMINED = "シンボル %s の値を確定できない"
 
