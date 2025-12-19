@@ -32,7 +32,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 	// マクロ定義
 	case *parser.MacroStatement:
 		if _, ok := env.Get(node.Name); ok {
-			e.logger.Error(fmt.Sprintf(errcode.EMACRO_DEF, node.Name), node.Context)
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_REDEF, node.Name), node.Context)
 			return object.ERROR
 		}
 		obj := &object.MacroObject{Name: node.Name, Params: node.Params, Body: node.Body}
@@ -90,7 +90,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 		name := node.Name
 		_, ok := env.Get(name) // TODO enum 定義は常にグローバルスコープ
 		if ok {
-			e.logger.Error(fmt.Sprintf(errcode.E012, name), node.Context)
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED, name), node.Context)
 			return object.ERROR
 		}
 		v := e.evalEnumStatement(node, env)
@@ -161,7 +161,7 @@ func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) objec
 	sym, ok := obj.(*object.SymbolObject)
 	if !ok {
 		// Symbol で || LABEL でなけれがエラー
-		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED_NAME, name), label.Context)
+		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED, name), label.Context)
 		return object.ERROR
 	}
 	if sym.SymType == object.SYM_LABEL && !sym.Context.Equal(label.Context) {
@@ -299,7 +299,7 @@ func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env object.Env
 	name := stmt.Name
 	_, ok := env.Get(name)
 	if ok {
-		e.logger.Error(fmt.Sprintf(errcode.E018, name), stmt.Context)
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_DUP, name), stmt.Context)
 		return object.NULL
 	}
 	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env}
@@ -326,7 +326,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Env
 	for _, ele := range node.Elements.Elements {
 		eleName := ele.Name
 		if _, ok := enum[eleName]; ok {
-			e.logger.Error(fmt.Sprintf(errcode.E013, node.Name, ele.Name), node.Context)
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED_ELE, node.Name, ele.Name), node.Context)
 			return object.ERROR
 		}
 		keys = append(keys, eleName)

@@ -57,12 +57,12 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 	case *parser.DotIdent: // TODO enum か proc.local かの識別必要
 		enum, ok := env.Get(node.Left)
 		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.E010, node.Left), ctx)
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_UNDEF, node.Left), ctx)
 			return object.ERROR
 		}
 		v, ok := enum.(*object.EnumObject).Get(node.Right)
 		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.E011, node.Left, node.Right), ctx)
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_UNDEF_ELE, node.Left, node.Right), ctx)
 			return object.ERROR
 		}
 		return v
@@ -98,7 +98,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
-		e.logger.Error(errcode.E019, ctx)
+		e.logger.Error(errcode.EFUNC_NAME, ctx)
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {
@@ -239,18 +239,18 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env obje
 		case '!':
 			return &object.NumberObject{Value: boolToInt(op.Value == 0), Context: ctx}
 		default:
-			e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_NUMBER, rune(opcode)), ctx)
+			e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_NUMBER, rune(opcode)), ctx)
 			return object.ERROR
 		}
 	case *object.StringObject:
 		if opcode == '!' {
 			return &object.NumberObject{Value: boolToInt(op.Value == ""), Context: ctx}
 		}
-		e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_STRING, rune(opcode)), ctx)
+		e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_STRING, rune(opcode)), ctx)
 		return object.ERROR
 
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.EUNARY_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
+		e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
 		return object.ERROR
 	}
 }

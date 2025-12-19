@@ -57,7 +57,7 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 		case *parser.LabelStatement:
 			if stmt.Name.LabelType != parser.NODE_LABEL {
 				// LOCAL/AT の場合は AST から LabelStatement を削除する
-				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, stmt.Name.Name), stmt.Context)
+				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_GLOBAL, stmt.Name.Name), stmt.Context)
 				continue
 			}
 			obj = e.evalStatement(stmt, env)
@@ -77,7 +77,7 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 			}
 
 			if ident.IdentType != parser.IDENT {
-				e.logger.Error(fmt.Sprintf(errcode.EGLOBAL_NOT_ALLOWED, ident.Name), stmt.Context)
+				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_GLOBAL, ident.Name), stmt.Context)
 				continue
 			}
 			obj := e.evalStatement(stmt, env)

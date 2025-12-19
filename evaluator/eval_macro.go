@@ -14,7 +14,7 @@ var expandingMacro map[string]bool = map[string]bool{}
 func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env object.Environment) object.Object {
 	obj, ok := env.Get(stmt.Name)
 	if !ok {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_FOUND, stmt.Name), stmt.Context)
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_UNDEF, stmt.Name), stmt.Context)
 		return object.ERROR
 	}
 	macro, ok := obj.(*object.MacroObject)
@@ -57,19 +57,19 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 	for _, node := range block {
 		switch stmt := node.(type) {
 		case *parser.ReturnStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WMACRO_NOT_ALLOWED, "RETURN 文"), stmt.Context)
+			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "RETURN 文"), stmt.Context)
 			continue
 		case *parser.MacroStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WMACRO_NOT_ALLOWED, "MACRO 文"), stmt.Context)
+			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "MACRO 文"), stmt.Context)
 			continue
 		case *parser.ProcStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WMACRO_NOT_ALLOWED, "PROC 文"), stmt.Context)
+			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "PROC 文"), stmt.Context)
 			continue
 		case *parser.FuncStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WMACRO_NOT_ALLOWED, "FUNC 文"), stmt.Context)
+			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "FUNC 文"), stmt.Context)
 			continue
 		case *parser.EnumStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WMACRO_NOT_ALLOWED, "ENUM 文"), stmt.Context)
+			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "ENUM 文"), stmt.Context)
 			continue
 
 		case *parser.IfStatement:
