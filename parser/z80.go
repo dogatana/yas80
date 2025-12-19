@@ -134,7 +134,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"DE":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_DE, Literal: "DE"},
 	"HL":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_HL, Literal: "HL"},
 
-	//	"C":   {Type: Z80_FLAG, TokenSubType: Z80_FLAG_C, Literal: "C"}, レジスタ C と重複
+	"CY": {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_C, Literal: "CY"}, // キャリーの別名を定義
 	"NC": {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_NC, Literal: "NC"},
 	"Z":  {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_Z, Literal: "Z"},
 	"NZ": {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_NZ, Literal: "NZ"},
