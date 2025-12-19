@@ -101,9 +101,27 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 			if isError(obj) {
 				return object.ERROR
 			}
-			if obj.Type() == object.NODES_OBJ {
-				stmts = append(stmts, obj.(*object.NodesObject).Nodes...)
-				e.Resolved = false
+			if obj.Type() != object.NODES_OBJ {
+				panic("not nodes object")
+			}
+			stmts = append(stmts, &parser.MacroBlockStatement{
+				Name:  stmt.Name,
+				Block: obj.(*object.NodesObject).Nodes})
+			e.Resolved = false
+
+		// マクロブロック (展開済みマクロ)
+		case *parser.MacroBlockStatement:
+			stmts = append(stmts, stmt)
+			objs := e.evalMacroBlockStatement(stmt, env)
+			switch {
+			case len(objs) == 0:
+				// do nothing
+			case len(objs) == 1 && objs[0].Type() == object.EXITM_OBJ:
+				// do nothing
+			case len(objs) > 1 && objs[len(objs)-1].Type() == object.EXITM_OBJ:
+				objects = append(objects, objs[:len(objs)-1]...)
+			default:
+				objects = append(objects, objs...)
 			}
 
 		default:
