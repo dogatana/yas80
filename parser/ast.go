@@ -35,6 +35,7 @@ const (
 	NODE_PROC_STMT
 	NODE_MACRO_STMT
 	NODE_MACRO_CALL_STMT
+	NODE_MACRO_BLOCK_STMT
 	NODE_EXPANDED_MACRO_CALL_STMT
 
 	// expression
@@ -369,6 +370,17 @@ func (bs *BlockStatement) String() string {
 	}
 	return strings.Join(stmts, "\n")
 }
+
+// macro block statement
+type MacroBlockStatement struct {
+	Name  string
+	Block []Node
+}
+
+func (mb *MacroBlockStatement) statementNode()           {}
+func (mb *MacroBlockStatement) NodeType() NodeType       { return NODE_MACRO_BLOCK_STMT }
+func (mb *MacroBlockStatement) NodeSubType() NodeSubType { return 0 }
+func (mb *MacroBlockStatement) String() string           { return fmt.Sprintf("MACRO BLOCK(%s)", mb.Name) }
 
 // 定数定義文 - CONST, EQU Statement
 type ConstStatement struct {
