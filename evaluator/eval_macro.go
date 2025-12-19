@@ -86,7 +86,7 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 				panic("not block object")
 			}
 			objects = append(objects, bo.Block...)
-			if objects[len(objects)-1].Type() == object.EXITM_OBJ {
+			if len(bo.Block) > 0 && bo.Block[0].Type() == object.EXITM_OBJ {
 				goto BREAK
 			}
 
