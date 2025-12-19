@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strconv"
-	"strings"
 	"testing"
 	"yas80/fileblock"
 	"yas80/logger"
@@ -91,67 +89,6 @@ func parseTextForTest(t *testing.T, input string) *parser.Program {
 	}
 
 	return prog
-}
-
-func evaluateErrorInput(input string, logger *logger.Logger, env object.Environment) {
-	prog := parseErrorTextForTest(input, logger)
-	if len(logger.Errors) > 0 {
-		return
-	}
-
-	evaluator := New(logger)
-	evaluator.Resolved = true
-	var obj object.Object
-	var i int
-	for i = 0; i < 256; i++ {
-		evaluator.Resolved = true
-		obj = evaluator.EvalProgram(prog, env)
-		evaluator.EvalEnv(env)
-		evaluator.CheckSymbols(env)
-		if len(logger.Errors) > 0 {
-			return
-		}
-		if evaluator.Resolved {
-			break
-		}
-	}
-	// finalize
-	code := CollectCode(obj.(*object.ProgramObject))
-	codeStable := false
-	for i = 0; i < 256 && !codeStable; i++ {
-		obj = evaluator.EvalProgram(prog, env)
-		newCode := CollectCode(obj.(*object.ProgramObject))
-		codeStable = bytes.Equal(code, newCode)
-		if !codeStable {
-			code = newCode
-		}
-	}
-}
-
-func parseErrorTextForTest(input string, logger *logger.Logger) *parser.Program {
-	file := "<string>"
-	fb := fileblock.New(file, []byte(input))
-	l := parser.NewLexer(fb, logger)
-	return parser.Parse(l)
-}
-
-func hasError(logger *logger.Logger, expected string) bool {
-	re := regexp.MustCompile(`\.?%.\.?`)
-	ss := re.Split(expected, -1)
-
-	for _, emsg := range logger.Errors {
-		result := true
-		for _, s := range ss {
-			if !strings.Contains(emsg.Message, s) {
-				result = false
-				break
-			}
-		}
-		if result {
-			return result
-		}
-	}
-	return false
 }
 
 func checkDebug(e *Evaluator) {

@@ -36,13 +36,13 @@ yacc:
 	python ${PATCH} ${PARSER} ${PARSER} ${YOUT}
 
 vet:
-	go vet ./parser ./evaluator ./fileblock
+	go vet ./parser ./evaluator ./fileblock ./errtest
 
 check:
-	staticcheck ./parser ./evaluator
+	staticcheck ./parser ./evaluator ./errtest
 
 test:
-	go test ./parser ./evaluator ./fileblock
+	go test ./parser ./evaluator ./fileblock ./errtest
 
 testv:
-	go test -v ./parser ./evaluator ./fileblock
+	go test -v ./parser ./evaluator ./fileblock ./errtest
