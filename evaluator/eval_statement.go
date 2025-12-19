@@ -159,8 +159,8 @@ func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) objec
 	}
 
 	sym, ok := obj.(*object.SymbolObject)
-	if !ok {
-		// Symbol で || LABEL でなけれがエラー
+	if !ok || sym.SymType != object.SYM_LABEL && sym.SymType != object.SYM_UNKNOWN {
+		// Symbol 以外か、SYM_LABEL でない場合
 		e.logger.Error(fmt.Sprintf(errcode.ELABEL_USED, name), label.Context)
 		return object.ERROR
 	}
@@ -206,7 +206,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 		case *object.RefNotFoundObject:
 			// 未定で登録済なら更新
 		default:
-			e.logger.Error(fmt.Sprintf(errcode.ESYM_USED_NAME, name), node.Context)
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_USED, name), node.Context)
 			return object.ERROR
 		}
 	}
