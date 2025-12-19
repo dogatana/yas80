@@ -39,7 +39,7 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 }
 
 // macro 用 BlockStatement 評価
-func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environment) []object.Object {
+func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environment) object.Object {
 	var block []parser.Node
 
 	switch node := node.(type) {
@@ -110,7 +110,12 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 		// マクロ ブロック (展開済み)
 		case *parser.MacroBlockStatement:
 			stmts = append(stmts, stmt)
-			objs := e.evalMacroBlockStatement(stmt, env)
+			obj := e.evalMacroBlockStatement(stmt, env)
+			bo, ok := obj.(*object.BlockObject)
+			if !ok {
+				panic("not block object")
+			}
+			objs := bo.Block
 			objects = append(objects, objs...)
 			// 評価結果の末尾が EXITM なら評価を終了し戻る
 			if len(objs) >= 1 && objs[0].Type() == object.EXITM_OBJ {
@@ -135,5 +140,5 @@ BREAK:
 	default:
 		panic("invalid node type in evalMacroBlockStatement")
 	}
-	return objects
+	return &object.BlockObject{Block: objects}
 }

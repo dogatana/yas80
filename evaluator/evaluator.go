@@ -112,7 +112,15 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 		// マクロブロック (展開済みマクロ)
 		case *parser.MacroBlockStatement:
 			stmts = append(stmts, stmt)
-			objs := e.evalMacroBlockStatement(stmt, env)
+			obj := e.evalMacroBlockStatement(stmt, env)
+			if isError(obj) || isRefNotFound(obj) {
+				continue
+			}
+			bo, ok := obj.(*object.BlockObject)
+			if !ok {
+				panic("not block object")
+			}
+			objs := bo.Block
 			switch {
 			case len(objs) == 0:
 				// do nothing
