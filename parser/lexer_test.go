@@ -19,6 +19,7 @@ func testDisplayTokens(t *testing.T) {
 	}
 }
 
+// 各種記号のテスト
 func TestLexSymbols(t *testing.T) {
 	input := " ( ) = - + | ^ * / & ! ~ << >> < <= == != >= > || && ## "
 	expected := []struct {
@@ -77,6 +78,7 @@ func TestLexSymbols(t *testing.T) {
 	}
 }
 
+// 空白入力、コメントのみの入力のテスト(最後に EOL, EOFが返ること)
 func TestLexBlankInput(t *testing.T) {
 	tests := []struct {
 		input           string
@@ -95,21 +97,22 @@ func TestLexBlankInput(t *testing.T) {
 		{" ; comment \\ ; comment ", []int{EOL, EOF}},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		for _, expected := range tt.expected_tokens {
 			tok := l.NextToken()
 			if tt.input != "" && tok.Context.Line == 0 {
 				fmt.Println("tokenize", tt.input)
-				t.Errorf("LineNumber not set. got %s", tok.String())
+				t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 			}
 			if tok.TokenType != TokenType(expected) {
-				t.Fatalf("tokenize %q, expected=%d, got=%s", tt.input, expected, tok.String())
+				t.Fatalf("[%d] expected=%d, got=%s", tn, expected, tok.String())
 			}
 		}
 	}
 }
 
+// 不正な文字のテスト
 func TestLexInvalidCharacter(t *testing.T) {
 	input := " あ "
 
@@ -123,6 +126,7 @@ func TestLexInvalidCharacter(t *testing.T) {
 	}
 }
 
+// 文字列リテラルのテスト
 func TestLexString(t *testing.T) {
 	tests := []struct {
 		input            string
@@ -133,19 +137,19 @@ func TestLexString(t *testing.T) {
 		{`""`, ""},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Context.Line == 0 {
-			t.Errorf("LineNumber not set. got %s", tok.String())
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
 		if tok.TokenType != STRING || tok.Literal != tt.expected_literal {
-			fmt.Printf("tokenize %q\n", tt.input)
-			t.Errorf("expected=STRING with literal %q, got=%#v", tt.expected_literal, tok)
+			t.Errorf("[%d] expected=STRING with literal %q, got=%#v", tn, tt.expected_literal, tok)
 		}
 	}
 }
 
+// 数値リテラルのテスト
 func TestLexNumber(t *testing.T) {
 	tests := []struct {
 		input            string
@@ -173,18 +177,19 @@ func TestLexNumber(t *testing.T) {
 		{"%xyz", "%xyz"},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Context.Line == 0 {
-			t.Errorf("LineNumber not set. got %s", tok.String())
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
 		if tok.TokenType != NUMBER || tok.Literal != tt.expected_literal {
-			t.Errorf("expected=NUMBER(%q), got=%s", tt.expected_literal, tok.String())
+			t.Errorf("[%d] expected=NUMBER(%q), got=%s", tn, tt.expected_literal, tok.String())
 		}
 	}
 }
 
+// Lexインターフェースの基本動作確認テスト
 func TestLexInterface(t *testing.T) {
 	input := " 123 + 456 \n"
 
@@ -200,13 +205,13 @@ func TestLexInterface(t *testing.T) {
 	var lval yySymType
 	for _, expected := range expected_tokens {
 		ret := l.Lex(&lval)
-		// fmt.Printf("ret=%d, lval=%#v\n", ret, lval)
 		if ret != expected || lval.token.TokenType != TokenType(expected) {
 			t.Errorf("expected=%d, got=%d", expected, lval.token.TokenType)
 		}
 	}
 }
 
+// 識別子のテスト
 func TestLexIdent(t *testing.T) {
 	tests := []struct {
 		input           string
@@ -223,20 +228,22 @@ func TestLexIdent(t *testing.T) {
 		{" @def    ", AT_IDENT, "@def"},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Context.Line == 0 {
-			t.Errorf("LineNumber not set. got %s", tok.String())
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
 		if tok.TokenType != tt.expectedType {
-			t.Errorf("expected Type %s. got %s", TokenLiteral(int(tt.expectedType)), tok.String())
+			t.Errorf("[%d] expected Type %s. got %s", tn, TokenLiteral(int(tt.expectedType)), tok.String())
 		}
 		if tok.Literal != tt.expectedLiteral {
-			t.Errorf("expected Literal %q. got %s", tt.expectedLiteral, tok.String())
+			t.Errorf("[%d] expected Literal %q. got %s", tn, tt.expectedLiteral, tok.String())
 		}
 	}
 }
+
+// Z80 8ビットレジスタのテスト
 func TestLexZ80REG8(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -257,24 +264,25 @@ func TestLexZ80REG8(t *testing.T) {
 		{"R", Z80_REG_R},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Context.Line == 0 {
-			t.Errorf("LineNumber not set. got %s", tok.String())
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
 		if tok.TokenType != Z80_REG8 {
-			t.Errorf("expected Type Z80_REG8. got %s", tok.String())
+			t.Errorf("[%d] expected Type Z80_REG8. got %s", tn, tok.String())
 		}
 		if tok.TokenSubType != tt.expected {
-			t.Errorf("expected TokenSubtype %q. got %s", TokenLiteral(int(tt.expected)), tok.String())
+			t.Errorf("[%d] expected TokenSubtype %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
 		if tok.Literal != tt.input {
-			t.Errorf("expected Literal %q. got %s", tt.input, tok.String())
+			t.Errorf("[%d] expected Literal %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
 	}
 }
 
+// Z80 16ビットレジスタ、レジスタペアのテスト
 func TestLexZ80REG16(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -289,31 +297,31 @@ func TestLexZ80REG16(t *testing.T) {
 		{"DE", Z80_REG_DE},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Context.Line == 0 {
-			t.Errorf("LineNumber not set. got %s", tok.String())
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
 		if tok.TokenType != Z80_REG16 {
-			t.Errorf("expected Type Z80_REG16. got %s", tok.String())
+			t.Errorf("[%d] expected Type Z80_REG16. got %s", tn, tok.String())
 		}
 		if tok.TokenSubType != TokenSubType(tt.expected) {
-			t.Errorf("expected TokenSubType %q. got %s", TokenLiteral(int(tt.expected)), tok.String())
+			t.Errorf("[%d] expected TokenSubType %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
 		if tok.Literal != TokenLiteral(int(tt.expected)) {
-			t.Errorf("expected Literal %q. got %s", tt.input, tok.String())
+			t.Errorf("[%d] expected Literal %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
 	}
 }
 
+// Z80フラグのテスト
 func TestLexZ80FLAG(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected TokenSubType
 	}{
-		// C は Z80_REG8 トークンとなる
-		// {"C", Z80_FLAG_C},
+		{"CY", Z80_FLAG_C}, // CY はキャリフラグの別名
 		{"NC", Z80_FLAG_NC},
 		{"Z", Z80_FLAG_Z},
 		{"NZ", Z80_FLAG_NZ},
@@ -323,26 +331,27 @@ func TestLexZ80FLAG(t *testing.T) {
 		{"M", Z80_FLAG_M},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Context.Line == 0 {
-			t.Errorf("LineNumber not set. got %s", tok.String())
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
 		if tok.TokenType != Z80_FLAG {
-			t.Errorf("tokenize %q. expected Type Z80_FLAG. got %#v", tt.input, TokenLiteral(int(tok.TokenType)))
+			t.Errorf("[%d] expected Type Z80_FLAG. got %#v", tn, TokenLiteral(int(tok.TokenType)))
 		}
 		if tok.TokenSubType != TokenSubType(tt.expected) {
-			t.Errorf("expected TokenSubType %q. got %s", TokenLiteral(int(tt.expected)), tok.String())
+			t.Errorf("[%d] expected TokenSubType %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
 		if tok.Literal != TokenLiteral(int(tt.expected)) {
-			t.Errorf("expected Literal %q. got %s", TokenLiteral(int(tt.expected)), tok.String())
+			t.Errorf("[%d] expected Literal %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
 	}
 }
 
+// Z80命令のテスト
 func TestLexZ80Instructions(t *testing.T) {
-	input := readTestDataFile(t, "z80instruction.txt")
+	input := strings.ToLower(readTestDataFile(t, "z80instruction.txt"))
 
 	l := newLexerForTest(input)
 	for {
@@ -371,19 +380,19 @@ func TestLexZ80Instructions(t *testing.T) {
 		if tok.TokenSubType != expectedToken.TokenSubType {
 			t.Errorf("expected Op '%d'. got %s", expectedToken.TokenSubType, tok.String())
 		}
-
 	}
 }
 
+// 予約語のテスト
 func TestLexReservedWords(t *testing.T) {
-	input := "CONST VAR EQU FUNCTION ORG " +
-		"IF ELSE ELIF ENDIF " +
-		"MACRO ENDM EXITM " +
-		"REPT ENDR " +
-		"FUNC ENDF RETURN " +
-		"PROC ENDP " +
-		"BLOCK ENDB " +
-		"FOR ENDF "
+	input := "const var equ function org " +
+		"if else elif endif " +
+		"macro endm exitm " +
+		"rept endr " +
+		"func endf return " +
+		"proc endp " +
+		"block endb " +
+		"for endfor "
 	l := newLexerForTest(input)
 
 	for {
@@ -410,6 +419,7 @@ func TestLexReservedWords(t *testing.T) {
 	}
 }
 
+// $で始まるトークンのテスト
 func TestLexDoller(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -429,17 +439,15 @@ func TestLexDoller(t *testing.T) {
 		{"$$", []TokenType{IDENT, IDENT, EOL}},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		for _, tokenType := range tt.expected {
 			tok := l.NextToken()
 			if tok.Context.Line == 0 {
-				fmt.Printf("input %q\n", tt.input)
-				t.Errorf("LineNumber not set. got %s", tok.String())
+				t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 			}
 			if tok.TokenType != tokenType {
-				fmt.Printf("input %q\n", tt.input)
-				t.Errorf("expected TokenType %s. got %#v", TokenLiteral(int(tokenType)), tok)
+				t.Errorf("[%d] expected TokenType %s. got %#v", tn, TokenLiteral(int(tokenType)), tok)
 			}
 			if tok.TokenType == EOL {
 				break
@@ -448,6 +456,7 @@ func TestLexDoller(t *testing.T) {
 	}
 }
 
+// 行継続のテスト
 func TestLexLineContinuation(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -459,17 +468,15 @@ func TestLexLineContinuation(t *testing.T) {
 		b`, []TokenType{Z80_INST2, Z80_REG8, ',', Z80_REG8, EOL}},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		for _, tokenType := range tt.expected {
 			tok := l.NextToken()
 			if tok.Context.Line == 0 {
-				fmt.Printf("input %q\n", tt.input)
-				t.Errorf("LineNumber not set. got %s", tok.String())
+				t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 			}
 			if tok.TokenType != tokenType {
-				fmt.Printf("input %q\n", tt.input)
-				t.Errorf("expected TokenType %s. got %#v", TokenLiteral(int(tokenType)), tok)
+				t.Errorf("[%d] expected TokenType %s. got %#v", tn, TokenLiteral(int(tokenType)), tok)
 			}
 			if tok.TokenType == EOL {
 				break
@@ -478,16 +485,17 @@ func TestLexLineContinuation(t *testing.T) {
 	}
 }
 
-func TestLexerLineNumber(t *testing.T) {
+// 行番号のテスト
+func TestLexerContextLineNumber(t *testing.T) {
 	tests := []struct {
 		input string
 	}{
-		{"abc"},
-		{"abc \n def"},
-		{"abc \n def \n xyz"},
-		{"abc \\ def \\ xyz"},
+		{"abc"},               // Context.Line == 1
+		{"abc \n def"},        // Context.Line == 1,2
+		{"abc \n def \n xyz"}, // Context.Line == 1,2,3
+		{"abc \\ def \\ xyz"}, // Context.Line == 1,1,1
 	}
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		ln := 1
 		for {
@@ -498,7 +506,7 @@ func TestLexerLineNumber(t *testing.T) {
 				break
 			}
 			if tok.Context.Line != ln {
-				t.Errorf("LineNumber not %d. got %d", ln, tok.Context.Line)
+				t.Errorf("[%d] LineNumber not %d. got %d", tn, ln, tok.Context.Line)
 			}
 			if strings.Contains(tt.input, "\\") {
 				continue // マルチステートメントは同一行
