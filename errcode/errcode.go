@@ -66,6 +66,7 @@ const (
 	EMACRO_NOT_MACRO = "%s は MACRO 以外で定義済み"
 	EMACRO_CYCLIC    = "MACRO %s の展開が再帰"
 
+	ESCOPE        = "%s はこのスコープでは利用できない"
 	ESCOPE_GLOBAL = "%s はグローバルスコープで利用不可"
 	WSCOPE_MACRO  = "%s は MACRO スコープでは無視"
 

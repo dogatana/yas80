@@ -5,8 +5,15 @@ import (
 	"strings"
 )
 
+const (
+	ENV_GLOBAL = iota
+	ENV_PROC
+	ENV_MACRO
+)
+
 // interface
 type Environment interface {
+	Type() int
 	Get(name string) (Object, bool)
 	Set(name string, obj Object) Object
 	Outer() Environment
@@ -15,7 +22,7 @@ type Environment interface {
 
 // for Global
 func NewEnvironment(outer Environment) Environment {
-	env := &NormalEnvironment{store: make(map[string]Object), outer: outer}
+	env := &GlobalEnvironment{store: make(map[string]Object), outer: outer}
 	// 最上位の環境にはシステム変数を定義しておく
 	if outer == nil {
 		setupSystemVariables(env)
@@ -39,25 +46,26 @@ func NewMacroEnvironment(outer Environment) Environment {
 }
 
 // グローバル環境
-type NormalEnvironment struct {
+type GlobalEnvironment struct {
 	store map[string]Object
 	outer Environment
 }
 
-func (e *NormalEnvironment) Get(name string) (Object, bool) {
+func (e *GlobalEnvironment) Type() int { return ENV_GLOBAL }
+func (e *GlobalEnvironment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok && e.outer != nil {
 		obj, ok = e.outer.Get(name)
 	}
 	return obj, ok
 }
-func (e *NormalEnvironment) Set(name string, obj Object) Object {
+func (e *GlobalEnvironment) Set(name string, obj Object) Object {
 	e.store[name] = obj
 	return obj
 }
-func (e *NormalEnvironment) Outer() Environment       { return e.outer }
-func (e *NormalEnvironment) Store() map[string]Object { return e.store }
-func (e *NormalEnvironment) Print() {
+func (e *GlobalEnvironment) Outer() Environment       { return e.outer }
+func (e *GlobalEnvironment) Store() map[string]Object { return e.store }
+func (e *GlobalEnvironment) Print() {
 	for k, v := range e.store {
 		fmt.Printf("env[%q] = %s\n", k, v.String())
 	}
@@ -69,6 +77,7 @@ type ProcEnvironment struct {
 	outer Environment
 }
 
+func (e *ProcEnvironment) Type() int { return ENV_PROC }
 func (e *ProcEnvironment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok && e.outer != nil {
@@ -93,6 +102,7 @@ type MacroEnvironment struct {
 	outer Environment
 }
 
+func (e *MacroEnvironment) Type() int { return ENV_MACRO }
 func (e *MacroEnvironment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok && e.outer != nil {
@@ -118,7 +128,7 @@ func PrintEnv(env Environment) {
 	for i := 0; ; i++ {
 		var envType string
 		switch env.(type) {
-		case *NormalEnvironment:
+		case *GlobalEnvironment:
 			envType = ""
 		case *MacroEnvironment:
 			envType = "@"
