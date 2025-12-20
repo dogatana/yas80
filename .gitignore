@@ -20,7 +20,9 @@ venv/
 *.lis
 
 doc/
+
 parser/rules.go
+errtest/errcode_names.go
 
 .vscode/launch.json
 
