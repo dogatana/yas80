@@ -2,8 +2,10 @@ package errtest
 
 import (
 	"bytes"
+	"fmt"
 	"regexp"
 	"strings"
+	"testing"
 	"yas80/evaluator"
 	"yas80/fileblock"
 	"yas80/logger"
@@ -70,4 +72,24 @@ func hasError(logger *logger.Logger, expected string) bool {
 		}
 	}
 	return false
+}
+
+func getErrcodeName(msg string) string {
+	if name, ok := errcodeNames[msg]; ok {
+		return name
+	}
+	panic(fmt.Sprintf("not found '%s", msg))
+}
+
+func testError(t *testing.T, tn int, logger *logger.Logger, expected string) {
+	if len(logger.Errors) == 0 {
+		t.Fatalf("[%d] no error", tn)
+	}
+	if !hasError(logger, expected) {
+		t.Errorf("[%d] not [%s] \"%s\" but \"%s\"",
+			tn,
+			getErrcodeName(expected),
+			expected,
+			logger.Errors[0].Message)
+	}
 }
