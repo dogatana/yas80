@@ -98,7 +98,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
-		e.logger.Error(errcode.EFUNC_NAME, ctx)
+		e.logger.Error(errcode.EFUNC_NONAME, ctx)
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {

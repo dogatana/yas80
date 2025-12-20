@@ -46,6 +46,7 @@ test: errtest/errcode_names.go
 
 errtest/errcode_names.go: errcode/errcode.go
 	python errtest/errcode_names.py $< $@
+	go fmt $@
 	
 testv:
 	go test -v ./parser ./evaluator ./fileblock ./errtest

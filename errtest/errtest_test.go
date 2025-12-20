@@ -63,3 +63,23 @@ func TestErrorScrope(t *testing.T) {
 		testError(t, tn, logger, tt.expected)
 	}
 }
+
+func TestErrorFunc(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`@abc func \ endf`, errcode.EFUNC_NAME},
+		{`.abc func \ endf`, errcode.EFUNC_NAME},
+		{`const abc = 0 \ abc func \ endf`, errcode.EFUNC_USED},
+		{`abc: nop \ abc func \ endf`, errcode.EFUNC_USED},
+		{`abc func \ endf \ abc func \ endf`, errcode.EFUNC_DUP},
+	}
+	for tn, tt := range tests {
+		logger := logger.New("test")
+		env := object.NewEnvironment(nil)
+		evaluateErrorInput(tt.input, logger, env)
+		testError(t, tn, logger, tt.expected)
+	}
+
+}

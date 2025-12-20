@@ -297,9 +297,17 @@ func (e *Evaluator) evalIfStatementWithFunc(
 // function 文
 func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env object.Environment) object.Object {
 	name := stmt.Name
-	_, ok := env.Get(name)
-	if ok {
-		e.logger.Error(fmt.Sprintf(errcode.EFUNC_DUP, name), stmt.Context)
+	if name[0] == '@' || name[0] == '.' {
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NAME, name), stmt.Context)
+		return object.ERROR
+	}
+	if obj, ok := env.Get(name); ok {
+		if obj.Type() == object.FUNC_OBJ {
+			e.logger.Error(fmt.Sprintf(errcode.EFUNC_DUP, name), stmt.Context)
+		} else {
+			e.logger.Error(fmt.Sprintf(errcode.EFUNC_USED, name), stmt.Context)
+
+		}
 		return object.NULL
 	}
 	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env}

@@ -137,8 +137,16 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 				objects = append(objects, objs...)
 			}
 
+		// 関数定義
+		case *parser.FuncStatement:
+			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				return object.ERROR
+			}
+			// stmts, objects 両方に追加しない
+
 		default:
-			e.logger.Info(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil)
+			// e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil)
 			obj = e.evalStatement(node, env)
 			if obj == object.ERROR {
 				continue

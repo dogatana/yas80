@@ -29,7 +29,9 @@ const (
 	EBIN_OP_TYPE    = "二項演算子 '%s' は使用不可"
 
 	EFUNC_DUP       = "FUNC '%s' は定義済み"
-	EFUNC_NAME      = "関数呼出しには関数名が必要"
+	EFUNC_NAME      = "%s は関数名として使用不可"
+	EFUNC_USED      = "%s は利用済のため FUNC 名として利用不可"
+	EFUNC_NONAME    = "関数呼出しには関数名が必要"
 	EFUNC_UNDEF     = "FUNC '%s' は未定義"
 	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
 
@@ -46,7 +48,7 @@ const (
 	EASSIGN_INVALID_VALUE = "代入右辺式の値が未確定"
 
 	ESYM_DUP            = "CONST/EQU '%s' は定義済み"
-	ESYM_USED           = "%s は利用済のため CONST/EQU 定義不可"
+	ESYM_USED           = "%s は利用済のため CONST/EQU 名として利用不可"
 	ESYM_UNDEF          = "シンボル %s は未定義"
 	ESYM_CYCLIC         = "シンボル %s の定義が循環参照を含む"
 	ESYM_NOT_DETERMINED = "シンボル %s の値を確定できない"
