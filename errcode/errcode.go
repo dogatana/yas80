@@ -70,7 +70,6 @@ const (
 	// MACRO 呼出し
 	EMACRO_UNDEF     = "MACRO %s は未定義"
 	EMACRO_ARG_COUNT = "MACRO %s の仮引数と引数の個数不一致"
-	EMACRO_NOT_MACRO = "%s は MACRO 以外で定義済み"
 	EMACRO_CYCLIC    = "MACRO %s の展開が再帰"
 
 	ESCOPE        = "%s はこのスコープでは利用できない"

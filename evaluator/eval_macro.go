@@ -19,7 +19,7 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 	}
 	macro, ok := obj.(*object.MacroObject)
 	if !ok {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, stmt.Name), stmt.Context)
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, stmt.Name), stmt.Context)
 		return object.ERROR
 	}
 	if len(stmt.Args.Expressions) != len(macro.Params) {
