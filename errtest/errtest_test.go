@@ -64,7 +64,7 @@ func TestErrorScrope(t *testing.T) {
 	}
 }
 
-func TestErrorFunc(t *testing.T) {
+func TestErrorFuncDef(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -88,6 +88,26 @@ func TestErrorFunc(t *testing.T) {
 
 }
 
+func TestErrorFuncCall(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// tn: 0-
+		{`abc func \ return 1 \ endf \ _=abc(0)`, errcode.EFUNC_ARG_COUNT},
+		{`abc func arg \ return 1 \ endf \ _=abc()`, errcode.EFUNC_ARG_COUNT},
+		{`abc func arg \ return 1 \ endf \ _=abc(0, 1)`, errcode.EFUNC_ARG_COUNT},
+		{`_=abc()`, errcode.EFUNC_ARG_COUNT},
+		{`_=abc(0)`, errcode.EFUNC_ARG_COUNT},
+	}
+	for tn, tt := range tests {
+		logger := logger.New("test")
+		env := object.NewEnvironment(nil)
+		evaluateErrorInput(tt.input, logger, env)
+		testError(t, tn, logger, tt.expected)
+	}
+
+}
 func TestErrorMacro(t *testing.T) {
 	tests := []struct {
 		input    string
