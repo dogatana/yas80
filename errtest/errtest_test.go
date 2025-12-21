@@ -97,8 +97,10 @@ func TestErrorFuncCall(t *testing.T) {
 		{`abc func \ return 1 \ endf \ _=abc(0)`, errcode.EFUNC_ARG_COUNT},
 		{`abc func arg \ return 1 \ endf \ _=abc()`, errcode.EFUNC_ARG_COUNT},
 		{`abc func arg \ return 1 \ endf \ _=abc(0, 1)`, errcode.EFUNC_ARG_COUNT},
-		{`_=abc()`, errcode.EFUNC_ARG_COUNT},
-		{`_=abc(0)`, errcode.EFUNC_ARG_COUNT},
+		{`_=abc()`, errcode.EFUNC_UNDEF},
+		{`_=abc(0)`, errcode.EFUNC_UNDEF},
+		{`const abc = 1 \ _=abc(0)`, errcode.EFUNC_NOT_FUNC},
+		{`const abc = 1 \ _=abc()`, errcode.EFUNC_NOT_FUNC},
 	}
 	for tn, tt := range tests {
 		logger := logger.New("test")

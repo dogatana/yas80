@@ -68,7 +68,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 		return v
 
 	// 関数呼出し
-	case *parser.CallExpression:
+	case *parser.FuncCallExpression:
 		return e.evalCallExpression(node, env, ctx)
 
 	// 中置演算子
@@ -86,19 +86,15 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 }
 
 // 関数呼出し
-func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.Environment, ctx *fileblock.Context) object.Object {
-	obj := e.evalExpression(expr.Function, env, ctx)
-	if isError(obj) || isRefNotFound(obj) { // TODO: エラーとRefNotFound を分ける
-		e.Resolved = false
-		return obj
-	} else if obj == object.NULL {
-		panic("object is NULL") // TODO
-		// return &object.NodeObject{Value: expr, LineNumber: expr.ContextNumber()}
+func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env object.Environment, ctx *fileblock.Context) object.Object {
+	obj, ok := env.Get(expr.Name)
+	if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_UNDEF, expr.Name), expr.Context)
+		return object.ERROR
 	}
-
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
-		e.logger.Error(errcode.EFUNC_NONAME, ctx)
+		e.logger.Error(errcode.EFUNC_NOT_FUNC, ctx)
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {

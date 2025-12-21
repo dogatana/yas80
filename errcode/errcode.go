@@ -58,7 +58,7 @@ const (
 	EFUNC_USED = "%s を FUNC として再定義不可"
 	EFUNC_DUP  = "FUNC '%s' は定義済み"
 	// FUNC 呼出し
-	EFUNC_NONAME    = "関数呼出しには関数名が必要"
+	EFUNC_NOT_FUNC  = "%s は関数名ではない"
 	EFUNC_UNDEF     = "FUNC '%s' は未定義"
 	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
 

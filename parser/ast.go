@@ -716,21 +716,20 @@ func (pe *PrefixExpression) String() string {
 }
 
 // 関数呼出し
-type CallExpression struct {
-	Function  Expression
+type FuncCallExpression struct {
+	Name      string
 	Arguments *ExpressionList
 	Context   *fileblock.Context
 }
 
-func (ce *CallExpression) expressionNode()          {}
-func (ce *CallExpression) NodeType() NodeType       { return NODE_CALL }
-func (ce *CallExpression) NodeSubType() NodeSubType { return 0 }
-func (ce *CallExpression) String() string {
+func (fc *FuncCallExpression) expressionNode()          {}
+func (fc *FuncCallExpression) NodeType() NodeType       { return NODE_CALL }
+func (fc *FuncCallExpression) NodeSubType() NodeSubType { return 0 }
+func (fc *FuncCallExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(ce.Function.String())
-	out.WriteRune('(')
-	out.WriteString(ce.Arguments.String())
+	out.WriteString(fc.Name + "(")
+	out.WriteString(fc.Arguments.String())
 	out.WriteRune(')')
 
 	return out.String()

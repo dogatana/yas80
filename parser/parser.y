@@ -508,17 +508,10 @@ expr		: NUMBER
 				names := strings.Split(uname, ".")
 				$$ = &DotIdent{Name: uname, Left: names[0], Right: names[1],Context: $1.Context}
 			}
-//			| IDENT '(' ')'
-//			{
-//				$$ = &CallExpression{
-//					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Context: $1.Context}, 
-//					Arguments: &ExpressionList{Expressions: []Expression{}},
-//					Context: $1.Context}
-//			}
 			| IDENT '(' expr_list ')'
 			{
-				$$ = &CallExpression{
-					Function: &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Context: $1.Context}, 
+				$$ = &FuncCallExpression{
+					Name: strings.ToUpper($1.Literal),
 					Arguments: $3, 
 					Context: $1.Context}
 			}
