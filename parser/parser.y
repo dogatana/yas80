@@ -241,6 +241,24 @@ directive	: CONST ident '=' expr
 						Block: []Node {&ReturnStatement{Value: $6,Context: $1.Context}}}, 
 						Context: $1.Context}
 			}
+			| RETURN		{ $$ = &ReturnStatement{Value: nil,Context: $1.Context}} 
+			| RETURN expr	
+			{ 
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else {
+					$$ = &ReturnStatement{Value: $2,Context: $1.Context}} 
+				}
+			| ident PROC	{ $$ = &ProcStatement{Name:$1.Name, IsStart: true,Context: $2.Context }}
+			| ENDP 			{ $$ = &ProcStatement{IsStart: false,Context: $1.Context}}
+			| ident MACRO param_list EOL block_statement ENDM
+			{
+				$$ = &MacroStatement{Name: $1.Name, Params: $3, Body: $5,Context: $1.Context}
+			}
+			| IDENT expr_list 
+			{
+				$$ = &MacroCallStatement{Name: strings.ToUpper($1.Literal), Args: $2,Context: $1.Context}
+			}
 			| EXITM			{ $$ = &ExitmStatement{Context: $1.Context}}
 			| EXITM IF expr
 			{
@@ -253,25 +271,6 @@ directive	: CONST ident '=' expr
 						Consequence: &BlockStatement{Block: []Node{&ExitmStatement{Context: ctx}}},
 						Alternative:  &BlockStatement{Block: []Node{}}}
 				}
-			}
-			| RETURN		{ $$ = &ReturnStatement{Value: nil,Context: $1.Context}} 
-			| RETURN expr	
-			{ 
-				if $2.NodeType() == NODE_ERROR {
-					$$ = $2
-				} else {
-					$$ = &ReturnStatement{Value: $2,Context: $1.Context}} 
-				}
-			| ident PROC	{ $$ = &ProcStatement{Name:$1.Name, IsStart: true,Context: $2.Context }}
-			| ENDP 			{ $$ = &ProcStatement{IsStart: false,Context: $1.Context}}
-			| IDENT MACRO param_list EOL block_statement ENDM
-			{
-				// macro 定義は ident でなく IDENT 
-				$$ = &MacroStatement{Name: strings.ToUpper($1.Literal), Params: $3, Body: $5,Context: $1.Context}
-			}
-			| IDENT expr_list 
-			{
-				$$ = &MacroCallStatement{Name: strings.ToUpper($1.Literal), Args: $2,Context: $1.Context}
 			}
 			;
 	
