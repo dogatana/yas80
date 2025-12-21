@@ -13,9 +13,16 @@ import (
 	"yas80/parser"
 )
 
-func evaluateErrorInput(input string, logger *logger.Logger, env object.Environment) {
-	prog := parseErrorTextForTest(input, logger)
-	if len(logger.Errors) > 0 {
+const (
+	TEST_ERROR = iota
+	TEST_WARNING
+	TEST_INFORMATION
+)
+
+func evaluateInput(testType int, input string, logger *logger.Logger, env object.Environment) {
+	prog := parseText(input, logger)
+
+	if getCount(logger)[testType] > 0 {
 		return
 	}
 
@@ -28,7 +35,7 @@ func evaluateErrorInput(input string, logger *logger.Logger, env object.Environm
 		obj = e.EvalProgram(prog, env)
 		e.EvalEnv(env)
 		e.CheckSymbols(env)
-		if len(logger.Errors) > 0 {
+		if getCount(logger)[testType] > 0 {
 			return
 		}
 		if e.Resolved {
@@ -48,21 +55,52 @@ func evaluateErrorInput(input string, logger *logger.Logger, env object.Environm
 	}
 }
 
-func parseErrorTextForTest(input string, logger *logger.Logger) *parser.Program {
+func testMessage(t *testing.T, testType int, tn int, logger *logger.Logger, expected string) {
+
+	//  logger.LogMessage is not a type エラー回避
+	// var messages []logger.LogMessage
+	messages := logger.Errors
+
+	switch testType {
+	case TEST_WARNING:
+		messages = logger.Warnings
+	case TEST_INFORMATION:
+		messages = logger.Infomation
+	}
+
+	if len(messages) == 0 {
+		t.Fatalf("[%d] no error", tn)
+	}
+	if !hasMessage(messages, expected) {
+		logger.Print()
+		t.Errorf("[%d] not [%s] \"%s\" => \"%s\"",
+			tn,
+			getErrcodeName(expected),
+			expected,
+			logger.Errors[0].Error())
+	}
+}
+
+func parseText(input string, logger *logger.Logger) *parser.Program {
 	file := "<string>"
 	fb := fileblock.New(file, []byte(input))
 	l := parser.NewLexer(fb, logger)
 	return parser.Parse(l)
 }
 
-func hasError(logger *logger.Logger, expected string) bool {
+func getCount(logger *logger.Logger) []int {
+	e, w, i := logger.Count()
+	return []int{e, w, i}
+}
+
+func hasMessage(messages []logger.LogMessage, expected string) bool {
 	re := regexp.MustCompile(`\.?%.\.?`)
 	ss := re.Split(expected, -1)
 
-	for _, emsg := range logger.Errors {
+	for _, emsg := range messages {
 		result := true
 		for _, s := range ss {
-			if !strings.Contains(emsg.Message, s) {
+			if !strings.Contains(emsg.Message(), s) {
 				result = false
 				break
 			}
@@ -79,18 +117,4 @@ func getErrcodeName(msg string) string {
 		return name
 	}
 	panic(fmt.Sprintf("not found '%s", msg))
-}
-
-func testError(t *testing.T, tn int, logger *logger.Logger, expected string) {
-	if len(logger.Errors) == 0 {
-		t.Fatalf("[%d] no error", tn)
-	}
-	if !hasError(logger, expected) {
-		logger.Print()
-		t.Errorf("[%d] not [%s] \"%s\" => \"%s\"",
-			tn,
-			getErrcodeName(expected),
-			expected,
-			logger.Errors[0].Message)
-	}
 }

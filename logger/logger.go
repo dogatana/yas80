@@ -5,49 +5,56 @@ import (
 	"yas80/fileblock"
 )
 
+type LogMessage interface {
+	Message() string
+	Error() string
+}
 type ErrorMessage struct {
-	Message string
+	message string
 	Context *fileblock.Context
 }
 
-func (em *ErrorMessage) Error() string {
-	if em.Context == nil {
-		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, em.Message)
+func (m *ErrorMessage) Message() string { return m.message }
+func (m *ErrorMessage) Error() string {
+	if m.Context == nil {
+		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, m.message)
 	} else {
-		return fmt.Sprintf("%q:%d [ERROR] %s", em.Context.FileBlock.Filename, em.Context.Line, em.Message)
+		return fmt.Sprintf("%q:%d [ERROR] %s", m.Context.FileBlock.Filename, m.Context.Line, m.message)
 	}
 }
 
 type WarningMessage struct {
-	Message string
+	message string
 	Context *fileblock.Context
 }
 
-func (wm WarningMessage) Error() string {
-	if wm.Context == nil {
-		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, wm.Message)
+func (m *WarningMessage) Message() string { return m.message }
+func (m *WarningMessage) Error() string {
+	if m.Context == nil {
+		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, m.Message)
 	} else {
-		return fmt.Sprintf("%q:%d [WARN] %s", wm.Context.FileBlock.Filename, wm.Context.Line, wm.Message)
+		return fmt.Sprintf("%q:%d [WARN] %s", m.Context.FileBlock.Filename, m.Context.Line, m.message)
 	}
 }
 
 type InfoMessage struct {
-	Message string
+	message string
 	Context *fileblock.Context
 }
 
-func (im InfoMessage) Error() string {
-	if im.Context == nil {
-		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, im.Message)
+func (m *InfoMessage) Message() string { return m.message }
+func (m *InfoMessage) Error() string {
+	if m.Context == nil {
+		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, m.Message)
 	} else {
-		return fmt.Sprintf("%q:%d [INFO] %s", im.Context.FileBlock.Filename, im.Context.Line, im.Message)
+		return fmt.Sprintf("%q:%d [INFO] %s", m.Context.FileBlock.Filename, m.Context.Line, m.message)
 	}
 }
 
 type Logger struct {
-	Errors     []*ErrorMessage
-	Warnings   []*WarningMessage
-	Infomation []*InfoMessage
+	Errors     []LogMessage
+	Warnings   []LogMessage
+	Infomation []LogMessage
 	Filename   string
 }
 
@@ -56,18 +63,18 @@ func New(filename string) *Logger {
 }
 
 func (l *Logger) Error(msg string, ctx *fileblock.Context) error {
-	err := &ErrorMessage{Message: msg, Context: ctx}
+	err := &ErrorMessage{message: msg, Context: ctx}
 	l.Errors = append(l.Errors, err)
 	return err
 }
 
 func (l *Logger) Warning(msg string, ctx *fileblock.Context) error {
-	err := &WarningMessage{Message: msg, Context: ctx}
+	err := &WarningMessage{message: msg, Context: ctx}
 	l.Warnings = append(l.Warnings, err)
 	return err
 }
 func (l *Logger) Info(msg string, ctx *fileblock.Context) error {
-	err := &InfoMessage{Message: msg, Context: ctx}
+	err := &InfoMessage{message: msg, Context: ctx}
 	l.Infomation = append(l.Infomation, err)
 	return err
 }

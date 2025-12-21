@@ -19,8 +19,8 @@ func TestErrorExpression(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logger.New("test")
 		env := object.NewEnvironment(nil)
-		evaluateErrorInput(tt.input, logger, env)
-		testError(t, tn, logger, tt.expected)
+		evaluateInput(TEST_ERROR, tt.input, logger, env)
+		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 }
 
@@ -40,8 +40,8 @@ func TestErrorConstLabel(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logger.New("test")
 		env := object.NewEnvironment(nil)
-		evaluateErrorInput(tt.input, logger, env)
-		testError(t, tn, logger, tt.expected)
+		evaluateInput(TEST_ERROR, tt.input, logger, env)
+		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 }
 
@@ -59,8 +59,8 @@ func TestErrorScrope(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logger.New("test")
 		env := object.NewEnvironment(nil)
-		evaluateErrorInput(tt.input, logger, env)
-		testError(t, tn, logger, tt.expected)
+		evaluateInput(TEST_ERROR, tt.input, logger, env)
+		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 }
 
@@ -82,8 +82,8 @@ func TestErrorFuncDef(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logger.New("test")
 		env := object.NewEnvironment(nil)
-		evaluateErrorInput(tt.input, logger, env)
-		testError(t, tn, logger, tt.expected)
+		evaluateInput(TEST_ERROR, tt.input, logger, env)
+		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 
 }
@@ -105,8 +105,8 @@ func TestErrorFuncCall(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logger.New("test")
 		env := object.NewEnvironment(nil)
-		evaluateErrorInput(tt.input, logger, env)
-		testError(t, tn, logger, tt.expected)
+		evaluateInput(TEST_ERROR, tt.input, logger, env)
+		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 
 }
@@ -123,8 +123,8 @@ func TestErrorMacroDef(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logger.New("test")
 		env := object.NewEnvironment(nil)
-		evaluateErrorInput(tt.input, logger, env)
-		testError(t, tn, logger, tt.expected)
+		evaluateInput(TEST_ERROR, tt.input, logger, env)
+		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 }
 
@@ -146,7 +146,7 @@ func TestErrorMacroCall(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logger.New("test")
 		env := object.NewEnvironment(nil)
-		evaluateErrorInput(tt.input, logger, env)
-		testError(t, tn, logger, tt.expected)
+		evaluateInput(TEST_ERROR, tt.input, logger, env)
+		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 }
