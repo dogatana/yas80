@@ -6,7 +6,7 @@ import (
 	"yas80/parser"
 )
 
-func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject) object.Object {
+func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, env object.Environment) object.Object {
 	nodes := []parser.Node{}
 	seq := e.Counter()
 
@@ -20,7 +20,17 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 
 	for _, stmt := range macro.Body.Block {
 		news := e.replaceStatement(stmt.(parser.Statement), replace)
-		nodes = append(nodes, news)
+		if news.NodeType() == parser.NODE_MACRO_CALL_STMT {
+			mcall := news.(*parser.MacroCallStatement)
+			sub := e.evalMacroCallStatement(mcall, env)
+			if isError(sub) {
+				return object.ERROR
+			}
+			bs := &parser.MacroBlockStatement{Name: mcall.Name, Block: sub.(*object.NodesObject).Nodes}
+			nodes = append(nodes, bs)
+		} else {
+			nodes = append(nodes, news)
+		}
 	}
 	return &object.NodesObject{Nodes: nodes}
 }

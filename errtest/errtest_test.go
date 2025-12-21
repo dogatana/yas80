@@ -126,5 +126,27 @@ func TestErrorMacroDef(t *testing.T) {
 		evaluateErrorInput(tt.input, logger, env)
 		testError(t, tn, logger, tt.expected)
 	}
+}
 
+func TestErrorMacroCall(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// 0-
+		{`abc`, errcode.EMACRO_UNDEF},
+		{`abc 1`, errcode.EMACRO_UNDEF},
+		{`abc macro \ endm \ abc 1`, errcode.EMACRO_ARG_COUNT},
+		{`abc macro arg \ endm \ abc`, errcode.EMACRO_ARG_COUNT},
+		{`abc macro arg \ endm \ abc 1, 2`, errcode.EMACRO_ARG_COUNT},
+		// 5-
+		{`aaa macro \ nop \ bbb macro \ nop \ endm \ endm \ aaa`, errcode.EMACRO_NEST},
+		{`aaa macro \ bbb \ endm \ bbb macro \ aaa \ endm \ aaa`, errcode.EMACRO_CYCLIC},
+	}
+	for tn, tt := range tests {
+		logger := logger.New("test")
+		env := object.NewEnvironment(nil)
+		evaluateErrorInput(tt.input, logger, env)
+		testError(t, tn, logger, tt.expected)
+	}
 }

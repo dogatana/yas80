@@ -32,7 +32,7 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 		return object.ERROR
 	}
 	expandingMacro[stmt.Name] = true
-	nodes := e.expandMacro(stmt, macro)
+	nodes := e.expandMacro(stmt, macro, env)
 	expandingMacro[stmt.Name] = false
 
 	return nodes
@@ -56,11 +56,12 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 
 	for _, node := range block {
 		switch stmt := node.(type) {
+		case *parser.MacroStatement:
+			e.logger.Error(errcode.EMACRO_NEST, stmt.Context)
+			continue
+
 		case *parser.ReturnStatement:
 			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "RETURN 文"), stmt.Context)
-			continue
-		case *parser.MacroStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "MACRO 文"), stmt.Context)
 			continue
 		case *parser.ProcStatement:
 			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "PROC 文"), stmt.Context)
@@ -124,9 +125,9 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 			objs := bo.Block
 			objects = append(objects, objs...)
 			// 評価結果の末尾が EXITM なら評価を終了し戻る
-			if len(objs) >= 1 && objs[0].Type() == object.EXITM_OBJ {
-				goto BREAK
-			}
+			// if len(objs) >= 1 && objs[0].Type() == object.EXITM_OBJ {
+			// 	goto BREAK
+			// }
 
 		default:
 			obj := e.evalStatement(node, env)
