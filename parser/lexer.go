@@ -95,6 +95,7 @@ LINE_CONT:
 	case l.ctx.curChar == EOF:
 		// EOF
 		return Token{TokenType: 0, Literal: "[EOF]", Context: l.ctx.toContext(l.start)}
+
 	case l.ctx.curChar == ';':
 		// コメント
 		for l.ctx.curChar != '\n' && l.ctx.curChar != EOF {
@@ -102,47 +103,61 @@ LINE_CONT:
 		}
 		l.nextChar()
 		return Token{TokenType: EOL, Literal: "\\n", Context: l.ctx.toContext(l.start)}
+
 	case l.ctx.curChar == '\\' && l.peekChar() == '\n':
 		// 行継続
 		l.nextChar()
 		l.nextChar()
 		goto LINE_CONT
+
 	case l.ctx.curChar == '\\':
 		// マルチステートメント
 		tok := Token{TokenType: EOL, Literal: "\\", Context: l.ctx.toContext(l.start)}
 		l.nextChar()
 		return tok
+
 	case l.ctx.curChar == '\n':
 		// EOL
 		l.nextChar()
 		return Token{TokenType: EOL, Literal: "\\n", Context: l.ctx.toContext(l.start)}
+
 	case l.ctx.curChar == '"':
 		// 文字列リテラル
 		s := l.readString()
 		l.nextChar()
 		l.nextChar()
 		return Token{TokenType: STRING, Literal: s, Context: l.ctx.toContext(l.start)}
-	case l.ctx.curChar == '+' || l.ctx.curChar == '-' || l.ctx.curChar == '^': // ADDSUB
+
+	case l.ctx.curChar == '+' || l.ctx.curChar == '-' || l.ctx.curChar == '^':
+		// ADDSUB
 		ch := l.ctx.curChar
 		l.nextChar()
 		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
-	case l.ctx.curChar == '*' || l.ctx.curChar == '/': // MULDIV
+
+	case l.ctx.curChar == '*' || l.ctx.curChar == '/':
+		// MULDIV
 		ch := l.ctx.curChar
 		l.nextChar()
 		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
+
 	case l.isTowCharTokenStart(l.ctx.curChar):
+		// 2 文字トークン
 		tok := l.checkTwoCharToken(l.ctx.curChar)
 		tok.Context = l.ctx.toContext(l.start)
 		return tok
+
 	case l.isOneCharToken(l.ctx.curChar):
 		// 1文字トークン
 		ch = l.ctx.curChar
 		l.nextChar()
 		return Token{TokenType: TokenType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
+
 	case l.ctx.curChar == '~':
+		// 単項演算子
 		ch = l.ctx.curChar
 		l.nextChar()
 		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
+
 	case l.ctx.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
 		// 16進数リテラル(0x)
 		l.nextChar() // '0'をスキップ
@@ -151,11 +166,13 @@ LINE_CONT:
 		literal += l.readWord()
 		l.nextChar()
 		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+
 	case l.ctx.curChar == '$' && !l.isXDigit(l.peekChar()):
 		// $ ローケーションカウンタ
 		tok := Token{TokenType: IDENT, Literal: "$", Context: l.ctx.toContext(l.start)}
 		l.nextChar()
 		return tok
+
 	case l.ctx.curChar == '$' || l.ctx.curChar == '%':
 		// 16進数リテラル($) or 2進数リテラル
 		literal = string(l.ctx.curChar)
@@ -163,13 +180,15 @@ LINE_CONT:
 		literal += l.readWord()
 		l.nextChar()
 		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+
 	case l.isDigit(l.ctx.curChar):
 		// 10進、16進(0x)、2進(0b)、8進（0o)リテラル
 		literal = l.readWord()
 		l.nextChar()
 		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+
 	case l.isAlpha(l.ctx.curChar):
-		// IDENT、予約語
+		// IDENT, DOT_IDENT, 予約語
 		literal = l.readWord()
 		if l.peekChar() == '.' {
 			// LABEL abc.def
@@ -196,9 +215,11 @@ LINE_CONT:
 			tok.Context = l.ctx.toContext(l.start)
 			return tok
 		}
-		// これ以外は識別子
+		// これ以外は IDENT
 		return Token{TokenType: IDENT, Literal: literal, Context: l.ctx.toContext(l.start)}
+
 	case l.ctx.curChar == '@' || l.ctx.curChar == '.':
+		// AT_IDENT, LOCAL_IDENT
 		prefix := l.ctx.curChar
 		literal = string(l.ctx.curChar)
 		l.nextChar()
