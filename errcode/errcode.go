@@ -28,14 +28,6 @@ const (
 	EBIN_OP_NUMBER  = "不明な整数演算子 '%s'"
 	EBIN_OP_TYPE    = "二項演算子 '%s' は使用不可"
 
-	EFUNC_NAME = "%s は関数名として使用不可"
-	EFUNC_USED = "%s を FUNC として再定義不可"
-	EFUNC_DUP  = "FUNC '%s' は定義済み"
-
-	EFUNCALL_NONAME    = "関数呼出しには関数名が必要"
-	EFUNCALL_UNDEF     = "FUNC '%s' は未定義"
-	EFUNCALL_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
-
 	EZ80_FLAG       = "'%s' はフラグでない"
 	EZ80_OP1        = "第1オペランド誤り"
 	EZ80_OP2        = "第2オペランド誤り"
@@ -61,11 +53,22 @@ const (
 	ELABEL_DUP  = "LABEL %s は定義済み"        // symbol 以外で利用済
 	ELABEL_USED = "%s は利用済のため LABEL 定義不可" // symbol 以外で利用済
 
-	EMACRO_NAME      = "%s は MACRO 名として使用不可"
-	EMACRO_USED      = "%s を MACRO として再定義不可"
-	EMACRO_UNDEF     = "MACRO %s は未定義"
-	EMACRO_DUP       = "MACRO %s は定義済み" // TODO 最終的に不要
-	EMACRO_NEST      = "MACRO 定義はネスト不可" // TODO 最終的に不要
+	// FUNC 定義
+	EFUNC_NAME = "%s は関数名として使用不可"
+	EFUNC_USED = "%s を FUNC として再定義不可"
+	EFUNC_DUP  = "FUNC '%s' は定義済み"
+	// FUNC 呼出し
+	EFUNC_NONAME    = "関数呼出しには関数名が必要"
+	EFUNC_UNDEF     = "FUNC '%s' は未定義"
+	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
+
+	// MACRO 定義
+	EMACRO_NAME  = "%s は MACRO 名として使用不可"
+	EMACRO_USED  = "%s を MACRO として再定義不可"
+	EMACRO_UNDEF = "MACRO %s は未定義"
+	EMACRO_DUP   = "MACRO %s は定義済み" // TODO 最終的に不要
+	EMACRO_NEST  = "MACRO 定義はネスト不可" // TODO 最終的に不要
+	// MACRO 呼出し
 	EMACRO_ARG_COUNT = "MACRO %s の仮引数と引数の個数不一致"
 	EMACRO_NOT_MACRO = "%s は MACRO 以外で定義済み"
 

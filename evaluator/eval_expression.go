@@ -98,11 +98,11 @@ func (e *Evaluator) evalCallExpression(expr *parser.CallExpression, env object.E
 
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
-		e.logger.Error(errcode.EFUNCALL_NONAME, ctx)
+		e.logger.Error(errcode.EFUNC_NONAME, ctx)
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {
-		e.logger.Error(fmt.Sprintf(errcode.EFUNCALL_ARG_COUNT, fn.Name), ctx)
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), ctx)
 		return object.ERROR
 	}
 
