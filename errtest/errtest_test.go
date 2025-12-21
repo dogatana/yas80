@@ -150,3 +150,22 @@ func TestErrorMacroCall(t *testing.T) {
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 }
+
+func TestWarningMacroCall(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// 0-
+		{`abc macro \ return \ endm \ abc`, errcode.WSCOPE_MACRO},
+		{`abc macro \ fn func \ return 1 \ endf \ endm \ abc`, errcode.WSCOPE_MACRO},
+		// TODO enum
+		// TODO proc
+	}
+	for tn, tt := range tests {
+		logger := logger.New("test")
+		env := object.NewEnvironment(nil)
+		evaluateInput(TEST_WARNING, tt.input, logger, env)
+		testMessage(t, TEST_WARNING, tn, logger, tt.expected)
+	}
+}
