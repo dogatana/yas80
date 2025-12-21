@@ -31,12 +31,17 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 
 	// マクロ定義
 	case *parser.MacroStatement:
-		if _, ok := env.Get(node.Name); ok {
-			e.logger.Error(fmt.Sprintf(errcode.EMACRO_REDEF, node.Name), node.Context)
+		name := node.Name
+		if name[0] == '@' || name[0] == '.' {
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_NAME, name), node.Context)
 			return object.ERROR
 		}
-		obj := &object.MacroObject{Name: node.Name, Params: node.Params, Body: node.Body}
-		env.Set(node.Name, obj)
+		if _, ok := env.Get(name); ok {
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, name), node.Context)
+			return object.ERROR
+		}
+		obj := &object.MacroObject{Name: name, Params: node.Params, Body: node.Body}
+		env.Set(name, obj)
 		return obj // 形式上必要
 
 	// マクロ呼出し

@@ -69,11 +69,34 @@ func TestErrorFunc(t *testing.T) {
 		input    string
 		expected string
 	}{
+		// tn: 0-
 		{`@abc func \ endf`, errcode.EFUNC_NAME},
 		{`.abc func \ endf`, errcode.EFUNC_NAME},
 		{`const abc = 0 \ abc func \ endf`, errcode.EFUNC_USED},
 		{`abc: nop \ abc func \ endf`, errcode.EFUNC_USED},
 		{`abc func \ endf \ abc func \ endf`, errcode.EFUNC_DUP},
+		// tn: 5-
+		{`function @abc() 1`, errcode.EFUNC_NAME},
+		{`function .abc() 1`, errcode.EFUNC_NAME},
+	}
+	for tn, tt := range tests {
+		logger := logger.New("test")
+		env := object.NewEnvironment(nil)
+		evaluateErrorInput(tt.input, logger, env)
+		testError(t, tn, logger, tt.expected)
+	}
+
+}
+
+func TestErrorMacro(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`@abc macro \ endm`, errcode.EMACRO_NAME},
+		{`.abc macro \ endm`, errcode.EMACRO_NAME},
+		{`abc: nop \ abc macro \ endm`, errcode.EMACRO_USED},
+		{`abc macro \ endm \ abc macro \ endm`, errcode.EMACRO_USED},
 	}
 	for tn, tt := range tests {
 		logger := logger.New("test")

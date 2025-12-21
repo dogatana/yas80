@@ -92,7 +92,10 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 
 		// マクロ定義
 		case *parser.MacroStatement:
-			e.evalStatement(stmt, env)
+			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				return object.ERROR
+			}
 			continue
 
 		// マクロ呼出し

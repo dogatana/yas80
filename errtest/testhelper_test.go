@@ -87,7 +87,7 @@ func testError(t *testing.T, tn int, logger *logger.Logger, expected string) {
 	}
 	if !hasError(logger, expected) {
 		logger.Print()
-		t.Errorf("[%d] not [%s] \"%s\". got \"%s\"",
+		t.Errorf("[%d] not [%s] \"%s\" => \"%s\"",
 			tn,
 			getErrcodeName(expected),
 			expected,
