@@ -63,16 +63,15 @@ const (
 	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
 
 	// MACRO 定義
-	EMACRO_NAME  = "%s は MACRO 名として使用不可"
-	EMACRO_USED  = "%s を MACRO として再定義不可"
-	EMACRO_UNDEF = "MACRO %s は未定義"
-	EMACRO_DUP   = "MACRO %s は定義済み" // TODO 最終的に不要
-	EMACRO_NEST  = "MACRO 定義はネスト不可" // TODO 最終的に不要
+	EMACRO_NAME = "%s は MACRO 名として使用不可"
+	EMACRO_USED = "%s を MACRO として再定義不可"
+	EMACRO_DUP  = "MACRO %s は定義済み" // TODO 最終的に不要
+	EMACRO_NEST = "MACRO 定義はネスト不可" // TODO 最終的に不要
 	// MACRO 呼出し
+	EMACRO_UNDEF     = "MACRO %s は未定義"
 	EMACRO_ARG_COUNT = "MACRO %s の仮引数と引数の個数不一致"
 	EMACRO_NOT_MACRO = "%s は MACRO 以外で定義済み"
-
-	EMACROCALL_CYCLIC = "MACRO %s の展開が再帰"
+	EMACRO_CYCLIC    = "MACRO %s の展開が再帰"
 
 	ESCOPE        = "%s はこのスコープでは利用できない"
 	ESCOPE_GLOBAL = "%s はグローバルスコープで利用不可"

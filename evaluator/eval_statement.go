@@ -36,8 +36,12 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 			e.logger.Error(fmt.Sprintf(errcode.EMACRO_NAME, name), node.Context)
 			return object.ERROR
 		}
-		if _, ok := env.Get(name); ok {
-			e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, name), node.Context)
+		if obj, ok := env.Get(name); ok {
+			if obj.Type() == object.MACRO_OBJ {
+				e.logger.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), node.Context)
+			} else {
+				e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, name), node.Context)
+			}
 			return object.ERROR
 		}
 		obj := &object.MacroObject{Name: name, Params: node.Params, Body: node.Body}

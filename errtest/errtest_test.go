@@ -110,15 +110,15 @@ func TestErrorFuncCall(t *testing.T) {
 	}
 
 }
-func TestErrorMacro(t *testing.T) {
+func TestErrorMacroDef(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
 	}{
 		{`@abc macro \ endm`, errcode.EMACRO_NAME},
 		{`.abc macro \ endm`, errcode.EMACRO_NAME},
-		{`abc: nop \ abc macro \ endm`, errcode.EMACRO_USED},
-		{`abc macro \ endm \ abc macro \ endm`, errcode.EMACRO_USED},
+		{`const abc = 1 \ abc macro \ endm`, errcode.EMACRO_USED},
+		{`abc macro \ endm \ abc macro \ endm`, errcode.EMACRO_DUP},
 	}
 	for tn, tt := range tests {
 		logger := logger.New("test")

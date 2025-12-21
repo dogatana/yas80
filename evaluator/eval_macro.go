@@ -28,7 +28,7 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 	}
 
 	if expandingMacro[stmt.Name] {
-		e.logger.Error(fmt.Sprintf(errcode.EMACROCALL_CYCLIC, stmt.Name), stmt.Context)
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_CYCLIC, stmt.Name), stmt.Context)
 		return object.ERROR
 	}
 	expandingMacro[stmt.Name] = true
