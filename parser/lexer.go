@@ -158,33 +158,76 @@ LINE_CONT:
 		l.nextChar()
 		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
 
-	case l.ctx.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
-		// 16進数リテラル(0x)
-		l.nextChar() // '0'をスキップ
-		literal = "0" + string(l.ctx.curChar)
-		l.nextChar() // 'x'または'X'をスキップ
-		literal += l.readWord()
+	case l.ctx.curChar == '$' && l.isXDigit(l.peekChar()):
+		// 16進数リテラル($)
+		l.nextChar()
+		literal = "$" + l.readHexString()
 		l.nextChar()
 		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
 
-	case l.ctx.curChar == '$' && !l.isXDigit(l.peekChar()):
+	case l.ctx.curChar == '$' && l.isWordChar(l.peekChar()):
+		// システム識別子($)
+		l.nextChar()
+		literal = "$" + l.readWord()
+		l.nextChar()
+		return Token{TokenType: IDENT, Literal: literal, Context: l.ctx.toContext(l.start)}
+
+	case l.ctx.curChar == '$':
 		// $ ローケーションカウンタ
 		tok := Token{TokenType: IDENT, Literal: "$", Context: l.ctx.toContext(l.start)}
 		l.nextChar()
 		return tok
 
-	case l.ctx.curChar == '$' || l.ctx.curChar == '%':
-		// 16進数リテラル($) or 2進数リテラル
-		literal = string(l.ctx.curChar)
-		l.nextChar() // '$'をスキップ
-		literal += l.readWord()
+	case l.ctx.curChar == '%' && l.isBinDigit(l.peekChar()):
+		// 2進数リテラル(%)
+		l.nextChar()
+		literal = "%" + l.readBinString()
+		l.nextChar()
+		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+
+	case l.ctx.curChar == '%':
+		// % 演算子
+		ch := l.ctx.curChar
+		l.nextChar()
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
+
+	case l.ctx.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
+		// 16進数リテラル(0x)
+		l.nextChar() // '0'をスキップ
+		literal = "0" + string(l.ctx.curChar)
+		l.nextChar() // 'x'または'X'をスキップ
+		literal += l.readHexString()
+		l.nextChar()
+		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+
+	case l.ctx.curChar == '0' && (l.peekChar() == 'b' || l.peekChar() == 'B'):
+		// 2数リテラル(0b)
+		l.nextChar() // '0'をスキップ
+		literal = "0" + string(l.ctx.curChar)
+		l.nextChar() // 'b'または'B'をスキップ
+		literal += l.readBinString()
+		l.nextChar()
+		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+
+	case l.ctx.curChar == '0' && (l.peekChar() == 'o' || l.peekChar() == 'O'):
+		// 8数リテラル(0o)
+		l.nextChar() // '0'をスキップ
+		literal = "0" + string(l.ctx.curChar)
+		l.nextChar() // 'o'または'O'をスキップ
+		literal += l.readOctString()
 		l.nextChar()
 		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
 
 	case l.isDigit(l.ctx.curChar):
-		// 10進、16進(0x)、2進(0b)、8進（0o)リテラル
-		literal = l.readWord()
+		// 10進リテラル, 16進リテラル（末尾 h）
+		literal = l.readHexString()
 		l.nextChar()
+		ch := l.ctx.curChar
+		if l.isHexString(literal) && (ch == 'h' || ch == 'H') {
+			literal += string(ch)
+			l.nextChar()
+			return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+		}
 		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
 
 	case l.isAlpha(l.ctx.curChar):
@@ -336,12 +379,70 @@ func (l *Lexer) readWord() string {
 	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
 }
 
+func (l *Lexer) readHexString() string {
+	if !l.isHexChar(l.ctx.curChar) {
+		return ""
+	}
+	startIndex := l.ctx.index - 1
+	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.isHexChar(rune(l.ctx.fileBlock.Content[l.ctx.index])) {
+		l.ctx.index++
+	}
+	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
+}
+
+func (l *Lexer) readBinString() string {
+	if !l.isBinChar(l.ctx.curChar) {
+		return ""
+	}
+	startIndex := l.ctx.index - 1
+	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.isBinChar(rune(l.ctx.fileBlock.Content[l.ctx.index])) {
+		l.ctx.index++
+	}
+	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
+}
+
+func (l *Lexer) readOctString() string {
+	if !l.isOctChar(l.ctx.curChar) {
+		return ""
+	}
+	startIndex := l.ctx.index - 1
+	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.isOctChar(rune(l.ctx.fileBlock.Content[l.ctx.index])) {
+		l.ctx.index++
+	}
+	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
+}
+
 func (l *Lexer) isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
 }
 
 func (l *Lexer) isXDigit(ch rune) bool {
 	return l.isDigit(ch) || 'a' <= ch && ch <= 'f' || 'A' <= ch && ch <= 'F'
+}
+
+func (l *Lexer) isHexChar(ch rune) bool {
+	return l.isXDigit(ch) || ch == '_'
+}
+
+func (l *Lexer) isHexString(s string) bool {
+	for _, c := range s {
+		if !l.isHexChar(rune(c)) {
+			return false
+		}
+	}
+	return true
+}
+
+func (l *Lexer) isBinDigit(ch rune) bool {
+	return ch == '0' || ch == '1'
+}
+
+func (l *Lexer) isBinChar(ch rune) bool {
+	return ch == '0' || ch == '1' || ch == '_'
+}
+
+func (l *Lexer) isOctChar(ch rune) bool {
+	return '0' <= ch && ch <= '7' || ch == '_'
 }
 
 func (l *Lexer) isAlpha(ch rune) bool {

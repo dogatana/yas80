@@ -21,7 +21,7 @@ func testDisplayTokens(t *testing.T) {
 
 // 各種記号のテスト
 func TestLexSymbols(t *testing.T) {
-	input := " ( ) = - + | ^ * / & ! ~ << >> < <= == != >= > || && ## "
+	input := " ( ) = - + | ^ * / % & ! ~ << >> < <= == != >= > || && ## "
 	expected := []struct {
 		TokenType TokenType
 		SubType   TokenSubType
@@ -38,6 +38,7 @@ func TestLexSymbols(t *testing.T) {
 
 		{MULDIV, '*', "*"},
 		{MULDIV, '/', "/"},
+		{MULDIV, '%', "%"},
 		{MULDIV, '&', "&"},
 
 		{UNARY, '!', "!"},
@@ -155,26 +156,38 @@ func TestLexNumber(t *testing.T) {
 		input            string
 		expected_literal string
 	}{
+		// 0-
 		{"0", "0"},
 		{"  0", "0"},
 		{"0  ", "0"},
 		{"  0  ", "0"},
 		{"12345", "12345"},
+		// 5-
 		{"12_34_5 ", "12_34_5"},
+
+		{"0b111_000", "0b111_000"},
+		{"0B_11_000_111", "0B_11_000_111"},
+		{"%1111_0000", "%1111_0000"},
+
+		{"0o_777", "0o_777"},
+		// 10-
+		{"0O_123", "0O_123"},
+
 		{"0x19af", "0x19af"},
 		{"0XABCD", "0XABCD"},
-		{"0o_777", "0o_777"},
 		{"$12_34_56_78", "$12_34_56_78"},
-		{"%1111_0000", "%1111_0000"},
-		// 不正な数値でも受け付ける
-		{"0abc", "0abc"},
-		{"0xhoge", "0xhoge"},
-		{"0ohoge", "0ohoge"},
-		{"$0ggg", "$0ggg"},
-		{"$9ggg", "$9ggg"},
-		{"$aggg", "$aggg"},
-		{"$fggg", "$fggg"},
-		{"%xyz", "%xyz"},
+		{"1234_5467h", "1234_5467h"},
+		// 15-
+		{"89ab_cdefH", "89ab_cdefH"},
+
+		{"0abc", "0abc"}, // 0-9 で始まる場合は16進数まで含めて受け付ける
+		{"0xhoge", "0x"},
+		{"0ohoge", "0o"},
+		{"$0ggg", "$0"},
+		// 20-
+		{"$9ggg", "$9"},
+		{"$aggg", "$a"},
+		{"$fggg", "$f"},
 	}
 
 	for tn, tt := range tests {
@@ -425,18 +438,18 @@ func TestLexDoller(t *testing.T) {
 		input    string
 		expected []TokenType
 	}{
-		// C は Z80_REG8 トークンとなる
-		// {"C", Z80_FLAG_C},
+		// 0-
 		{"$", []TokenType{IDENT, EOL}},
 		{"$ ", []TokenType{IDENT, EOL}},
 		{"$0", []TokenType{NUMBER, EOL}},
 		{"$a", []TokenType{NUMBER, EOL}},
 		{"$f", []TokenType{NUMBER, EOL}},
+		// 5-
 		{"$A", []TokenType{NUMBER, EOL}},
 		{"$F", []TokenType{NUMBER, EOL}},
-		{"$_", []TokenType{IDENT, IDENT, EOL}},
-		{"$g", []TokenType{IDENT, IDENT, EOL}},
-		{"$$", []TokenType{IDENT, IDENT, EOL}},
+		{"$_", []TokenType{IDENT, EOL}},
+		{"$g", []TokenType{IDENT, EOL}},
+		// {"$$", []TokenType{IDENT, EOL}}, // $$ は2つの $ になる
 	}
 
 	for tn, tt := range tests {
