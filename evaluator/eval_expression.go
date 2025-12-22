@@ -178,6 +178,8 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 			return object.ERROR
 		}
 		return &object.NumberObject{Value: v1 / v2, Context: ctx}
+	case '%':
+		return &object.NumberObject{Value: v1 % v2, Context: ctx}
 	case parser.SL:
 		return &object.NumberObject{Value: v1 << v2, Context: ctx}
 	case parser.SR:

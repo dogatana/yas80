@@ -54,10 +54,14 @@ func TestEvalExpression(t *testing.T) {
 		input    string
 		expected int
 	}{
+		// 0-
 		{"const result = 1", 1},
 		{"const result = 1 + 2", 3},
 		{"const result = 1 * 2", 2},
 		{"const result = 1 + 2 * 3", 7},
+		{"const result = 10 % 2", 0},
+		//5-
+		{"const result = 10 + 10 % 3", 11},
 		{`const val = 123 \ const result = val`, 123},
 		{`const val = 11 \ const result = val * val`, 121},
 		{`const val = 11 \ const val2 = val * val \ const result = val2`, 121},

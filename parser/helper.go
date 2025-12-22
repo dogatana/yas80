@@ -114,6 +114,7 @@ var infixFuncs map[int]infixFuncType = map[int]infixFuncType{
 	'-': func(x, y int) int { return x - y },
 	'*': func(x, y int) int { return x * y },
 	'/': func(x, y int) int { return x / y },
+	'%': func(x, y int) int { return x % y },
 	'&': func(x, y int) int { return x & y },
 	'|': func(x, y int) int { return x | y },
 	'^': func(x, y int) int { return x ^ y },
