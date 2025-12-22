@@ -65,7 +65,7 @@ var _ = __yyfmt__.Sprintf
 %token<token> BLOCK ENDB
 %token<token> FOR ENDFOR
 
-%token<token>  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':' '[' ']' '='
+%token<token>  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':' '[' ']' '=' '%'
 
 %token<token> INVALID 
 %token<token> error
@@ -76,7 +76,7 @@ var _ = __yyfmt__.Sprintf
 %left AND             // &&
 %left COMP            // == != < <= > >=
 %left ADDSUB          // ADDSUB + ^ |
-%left MULDIV SHIFT    // MULDIV * / SHIFT << >> 
+%left MULDIV SHIFT    // MULDIV * / % SHIFT << >> 
 %right UNARY          // ~ ! -
 %right UMINUS
 %nonassoc '(' '[' 
