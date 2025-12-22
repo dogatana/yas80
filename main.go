@@ -56,6 +56,23 @@ func main() {
 		os.Exit(1)
 	}
 
+	// lexer debug
+	if getDebugEnv("lexdebug") != 0 {
+		fb, err := fileblock.NewFromReader(file, input)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		l := parser.NewLexer(fb, nil)
+		for {
+			tok := l.NextToken()
+			fmt.Println(tok.String())
+			if tok.TokenType == 0 {
+				os.Exit(0)
+			}
+		}
+	}
+
 	parser.SetYYDebug(getDebugEnv("yydebug"))
 
 	// logger 作成
@@ -77,6 +94,7 @@ func main() {
 			os.Exit(0)
 		}
 	}
+
 	// プリプロセス
 	fmt.Println("\n# preprocess")
 	prog = parser.PreProrocess(logger, prog)
