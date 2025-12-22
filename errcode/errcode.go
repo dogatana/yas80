@@ -72,6 +72,9 @@ const (
 	EMACRO_ARG_COUNT = "MACRO %s の仮引数と引数の個数不一致"
 	EMACRO_CYCLIC    = "MACRO %s の展開が再帰"
 
+	// REPT
+	EREPT_COUNT = "REPT 式の値が数値でない"
+
 	ESCOPE        = "%s はこのスコープでは利用できない"
 	ESCOPE_GLOBAL = "%s はグローバルスコープで利用不可"
 	WSCOPE_MACRO  = "%s は MACRO スコープでは無視"

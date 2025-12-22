@@ -140,6 +140,24 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 				objects = append(objects, objs...)
 			}
 
+		// rept
+		case *parser.ReptStatement:
+			obj := e.evalStatement(node, env)
+			if isError(obj) {
+				continue
+			}
+			if isRefNotFound(obj) {
+				stmts = append(stmts, stmt)
+				e.Resolved = false
+				continue
+			}
+			nodesObj, ok := obj.(*object.NodesObject)
+			if !ok {
+				panic("not NodesObject")
+			}
+			stmts = append(stmts, nodesObj.Nodes...)
+			e.Resolved = false
+
 		// 関数定義
 		case *parser.FuncStatement:
 			obj := e.evalStatement(stmt, env)
@@ -151,7 +169,7 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 		default:
 			// e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil)
 			obj = e.evalStatement(node, env)
-			if obj == object.ERROR {
+			if isError(obj) {
 				continue
 			}
 			objects = append(objects, obj)

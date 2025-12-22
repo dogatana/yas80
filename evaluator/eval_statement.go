@@ -52,6 +52,10 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 	case *parser.MacroCallStatement:
 		return e.evalMacroCallStatement(node, env)
 
+	// REPT
+	case *parser.ReptStatement:
+		return e.evalReptStatement(node, env)
+
 	// 代入文
 	case *parser.AssignStatement:
 		target := e.evalExpression(node.Left, env, node.Context)

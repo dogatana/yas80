@@ -44,7 +44,14 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 
 	switch node := node.(type) {
 	case *parser.MacroBlockStatement:
+		env = object.NewMacroEnvironment(env)
+		env.Set("$I", &object.NumberObject{Value: node.Index})
 		block = node.Block
+		fmt.Println("-- macroBlock")
+		for _, s := range block {
+			fmt.Println(s.String())
+		}
+		fmt.Println("-- macroBlock")
 	case *parser.BlockStatement:
 		block = node.Block
 	default:
@@ -87,6 +94,11 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 				panic("not block object")
 			}
 			objects = append(objects, bo.Block...)
+			fmt.Println("-- bo")
+			for _, o := range bo.Block {
+				fmt.Println(o.String())
+			}
+			fmt.Println("-- bo")
 			if len(bo.Block) > 0 && bo.Block[0].Type() == object.EXITM_OBJ {
 				goto BREAK
 			}
@@ -148,4 +160,17 @@ BREAK:
 		panic("invalid node type in evalMacroBlockStatement")
 	}
 	return &object.BlockObject{Block: objects}
+}
+
+func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env object.Environment) object.Object {
+	obj := e.evalExpression(stmt.MaxCount, env, stmt.Context)
+	if isError(obj) || isRefNotFound(obj) {
+		return obj
+	}
+	num, ok := obj.(*object.NumberObject)
+	if !ok {
+		e.logger.Error(errcode.EREPT_COUNT, stmt.Context)
+		return object.ERROR
+	}
+	return e.expandReptBlock(stmt, num.Value, env)
 }
