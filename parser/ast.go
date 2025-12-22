@@ -37,6 +37,7 @@ const (
 	NODE_MACRO_CALL_STMT
 	NODE_MACRO_BLOCK_STMT
 	NODE_EXPANDED_MACRO_CALL_STMT
+	NODE_SET_SYSVAR_STMT
 
 	// expression
 	NODE_EXPR
@@ -239,6 +240,20 @@ func (rs *ReptStatement) String() string {
 	out.WriteString("ENDR")
 
 	return out.String()
+}
+
+// システム変数設定 - REPT 展開時で使用する
+type SetSysVarStatement struct {
+	Name    string
+	Value   Expression
+	Context *fileblock.Context
+}
+
+func (s *SetSysVarStatement) statementNode()           {}
+func (s *SetSysVarStatement) NodeType() NodeType       { return NODE_SET_SYSVAR_STMT }
+func (s *SetSysVarStatement) NodeSubType() NodeSubType { return 0 }
+func (s *SetSysVarStatement) String() string {
+	return fmt.Sprintf("SET_SYS_VAR(%s, %s)", s.Name, s.Value.String())
 }
 
 // if statement

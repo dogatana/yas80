@@ -151,11 +151,11 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 				e.Resolved = false
 				continue
 			}
-			nodesObj, ok := obj.(*object.NodesObject)
+			nodeObj, ok := obj.(*object.NodeObject)
 			if !ok {
 				panic("not NodesObject")
 			}
-			stmts = append(stmts, nodesObj.Nodes...)
+			stmts = append(stmts, nodeObj.Node)
 			e.Resolved = false
 
 		// 関数定義
@@ -165,6 +165,13 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 				return object.ERROR
 			}
 			// stmts, objects 両方に追加しない
+
+		// システム変数設定
+		case *parser.SetSysVarStatement:
+			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				return object.ERROR
+			}
 
 		default:
 			// e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil)

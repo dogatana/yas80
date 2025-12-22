@@ -44,14 +44,11 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 
 	switch node := node.(type) {
 	case *parser.MacroBlockStatement:
-		env = object.NewMacroEnvironment(env)
-		env.Set("$I", &object.NumberObject{Value: node.Index})
-		block = node.Block
-		fmt.Println("-- macroBlock")
-		for _, s := range block {
-			fmt.Println(s.String())
+		// REPT の場合は $I, $COUNT 用の環境を作成する
+		if node.Count != 0 {
+			env = object.NewMacroEnvironment(env)
 		}
-		fmt.Println("-- macroBlock")
+		block = node.Block
 	case *parser.BlockStatement:
 		block = node.Block
 	default:
@@ -94,11 +91,6 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 				panic("not block object")
 			}
 			objects = append(objects, bo.Block...)
-			fmt.Println("-- bo")
-			for _, o := range bo.Block {
-				fmt.Println(o.String())
-			}
-			fmt.Println("-- bo")
 			if len(bo.Block) > 0 && bo.Block[0].Type() == object.EXITM_OBJ {
 				goto BREAK
 			}
@@ -172,5 +164,23 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env object.Env
 		e.logger.Error(errcode.EREPT_COUNT, stmt.Context)
 		return object.ERROR
 	}
-	return e.expandReptBlock(stmt, num.Value, env)
+
+	nodes := []parser.Node{&parser.SetSysVarStatement{
+		Name:    "$COUNT",
+		Value:   &parser.NumberLiteral{Value: num.Value, Context: stmt.Context},
+		Context: stmt.Context}}
+
+	for i := 0; i < num.Value; i++ {
+		nodes = append(nodes, &parser.SetSysVarStatement{
+			Name:    "$I",
+			Value:   &parser.NumberLiteral{Value: i, Context: stmt.Context},
+			Context: stmt.Context})
+		objs := e.expandReptBlock(stmt, num.Value, env)
+		nodes = append(nodes, objs.(*object.NodesObject).Nodes...)
+	}
+	mb := &parser.MacroBlockStatement{
+		Name:  "REPT",
+		Count: num.Value,
+		Block: nodes}
+	return &object.NodeObject{Node: mb}
 }

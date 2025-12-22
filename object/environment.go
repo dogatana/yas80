@@ -2,7 +2,6 @@ package object
 
 import (
 	"fmt"
-	"strings"
 )
 
 const (
@@ -111,13 +110,14 @@ func (e *MacroEnvironment) Get(name string) (Object, bool) {
 	return obj, ok
 }
 func (e *MacroEnvironment) Set(name string, obj Object) Object {
-	if strings.HasPrefix(name, "@@") { // Macro Parameter
-		e.store[name[2:]] = obj
-	} else if name[0] == '@' { // Macro Local
-		e.store[name] = obj
-	} else {
-		e.outer.Set(name, obj)
-	}
+	// if strings.HasPrefix(name, "@@") { // Macro Parameter
+	// 	e.store[name[2:]] = obj
+	// } else if name[0] == '@' { // Macro Local
+	// 	e.store[name] = obj
+	// } else {
+	// 	e.outer.Set(name, obj)
+	// }
+	e.store[name] = obj
 	return obj
 }
 func (e *MacroEnvironment) Outer() Environment       { return e.outer }

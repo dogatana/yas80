@@ -99,6 +99,14 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 	case *parser.ReturnStatement:
 		return e.evalReturnStatement(node, env)
 
+	case *parser.SetSysVarStatement:
+		obj := e.evalExpression(node.Value, env, node.Context)
+		if isError(obj) {
+			return object.ERROR
+		}
+		env.Set(node.Name, obj)
+		return obj // 形式的に必要
+
 	case *parser.EnumStatement:
 		name := node.Name
 		_, ok := env.Get(name) // TODO enum 定義は常にグローバルスコープ
