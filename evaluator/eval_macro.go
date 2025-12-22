@@ -175,7 +175,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env object.Env
 			Name:    "$I",
 			Value:   &parser.NumberLiteral{Value: i, Context: stmt.Context},
 			Context: stmt.Context})
-		objs := e.expandReptBlock(stmt, num.Value, env)
+		objs := e.expandReptBlock(stmt, env)
 		nodes = append(nodes, objs.(*object.NodesObject).Nodes...)
 	}
 	mb := &parser.MacroBlockStatement{

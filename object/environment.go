@@ -117,7 +117,11 @@ func (e *MacroEnvironment) Set(name string, obj Object) Object {
 	// } else {
 	// 	e.outer.Set(name, obj)
 	// }
-	e.store[name] = obj
+	if name[0] == '$' {
+		e.store[name] = obj
+	} else {
+		e.outer.Set(name, obj)
+	}
 	return obj
 }
 func (e *MacroEnvironment) Outer() Environment       { return e.outer }

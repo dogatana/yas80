@@ -35,27 +35,59 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	return &object.NodesObject{Nodes: nodes}
 }
 
-func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, count int, env object.Environment) object.Object {
+func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env object.Environment) object.Object {
 	seq := e.Counter()
 	args := map[string]parser.Expression{}
 	replace := replaceNameInMacro(args, seq, "REPT")
 	nodes := []parser.Node{}
 	for _, stmt := range rept.Block.Block {
 		news := e.replaceStatement(stmt.(parser.Statement), replace)
-		if news.NodeType() == parser.NODE_MACRO_CALL_STMT {
-			mcall := news.(*parser.MacroCallStatement)
-			sub := e.evalMacroCallStatement(mcall, env)
+		switch news := news.(type) {
+		case *parser.MacroCallStatement:
+			sub := e.evalMacroCallStatement(news, env)
 			if isError(sub) {
 				return object.ERROR
 			}
-			bs := &parser.MacroBlockStatement{Name: mcall.Name, Block: sub.(*object.NodesObject).Nodes}
+			bs := &parser.MacroBlockStatement{Name: news.Name, Block: sub.(*object.NodesObject).Nodes}
 			nodes = append(nodes, bs)
-		} else {
+		case *parser.ReptStatement:
+			obj := e.evalReptStatement(news, env)
+			if isError(obj) {
+				return object.ERROR
+			}
+			rs, ok := obj.(*object.NodeObject)
+			if !ok {
+				panic("not *object.NodeObject")
+			}
+			nodes = append(nodes, rs.Node)
+		default:
 			nodes = append(nodes, news)
 		}
 	}
 	return &object.NodesObject{Nodes: nodes}
 }
+
+// func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, count int, env object.Environment) object.Object {
+// 	seq := e.Counter()
+// 	args := map[string]parser.Expression{}
+// 	replace := replaceNameInMacro(args, seq, "REPT")
+// 	nodes := []parser.Node{}
+// 	for _, stmt := range rept.Block.Block {
+// 		news := e.replaceStatement(stmt.(parser.Statement), replace)
+// 		if news.NodeType() == parser.NODE_MACRO_CALL_STMT {
+// 			mcall := news.(*parser.MacroCallStatement)
+// 			sub := e.evalMacroCallStatement(mcall, env)
+// 			if isError(sub) {
+// 				return object.ERROR
+// 			}
+// 			bs := &parser.MacroBlockStatement{Name: mcall.Name, Block: sub.(*object.NodesObject).Nodes}
+// 			nodes = append(nodes, bs)
+// 		} else {
+// 			nodes = append(nodes, news)
+// 		}
+// 	}
+// 	return &object.NodesObject{Nodes: nodes}
+// }
 
 func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *parser.Expression)) parser.Statement {
 	switch stmt := stmt.(type) {

@@ -401,7 +401,17 @@ type MacroBlockStatement struct {
 func (mb *MacroBlockStatement) statementNode()           {}
 func (mb *MacroBlockStatement) NodeType() NodeType       { return NODE_MACRO_BLOCK_STMT }
 func (mb *MacroBlockStatement) NodeSubType() NodeSubType { return 0 }
-func (mb *MacroBlockStatement) String() string           { return fmt.Sprintf("MACRO BLOCK(%s)", mb.Name) }
+func (mb *MacroBlockStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(fmt.Sprintf("MACRO BLOCK(%s) {\n", mb.Name))
+	for _, s := range mb.Block {
+		out.WriteString(s.String() + "\n")
+	}
+	out.WriteString("}")
+
+	return out.String()
+}
 
 // 定数定義文 - CONST, EQU Statement
 type ConstStatement struct {
