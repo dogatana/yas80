@@ -146,6 +146,10 @@ directive	: CONST ident '=' expr
 					$$ = &ConstStatement{Name: $1, Value: $3,Context: $2.Context}
 				}
 			}
+			| IDENT PROC EOL block_statement ENDP
+			{
+				$$ = &ProcStatement{Name: strings.ToUpper($1.Literal), Block: $4, Context: $1.Context}
+			}
 			| ident ENUM EOL enum_elements ENDE
 			{
 				$$ = &EnumStatement{Name: $1.Name, Elements: $4,Context: $2.Context}
@@ -247,10 +251,9 @@ directive	: CONST ident '=' expr
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else {
-					$$ = &ReturnStatement{Value: $2,Context: $1.Context}} 
+					$$ = &ReturnStatement{Value: $2,Context: $1.Context} 
 				}
-			| ident PROC	{ $$ = &ProcStatement{Name:$1.Name, IsStart: true,Context: $2.Context }}
-			| ENDP 			{ $$ = &ProcStatement{IsStart: false,Context: $1.Context}}
+			}
 			| ident MACRO param_list EOL block_statement ENDM
 			{
 				$$ = &MacroStatement{Name: $1.Name, Params: $3, Body: $5,Context: $1.Context}

@@ -135,23 +135,17 @@ func (ls *LabelStatement) String() string {
 	return out
 }
 
-// TODO: 仮実装 - PROC/ENDPROC - それぞれ単一文として生成
+// Proc
 type ProcStatement struct {
 	Name    string
-	IsStart bool
+	Block   *BlockStatement
 	Context *fileblock.Context
 }
 
 func (ps *ProcStatement) statementNode()           {}
 func (ps *ProcStatement) NodeType() NodeType       { return NODE_PROC_STMT }
 func (ps *ProcStatement) NodeSubType() NodeSubType { return 0 }
-func (ps *ProcStatement) String() string {
-	if ps.IsStart {
-		return ps.Name + " PROC"
-	} else {
-		return "ENDP"
-	}
-}
+func (ps *ProcStatement) String() string           { return fmt.Sprintf("PROC(%s)", ps.Name) }
 
 // 式文 - Expression Statement
 type ExpressionStatement struct {
