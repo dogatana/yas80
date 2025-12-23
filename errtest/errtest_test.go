@@ -169,3 +169,19 @@ func TestWarningMacroCall(t *testing.T) {
 		testMessage(t, TEST_WARNING, tn, logger, tt.expected)
 	}
 }
+
+func TestErrorProcDef(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{`abc proc \ nop \ endp \ abc proc \ ret \ endp`, errcode.EPROC_DUP},
+		{`const abc = 1 \ abc proc \ ret \ endp`, errcode.EPROC_USED},
+	}
+	for tn, tt := range tests {
+		logger := logger.New("test")
+		env := object.NewEnvironment(nil)
+		evaluateInput(TEST_ERROR, tt.input, logger, env)
+		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
+	}
+}
