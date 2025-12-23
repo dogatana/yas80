@@ -2,7 +2,6 @@ package evaluator
 
 import (
 	"fmt"
-	"yas80/errcode"
 	"yas80/logger"
 	"yas80/object"
 	"yas80/parser"
@@ -52,6 +51,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			fmt.Printf("$ %s\n", addr.String())
 		}
 		switch stmt := node.(type) {
+
 		// PROC
 		case *parser.ProcStatement:
 			obj := e.evalStatement(stmt, env)
@@ -88,31 +88,16 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 
 		// ラベル
 		case *parser.LabelStatement:
-			if stmt.Name.LabelType != parser.NODE_LABEL {
-				// LOCAL/AT の場合は AST から LabelStatement を削除する
-				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_GLOBAL, stmt.Name.Name), stmt.Context)
+			obj = e.evalStatement(stmt, env)
+			if isError(obj) {
 				continue
 			}
-			obj = e.evalStatement(stmt, env)
 			// ValueObject にラップして返す
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			stmts = append(stmts, node)
 
 		// const/equ
 		case *parser.ConstStatement:
-			e.concatenateSymbol(&stmt.Name, env, stmt.Context)
-			e.concatenateSymbol(&stmt.Value, env, stmt.Context)
-
-			ident, ok := stmt.Name.(*parser.Ident)
-			if !ok {
-				// シンボル結合演算式の右辺値でエラーの場合
-				return object.ERROR
-			}
-
-			if ident.IdentType != parser.IDENT {
-				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_GLOBAL, ident.Name), stmt.Context)
-				continue
-			}
 			obj := e.evalStatement(stmt, env)
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			stmts = append(stmts, node)

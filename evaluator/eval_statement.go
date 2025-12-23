@@ -190,6 +190,15 @@ func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.E
 func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) object.Object {
 	name := label.Name
 
+	switch {
+	case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)
+		return object.ERROR
+	case name[0] == '@' && env.EnvType() != object.ENV_MACRO:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), label.Context)
+		return object.ERROR
+	}
+
 	obj, ok := env.Get(name)
 	if !ok {
 		// 環境にないなら新規登録
@@ -229,6 +238,15 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 		return object.ERROR
 	}
 	name := id.Name
+
+	switch {
+	case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), node.Context)
+		return object.ERROR
+	case name[0] == '@' && env.EnvType() != object.ENV_MACRO:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), node.Context)
+		return object.ERROR
+	}
 
 	// 定義済みならエラー
 	obj, ok := env.Get(name)

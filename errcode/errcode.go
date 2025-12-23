@@ -79,9 +79,11 @@ const (
 	// REPT
 	EREPT_COUNT = "REPT 式の値が数値でない"
 
-	ESCOPE        = "%s はこのスコープでは利用できない"
-	ESCOPE_GLOBAL = "%s はグローバルスコープで利用不可"
-	WSCOPE_MACRO  = "%s は MACRO スコープでは無視"
+	ESCOPE       = "%s はこのスコープでは利用できない"
+	ESCOPE_PROC  = "%s は PROC 内部でしか利用できない"
+	ESCOPE_MACRO = "%s は MACRO 内部でしか利用できない"
+
+	WSCOPE_MACRO = "%s は MACRO スコープでは無視"
 
 	E900 = "E900 内部エラー %s"
 

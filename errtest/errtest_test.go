@@ -50,11 +50,11 @@ func TestErrorScrope(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{`const @abc = 0 \ ld a, @abc`, errcode.ESCOPE_GLOBAL},
-		{`const .abc = 0 \ ld a, .abc`, errcode.ESCOPE_GLOBAL},
-		{`if 1 \ const @abc = 1 \ ld a, @abc \ endif`, errcode.ESCOPE},
-		{`if 1 \ const .abc = 1 \ ld a, .abc \ endif`, errcode.ESCOPE},
-		{`test func arg \ if arg \ const @abc = 1 \ endif\ ld a, @abc \ endf \ _ = test(1)`, errcode.ESCOPE},
+		{`const @abc = 0 \ ld a, @abc`, errcode.ESCOPE_MACRO},
+		{`const .abc = 0 \ ld a, .abc`, errcode.ESCOPE_PROC},
+		{`if 1 \ const @abc = 1 \ ld a, @abc \ endif`, errcode.ESCOPE_MACRO},
+		{`if 1 \ const .abc = 1 \ ld a, .abc \ endif`, errcode.ESCOPE_PROC},
+		{`test func arg \ if arg \ const @abc = 1 \ endif\ ld a, @abc \ endf \ _ = test(1)`, errcode.ESCOPE_MACRO},
 	}
 	for tn, tt := range tests {
 		logger := logger.New("test")
