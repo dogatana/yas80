@@ -127,6 +127,12 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env object.Environ
 			// e.logger.Error(errcode.ESYM_CONCAT_NOTSYM, ctx)
 			// return false
 		}
+		// copy &(*ident) では新しい値が生成されないため
+		{
+			temp := *ident
+			ident = &temp
+		}
+
 		suffix := ""
 		op2 := e.evalExpression(expr.Op2, env, ctx)
 		switch op2 := op2.(type) {
