@@ -38,15 +38,29 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 	initLocationCounter(env, 0)
 
 	for i := 0; i < len(prog.Statements); i++ {
-		if e.Debug > 0 {
-			fmt.Printf("eval prog.Statements[%d]\n", i)
-			addr, _ := env.Get("$")
-			fmt.Printf("$ %s\n", addr.String())
-		}
 
 		node := prog.Statements[i]
 
+	EVAL_AGAIN:
+		if e.Debug > 0 {
+			fmt.Printf("eval prog.Statements[%d] %T\n", i, node)
+			addr, _ := env.Get("$")
+			fmt.Printf("$ %s\n", addr.String())
+		}
 		switch stmt := node.(type) {
+		// PROC
+		case *parser.ProcStatement:
+			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				return object.ERROR
+			}
+			nobj, ok := obj.(*object.NodeObject)
+			if !ok {
+				panic("not NodeObject")
+			}
+			node = nobj.Node
+			goto EVAL_AGAIN
+
 		// 命令
 		case *parser.Z80Instruction:
 			obj = e.evalStatement(stmt, env)

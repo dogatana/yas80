@@ -53,6 +53,10 @@ const (
 	ELABEL_DUP  = "LABEL %s は定義済み"        // symbol 以外で利用済
 	ELABEL_USED = "%s は利用済のため LABEL 定義不可" // symbol 以外で利用済
 
+	// PROC 定義
+	EPROC_DUP  = "PROC '%s' は定義済み"
+	EPROC_USED = "%s を PROC として再定義不可"
+
 	// FUNC 定義
 	EFUNC_NAME = "%s は関数名として使用不可"
 	EFUNC_USED = "%s を FUNC として再定義不可"

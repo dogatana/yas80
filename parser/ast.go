@@ -33,6 +33,7 @@ const (
 	NODE_EXITM_STMT
 	NODE_RETURN_STMT
 	NODE_PROC_STMT
+	NODE_PROC_BLOCK_STMT
 	NODE_MACRO_STMT
 	NODE_MACRO_CALL_STMT
 	NODE_MACRO_BLOCK_STMT
@@ -146,6 +147,28 @@ func (ps *ProcStatement) statementNode()           {}
 func (ps *ProcStatement) NodeType() NodeType       { return NODE_PROC_STMT }
 func (ps *ProcStatement) NodeSubType() NodeSubType { return 0 }
 func (ps *ProcStatement) String() string           { return fmt.Sprintf("PROC(%s)", ps.Name) }
+
+// Prock block statement
+type ProcBlockStatement struct {
+	Name    string
+	Block   []Node
+	Context *fileblock.Context
+}
+
+func (s *ProcBlockStatement) statementNode()           {}
+func (s *ProcBlockStatement) NodeType() NodeType       { return NODE_PROC_BLOCK_STMT }
+func (s *ProcBlockStatement) NodeSubType() NodeSubType { return 0 }
+func (s *ProcBlockStatement) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("PROC BLOCK(" + s.Name + ") {\n")
+	for _, n := range s.Block {
+		out.WriteString(n.String() + "\n")
+	}
+	out.WriteString("}")
+
+	return out.String()
+}
 
 // 式文 - Expression Statement
 type ExpressionStatement struct {

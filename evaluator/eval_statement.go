@@ -25,6 +25,25 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 	// ラベル定義
 	case *parser.LabelStatement:
 		return e.evalLabelStatement(node, env)
+
+	// Proc
+	case *parser.ProcStatement:
+		name := node.Name
+		obj, ok := env.Get(name)
+		if ok {
+			if obj.Type() == object.PROC_OBJ {
+				e.logger.Error(fmt.Sprintf(errcode.EPROC_DUP, name), node.Context)
+			} else {
+				e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
+			}
+			return object.ERROR
+		}
+		penv := object.NewProcEnvironment(env)
+		env.Set(name, &object.ProcObject{Name: name, Env: penv})
+
+		pb := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
+		return &object.NodeObject{Node: pb}
+
 	// 定数定義
 	case *parser.ConstStatement:
 		return e.evalConstStatement(node, env)

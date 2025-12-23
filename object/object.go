@@ -21,6 +21,7 @@ const (
 	NODES_OBJ
 	RETURN_OBJ
 	BLOCK_OBJ
+	PROC_OBJ
 	FUNC_OBJ
 	MACRO_OBJ
 	REF_NOTFOUND_OBJ
@@ -128,6 +129,15 @@ func (r *RefNotFoundObject) String() string {
 	out.WriteRune(')')
 	return out.String()
 }
+
+// proc
+type ProcObject struct {
+	Name string
+	Env  Environment
+}
+
+func (o *ProcObject) Type() ObjectType { return PROC_OBJ }
+func (o *ProcObject) String() string   { return fmt.Sprintf("PROC(%s)", o.Name) }
 
 // deleted
 type DeleltedObject struct {
