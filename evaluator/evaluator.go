@@ -71,7 +71,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			if !ok {
 				panic(fmt.Sprintf("no ProcEnv(%s)", stmt.Name))
 			}
-			obj = e.evalBlockPtr(&stmt.Block, pobj.(*object.ProcObject).Env)
+			obj = e.evalBlockPtr(&stmt.Block, pobj.(*object.ProcObject))
 			prog, ok := obj.(*object.ProgramObject)
 			if !ok {
 				return object.ERROR

@@ -136,8 +136,16 @@ type ProcObject struct {
 	Env  Environment
 }
 
+// Object の実装
 func (o *ProcObject) Type() ObjectType { return PROC_OBJ }
 func (o *ProcObject) String() string   { return fmt.Sprintf("PROC(%s)", o.Name) }
+
+// Environ interface の実装
+func (o *ProcObject) EnvType() int                       { return o.Env.EnvType() }
+func (o *ProcObject) Get(name string) (Object, bool)     { return o.Env.Get(name) }
+func (o *ProcObject) Set(name string, obj Object) Object { return o.Env.Set(name, obj) }
+func (o *ProcObject) Outer() Environment                 { return o.Env.Outer() }
+func (o *ProcObject) Store() map[string]Object           { return o.Env.Store() }
 
 // deleted
 type DeleltedObject struct {
