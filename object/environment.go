@@ -12,7 +12,7 @@ const (
 
 // interface
 type Environment interface {
-	Type() int
+	EnvType() int
 	Get(name string) (Object, bool)
 	Set(name string, obj Object) Object
 	Outer() Environment
@@ -50,7 +50,7 @@ type GlobalEnvironment struct {
 	outer Environment
 }
 
-func (e *GlobalEnvironment) Type() int { return ENV_GLOBAL }
+func (e *GlobalEnvironment) EnvType() int { return ENV_GLOBAL }
 func (e *GlobalEnvironment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok && e.outer != nil {
@@ -76,7 +76,7 @@ type ProcEnvironment struct {
 	outer Environment
 }
 
-func (e *ProcEnvironment) Type() int { return ENV_PROC }
+func (e *ProcEnvironment) EnvType() int { return ENV_PROC }
 func (e *ProcEnvironment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok && e.outer != nil {
@@ -101,7 +101,7 @@ type MacroEnvironment struct {
 	outer Environment
 }
 
-func (e *MacroEnvironment) Type() int { return ENV_MACRO }
+func (e *MacroEnvironment) EnvType() int { return ENV_MACRO }
 func (e *MacroEnvironment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok && e.outer != nil {
