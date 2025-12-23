@@ -29,21 +29,25 @@ func makeCounter(start int) func() int {
 
 // Program 評価
 func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) object.Object {
+	// 一旦 0 に初期化し ORG 他で上書きする
+	initLocationCounter(env, 0)
+	return e.evalBlockPtr(&prog.Statements, env)
+}
+
+// Program.Statements 評価
+func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) object.Object {
+	statements := *ptr
 	objects := []object.Object{}
 	stmts := []parser.Node{}
 
 	var obj object.Object
 
-	// 一旦 0 に初期化し ORG 他で上書きする
-	initLocationCounter(env, 0)
-
-	for i := 0; i < len(prog.Statements); i++ {
-
-		node := prog.Statements[i]
+	for i := 0; i < len(statements); i++ {
+		node := statements[i]
 
 	EVAL_AGAIN:
 		if e.Debug > 0 {
-			fmt.Printf("eval prog.Statements[%d] %T\n", i, node)
+			fmt.Printf("eval BlockPtr.satements[%d] %T\n", i, node)
 			addr, _ := env.Get("$")
 			fmt.Printf("$ %s\n", addr.String())
 		}
@@ -60,6 +64,21 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 			}
 			node = nobj.Node
 			goto EVAL_AGAIN
+
+		// PROC BLOCK
+		case *parser.ProcBlockStatement:
+			pobj, ok := env.Get(stmt.Name)
+			if !ok {
+				panic(fmt.Sprintf("no ProcEnv(%s)", stmt.Name))
+			}
+			obj = e.evalBlockPtr(&stmt.Block, pobj.(*object.ProcObject).Env)
+			prog, ok := obj.(*object.ProgramObject)
+			if !ok {
+				return object.ERROR
+			}
+			objects = append(objects, prog.Objects...)
+			stmts = append(stmts, stmt)
+			continue
 
 		// 命令
 		case *parser.Z80Instruction:
@@ -128,8 +147,10 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 			// }
 			// fmt.Println("-- expanded")
 
-			stmts = append(stmts, bs)
-			e.Resolved = false
+			node = bs
+			goto EVAL_AGAIN
+			// stmts = append(stmts, bs)
+			// e.Resolved = false
 
 		// マクロブロック (展開済みマクロ)
 		case *parser.MacroBlockStatement:
@@ -198,6 +219,6 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 		}
 	}
 
-	prog.Statements = stmts
+	*ptr = stmts
 	return &object.ProgramObject{Objects: objects}
 }
