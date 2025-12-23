@@ -44,6 +44,14 @@ func NewMacroEnvironment(outer Environment) Environment {
 	return &MacroEnvironment{store: make(map[string]Object), outer: outer}
 }
 
+// 引数の環境の上位が ENV_GLOBAL か ENV_PROC かを返す
+func OuterEnvType(env Environment) int {
+	for env.EnvType() == ENV_MACRO {
+		env = env.Outer()
+	}
+	return env.EnvType()
+}
+
 // グローバル環境
 type GlobalEnvironment struct {
 	store map[string]Object
