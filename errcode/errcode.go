@@ -79,7 +79,7 @@ const (
 	// REPT
 	EREPT_COUNT = "REPT 式の値が数値でない"
 
-	ESCOPE       = "%s はこのスコープでは利用できない"
+	// SCOPE
 	ESCOPE_PROC  = "%s は PROC 内部でしか利用できない"
 	ESCOPE_MACRO = "%s は MACRO 内部でしか利用できない"
 

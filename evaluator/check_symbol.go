@@ -19,29 +19,14 @@ func (e *Evaluator) checkUnknwonAndNullSymbol(env object.Environment) {
 		} else if sym.Name == "_" || sym.Name[0] == '$' {
 			continue
 		} else if sym.Name[0] == '@' && env.EnvType() != object.ENV_MACRO {
-			e.logger.Error(fmt.Sprintf(errcode.ESCOPE, name), sym.Context)
-		} else if sym.Name[0] == '.' && !isProcScrope(env) {
-			e.logger.Error(fmt.Sprintf(errcode.ESCOPE, name), sym.Context)
+			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), sym.Context)
+		} else if sym.Name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC {
+			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), sym.Context)
 		} else if sym.SymType == object.SYM_UNKNOWN {
 			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), sym.Context)
 		} else if sym.Value == object.NULL {
 			e.logger.Error(fmt.Sprintf(errcode.ESYM_NOT_DETERMINED, name), sym.Context)
 		}
-	}
-}
-
-func isProcScrope(env object.Environment) bool {
-	for {
-		if env.EnvType() == object.ENV_PROC {
-			return true
-		}
-		if env.EnvType() == object.ENV_GLOBAL {
-			return false
-		}
-		if env.Outer() == nil {
-			return false
-		}
-		env = env.Outer()
 	}
 }
 
