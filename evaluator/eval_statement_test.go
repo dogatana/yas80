@@ -59,3 +59,29 @@ func TestConstStatement(t *testing.T) {
 		testNumberObject(t, tn, value, tt.expected)
 	}
 }
+
+func TestProcStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		name     string
+		expected int
+	}{
+		{`test proc \ const abc ## (100 + 23) = 456 \ endp`, `ABC123`, 456},
+		{`test proc \ const abc ## (100 + 23) = def ## 456 \ const def ## (400 + 56) = 999 \ endp`, `ABC123`, 999},
+		{`test proc \ abc ## 123 equ 456 \ endp`, `ABC123`, 456},
+		{`test proc \ abc ## (100 + 23) equ 456 \ endp`, `ABC123`, 456},
+		{`test proc \ abc ## (100 + 23) equ def ## 456 \ const def ## (400 + 56) = 999  \ endp`, `ABC123`, 999},
+	}
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logger.New("<eval test>")
+		_ = evaluateInput(t, tt.input, logger, env)
+
+		obj, ok := env.Get(tt.name)
+		if !ok {
+			t.Fatalf(`[%d] %q not in env`, tn, tt.name)
+		}
+		value := evalValue(obj)
+		testNumberObject(t, tn, value, tt.expected)
+	}
+}
