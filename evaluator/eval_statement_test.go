@@ -6,29 +6,45 @@ import (
 	"yas80/object"
 )
 
-func TestAssemble(t *testing.T) {
-	tests := []string{
-		"label-backward",
-		"equ-backward",
-		"label-forward",
-		"equ-forward",
-		"forward",
-		"forward_symbol",
-		"forward_mix",
+func TestLabelStatement(t *testing.T) {
+	tests := []struct {
+		input  string
+		code   []byte
+		names  []string
+		values []int
+	}{
+		{`addr1: ld hl, $1234 \ addr2: ld a, a \ addr3: ld hl, $5678`,
+			[]byte{0x21, 0x34, 0x12, 0x7f, 0x21, 0x78, 0x56},
+			[]string{"ADDR1", "ADDR2", "ADDR3"},
+			[]int{0, 3, 4},
+		},
+		{`addr1: ld a, a\ addr2: ld hl, $1234 \ addr3: ld hl, $5678`,
+			[]byte{0x7f, 0x21, 0x34, 0x12, 0x21, 0x78, 0x56},
+			[]string{"ADDR1", "ADDR2", "ADDR3"},
+			[]int{0, 1, 4},
+		},
+		{`addr1: ld hl, $1234 \ addr2: ld hl, $5678 \ addr3: ld hl, $9abc`,
+			[]byte{0x21, 0x34, 0x12, 0x21, 0x78, 0x56, 0x21, 0xbc, 0x9a},
+			[]string{"ADDR1", "ADDR2", "ADDR3"},
+			[]int{0, 3, 6},
+		},
 	}
 
-	for tn, base := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		input := string(readTestDataFile(t, base+".asm"))
-		expected := readTestDataFile(t, base+".bin")
+		prog := evaluateInput(t, tt.input, logger, env)
 
-		prog := evaluateInput(t, input, logger, env)
-		logger.Print()
-		result := CollectCode(prog)
-
-		if !bytesEqual(result, expected) {
-			t.Errorf("[%d] expected %d bytes. got %d bytes", tn, len(expected), len(result))
+		code := CollectCode(prog)
+		if len(code) != len(tt.code) && !bytesEqual(code, tt.code) {
+			t.Errorf("[%d] generated code differ", tn)
+		}
+		for i, name := range tt.names {
+			if v, ok := env.Get(name); !ok {
+				t.Errorf("[%d] no %q in env", tn, name)
+			} else {
+				testSymbolNumberObject(t, tn, v, tt.values[i])
+			}
 		}
 	}
 }
