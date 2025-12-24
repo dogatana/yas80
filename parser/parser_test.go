@@ -231,7 +231,7 @@ func TestParseDotIdent(t *testing.T) {
 			fmt.Printf("input %q\n", tt.input)
 			t.Errorf("not *DotIdent got %T", stmt.Value)
 		}
-		if ident.Left != "ABC" || ident.Right != "DEF" {
+		if ident.Left != "ABC" || ident.Right != ".DEF" {
 			fmt.Printf("input %q\n", tt.input)
 			t.Errorf("not %q. got %q", tt.expected, ident.String())
 		}
