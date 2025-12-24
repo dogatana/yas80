@@ -1,42 +1,35 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
 
 func TestParseConstStatement(t *testing.T) {
-	input := `const abc = 123 \ def equ 456`
-	expected := []struct {
-		Name  string
-		Value int
+	tests := []struct {
+		input    string
+		name     string
+		expected int
 	}{
-		{"ABC", 123},
-		{"DEF", 456},
+		{`const abc = 123`, "ABC", 123},
+		{`def equ 456`, "DEF", 456},
 	}
-	l := newLexerForTest(input)
-	prog := ParseForTest(t, l, input)
+	for tn, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := ParseForTest(t, l, tt.input)
 
-	if len(prog.Statements) != 2 {
-		t.Fatalf("expect 2 statements. got %d", len(prog.Statements))
-	}
-	for i, stmt := range prog.Statements {
-		cs := stmt.(*ConstStatement)
+		if len(prog.Statements) != 1 {
+			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))
+		}
+		cs := prog.Statements[0].(*ConstStatement)
 		ident, ok := cs.Name.(*Ident)
 		if !ok {
-			t.Fatalf("Name must be Ident. got %T", cs.Name)
+			t.Fatalf("[%d] Name must be Ident. got %T", tn, cs.Name)
 		}
-		if ident.Name != expected[i].Name {
-			t.Errorf("expected Name %q. got %q", expected[i].Name, ident.Name)
+		if ident.Name != tt.name {
+			t.Errorf("[%d] expected Name %q. got %q", tn, tt.name, ident.Name)
 		}
-		v, ok := cs.Value.(*NumberLiteral)
-		if !ok {
-			t.Errorf("Value is not NumberLiteral. got %t", cs.Value)
-		}
-		if v.Value != expected[i].Value {
-			t.Errorf("Value is not %d. got %d", expected[i].Value, v.Value)
-		}
+		testNumberLiteral(t, tn, cs.Value, tt.expected)
 	}
 }
 
@@ -61,10 +54,6 @@ def = 1
 	text := enum.String()
 	if !strings.EqualFold(text, srcText) {
 		t.Errorf("expected %d chars. got %d chars", len(srcText), len(text))
-		fmt.Printf("expected\n%s\n", srcText)
-		fmt.Println([]byte(srcText))
-		fmt.Printf("got\n%s\n", text)
-		fmt.Println([]byte(text))
 	}
 }
 
@@ -78,24 +67,24 @@ func TestParseReptStatement(t *testing.T) {
 		{` Rept 2 \ a = 1 \ endR`, 2, 1},
 		{` REPT 3 \ a = 1 \ a = 2\ endr`, 3, 2},
 	}
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tt.input)
 
 		if len(prog.Statements) != 1 {
-			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
 		}
 		stmt := prog.Statements[0]
 		repeat, ok := stmt.(*ReptStatement)
 		if !ok {
-			t.Errorf("prog.Statements[0] not *RepeatStatment. got %T", stmt)
+			t.Errorf("[%d] prog.Statements[0] not *RepeatStatment. got %T", tn, stmt)
 		}
 		count := repeat.MaxCount.(*NumberLiteral).Value
 		if count != tt.count {
-			t.Errorf("exptected count %d. got %d", tt.count, count)
+			t.Errorf("[%d] exptected count %d. got %d", tn, tt.count, count)
 		}
 		if len(repeat.Block.Block) != tt.stmtCount {
-			t.Errorf("must have %d statements. got %d", tt.stmtCount, len(repeat.Block.Block))
+			t.Errorf("[%d] must have %d statements. got %d", tn, tt.stmtCount, len(repeat.Block.Block))
 		}
 	}
 }
@@ -105,6 +94,7 @@ func TestParseIfStatement(t *testing.T) {
 		input    string
 		expected string
 	}{
+		// 0-
 		{
 			`if 1\ endif`,
 			`IF 1\ELSE\ENDIF`,
@@ -125,6 +115,7 @@ func TestParseIfStatement(t *testing.T) {
 			`if 1 \ a=100 \ else \ a=200 \  endif`,
 			`IF 1\A = 100\ELSE\A = 200\ENDIF`,
 		},
+		// 5-
 		{
 			`if 1 \ a=100 \ if 2 \ a=200 \else \ a=300 \ endif \ endif`,
 			`IF 1\A = 100\IF 2\A = 200\ELSE\A = 300\ENDIF\ELSE\ENDIF`,
@@ -145,34 +136,28 @@ func TestParseIfStatement(t *testing.T) {
 			`if 1 \ a=100 \ elif 2 \ a=200 \ elif 3 \ a=300 \ elif 4 \ a=400 \endif`,
 			`IF 1\A = 100\ELSE\IF 2\A = 200\ELSE\IF 3\A = 300\ELSE\IF 4\A = 400\ELSE\ENDIF\ENDIF\ENDIF\ENDIF`,
 		},
+		// 10-
 		{
 			`if 1 \ a=100 \ elif 2 \ a=200 \ elif 3 \ a=300 \ elif 4 \ a=400 \else\a=500\endif`,
 			`IF 1\A = 100\ELSE\IF 2\A = 200\ELSE\IF 3\A = 300\ELSE\IF 4\A = 400\ELSE\A = 500\ENDIF\ENDIF\ENDIF\ENDIF`,
 		},
 	}
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tt.input)
 
 		if len(prog.Statements) != 1 {
-			fmt.Println("test:", tt.input)
-			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
 		}
 		stmt := prog.Statements[0]
 		repeat, ok := stmt.(*IfStatement)
 		if !ok {
-			fmt.Println("test:", tt.input)
-			t.Errorf("prog.Statements[0] not *IfStatment. got %T", stmt)
+			t.Errorf("[%d] prog.Statements[0] not *IfStatment. got %T", tn, stmt)
 		}
 		text := repeat.String()
 		expected := splitTrim(tt.expected)
 		if !strings.EqualFold(text, expected) {
-			fmt.Println("test:", tt.input)
-			t.Errorf("exptected len %d. got %d", len(expected), len(text))
-			fmt.Printf("expected\n%s\n", expected)
-			// fmt.Println([]byte(expected))
-			fmt.Printf("got\n%s\n", text)
-			// fmt.Println([]byte(text))
+			t.Errorf("[%d] exptected len %d. got %d", tn, len(expected), len(text))
 		}
 	}
 }
@@ -211,10 +196,6 @@ func TestParseFuncStatement(t *testing.T) {
 	expectedText := splitTrim(expected)
 	if !strings.EqualFold(text, expectedText) {
 		t.Errorf("exptected len %d. got %d", len(expectedText), len(text))
-		fmt.Printf("expected\n%s\n", expectedText)
-		fmt.Println([]byte(expectedText))
-		fmt.Printf("got\n%s\n", text)
-		fmt.Println([]byte(text))
 	}
 }
 
@@ -227,28 +208,23 @@ func TestParseVarStatement(t *testing.T) {
 		{" var   xyz   =   123  + 456", "VAR XYZ = 579"},
 	}
 
-	for _, tt := range tests {
-
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tt.input)
 
 		if len(prog.Statements) != 1 {
-			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
 		}
 		stmt := prog.Statements[0]
 		varStmt, ok := stmt.(*VariableStatement)
 		if !ok {
-			t.Errorf("prog.Statements[0] not *VariableStatement. got %T", stmt)
+			t.Errorf("[%d] prog.Statements[0] not *VariableStatement. got %T", tn, stmt)
 		}
 
 		text := varStmt.String()
 		expectedText := splitTrim(tt.expected)
 		if !strings.EqualFold(text, expectedText) {
-			t.Errorf("exptected len %d. got %d", len(expectedText), len(text))
-			fmt.Printf("expected\n%s\n", expectedText)
-			fmt.Println([]byte(expectedText))
-			fmt.Printf("got\n%s\n", text)
-			fmt.Println([]byte(text))
+			t.Errorf("[%d] exptected len %d. got %d", tn, len(expectedText), len(text))
 		}
 	}
 }
@@ -262,28 +238,23 @@ func TestParseAssignStatement(t *testing.T) {
 		{"def = 1 + 2 * 3", "DEF = 7"},
 	}
 
-	for _, tt := range tests {
-
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tt.input)
 
 		if len(prog.Statements) != 1 {
-			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
 		}
 		stmt := prog.Statements[0]
 		varStmt, ok := stmt.(*AssignStatement)
 		if !ok {
-			t.Errorf("prog.Statements[0] not *AssignStatement. got %T", stmt)
+			t.Errorf("[%d] prog.Statements[0] not *AssignStatement. got %T", tn, stmt)
 		}
 
 		text := varStmt.String()
 		expectedText := splitTrim(tt.expected)
 		if !strings.EqualFold(text, expectedText) {
-			t.Errorf("exptected len %d. got %d", len(expectedText), len(text))
-			fmt.Printf("expected\n%s\n", expectedText)
-			fmt.Println([]byte(expectedText))
-			fmt.Printf("got\n%s\n", text)
-			fmt.Println([]byte(text))
+			t.Errorf("[%d] exptected len %d. got %d", tn, len(expectedText), len(text))
 		}
 	}
 }
@@ -299,23 +270,20 @@ func TestParseExitmStatement(t *testing.T) {
 		{"EXITM", NODE_EXITM_STMT, "EXITM"},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tt.input)
 
 		if len(prog.Statements) != 1 {
-			fmt.Printf("input %q\n", tt.input)
-			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
 		}
 		stmt, ok := prog.Statements[0].(*ExitmStatement)
 		if !ok {
-			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("not ExitmStatement. got %T", stmt)
+			t.Errorf("[%d] not ExitmStatement. got %T", tn, stmt)
 		}
 
 		if stmt.NodeType() != tt.NodeType {
-			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("NodeType not %s. got %s", TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
+			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
 		}
 	}
 }
@@ -332,44 +300,37 @@ func TestParseReturnStatement(t *testing.T) {
 		{`RETURN "abc"`, NODE_RETURN_STMT, "abc", "RETURN"},
 	}
 
-	for _, tt := range tests {
+	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tt.input)
 
 		if len(prog.Statements) != 1 {
-			fmt.Printf("input %q\n", tt.input)
-			t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
 		}
 		stmt, ok := prog.Statements[0].(*ReturnStatement)
 		if !ok {
-			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("not ExitmStatement. got %T", stmt)
+			t.Errorf("[%d] not ExitmStatement. got %T", tn, stmt)
 		}
 		if stmt.NodeType() != tt.NodeType {
-			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("NodeType not %s. got %s", TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
+			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
 		}
 		switch v := tt.expected.(type) {
 		case nil:
 			if v != nil {
-				fmt.Printf("input %q\n", tt.input)
-				t.Errorf("ReturnStatement.Value not %v. got %s", v, stmt.Value)
+				t.Errorf("[%d] ReturnStatement.Value not %v. got %s", tn, v, stmt.Value)
 			}
 		case int:
 			result := stmt.Value.(*NumberLiteral).Value
 			if result != v {
-				fmt.Printf("input %q\n", tt.input)
-				t.Errorf("ReturnStatement.Value not %d. got %d", v, result)
+				t.Errorf("[%d] ReturnStatement.Value not %d. got %d", tn, v, result)
 			}
 		case string:
 			result := stmt.Value.(*StringLiteral).Value
 			if result != v {
-				fmt.Printf("input %q\n", tt.input)
-				t.Errorf("ReturnStatement.Value not %s. got %s", v, result)
+				t.Errorf("[%d] ReturnStatement.Value not %s. got %s", tn, v, result)
 			}
 		default:
-			fmt.Printf("input %q\n", tt.input)
-			t.Errorf("ReturnStatement.Value is unpexcted type %#v", v)
+			t.Errorf("[%d] ReturnStatement.Value is unpexcted type %#v", tn, v)
 		}
 	}
 }

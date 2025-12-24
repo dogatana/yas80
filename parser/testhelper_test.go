@@ -43,36 +43,31 @@ func splitTrim(input string) string {
 	return strings.Join(ret, "\n")
 }
 
-func testAssignStatement(t *testing.T, input string, node Node) *AssignStatement {
+func testAssignStatement(t *testing.T, tn int, node Node) *AssignStatement {
 	stmt, ok := node.(*AssignStatement)
 	if !ok {
-		fmt.Printf("input %q\n", input)
-		t.Fatalf("not *AssignStatement. got %T", node)
+		t.Fatalf("[%d] not *AssignStatement. got %T", tn, node)
 	}
 	return stmt
 }
 
-func testNumberLiteral(t *testing.T, input string, node Node, expected int) {
+func testNumberLiteral(t *testing.T, tn int, node Node, expected int) {
 	literal, ok := node.(*NumberLiteral)
 	if !ok {
-		fmt.Printf("input %q\n", input)
-		t.Errorf("not *NumberLiteral. got %T", literal)
+		t.Errorf("[%d] not *NumberLiteral. got %T", tn, literal)
 	}
 	if literal.Value != expected {
-		fmt.Printf("input %q\n", input)
-		t.Errorf("not %d. got %d", expected, literal.Value)
+		t.Errorf("[%d] not %d. got %d", tn, expected, literal.Value)
 	}
 }
 
-func testStringLiteral(t *testing.T, input string, node Node, expected string) {
+func testStringLiteral(t *testing.T, tn int, node Node, expected string) {
 	literal, ok := node.(*StringLiteral)
 	if !ok {
-		fmt.Printf("input %q\n", input)
-		t.Errorf("not *StringLiteral. got %T", literal)
+		t.Errorf("[%d] not *StringLiteral. got %T", tn, literal)
 	}
 	if literal.Value != expected {
-		fmt.Printf("input %q\n", input)
-		t.Errorf("not %q. got %q", expected, literal.Value)
+		t.Errorf("[%d] not %q. got %q", tn, expected, literal.Value)
 	}
 }
 func readTestDataFile(t *testing.T, filename string) string {
