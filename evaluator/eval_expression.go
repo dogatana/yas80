@@ -55,18 +55,27 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 
 	// enum or proc.local
 	case *parser.DotIdent: // TODO enum か proc.local かの識別必要
-		enum, ok := env.Get(node.Left)
+		obj, ok := env.Get(node.Left)
 		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.EENUM_UNDEF, node.Left), ctx)
-			return object.ERROR
+			return &object.RefNotFoundObject{Names: []string{node.Name}}
 		}
-		v, ok := enum.(*object.EnumObject).Get(node.Right)
-		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.EENUM_UNDEF_ELE, node.Left, node.Right), ctx)
-			return object.ERROR
+		switch obj := obj.(type) {
+		case *object.ProcObject:
+			vobj, ok := obj.Get(node.Right)
+			if !ok {
+				return &object.RefNotFoundObject{Names: []string{node.Name}}
+			}
+			switch v := vobj.(type) {
+			case *object.NumberObject, *object.StringObject:
+				return v
+			case *object.SymbolObject:
+				return v.Value
+			default:
+				panic(fmt.Sprintf("DotIdent %s has %#v", node.Name, v))
+			}
+		default:
+			return &object.RefNotFoundObject{Names: []string{node.Name}}
 		}
-		return v
-
 	// 関数呼出し
 	case *parser.FuncCallExpression:
 		return e.evalCallExpression(node, env, ctx)
