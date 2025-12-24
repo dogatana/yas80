@@ -173,18 +173,15 @@ func main() {
 	// 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
 	fmt.Println("\n# finalize")
 	code := evaluator.CollectCode(obj.(*object.ProgramObject))
+
 	codeStable := false
-	for i := 0; i < 256 && !codeStable; i++ {
-		obj := eval.EvalProgram(prog, env)
+	for i := 0; !codeStable && i < 256; i++ {
+		obj = eval.EvalProgram(prog, env)
 		newCode := evaluator.CollectCode(obj.(*object.ProgramObject))
 		codeStable = bytes.Equal(code, newCode)
-		if !codeStable {
-			code = newCode
-		}
 	}
 	fmt.Printf("finalize %d times, codeStable %v\n", i, codeStable)
 	showResult(-1, prog, obj, env)
-
 }
 
 func showResult(count int, prog *parser.Program, obj object.Object, env object.Environment) {

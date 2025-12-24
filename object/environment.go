@@ -144,11 +144,18 @@ func PrintEnv(env Environment) {
 			envType = ""
 		case *MacroEnvironment:
 			envType = "@"
+		case *ProcEnvironment:
+			envType = "P"
 		default:
 			envType = "?"
 		}
 		for k, v := range env.Store() {
 			fmt.Printf("%s[%d]%sENV[%s]=%s\n", prefix, i, envType, k, v.String())
+			if pobj, ok := v.(*ProcObject); ok {
+				for pk, pv := range pobj.Store() {
+					fmt.Printf("%s%s%s=%s\n", prefix, k, pk, pv.String())
+				}
+			}
 		}
 		prefix += "  "
 		env = env.Outer()

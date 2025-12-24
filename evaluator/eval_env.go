@@ -18,7 +18,8 @@ func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
 		if !ok {
 			continue
 		}
-		if sym.Name == "=" || sym.Name[0] == '$' {
+		// システム変数は除外
+		if sym.Name[0] == '$' {
 			continue
 		}
 		if sym.Value != object.NULL {
