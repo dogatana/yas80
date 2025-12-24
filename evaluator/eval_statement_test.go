@@ -85,3 +85,37 @@ func TestProcStatement(t *testing.T) {
 		testNumberObject(t, tn, value, tt.expected)
 	}
 }
+
+func TestProcLabel(t *testing.T) {
+	tests := []struct {
+		input  string
+		code   []byte
+		names  []string
+		values []int
+	}{
+		{`abc proc \ ld a, .abc \ .abc: nop \ endp \ xyz proc \ ld a, .abc \ .abc: ret \ endp`,
+			[]byte{0x3e, 0x02, 0x00, 0x3e, 0x05, 0xc9}, // ld a,2 \ nop \ ld a,5 \ ret
+			[]string{"ABC.ABC", "XYZ.ABC"},
+			[]int{2, 5},
+		},
+		{`abc proc \ ld a, .abc \ nop \ const .abc = 0xa5 \ endp \ xyz proc \ ld a, .abc \ .abc: ret \ endp`,
+			[]byte{0x3e, 0xa5, 0x00, 0x3e, 0x05, 0xc9}, // ld a,2 \ nop \ ld a,5 \ ret
+			[]string{"ABC.ABC", "XYZ.ABC"},
+			[]int{0xa5, 5},
+		},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logger.New("<eval test>")
+		prog := evaluateInput(t, tt.input, logger, env)
+
+		code := CollectCode(prog)
+		if len(code) != len(tt.code) && !bytesEqual(code, tt.code) {
+			t.Errorf("[%d] generated code differ", tn)
+		}
+		for i, name := range tt.names {
+			testDotIdentInEnv(t, tn, name, env, tt.values[i])
+		}
+	}
+}

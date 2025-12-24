@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"testing"
 	"yas80/fileblock"
 	"yas80/logger"
@@ -120,6 +121,31 @@ func testSymbolNumberObject(t *testing.T, testnum int, obj object.Object, expect
 		return false
 	}
 	return testNumberObject(t, testnum, sym.Value, expected)
+}
+
+func testDotIdentInEnv(t *testing.T, tn int, name string, env object.Environment, expected int) bool {
+	names := strings.Split(name, ".")
+	if len(names) != 2 {
+		t.Errorf("[%d] not dot-name %s", tn, name)
+		return false
+	}
+	obj, ok := env.Get(names[0])
+	if !ok {
+		t.Errorf("[%d]  %s not in env", tn, names[0])
+		return false
+	}
+	switch obj := obj.(type) {
+	case *object.ProcObject:
+		if v, ok := obj.Get("." + names[1]); !ok {
+			t.Errorf("[%d]  %s not in env", tn, name)
+			return false
+		} else {
+			return testSymbolNumberObject(t, tn, v, expected)
+		}
+	default:
+		t.Errorf("[%d] %s is not ProcObject. got %T", tn, name, obj)
+		return false
+	}
 }
 
 func testNumberObject(t *testing.T, testnum int, obj object.Object, expected int) bool {

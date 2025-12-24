@@ -8,10 +8,10 @@ import (
 
 func TestEvalLabelStatement(t *testing.T) {
 	tests := []struct {
-		input string
-		code  []byte
-		names []string
-		value []int
+		input  string
+		code   []byte
+		names  []string
+		values []int
 	}{
 		{`addr1: ld hl, $1234 \ addr2: ld a, a \ addr3: ld hl, $5678`,
 			[]byte{0x21, 0x34, 0x12, 0x7f, 0x21, 0x78, 0x56},
@@ -43,7 +43,7 @@ func TestEvalLabelStatement(t *testing.T) {
 			if v, ok := env.Get(name); !ok {
 				t.Errorf("[%d] no %q in env", tn, name)
 			} else {
-				testSymbolNumberObject(t, tn, v, tt.value[i])
+				testSymbolNumberObject(t, tn, v, tt.values[i])
 			}
 		}
 	}
