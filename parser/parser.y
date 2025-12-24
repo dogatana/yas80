@@ -507,9 +507,9 @@ expr		: NUMBER
 			}
 			| DOT_IDENT
 			{
-				uname := strings.ToUpper($1.Literal)
-				names := strings.Split(uname, ".")
-				$$ = &DotIdent{Name: uname, Left: names[0], Right: names[1],Context: $1.Context}
+				name := strings.ToUpper($1.Literal)
+				names := strings.Split(name, ".")
+				$$ = &DotIdent{Name: name, Left: names[0], Right: "." + names[1], Context: $1.Context}
 			}
 			| IDENT '(' expr_list ')'
 			{

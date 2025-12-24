@@ -691,7 +691,7 @@ type DotIdent struct {
 func (di *DotIdent) expressionNode()          {}
 func (di *DotIdent) NodeType() NodeType       { return NODE_DOT_IDENT }
 func (di *DotIdent) NodeSubType() NodeSubType { return 0 }
-func (di *DotIdent) String() string           { return di.Left + "." + di.Right }
+func (di *DotIdent) String() string           { return di.Name }
 
 // 間接指定
 type IndirectExpression struct {
