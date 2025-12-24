@@ -20,7 +20,7 @@ PARSER = parser/parser.go
 PATCH = parser/patch_parser.py
 YOUT = parser/y.output
 	  
-main.exe: ${SRC}
+main.exe: ${SRC} 
 	go build -o $@
 
 clean:
@@ -35,8 +35,11 @@ yacc:
 	goyacc -v ${YOUT} -o ${PARSER} ${YACC}
 	python ${PATCH} ${PARSER} ${PARSER} ${YOUT}
 
-vet:
+vet: fmt
 	go vet ./parser ./evaluator ./fileblock ./errtest
+
+fmt:
+	go fmt ./parser ./evaluator ./fileblock ./errtest
 
 check:
 	staticcheck ./parser ./evaluator ./errtest
