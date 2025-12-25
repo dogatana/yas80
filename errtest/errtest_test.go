@@ -12,6 +12,7 @@ func TestErrorExpression(t *testing.T) {
 		input    string
 		expected string
 	}{
+		// 0-
 		{"const abc = 123 / 0", errcode.EBIN_OP_DIVZERO},
 		{`const abc = 0 \ ld a, 1 / abc`, errcode.EBIN_OP_DIVZERO},
 		{`test macro arg \ ld a, 1 / arg \ endm \ test 0`, errcode.EBIN_OP_DIVZERO},
@@ -29,13 +30,18 @@ func TestErrorConstLabel(t *testing.T) {
 		input    string
 		expected string
 	}{
+		// 0-
 		{`const abc = 0 \ const abc = 1`, errcode.ESYM_DUP},
 		{`abc: nop \ abc: nop`, errcode.ELABEL_DUP},
 		{`abc: \ nop \ abc: nop`, errcode.ELABEL_DUP},
 		{`abc: nop \ abc:  \ nop`, errcode.ELABEL_DUP},
 		{`abc: \  nop \ abc: \ nop`, errcode.ELABEL_DUP},
+		// 5-
 		{`abc: nop \ const abc = 123`, errcode.ESYM_DUP},
 		{`const abc = 123 \ abc: nop`, errcode.ELABEL_USED},
+		{`function abc() x \ const abc = 1`, errcode.ESYM_USED},
+		{`const abc = def \ const def = abc`, errcode.ESYM_CYCLIC},
+		{`const abc = def + 1 \ const def = xyz + 2 \ const xyz = abc + 3`, errcode.ESYM_CYCLIC},
 	}
 	for tn, tt := range tests {
 		logger := logger.New("test")
@@ -50,6 +56,7 @@ func TestErrorScrope(t *testing.T) {
 		input    string
 		expected string
 	}{
+		// 0-
 		{`const @abc = 0 \ ld a, @abc`, errcode.ESCOPE_MACRO},
 		{`const .abc = 0 \ ld a, .abc`, errcode.ESCOPE_PROC},
 		{`if 1 \ const @abc = 1 \ ld a, @abc \ endif`, errcode.ESCOPE_MACRO},
@@ -93,12 +100,13 @@ func TestErrorFuncCall(t *testing.T) {
 		input    string
 		expected string
 	}{
-		// tn: 0-
+		// 0-
 		{`abc func \ return 1 \ endf \ _=abc(0)`, errcode.EFUNC_ARG_COUNT},
 		{`abc func arg \ return 1 \ endf \ _=abc()`, errcode.EFUNC_ARG_COUNT},
 		{`abc func arg \ return 1 \ endf \ _=abc(0, 1)`, errcode.EFUNC_ARG_COUNT},
 		{`_=abc()`, errcode.EFUNC_UNDEF},
 		{`_=abc(0)`, errcode.EFUNC_UNDEF},
+		// 5-
 		{`const abc = 1 \ _=abc(0)`, errcode.EFUNC_NOT_FUNC},
 		{`const abc = 1 \ _=abc()`, errcode.EFUNC_NOT_FUNC},
 	}
@@ -115,6 +123,7 @@ func TestErrorMacroDef(t *testing.T) {
 		input    string
 		expected string
 	}{
+		// 0-
 		{`@abc macro \ endm`, errcode.EMACRO_NAME},
 		{`.abc macro \ endm`, errcode.EMACRO_NAME},
 		{`const abc = 1 \ abc macro \ endm`, errcode.EMACRO_USED},
@@ -175,11 +184,28 @@ func TestErrorProcDef(t *testing.T) {
 		input    string
 		expected string
 	}{
+		// 0-
 		{`abc proc \ nop \ endp \ abc proc \ ret \ endp`, errcode.EPROC_DUP},
 		{`const abc = 1 \ abc proc \ ret \ endp`, errcode.EPROC_USED},
 		{`ld hl, abc.xxx`, errcode.ESYM_UNDEF},
 		{`ld hl, abc.xxx \abc proc \ nop \ .def: ret \ nop \ endp`, errcode.ESYM_UNDEF},
 		{`abc proc \ nop \ endp \ ld a, abc.xxx`, errcode.ESYM_UNDEF},
+	}
+	for tn, tt := range tests {
+		logger := logger.New("test")
+		env := object.NewEnvironment(nil)
+		evaluateInput(TEST_ERROR, tt.input, logger, env)
+		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
+	}
+}
+
+func TestErrorRept(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		// 0-
+		{`rept a \ nop \ endr`, errcode.EREPT_COUNT},
 	}
 	for tn, tt := range tests {
 		logger := logger.New("test")
