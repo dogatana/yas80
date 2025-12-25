@@ -35,6 +35,11 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 			return &object.RefNotFoundObject{Names: []string{name}}
 		}
 
+		// PROC の名前ならそのアドレスを返す
+		if obj.Type() == object.PROC_OBJ {
+			return &object.NumberObject{Value: obj.(*object.ProcObject).Addr, Context: node.Context}
+		}
+
 		sym, ok := obj.(*object.SymbolObject)
 		if !ok {
 			// SymbolObject 以外ならそのまま返す
@@ -45,13 +50,13 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 		if sym.Name == "_" {
 			return sym
 		}
-		// 値が NULL でないなら value を返す
-		if sym.Value != object.NULL {
+		if sym.Value == object.NULL {
+			// 値が NULL なら RefNotFound にして返す
+			return &object.RefNotFoundObject{Names: []string{sym.Name}}
+		} else {
+			// 値が NULL でないなら value を返す
 			return sym.Value
 		}
-		// 値が NULL なら RefNotFound にして返す
-		return &object.RefNotFoundObject{Names: []string{sym.Name}}
-		// return &object.RefNotFoundObject{Names: append(sym.DependsOn, sym.Name)}
 
 	// enum or proc.local
 	case *parser.DotIdent: // TODO enum か proc.local かの識別必要

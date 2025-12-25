@@ -133,12 +133,13 @@ func (r *RefNotFoundObject) String() string {
 // proc
 type ProcObject struct {
 	Name string
+	Addr int
 	Env  Environment
 }
 
 // Object の実装
 func (o *ProcObject) Type() ObjectType { return PROC_OBJ }
-func (o *ProcObject) String() string   { return fmt.Sprintf("PROC(%s)", o.Name) }
+func (o *ProcObject) String() string   { return fmt.Sprintf("PROC(%s[0x%04x])", o.Name, o.Addr) }
 
 // Environ interface の実装
 func (o *ProcObject) EnvType() int                       { return o.Env.EnvType() }

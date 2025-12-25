@@ -31,15 +31,23 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 		name := node.Name
 		obj, ok := env.Get(name)
 		if ok {
-			if obj.Type() == object.PROC_OBJ {
+			switch obj := obj.(type) {
+			case *object.ProcObject:
 				e.logger.Error(fmt.Sprintf(errcode.EPROC_DUP, name), node.Context)
-			} else {
+				return object.ERROR
+			case *object.SymbolObject:
+				if obj.SymType != object.SYM_UNKNOWN {
+					e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
+					return object.ERROR
+				}
+				// SYM_UNKNOWN なら proc として登録
+			default:
 				e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
+				return object.ERROR
 			}
-			return object.ERROR
 		}
 		penv := object.NewProcEnvironment(env)
-		env.Set(name, &object.ProcObject{Name: name, Env: penv})
+		env.Set(name, &object.ProcObject{Name: name, Addr: getLocationCounter(env), Env: penv})
 
 		pb := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
 		return &object.NodeObject{Node: pb}

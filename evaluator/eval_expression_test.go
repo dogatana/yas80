@@ -23,6 +23,9 @@ func TestEvalExpression(t *testing.T) {
 		{`const val = 11 \ const result = val * val`, 121},
 		{`const val = 11 \ const val2 = val * val \ const result = val2`, 121},
 		{"const val = 11 \r\n const val2 = val * val \r\n const result = val2", 121},
+		// 10-
+		{`nop \ abc proc \ ret \ endp \ const result = abc`, 1},
+		{`const result = abc \ nop \ abc proc \ ret \ endp`, 1},
 	}
 
 	for tn, tt := range tests {
