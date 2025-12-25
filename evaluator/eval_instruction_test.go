@@ -19,7 +19,7 @@ func TestZ80Instruction(t *testing.T) {
 		input := string(readTestDataFile(t, base+".asm"))
 		expected := readTestDataFile(t, base+".bin")
 
-		prog := evaluateInput(t, input, logger, env)
+		prog, _ := evaluateInput(t, input, logger, env)
 		logger.Print()
 		result := CollectCode(prog)
 

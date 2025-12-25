@@ -1,7 +1,6 @@
 package evaluator
 
 import (
-	"strings"
 	"testing"
 	"yas80/logger"
 	"yas80/object"
@@ -34,7 +33,7 @@ func TestLabelStatement(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		prog := evaluateInput(t, tt.input, logger, env)
+		prog, _ := evaluateInput(t, tt.input, logger, env)
 
 		code := CollectCode(prog)
 		if err := bytesEqual(code, tt.code); err != nil {
@@ -66,7 +65,7 @@ func TestConstStatement(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		_ = evaluateInput(t, tt.input, logger, env)
+		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get(tt.name)
 		if !ok {
@@ -92,7 +91,7 @@ func TestProcStatement(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		_ = evaluateInput(t, tt.input, logger, env)
+		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get(tt.name)
 		if !ok {
@@ -110,6 +109,7 @@ func TestProcLabel(t *testing.T) {
 		names  []string
 		values []int
 	}{
+		// 0-
 		{`abc proc \ ld a, .abc \ .abc: nop \ endp \ xyz proc \ ld a, .abc \ .abc: ret \ endp`,
 			[]byte{0x3e, 0x02, 0x00, 0x3e, 0x05, 0xc9}, // ld a,2 \ nop \ ld a,5 \ ret
 			[]string{"ABC.ABC", "XYZ.ABC"},
@@ -125,23 +125,34 @@ func TestProcLabel(t *testing.T) {
 			[]string{"ABC.XXX", "ZZZ"},
 			[]int{2, 1},
 		},
+		{`ld a, abc.def \ abc proc \ nop \ const .def = 4 \ nop \ endp`,
+			[]byte{0x3e, 0x04, 0, 0},
+			[]string{"ABC.DEF"},
+			[]int{4},
+		},
+		{`ld a, abc.def \ abc proc \ nop \ .def: ret \ nop \ endp`,
+			[]byte{0x3e, 0x03, 0, 0xc9, 0},
+			[]string{"ABC.DEF"},
+			[]int{3},
+		},
+		// 5-
 	}
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		prog := evaluateInput(t, tt.input, logger, env)
+		prog, e := evaluateInput(t, tt.input, logger, env)
 
 		code := CollectCode(prog)
 		if err := bytesEqual(code, tt.code); err != nil {
 			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 		for i, name := range tt.names {
-			if strings.Contains(name, ".") {
-				testDotIdentInEnv(t, tn, name, env, tt.values[i])
+			sym, ok := e.getSymbolFromEnv(name, env)
+			if !ok {
+				t.Errorf("[%d] symbol %s not found", tn, name)
 			} else {
-				obj, _ := env.Get(name)
-				testSymbolNumberObject(t, tn, obj, tt.values[i])
+				testSymbolNumberObject(t, tn, sym, tt.values[i])
 			}
 		}
 	}

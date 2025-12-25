@@ -8,7 +8,7 @@ import (
 
 func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
 	order, err := e.tSortEnv(env)
-	// fmt.Println("order", order)
+	fmt.Println("order", order)
 	if err != nil {
 		return order, err
 	}
@@ -17,14 +17,16 @@ func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
 		if !ok {
 			continue
 		}
+		// DotIdent が取得できたので、現在の環境からは削除しておく
+		if strings.Contains(name, ".") {
+			delete(env.Store(), name)
+		}
 		// システム変数は除外
 		if sym.Name[0] == '$' {
 			continue
 		}
-		if sym.Value != object.NULL {
-			continue
-		}
-		if sym.Node != nil {
+		// 値が NULL で Node が登録されている場合、値を更新する
+		if sym.Value == object.NULL && sym.Node != nil {
 			value := e.evalExpression(sym.Node, env, sym.Context)
 			if !isError(value) && !isRefNotFound(value) {
 				sym.Value = value

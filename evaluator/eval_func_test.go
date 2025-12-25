@@ -22,7 +22,7 @@ func TestFuncIfReturn(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		_ = evaluateInput(t, tt.input, logger, env)
+		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
 		if !ok {
@@ -70,7 +70,7 @@ func TestIf(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		_ = evaluateInput(t, tt.input, logger, env)
+		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
 		if tt.expected < 0 {
@@ -116,7 +116,7 @@ func TestFunc(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		_ = evaluateInput(t, tt.input, logger, env)
+		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
 		if !ok {
@@ -152,7 +152,7 @@ func TestClosure(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		_ = evaluateInput(t, tt.input, logger, env)
+		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
 		if !ok {
@@ -190,7 +190,7 @@ func TestFibFunc(t *testing.T) {
 	for testnum, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		_ = evaluateInput(t, tt.input, logger, env)
+		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
 		if !ok {
@@ -221,7 +221,7 @@ func TestFunction(t *testing.T) {
 	for testnum, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logger.New("<eval test>")
-		_ = evaluateInput(t, tt.input, logger, env)
+		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
 		if !ok {

@@ -2,13 +2,11 @@ package evaluator
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
 	"testing"
 	"yas80/fileblock"
 	"yas80/logger"
@@ -16,7 +14,7 @@ import (
 	"yas80/parser"
 )
 
-func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object.Environment) *object.ProgramObject {
+func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
 	progNode := parseTextForTest(t, input)
 
 	evaluator := New(logger)
@@ -61,7 +59,7 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 		fmt.Printf("input %q\n", input)
 		t.Fatal("Eval() return 0 Objects")
 	}
-	return programObject
+	return programObject, evaluator
 }
 
 func parseTextForTest(t *testing.T, input string) *parser.Program {
@@ -124,31 +122,6 @@ func testSymbolNumberObject(t *testing.T, testnum int, obj object.Object, expect
 	return testNumberObject(t, testnum, sym.Value, expected)
 }
 
-func testDotIdentInEnv(t *testing.T, tn int, name string, env object.Environment, expected int) bool {
-	names := strings.Split(name, ".")
-	if len(names) != 2 {
-		t.Errorf("[%d] not dot-name %s", tn, name)
-		return false
-	}
-	obj, ok := env.Get(names[0])
-	if !ok {
-		t.Errorf("[%d]  %s not in env", tn, names[0])
-		return false
-	}
-	switch obj := obj.(type) {
-	case *object.ProcObject:
-		if v, ok := obj.Get("." + names[1]); !ok {
-			t.Errorf("[%d]  %s not in env", tn, name)
-			return false
-		} else {
-			return testSymbolNumberObject(t, tn, v, expected)
-		}
-	default:
-		t.Errorf("[%d] %s is not ProcObject. got %T", tn, name, obj)
-		return false
-	}
-}
-
 func testNumberObject(t *testing.T, testnum int, obj object.Object, expected int) bool {
 	number, ok := obj.(*object.NumberObject)
 	if !ok {
@@ -189,11 +162,11 @@ func collectValue(prog *object.ProgramObject) []*object.ValueObject {
 
 func bytesEqual(v1, v2 []byte) error {
 	if len(v1) != len(v2) {
-		return errors.New(fmt.Sprintf("size diff %d %d\n", len(v1), len(v2)))
+		return fmt.Errorf("size diff %d %d\n", len(v1), len(v2))
 	}
 	for i, v := range v1 {
 		if v != v2[i] {
-			return errors.New(fmt.Sprintf("contentis diff [%d] %02x %02x\n", i, v, v2[i]))
+			return fmt.Errorf("contentis diff [%d] %02x %02x\n", i, v, v2[i])
 		}
 	}
 	return nil
