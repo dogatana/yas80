@@ -166,6 +166,11 @@ func main() {
 		}
 	}
 	fmt.Printf("eval %d times, eval.Resolved = %v\n", i, eval.Resolved)
+	if !eval.Resolved {
+		fmt.Print("** not resolved")
+		logger.Print()
+		os.Exit(1)
+	}
 
 	// eval 戦略
 	// 仮コード生成によってラベルアドレスが本来のものと異なる場合があるため
