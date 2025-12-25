@@ -45,7 +45,7 @@ func TestParseExpression(t *testing.T) {
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))
@@ -69,7 +69,7 @@ func TestParseCallFunction(t *testing.T) {
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))
@@ -91,7 +91,7 @@ func TestParseArrayVariable(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))
@@ -116,7 +116,7 @@ func TestParseArrayElement(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))
@@ -139,7 +139,7 @@ func TestParseStringExpression(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))

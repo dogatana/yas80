@@ -82,7 +82,7 @@ func TestParseNumberLiteral(t *testing.T) {
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 		if len(prog.Statements) == 0 {
 			t.Fatalf("[%d] %d statements", tn, len(prog.Statements))
 		}
@@ -105,7 +105,7 @@ func TestParseStringLiteral(t *testing.T) {
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 		if len(prog.Statements) == 0 {
 			t.Fatalf("[%d] %d statements", tn, len(prog.Statements))
 		}
@@ -126,7 +126,7 @@ func TestParseArrayLiteral(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 		stmt := testAssignStatement(t, tn, prog.Statements[0])
 
 		array, ok := stmt.Value.(*ArrayLiteral)
@@ -158,7 +158,7 @@ func TestParseLabel(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 		if len(prog.Statements) == 0 {
 			t.Fatalf("[%d] statements empty", tn)
 		}
@@ -190,7 +190,7 @@ func TestParseLabelStatement(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 		if len(prog.Statements) == 0 {
 			t.Fatalf("[%d] statements empty", tn)
 		}
@@ -221,7 +221,7 @@ func TestParseDotIdent(t *testing.T) {
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) == 0 {
 			t.Fatalf("[%d] statements empty", tn)

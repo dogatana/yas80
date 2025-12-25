@@ -103,7 +103,6 @@ func TestLexBlankInput(t *testing.T) {
 		for _, expected := range tt.expected_tokens {
 			tok := l.NextToken()
 			if tt.input != "" && tok.Context.Line == 0 {
-				fmt.Println("tokenize", tt.input)
 				t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 			}
 			if tok.TokenType != TokenType(expected) {

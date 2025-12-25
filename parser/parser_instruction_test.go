@@ -41,7 +41,7 @@ OUTD
 OTDR
 `
 	l := newLexerForTest(input)
-	prog := ParseForTest(t, l, input)
+	prog := ParseForTest(t, l, -1)
 
 	expected := strings.Split(strings.Trim(input, " \n"), "\n")
 	for i, node := range prog.Statements {
@@ -81,7 +81,7 @@ RET
 RET 18
 `
 	l := newLexerForTest(input)
-	prog := ParseForTest(t, l, input)
+	prog := ParseForTest(t, l, -1)
 
 	expected := []string{}
 	for _, line := range strings.Split(strings.Trim(input, " \n"), "\n") {
@@ -124,7 +124,7 @@ OUT (2), A
 OUT (C), B
 `
 	l := newLexerForTest(input)
-	prog := ParseForTest(t, l, input)
+	prog := ParseForTest(t, l, -1)
 
 	expected := []string{}
 	for _, line := range strings.Split(strings.Trim(input, " \n"), "\n") {
@@ -153,7 +153,7 @@ LD A, (IX + 1)
 LD (IX + 1), A
 `
 	l := newLexerForTest(input)
-	prog := ParseForTest(t, l, input)
+	prog := ParseForTest(t, l, -1)
 
 	expected := strings.Trim(input, " \n\t")
 	text := strings.ReplaceAll(prog.String(), "\t", " ")

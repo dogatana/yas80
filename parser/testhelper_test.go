@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -18,15 +17,17 @@ func newLexerForTest(input string) *Lexer {
 	return NewLexer(fb, logger)
 }
 
-func ParseForTest(t *testing.T, lexer *Lexer, input string) *Program {
+func ParseForTest(t *testing.T, lexer *Lexer, tn int) *Program {
 	prog := Parse(lexer)
 	prog = PreProrocess(lexer.logger, prog)
 	ec, wc, _ := lexer.logger.Count()
 	if ec > 0 || wc > 0 {
-		fmt.Printf("input %q\n", input)
 		lexer.logger.Print()
-		t.Fatalf("%d errors and %d warnigs", ec, wc)
-
+		if tn < 0 {
+			t.Fatalf("%d errors and %d warnigs", ec, wc)
+		} else {
+			t.Fatalf("[%d] %d errors and %d warnigs", tn, ec, wc)
+		}
 	}
 	return prog
 }

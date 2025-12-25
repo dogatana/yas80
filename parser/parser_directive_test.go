@@ -16,7 +16,7 @@ func TestParseConstStatement(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))
@@ -34,26 +34,34 @@ func TestParseConstStatement(t *testing.T) {
 }
 
 func TestParseEnumStatement(t *testing.T) {
-	input := ` test enum
- abc
-def = 1  
- xyz  
-  ende`
-	l := newLexerForTest(input)
-	prog := ParseForTest(t, l, input)
+	tests := []struct {
+		input string
+	}{
+		{
+			` test enum
+			abc
+			def = 1  
+			xyz  
+			ende`,
+		},
+	}
+	for tn, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := ParseForTest(t, l, -1)
 
-	if len(prog.Statements) != 1 {
-		t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
-	}
-	stmt := prog.Statements[0]
-	enum, ok := stmt.(*EnumStatement)
-	if !ok {
-		t.Errorf("prog.Statements[0] not *EnumStatement. got %T", stmt)
-	}
-	srcText := splitTrim(input)
-	text := enum.String()
-	if !strings.EqualFold(text, srcText) {
-		t.Errorf("expected %d chars. got %d chars", len(srcText), len(text))
+		if len(prog.Statements) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		}
+		stmt := prog.Statements[0]
+		enum, ok := stmt.(*EnumStatement)
+		if !ok {
+			t.Errorf("[%d] prog.Statements[0] not *EnumStatement. got %T", tn, stmt)
+		}
+		srcText := splitTrim(tt.input)
+		text := enum.String()
+		if !strings.EqualFold(text, srcText) {
+			t.Errorf("[%d] expected %d chars. got %d chars", tn, len(srcText), len(text))
+		}
 	}
 }
 
@@ -69,7 +77,7 @@ func TestParseReptStatement(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
@@ -144,7 +152,7 @@ func TestParseIfStatement(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
@@ -163,39 +171,47 @@ func TestParseIfStatement(t *testing.T) {
 }
 
 func TestParseFuncStatement(t *testing.T) {
-	input := `abs func x
-	if x > 0
-	  return x
-	else
-	  return -x
-	endif
-	endf
-	`
-	expected := `
-	ABS FUNC X
-	IF (x > 0)
-	RETURN X
-	ELSE
-	RETURN (-X)
-	ENDIF
-	ENDF`
-
-	l := newLexerForTest(input)
-	prog := ParseForTest(t, l, input)
-
-	if len(prog.Statements) != 1 {
-		t.Fatalf("expect 1 statements. got %d", len(prog.Statements))
-	}
-	stmt := prog.Statements[0]
-	fn, ok := stmt.(*FuncStatement)
-	if !ok {
-		t.Errorf("prog.Statements[0] not *FunctionStatment. got %T", stmt)
+	tests := []struct {
+		input    string
+		expected string
+	}{
+		{
+			`abs func x
+			if x > 0
+			return x
+			else
+			return -x
+			endif
+			endf
+		`,
+			`ABS FUNC X
+			IF (x > 0)
+			RETURN X
+			ELSE
+			RETURN (-X)
+			ENDIF
+			ENDF
+		`},
 	}
 
-	text := fn.String()
-	expectedText := splitTrim(expected)
-	if !strings.EqualFold(text, expectedText) {
-		t.Errorf("exptected len %d. got %d", len(expectedText), len(text))
+	for tn, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := ParseForTest(t, l, tn)
+
+		if len(prog.Statements) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		}
+		stmt := prog.Statements[0]
+		fn, ok := stmt.(*FuncStatement)
+		if !ok {
+			t.Errorf("[%d] prog.Statements[0] not *FunctionStatment. got %T", tn, stmt)
+		}
+
+		text := fn.String()
+		expectedText := splitTrim(tt.expected)
+		if !strings.EqualFold(text, expectedText) {
+			t.Errorf("[%d] exptected len %d. got %d", tn, len(expectedText), len(text))
+		}
 	}
 }
 
@@ -210,7 +226,7 @@ func TestParseVarStatement(t *testing.T) {
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
@@ -240,7 +256,7 @@ func TestParseAssignStatement(t *testing.T) {
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
@@ -272,7 +288,7 @@ func TestParseExitmStatement(t *testing.T) {
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
@@ -302,7 +318,7 @@ func TestParseReturnStatement(t *testing.T) {
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tt.input)
+		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
