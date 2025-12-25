@@ -148,6 +148,33 @@ func (o *ProcObject) Set(name string, obj Object) Object { return o.Env.Set(name
 func (o *ProcObject) Outer() Environment                 { return o.Env.Outer() }
 func (o *ProcObject) Store() map[string]Object           { return o.Env.Store() }
 
+// enum
+type EnumObject struct {
+	Name string
+	Env  Environment
+}
+
+// Object の実装
+func (o *EnumObject) Type() ObjectType { return ENUM_OBJ }
+func (o *EnumObject) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(fmt.Sprintf("ENUM(%s) {\n", o.Name))
+	for k, v := range o.Env.Store() {
+		out.WriteString(fmt.Sprintf("%s=%s\n", k, v.String()))
+	}
+	out.WriteString("}")
+
+	return out.String()
+}
+
+// Environ interface の実装
+func (o *EnumObject) EnvType() int                       { return o.Env.EnvType() }
+func (o *EnumObject) Get(name string) (Object, bool)     { return o.Env.Get(name) }
+func (o *EnumObject) Set(name string, obj Object) Object { return o.Env.Set(name, obj) }
+func (o *EnumObject) Outer() Environment                 { return o.Env.Outer() }
+func (o *EnumObject) Store() map[string]Object           { return o.Env.Store() }
+
 // deleted
 type DeleltedObject struct {
 	Node parser.Node
@@ -215,31 +242,31 @@ type NodesObject struct {
 func (n *NodesObject) Type() ObjectType { return NODES_OBJ }
 func (n *NodesObject) String() string   { return fmt.Sprintf("NODES(%v)", n.Nodes) }
 
-// ENUM
-type EnumObject struct {
-	Name  string
-	Value map[string]Object
-	Keys  []string
-}
+// // ENUM
+// type EnumObject struct {
+// 	Name  string
+// 	Value map[string]Object
+// 	Keys  []string
+// }
 
-func (e *EnumObject) Type() ObjectType { return ENUM_OBJ }
-func (e *EnumObject) String() string {
+// func (e *EnumObject) Type() ObjectType { return ENUM_OBJ }
+// func (e *EnumObject) String() string {
 
-	stmts := []string{"ENUM " + e.Name}
+// 	stmts := []string{"ENUM " + e.Name}
 
-	for k, v := range e.Value {
-		s := fmt.Sprintf("%s = %s", k, v.String())
-		stmts = append(stmts, s)
-	}
-	stmts = append(stmts, "END_ENUM")
+// 	for k, v := range e.Value {
+// 		s := fmt.Sprintf("%s = %s", k, v.String())
+// 		stmts = append(stmts, s)
+// 	}
+// 	stmts = append(stmts, "END_ENUM")
 
-	return strings.Join(stmts, "\n")
-}
+// 	return strings.Join(stmts, "\n")
+// }
 
-func (e *EnumObject) Get(key string) (Object, bool) {
-	v, ok := e.Value[key]
-	return v, ok
-}
+// func (e *EnumObject) Get(key string) (Object, bool) {
+// 	v, ok := e.Value[key]
+// 	return v, ok
+// }
 
 // Block
 type BlockObject struct {

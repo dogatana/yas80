@@ -220,7 +220,7 @@ func (ee *EnumElements) String() string {
 // enum 要素定義文
 type EnumElement struct {
 	Name    string
-	Value   Statement
+	Value   Expression
 	Context *fileblock.Context
 }
 

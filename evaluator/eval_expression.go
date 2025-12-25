@@ -59,7 +59,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 		}
 
 	// enum or proc.local
-	case *parser.DotIdent: // TODO enum か proc.local かの識別必要
+	case *parser.DotIdent:
 		obj, ok := env.Get(node.Left)
 		if !ok {
 			// node.Left(PROC or ENUM) が未定義の場合、Name を SYM_UNKNOWN で登録
@@ -86,6 +86,13 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 			} else {
 				return sym.Value
 			}
+		case *object.EnumObject:
+			vobj, ok := obj.Get(node.Right)
+			if !ok {
+				e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_UNDEF, node.Name), node.Context)
+				return object.ERROR
+			}
+			return vobj.(*object.SymbolObject).Value
 		default:
 			return &object.RefNotFoundObject{Names: []string{node.Name}}
 		}

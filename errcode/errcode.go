@@ -17,12 +17,6 @@ const (
 
 	E009 = "'%s' は未定義"
 
-	EENUM_UNDEF     = "ENUM '%s' は定義されていない"
-	EENUM_UNDEF_ELE = "ENUM '%s.%s' は定義されていない"
-	EENUM_USED      = "ENUM '%s' は定義済み"
-	EENUM_USED_ELE  = "ENUM '%s.%s' は定義済み"
-	EENUM_ELE_TYPE  = "ENUM 要素に使用できない型 %T"
-
 	EBIN_OP_DIVZERO = "0 除算"
 	EBIN_OP_STRING  = "文字列は '+' 演算子のみ使用可能"
 	EBIN_OP_NUMBER  = "不明な整数演算子 '%s'"
@@ -41,7 +35,7 @@ const (
 	EASSIGN_INVALID_VALUE = "代入右辺式の値が未確定"
 
 	ESYM_DUP    = "CONST/EQU '%s' は定義済み"
-	ESYM_USED   = "%s は利用済のため CONST/EQU 名として利用不可"
+	ESYM_USED   = "%s を CONST/EQU として再定義不可"
 	ESYM_UNDEF  = "シンボル %s は未定義"
 	ESYM_CYCLIC = "シンボル %s の定義が循環参照を含む"
 	ESYM_NULL   = "シンボル %s の値を確定できない"
@@ -56,6 +50,15 @@ const (
 	// PROC 定義
 	EPROC_DUP  = "PROC '%s' は定義済み"
 	EPROC_USED = "%s を PROC として再定義不可"
+
+	// ENUM 定義
+	EENUM_DUP       = "ENUM '%s' は定義済み"
+	EENUM_USED      = "'%s' を ENUM として再定義不可"
+	EENUM_ELE_DUP   = "ENUM '%s.%s' は定義済み"
+	EENUM_ELE_VALUE = "ENUM 要素に使用できない値"
+	EENUM_ELE_FWD   = "ENUM 要素の定義に前方参照は利用不可"
+	// ENUM 参照
+	EENUM_ELE_UNDEF = "ENUM '%s' は未定義"
 
 	// FUNC 定義
 	EFUNC_NAME = "%s は関数名として使用不可"

@@ -159,3 +159,41 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env object.Environ
 		return false
 	}
 }
+
+func (e *Evaluator) getSymbolFromEnv(name string, env object.Environment) (*object.SymbolObject, bool) {
+	names := strings.Split(name, ".")
+	if len(names) == 1 {
+		if obj, ok := env.Get(name); ok && obj.Type() == object.SYMBOL_OBJ {
+			return obj.(*object.SymbolObject), true
+		}
+		return nil, false
+	}
+	obj, ok := env.Get(names[0])
+	if !ok {
+		return nil, false
+	}
+	switch obj := obj.(type) {
+	case *object.ProcObject:
+		v, ok := obj.Get("." + names[1])
+		if !ok {
+			return nil, false
+		}
+		if sym, ok := v.(*object.SymbolObject); ok {
+			return sym, ok
+		}
+		return nil, false
+
+	case *object.EnumObject:
+		v, ok := obj.Get("." + names[1])
+		if !ok {
+			return nil, false
+		}
+		if sym, ok := v.(*object.SymbolObject); ok {
+			return sym, ok
+		}
+		return nil, false
+
+	default:
+		panic(fmt.Sprintf("getSymbolFromEnv error %#v", obj))
+	}
+}

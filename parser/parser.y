@@ -361,8 +361,7 @@ enum_element : IDENT 			{ $$ = &EnumElement{Name: strings.ToUpper($1.Literal), V
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3
 				} else {
-					stmt := &ExpressionStatement{Value:$3,Context: $1.Context} 
-					$$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: stmt, Context: $1.Context }
+					$$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: $3, Context: $1.Context }
 				}
 			}
 			;
@@ -379,10 +378,6 @@ label		: IDENT ':'
 			{
 				$$ = &Label{LabelType: NODE_AT_LABEL, Name: strings.ToUpper($1.Literal),Context: $1.Context}
 			}
-//			| LOCAL_IDENT
-//			{
-//				$$ = &Label{nodeType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal),Context: $1.Context}
-//			}
 			;
 
 

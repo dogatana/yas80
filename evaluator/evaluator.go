@@ -193,6 +193,11 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 				return object.ERROR
 			}
 
+		case *parser.EnumStatement:
+			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				return object.ERROR
+			}
 		default:
 			// e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil)
 			obj = e.evalStatement(node, env)

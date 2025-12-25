@@ -135,12 +135,6 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 		return obj // 形式的に必要
 
 	case *parser.EnumStatement:
-		name := node.Name
-		_, ok := env.Get(name) // TODO enum 定義は常にグローバルスコープ
-		if ok {
-			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED, name), node.Context)
-			return object.ERROR
-		}
 		v := e.evalEnumStatement(node, env)
 		switch v.Type() {
 		case object.ENUM_OBJ:
@@ -165,10 +159,6 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env object.E
 	for i, node := range stmt.Block {
 		obj := e.evalStatement(node, env)
 		switch obj := obj.(type) {
-		case *object.EnumObject:
-			for _, k := range obj.Keys {
-				block.Block = append(block.Block, obj.Value[k])
-			}
 		case *object.ReturnObject:
 			block.Block = append(block.Block, obj)
 			return block
@@ -394,34 +384,55 @@ func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env object
 
 // enum 文
 func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Environment) object.Object {
-	keys := []string{}
-	enum := map[string]object.Object{}
+	name := node.Name
+	obj, ok := env.Get(name)
+	if ok {
+		if obj.Type() == object.ENUM_OBJ {
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_DUP, name), node.Context)
+		} else {
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED, name), node.Context)
+		}
+		return object.ERROR
+	}
+
+	enum := &object.EnumObject{Name: name, Env: object.NewEnvironment(env)}
+	env.Set(name, enum)
+
 	value := 0
 	for _, ele := range node.Elements.Elements {
-		eleName := ele.Name
-		if _, ok := enum[eleName]; ok {
-			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED_ELE, node.Name, ele.Name), node.Context)
+		ename := "." + ele.Name
+		if _, ok := enum.Get(ename); ok {
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_DUP, name, ename), node.Context)
 			return object.ERROR
 		}
-		keys = append(keys, eleName)
 		if ele.Value == nil {
-			enum[eleName] = &object.NumberObject{Value: value}
-			value += 1
+			esym := &object.SymbolObject{
+				Name:    ename,
+				SymType: object.SYM_CONST,
+				Value:   &object.NumberObject{Value: value}}
+			enum.Set(ename, esym)
+			value++
 			continue
 		}
 		v := e.evalExpression(ele.Value, env, node.Context)
-		switch v.Type() {
-		case object.NULL_OBJ:
-			enum[eleName] = &object.NodeObject{Node: ele.Value}
-		case object.NUMBER_OBJ:
-			enum[eleName] = v
-			value = v.(*object.NumberObject).Value + 1
-		case object.STRING_OBJ:
-			enum[eleName] = v
+		sym := &object.SymbolObject{Name: ename, SymType: object.SYM_CONST}
+		switch v := v.(type) {
+		case *object.ErrorObject:
+			continue
+		case *object.RefNotFoundObject:
+			e.logger.Error(errcode.EENUM_ELE_FWD, ele.Context)
+			continue
+		case *object.NumberObject:
+			sym.Value = v
+			enum.Set(ename, sym)
+			value = v.Value + 1
+		case *object.StringObject:
+			sym.Value = v
+			enum.Set(ename, sym)
 		default:
-			// e.logger.Error(fmt.Sprintf(errcode.E014, v), ele.LineNumber())
-			return object.ERROR
+			e.logger.Error(errcode.EENUM_ELE_VALUE, ele.Context)
+			continue
 		}
 	}
-	return &object.EnumObject{Name: node.Name, Value: enum, Keys: keys}
+	return enum
 }
