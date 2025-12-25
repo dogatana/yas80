@@ -40,11 +40,11 @@ const (
 	EASSIGN_INVALID_TAGET = "変数/_ 以外へは代入不可"
 	EASSIGN_INVALID_VALUE = "代入右辺式の値が未確定"
 
-	ESYM_DUP            = "CONST/EQU '%s' は定義済み"
-	ESYM_USED           = "%s は利用済のため CONST/EQU 名として利用不可"
-	ESYM_UNDEF          = "シンボル %s は未定義"
-	ESYM_CYCLIC         = "シンボル %s の定義が循環参照を含む"
-	ESYM_NOT_DETERMINED = "シンボル %s の値を確定できない"
+	ESYM_DUP    = "CONST/EQU '%s' は定義済み"
+	ESYM_USED   = "%s は利用済のため CONST/EQU 名として利用不可"
+	ESYM_UNDEF  = "シンボル %s は未定義"
+	ESYM_CYCLIC = "シンボル %s の定義が循環参照を含む"
+	ESYM_NULL   = "シンボル %s の値を確定できない"
 
 	ESYM_CONCAT_NOTSYM = "シンボル結合にはシンボルが必要"
 	ESYM_CONCAT_EXPR   = "シンボル結合式の誤り"

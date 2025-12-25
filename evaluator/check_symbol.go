@@ -7,30 +7,33 @@ import (
 )
 
 func (e *Evaluator) CheckSymbols(env object.Environment) {
-
-	e.checkUnknwonAndNullSymbol(env)
-	e.checkCyclic(env)
+	e.checkSymbolError(env)
+	e.checkCyclicError(env)
 }
 
-func (e *Evaluator) checkUnknwonAndNullSymbol(env object.Environment) {
+func (e *Evaluator) checkSymbolError(env object.Environment) {
 	for name, obj := range env.Store() {
-		if sym, ok := obj.(*object.SymbolObject); !ok {
-			continue
-		} else if sym.Name == "_" || sym.Name[0] == '$' {
-			continue
-		} else if sym.Name[0] == '@' && env.EnvType() != object.ENV_MACRO {
-			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), sym.Context)
-		} else if sym.Name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC {
-			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), sym.Context)
-		} else if sym.SymType == object.SYM_UNKNOWN {
-			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), sym.Context)
-		} else if sym.Value == object.NULL {
-			e.logger.Error(fmt.Sprintf(errcode.ESYM_NOT_DETERMINED, name), sym.Context)
+		switch obj := obj.(type) {
+		case *object.SymbolObject:
+			if obj.Name == "_" || obj.Name[0] == '$' {
+				continue
+			}
+			if obj.Name[0] == '@' && env.EnvType() != object.ENV_MACRO {
+				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), obj.Context)
+			} else if obj.Name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC {
+				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), obj.Context)
+			} else if obj.SymType == object.SYM_UNKNOWN {
+				e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), obj.Context)
+			} else if obj.Value == object.NULL {
+				e.logger.Error(fmt.Sprintf(errcode.ESYM_NULL, name), obj.Context)
+			}
+		case *object.ProcObject:
+			e.checkSymbolError(obj)
 		}
 	}
 }
 
-func (e *Evaluator) checkCyclic(env object.Environment) {
+func (e *Evaluator) checkCyclicError(env object.Environment) {
 	visited := map[string]bool{}
 	visiting := map[string]bool{}
 

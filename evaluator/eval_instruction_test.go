@@ -23,9 +23,8 @@ func TestZ80Instruction(t *testing.T) {
 		logger.Print()
 		result := CollectCode(prog)
 
-		if !bytesEqual(result, expected) {
-			// t.Errorf("output mismatch (-want +got):\n%s", cmp.Diff(expected, result))
-			t.Errorf("[%d] expected %d bytes. got %d bytes", tn, len(expected), len(result))
+		if err := bytesEqual(result, expected); err != nil {
+			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 	}
 }

@@ -177,6 +177,9 @@ func TestErrorProcDef(t *testing.T) {
 	}{
 		{`abc proc \ nop \ endp \ abc proc \ ret \ endp`, errcode.EPROC_DUP},
 		{`const abc = 1 \ abc proc \ ret \ endp`, errcode.EPROC_USED},
+		{`ld hl, abc.xxx`, errcode.ESYM_UNDEF},
+		{`ld hl, abc.xxx \abc proc \ nop \ .def: ret \ nop \ endp`, errcode.ESYM_UNDEF},
+		{`abc proc \ nop \ endp \ ld a, abc.xxx`, errcode.ESYM_UNDEF},
 	}
 	for tn, tt := range tests {
 		logger := logger.New("test")

@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -186,15 +187,14 @@ func collectValue(prog *object.ProgramObject) []*object.ValueObject {
 	return result
 }
 
-func bytesEqual(v1, v2 []byte) bool {
+func bytesEqual(v1, v2 []byte) error {
 	if len(v1) != len(v2) {
-		return false
+		return errors.New(fmt.Sprintf("size diff %d %d\n", len(v1), len(v2)))
 	}
 	for i, v := range v1 {
 		if v != v2[i] {
-			fmt.Printf("[%d] %02x %02x\n", i, v, v2[i])
-			return false
+			return errors.New(fmt.Sprintf("contentis diff [%d] %02x %02x\n", i, v, v2[i]))
 		}
 	}
-	return true
+	return nil
 }

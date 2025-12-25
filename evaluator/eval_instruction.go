@@ -122,7 +122,6 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
 
 	default:
-
 		e.logger.Error(errcode.EZ80_OP2, node.Context)
 		return object.ERROR
 	}

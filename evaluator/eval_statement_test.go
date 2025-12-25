@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"strings"
 	"testing"
 	"yas80/logger"
 	"yas80/object"
@@ -36,8 +37,8 @@ func TestLabelStatement(t *testing.T) {
 		prog := evaluateInput(t, tt.input, logger, env)
 
 		code := CollectCode(prog)
-		if len(code) != len(tt.code) && !bytesEqual(code, tt.code) {
-			t.Errorf("[%d] generated code differ", tn)
+		if err := bytesEqual(code, tt.code); err != nil {
+			t.Errorf("[%d] %s", tn, err.Error())
 		}
 		for i, name := range tt.names {
 			if v, ok := env.Get(name); !ok {
@@ -119,6 +120,11 @@ func TestProcLabel(t *testing.T) {
 			[]string{"ABC.ABC", "XYZ.ABC"},
 			[]int{0xa5, 5},
 		},
+		{`abc proc \ const .xxx = zzz + 1 \nop \ endp \ const zzz = 1 \ ld a, abc.xxx`,
+			[]byte{0, 0x3e, 0x02},
+			[]string{"ABC.XXX", "ZZZ"},
+			[]int{2, 1},
+		},
 	}
 
 	for tn, tt := range tests {
@@ -127,11 +133,16 @@ func TestProcLabel(t *testing.T) {
 		prog := evaluateInput(t, tt.input, logger, env)
 
 		code := CollectCode(prog)
-		if len(code) != len(tt.code) && !bytesEqual(code, tt.code) {
-			t.Errorf("[%d] generated code differ", tn)
+		if err := bytesEqual(code, tt.code); err != nil {
+			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 		for i, name := range tt.names {
-			testDotIdentInEnv(t, tn, name, env, tt.values[i])
+			if strings.Contains(name, ".") {
+				testDotIdentInEnv(t, tn, name, env, tt.values[i])
+			} else {
+				obj, _ := env.Get(name)
+				testSymbolNumberObject(t, tn, obj, tt.values[i])
+			}
 		}
 	}
 }

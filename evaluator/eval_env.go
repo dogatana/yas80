@@ -1,20 +1,19 @@
 package evaluator
 
 import (
+	"fmt"
+	"strings"
 	"yas80/object"
 )
 
 func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
 	order, err := e.tSortEnv(env)
+	// fmt.Println("order", order)
 	if err != nil {
 		return order, err
 	}
 	for _, name := range order {
-		obj, ok := env.Get(name)
-		if !ok {
-			continue
-		}
-		sym, ok := obj.(*object.SymbolObject)
+		sym, ok := e.getSymbolFromEnv(name, env)
 		if !ok {
 			continue
 		}
@@ -50,8 +49,7 @@ func (e *Evaluator) tSortEnv(env object.Environment) ([]string, error) {
 			return nil
 		}
 		visiting[name] = true
-		obj, _ := env.Get(name)
-		sym, ok := obj.(*object.SymbolObject)
+		sym, ok := e.getSymbolFromEnv(name, env)
 		if !ok {
 			visited[name] = true
 			visiting[name] = false
@@ -76,14 +74,46 @@ func (e *Evaluator) tSortEnv(env object.Environment) ([]string, error) {
 	return order, nil
 }
 
+func (e *Evaluator) getSymbolFromEnv(name string, env object.Environment) (*object.SymbolObject, bool) {
+	names := strings.Split(name, ".")
+	if len(names) == 1 {
+		if obj, ok := env.Get(name); ok && obj.Type() == object.SYMBOL_OBJ {
+			return obj.(*object.SymbolObject), true
+		}
+		return nil, false
+	}
+	obj, ok := env.Get(names[0])
+	if !ok {
+		return nil, false
+	}
+	switch obj := obj.(type) {
+	case *object.ProcObject:
+		v, ok := obj.Get("." + names[1])
+		if !ok {
+			return nil, false
+		}
+		if sym, ok := v.(*object.SymbolObject); ok {
+			return sym, ok
+		}
+		return nil, false
+	default:
+		panic(fmt.Sprintf("getSymbolFromEnv error %#v", obj))
+	}
+}
+
 func (e *Evaluator) collectSymbolNames(env object.Environment) []string {
 	names := []string{}
 
 	for {
-		for _, obj := range env.Store() {
-			if sym, ok := obj.(*object.SymbolObject); ok {
-				if sym.Name != "_" && sym.Name[0] != '$' {
-					names = append(names, sym.Name)
+		for name, obj := range env.Store() {
+			switch sym := obj.(type) {
+			case *object.SymbolObject:
+				if name != "_" && name[0] != '$' {
+					names = append(names, name)
+				}
+			case *object.ProcObject:
+				for k := range sym.Store() {
+					names = append(names, name+k)
 				}
 			}
 		}
@@ -92,5 +122,6 @@ func (e *Evaluator) collectSymbolNames(env object.Environment) []string {
 			break
 		}
 	}
+	// fmt.Println("names", names)
 	return names
 }

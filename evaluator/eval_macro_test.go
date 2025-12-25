@@ -21,8 +21,8 @@ func TestMacro(t *testing.T) {
 		logger.Print()
 		result := CollectCode(prog)
 
-		if !bytesEqual(result, expected) {
-			t.Errorf("[%d] expected %d bytes. got %d bytes", tn, len(expected), len(result))
+		if err := bytesEqual(result, expected); err != nil {
+			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 	}
 }
@@ -66,8 +66,8 @@ func TestExitm(t *testing.T) {
 		logger.Print()
 		result := CollectCode(prog)
 
-		if !bytesEqual(result, expected) {
-			t.Errorf("[%d] expected %d bytes. got %d bytes", tn, len(expected), len(result))
+		if err := bytesEqual(result, expected); err != nil {
+			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 	}
 }
@@ -109,8 +109,8 @@ func TestMacroIf(t *testing.T) {
 		logger.Print()
 		result := CollectCode(prog)
 
-		if !bytesEqual(result, expected) {
-			t.Errorf("[%d] expected %d bytes. got %d bytes", tn, len(expected), len(result))
+		if err := bytesEqual(result, expected); err != nil {
+			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 	}
 }
@@ -144,8 +144,8 @@ func TestMacroIfExitmLocal(t *testing.T) {
 		logger.Print()
 		result := CollectCode(prog)
 
-		if !bytesEqual(result, expected) {
-			t.Errorf("[%d] expected %d bytes. got %d bytes", tn, len(expected), len(result))
+		if err := bytesEqual(result, expected); err != nil {
+			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 	}
 }

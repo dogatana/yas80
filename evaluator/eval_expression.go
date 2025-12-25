@@ -62,25 +62,34 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 	case *parser.DotIdent: // TODO enum か proc.local かの識別必要
 		obj, ok := env.Get(node.Left)
 		if !ok {
+			// node.Left(PROC or ENUM) が未定義の場合、Name を SYM_UNKNOWN で登録
+			e.Resolved = false
+			sym := object.NewUnknownSymbol(node.Name, node.Context)
+			env.Set(node.Name, sym)
 			return &object.RefNotFoundObject{Names: []string{node.Name}}
 		}
 		switch obj := obj.(type) {
 		case *object.ProcObject:
 			vobj, ok := obj.Get(node.Right)
 			if !ok {
+				// ローカルラベルが未定義の場合、PROC 環境に SYM_UNKNOWN で登録
+				sym := object.NewUnknownSymbol(node.Right, node.Context)
+				obj.Set(node.Right, sym) // env でなく ProcObject に登録
 				return &object.RefNotFoundObject{Names: []string{node.Name}}
 			}
-			switch v := vobj.(type) {
-			case *object.NumberObject, *object.StringObject:
-				return v
-			case *object.SymbolObject:
-				return v.Value
-			default:
-				panic(fmt.Sprintf("DotIdent %s has %#v", node.Name, v))
+			sym, ok := vobj.(*object.SymbolObject)
+			if !ok {
+				return vobj
+			}
+			if sym.Value == object.NULL {
+				return &object.RefNotFoundObject{Names: []string{sym.Name}}
+			} else {
+				return sym.Value
 			}
 		default:
 			return &object.RefNotFoundObject{Names: []string{node.Name}}
 		}
+
 	// 関数呼出し
 	case *parser.FuncCallExpression:
 		return e.evalCallExpression(node, env, ctx)
