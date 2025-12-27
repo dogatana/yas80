@@ -82,6 +82,9 @@ func TestConstStatement(t *testing.T) {
 		{input: `const abc ## a = 1`, err: errcode.ESYM_CONCAT_TYPE},
 		{input: `const abc ## hl = 1`, err: errcode.ESYM_CONCAT_TYPE},
 		{input: `const abc ## cy = 1`, err: errcode.ESYM_CONCAT_TYPE},
+		{input: `function abc() 1 \ const aaa ## abc = 1`, err: errcode.ESYM_CONCAT_TYPE},
+		// 15-
+		{input: `ret \ abc proc \ nop \ endp \ const aaa ## abc = 2`, syms: []SymValue{{"ABC", 1}, {"AAA1", 2}}},
 		{input: `const abc ## cy ## 1 = 1`, err: errcode.ESYNTAX}, // syntax error
 	}
 	for tn, tt := range tests {
