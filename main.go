@@ -179,13 +179,13 @@ func main() {
 	fmt.Println("\n# finalize")
 	code := evaluator.CollectCode(obj.(*object.ProgramObject))
 
-	codeStable := false
-	for i := 0; !codeStable && i < 256; i++ {
+	eval.CodeStable = false
+	for i := 0; !eval.CodeStable && i < 256; i++ {
 		obj = eval.EvalProgram(prog, env)
 		newCode := evaluator.CollectCode(obj.(*object.ProgramObject))
-		codeStable = bytes.Equal(code, newCode)
+		eval.CodeStable = bytes.Equal(code, newCode)
 	}
-	fmt.Printf("finalize %d times, codeStable %v\n", i, codeStable)
+	fmt.Printf("finalize %d times, codeStable %v\n", i, eval.CodeStable)
 	showResult(-1, prog, obj, env)
 }
 

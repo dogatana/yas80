@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"testing"
 	"yas80/fileblock"
 	"yas80/logging"
@@ -17,35 +16,34 @@ import (
 func evaluateInput(t *testing.T, input string, logger *logging.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
 	progNode := parseTextForTest(t, input)
 
-	evaluator := New(logger)
-	checkDebug(evaluator)
+	eval := New(logger)
 
-	evaluator.Resolved = true
+	eval.Resolved = true
 	var obj object.Object
 	var i int
 	for i = 0; i < 256; i++ {
-		evaluator.Resolved = true
-		obj = evaluator.EvalProgram(progNode, env)
-		evaluator.EvalEnv(env)
-		evaluator.CheckSymbols(env)
+		eval.Resolved = true
+		obj = eval.EvalProgram(progNode, env)
+		eval.EvalEnv(env)
+		eval.CheckSymbols(env)
 		ec, wc, _ := logger.Count()
 		if ec > 0 || wc > 0 {
 			fmt.Printf("input %q\n", input)
 			logger.Print()
 			t.Fatalf("EvalProgram() %d errors and %d warnigs", ec, wc)
 		}
-		if evaluator.Resolved {
+		if eval.Resolved {
 			break
 		}
 	}
 	// finalize
 	code := CollectCode(obj.(*object.ProgramObject))
-	codeStable := false
-	for i = 0; i < 256 && !codeStable; i++ {
-		obj = evaluator.EvalProgram(progNode, env)
+	eval.CodeStable = false
+	for i = 0; i < 256 && !eval.CodeStable; i++ {
+		obj = eval.EvalProgram(progNode, env)
 		newCode := CollectCode(obj.(*object.ProgramObject))
-		codeStable = bytes.Equal(code, newCode)
-		if !codeStable {
+		eval.CodeStable = bytes.Equal(code, newCode)
+		if !eval.CodeStable {
 			code = newCode
 		}
 	}
@@ -59,7 +57,7 @@ func evaluateInput(t *testing.T, input string, logger *logging.Logger, env objec
 		fmt.Printf("input %q\n", input)
 		t.Fatal("Eval() return 0 Objects")
 	}
-	return programObject, evaluator
+	return programObject, eval
 }
 
 func parseTextForTest(t *testing.T, input string) *parser.Program {
@@ -89,19 +87,6 @@ func parseTextForTest(t *testing.T, input string) *parser.Program {
 	}
 
 	return prog
-}
-
-func checkDebug(e *Evaluator) {
-	val := os.Getenv("evaldebug")
-	if val == "" {
-		e.Debug = 0
-		return
-	}
-	n, err := strconv.Atoi(val)
-	if err != nil {
-		e.Debug = 0
-	}
-	e.Debug = n
 }
 
 func evalValue(obj object.Object) object.Object {
