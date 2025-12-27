@@ -9,6 +9,7 @@ def main():
         count[name] = 0
     
     read_testfiles(count)
+    read_eval_testfiles(count)
 
     uncovered = [k for k, v in count.items() if v == 0]
     print(f"coverage {len(count) - len(uncovered)}/{len(count)}")
@@ -31,6 +32,13 @@ def get_codenames()->list[str]:
 
 def read_testfiles(count):
     path = os.path.join(os.path.dirname(__file__), "*_test.go")
+    for file in glob.glob(path):
+        names = read_testfile(file)
+        for name in names:
+            count[name] += 1
+
+def read_eval_testfiles(count):
+    path = os.path.join(os.path.dirname(__file__), "..", "evaluator", "*_test.go")
     for file in glob.glob(path):
         names = read_testfile(file)
         for name in names:
