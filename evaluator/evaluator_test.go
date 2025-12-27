@@ -15,6 +15,7 @@ func TestAssembleFile(t *testing.T) {
 		"forward",
 		"forward_symbol",
 		"forward_mix",
+		"macro",
 	}
 
 	for tn, base := range tests {

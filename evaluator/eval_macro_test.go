@@ -6,28 +6,6 @@ import (
 	"yas80/object"
 )
 
-func TestMacro(t *testing.T) {
-	tests := []string{
-		"macro",
-	}
-
-	for tn, base := range tests {
-		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
-		input := string(readTestDataFile(t, base+".asm"))
-		expected := readTestDataFile(t, base+".bin")
-
-		prog, e := evalInput(input, logger, env)
-		testEvalResult(t, tn, "", e)
-		logger.Print()
-		result := CollectCode(prog)
-
-		if err := bytesEqual(result, expected); err != nil {
-			t.Errorf("[%d] generated code diff %s", tn, err.Error())
-		}
-	}
-}
-
 func TestExitm(t *testing.T) {
 	tests := []struct {
 		input string
@@ -58,20 +36,17 @@ func TestExitm(t *testing.T) {
 	}
 
 	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		input := tt.input
-		expected := tt.code
 
 		prog, e := evalInput(input, logger, env)
 		testEvalResult(t, tn, "", e)
 
-		logger.Print()
-		result := CollectCode(prog)
-
-		if err := bytesEqual(result, expected); err != nil {
-			t.Errorf("[%d] generated code diff %s", tn, err.Error())
-		}
+		testCodeResult(t, tn, tt.code, prog)
 	}
 }
 
@@ -103,20 +78,17 @@ func TestMacroIf(t *testing.T) {
 	}
 
 	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		input := tt.input
-		expected := tt.code
 
 		prog, e := evalInput(input, logger, env)
 		testEvalResult(t, tn, "", e)
 
-		logger.Print()
-		result := CollectCode(prog)
-
-		if err := bytesEqual(result, expected); err != nil {
-			t.Errorf("[%d] generated code diff %s", tn, err.Error())
-		}
+		testCodeResult(t, tn, tt.code, prog)
 	}
 }
 
@@ -140,19 +112,16 @@ func TestMacroIfExitmLocal(t *testing.T) {
 	}
 
 	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		input := tt.input
-		expected := tt.code
 
 		prog, e := evalInput(input, logger, env)
 		testEvalResult(t, tn, "", e)
 
-		logger.Print()
-		result := CollectCode(prog)
-
-		if err := bytesEqual(result, expected); err != nil {
-			t.Errorf("[%d] generated code diff %s", tn, err.Error())
-		}
+		testCodeResult(t, tn, tt.code, prog)
 	}
 }
