@@ -33,7 +33,8 @@ func TestLabelStatement(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
-		prog, _ := evaluateInput(t, tt.input, logger, env)
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, "", e)
 
 		code := CollectCode(prog)
 		if err := bytesEqual(code, tt.code); err != nil {
@@ -65,7 +66,8 @@ func TestConstStatement(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
-		_, _ = evaluateInput(t, tt.input, logger, env)
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, "", e)
 
 		obj, ok := env.Get(tt.name)
 		if !ok {
@@ -91,7 +93,8 @@ func TestProcStatement(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
-		_, _ = evaluateInput(t, tt.input, logger, env)
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, "", e)
 
 		obj, ok := env.Get(tt.name)
 		if !ok {
@@ -141,7 +144,8 @@ func TestProcLabel(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
-		prog, e := evaluateInput(t, tt.input, logger, env)
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, "", e)
 
 		code := CollectCode(prog)
 		if err := bytesEqual(code, tt.code); err != nil {

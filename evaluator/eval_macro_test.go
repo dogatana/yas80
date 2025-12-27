@@ -17,7 +17,8 @@ func TestMacro(t *testing.T) {
 		input := string(readTestDataFile(t, base+".asm"))
 		expected := readTestDataFile(t, base+".bin")
 
-		prog, _ := evaluateInput(t, input, logger, env)
+		prog, e := evalInput(input, logger, env)
+		testEvalResult(t, tn, "", e)
 		logger.Print()
 		result := CollectCode(prog)
 
@@ -62,7 +63,9 @@ func TestExitm(t *testing.T) {
 		input := tt.input
 		expected := tt.code
 
-		prog, _ := evaluateInput(t, input, logger, env)
+		prog, e := evalInput(input, logger, env)
+		testEvalResult(t, tn, "", e)
+
 		logger.Print()
 		result := CollectCode(prog)
 
@@ -105,7 +108,9 @@ func TestMacroIf(t *testing.T) {
 		input := tt.input
 		expected := tt.code
 
-		prog, _ := evaluateInput(t, input, logger, env)
+		prog, e := evalInput(input, logger, env)
+		testEvalResult(t, tn, "", e)
+
 		logger.Print()
 		result := CollectCode(prog)
 
@@ -140,7 +145,9 @@ func TestMacroIfExitmLocal(t *testing.T) {
 		input := tt.input
 		expected := tt.code
 
-		prog, _ := evaluateInput(t, input, logger, env)
+		prog, e := evalInput(input, logger, env)
+		testEvalResult(t, tn, "", e)
+
 		logger.Print()
 		result := CollectCode(prog)
 

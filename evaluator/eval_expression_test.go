@@ -31,7 +31,8 @@ func TestEvalExpression(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
-		_, _ = evaluateInput(t, tt.input, logger, env)
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, "", e)
 
 		obj, ok := env.Get("RESULT")
 		if !ok {

@@ -13,79 +13,90 @@ import (
 	"yas80/parser"
 )
 
-func evaluateInput(t *testing.T, input string, logger *logging.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
-	progNode := parseTextForTest(t, input)
+func evalInput(input string, logger *logging.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
+	progNode := parseTextForTest(input)
 
 	eval := New(logger)
 
-	eval.Resolved = true
 	var obj object.Object
 	var i int
+
+	eval.Resolved = true
 	for i = 0; i < 256; i++ {
 		eval.Resolved = true
 		obj = eval.EvalProgram(progNode, env)
 		eval.EvalEnv(env)
 		eval.CheckSymbols(env)
-		ec, wc, _ := logger.Count()
-		if ec > 0 || wc > 0 {
-			fmt.Printf("input %q\n", input)
-			logger.Print()
-			t.Fatalf("EvalProgram() %d errors and %d warnigs", ec, wc)
+		if len(logger.Errors) > 0 {
+			return &object.ProgramObject{}, eval
 		}
 		if eval.Resolved {
 			break
 		}
 	}
+	if !eval.Resolved {
+		return &object.ProgramObject{}, eval
+	}
+
 	// finalize
 	code := CollectCode(obj.(*object.ProgramObject))
 	eval.CodeStable = false
 	for i = 0; i < 256 && !eval.CodeStable; i++ {
 		obj = eval.EvalProgram(progNode, env)
+		if len(logger.Errors) > 0 {
+			return &object.ProgramObject{}, eval
+
+		}
 		newCode := CollectCode(obj.(*object.ProgramObject))
 		eval.CodeStable = bytes.Equal(code, newCode)
 		if !eval.CodeStable {
 			code = newCode
 		}
 	}
-
-	programObject, ok := obj.(*object.ProgramObject)
-	if !ok {
-		fmt.Printf("input %q\n", input)
-		t.Fatalf("not ProgramObject. got %T", obj)
+	if !eval.CodeStable {
+		return &object.ProgramObject{}, eval
 	}
-	if len(programObject.Objects) == 0 {
-		fmt.Printf("input %q\n", input)
-		t.Fatal("Eval() return 0 Objects")
+	if prog, ok := obj.(*object.ProgramObject); !ok {
+		return &object.ProgramObject{}, eval
+	} else {
+		return prog, eval
 	}
-	return programObject, eval
 }
 
-func parseTextForTest(t *testing.T, input string) *parser.Program {
+func testEvalResult(t *testing.T, tn int, err string, eval *Evaluator) {
+	if err == "" {
+		if len(eval.logger.Errors) > 0 {
+			eval.logger.Print()
+			t.Fatalf("[%d] EvalProgram() %d errors", tn, len(eval.logger.Errors))
+		}
+		if !eval.Resolved {
+			t.Fatalf("[%d] eval.Resolved fasle", tn)
+		}
+		if !eval.CodeStable {
+			t.Fatalf("[%d] eval.CodeStable fasle", tn)
+		}
+	} else {
+		e, w, i := eval.logger.Count()
+		if e == 0 && w == 0 && i == 0 {
+			t.Fatalf("[%d] no logmessages", tn)
+		}
+	}
+}
+
+func parseTextForTest(input string) *parser.Program {
+	var prog *parser.Program
+
 	file := "<string>"
 	logger := logging.New(file)
 	fb := fileblock.New(file, []byte(input))
-	l := parser.NewLexer(fb, logger)
-	prog := parser.Parse(l)
-	ec, wc, _ := l.Logger().Count()
-	if ec > 0 || wc > 0 {
-		fmt.Printf("input %q\n", input)
-		l.Logger().Print()
-		t.Fatalf("Parse() %d errors and %d warnigs", ec, wc)
-	}
 
-	if len(prog.Statements) == 0 {
-		fmt.Printf("input %q\n", input)
-		t.Fatal("Parse() returns 0 statements")
+	l := parser.NewLexer(fb, logger)
+	prog = parser.Parse(l)
+	if len(logger.Errors) > 0 {
+		return prog
 	}
 
 	prog = parser.PreProrocess(logger, prog)
-	ec, wc, _ = l.Logger().Count()
-	if ec > 0 || wc > 0 {
-		fmt.Printf("input %q\n", input)
-		l.Logger().Print()
-		t.Fatalf("PreProcess() %d errors and %d warnigs", ec, wc)
-	}
-
 	return prog
 }
 
