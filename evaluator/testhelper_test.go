@@ -22,7 +22,7 @@ type SymValue struct {
 }
 
 func evalInput(input string, logger *logging.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
-	progNode := parseTextForTest(input)
+	progNode := parseTextForTest(input, logger)
 
 	eval := New(logger)
 
@@ -86,17 +86,17 @@ func testEvalResult(t *testing.T, tn int, err string, eval *Evaluator) {
 	} else {
 		e, w, i := eval.logger.Count()
 		if e == 0 && w == 0 && i == 0 {
+			fmt.Printf("[%d] logger.Print()\n", tn)
+			eval.logger.Print()
 			t.Fatalf("[%d] no logmessages", tn)
 		}
 	}
 }
 
-func parseTextForTest(input string) *parser.Program {
+func parseTextForTest(input string, logger *logging.Logger) *parser.Program {
 	var prog *parser.Program
 
-	file := "<string>"
-	logger := logging.New(file)
-	fb := fileblock.New(file, []byte(input))
+	fb := fileblock.New(logger.Filename, []byte(input))
 
 	l := parser.NewLexer(fb, logger)
 	prog = parser.Parse(l)
