@@ -163,10 +163,15 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env object.Environ
 func (e *Evaluator) getSymbolFromEnv(name string, env object.Environment) (*object.SymbolObject, bool) {
 	names := strings.Split(name, ".")
 	if len(names) == 1 {
-		if obj, ok := env.Get(name); ok && obj.Type() == object.SYMBOL_OBJ {
-			return obj.(*object.SymbolObject), true
+		if obj, ok := env.Get(name); ok {
+			switch obj := obj.(type) {
+			case *object.SymbolObject:
+				return obj, true
+			case *object.ProcObject:
+				return &object.SymbolObject{Name: name, Value: &object.NumberObject{Value: obj.Addr}}, true
+			}
+			return nil, false
 		}
-		return nil, false
 	}
 	obj, ok := env.Get(names[0])
 	if !ok {
