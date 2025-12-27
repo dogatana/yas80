@@ -113,7 +113,7 @@ func hasMessage(messages []logging.LogMessage, expected string) bool {
 }
 
 func getErrcodeName(msg string) string {
-	if name, ok := errcodeNames[msg]; ok {
+	if name, ok := ErrcodeNames[msg]; ok {
 		return name
 	}
 	panic(fmt.Sprintf("not found '%s", msg))

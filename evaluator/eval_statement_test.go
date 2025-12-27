@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"testing"
+	"yas80/errcode"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -107,57 +108,77 @@ func TestProcStatement(t *testing.T) {
 
 func TestProcLabel(t *testing.T) {
 	tests := []struct {
-		input  string
-		code   []byte
-		names  []string
-		values []int
+		input string
+		code  []byte
+		syms  []SymValue
+		err   string
 	}{
 		// 0-
 		{`abc proc \ ld a, .abc \ .abc: nop \ endp \ xyz proc \ ld a, .abc \ .abc: ret \ endp`,
 			[]byte{0x3e, 0x02, 0x00, 0x3e, 0x05, 0xc9}, // ld a,2 \ nop \ ld a,5 \ ret
-			[]string{"ABC.ABC", "XYZ.ABC"},
-			[]int{2, 5},
+			[]SymValue{
+				{"ABC.ABC", 2},
+				{"XYZ.ABC", 5},
+			},
+			"",
 		},
 		{`abc proc \ ld a, .abc \ nop \ const .abc = 0xa5 \ endp \ xyz proc \ ld a, .abc \ .abc: ret \ endp`,
 			[]byte{0x3e, 0xa5, 0x00, 0x3e, 0x05, 0xc9}, // ld a,2 \ nop \ ld a,5 \ ret
-			[]string{"ABC.ABC", "XYZ.ABC"},
-			[]int{0xa5, 5},
+			[]SymValue{
+				{"ABC.ABC", 0xa5},
+				{"XYZ.ABC", 5},
+			},
+			"",
 		},
 		{`abc proc \ const .xxx = zzz + 1 \nop \ endp \ const zzz = 1 \ ld a, abc.xxx`,
 			[]byte{0, 0x3e, 0x02},
-			[]string{"ABC.XXX", "ZZZ"},
-			[]int{2, 1},
+			[]SymValue{
+				{"ABC.XXX", 2},
+				{"ZZZ", 1},
+			},
+			"",
 		},
 		{`ld a, abc.def \ abc proc \ nop \ const .def = 4 \ nop \ endp`,
 			[]byte{0x3e, 0x04, 0, 0},
-			[]string{"ABC.DEF"},
-			[]int{4},
+			[]SymValue{
+				{"ABC.DEF", 4},
+			},
+			"",
 		},
 		{`ld a, abc.def \ abc proc \ nop \ .def: ret \ nop \ endp`,
 			[]byte{0x3e, 0x03, 0, 0xc9, 0},
-			[]string{"ABC.DEF"},
-			[]int{3},
+			[]SymValue{
+				{"ABC.DEF", 3},
+			},
+			"",
 		},
 		// 5-
+		{input: `const abc = 1 \ abc proc \ endp`, err: errcode.EPROC_USED},
 	}
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		prog, e := evalInput(tt.input, logger, env)
-		testEvalResult(t, tn, "", e)
 
-		code := CollectCode(prog)
-		if err := bytesEqual(code, tt.code); err != nil {
-			t.Errorf("[%d] generated code diff %s", tn, err.Error())
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
 		}
-		for i, name := range tt.names {
-			sym, ok := e.getSymbolFromEnv(name, env)
-			if !ok {
-				t.Errorf("[%d] symbol %s not found", tn, name)
-			} else {
-				testSymbolNumberObject(t, tn, sym, tt.values[i])
+
+		// no error, no warning, no information
+		if len(tt.code) > 0 {
+			code := CollectCode(prog)
+			if err := bytesEqual(code, tt.code); err != nil {
+				t.Errorf("[%d] generated code diff %s", tn, err.Error())
 			}
 		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
 	}
 }

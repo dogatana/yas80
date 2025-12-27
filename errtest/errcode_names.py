@@ -24,7 +24,7 @@ def write_go(file:str, names:list[str]):
 
 import "yas80/errcode"
 
-var errcodeNames map[string]string = map[string]string {
+var ErrcodeNames map[string]string = map[string]string {
 """, file=fp)
         for name in names:
             print(f'\terrcode.{name}: "{name}",', file=fp)

@@ -5,13 +5,21 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
+	"strings"
 	"testing"
+	"yas80/errtest"
 	"yas80/fileblock"
 	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
 )
+
+type SymValue struct {
+	name     string
+	Expected int
+}
 
 func evalInput(input string, logger *logging.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
 	progNode := parseTextForTest(input)
@@ -100,6 +108,58 @@ func parseTextForTest(input string) *parser.Program {
 	return prog
 }
 
+func testSymValues(t *testing.T, tn int, syms []SymValue, getter func(name string) (*object.SymbolObject, bool)) {
+	for _, sym := range syms {
+		s, ok := getter(sym.name)
+		if !ok {
+			t.Errorf("[%d] symbol %s not found", tn, sym.name)
+		} else {
+			testSymbolNumberObject(t, tn, s, sym.Expected)
+		}
+	}
+
+}
+
+func testLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
+	ename := errtest.ErrcodeNames[err]
+
+	var msgs []logging.LogMessage
+	switch ename[0] {
+	case 'E':
+		msgs = logger.Errors
+	case 'W':
+		msgs = logger.Warnings
+	case 'I':
+		msgs = logger.Infomation
+	}
+
+	if !hasMessage(msgs, err) {
+		t.Errorf("[%d] not [%s] \"%s\" => \"%s\"",
+			tn,
+			ename,
+			err,
+			msgs[0])
+	}
+}
+
+func hasMessage(messages []logging.LogMessage, expected string) bool {
+	re := regexp.MustCompile(`\.?%.\.?`)
+	ss := re.Split(expected, -1)
+
+	for _, emsg := range messages {
+		result := true
+		for _, s := range ss {
+			if !strings.Contains(emsg.Message(), s) {
+				result = false
+				break
+			}
+		}
+		if result {
+			return result
+		}
+	}
+	return false
+}
 func evalValue(obj object.Object) object.Object {
 	switch obj := obj.(type) {
 	case *object.SymbolObject:
