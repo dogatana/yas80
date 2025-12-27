@@ -145,7 +145,7 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env object.Environ
 		case *object.NumberObject:
 			suffix = fmt.Sprintf("%d", op2.Value)
 		case *object.StringObject:
-			suffix = op2.Value
+			suffix = strings.ToUpper(op2.Value) // 文字列リテラルは大文字化して結合する
 		default:
 			e.logger.Error(errcode.ESYM_CONCAT_TYPE, ctx)
 			return false
