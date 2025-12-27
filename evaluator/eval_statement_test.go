@@ -166,10 +166,11 @@ func TestProcLabel(t *testing.T) {
 			},
 			"",
 		},
-		// 5-
-		{input: `const abc = 1 \ abc proc \ endp`, err: errcode.EPROC_USED},
-		{},
-		{},
+		// 5- error case
+		{input: `abc proc \ nop \ endp \ abc proc \ ret \ endp`, err: errcode.EPROC_DUP},
+		{input: `const abc = 1 \ abc proc \ ret \ endp`, err: errcode.EPROC_USED},
+		{input: `abc: nop \ abc proc \ ret \ endp`, err: errcode.EPROC_USED},
+		{input: `abc proc \ nop \ endp \ ld a, abc.xxx`, err: errcode.ESYM_UNDEF},
 	}
 
 	for tn, tt := range tests {
