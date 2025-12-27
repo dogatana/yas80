@@ -108,6 +108,16 @@ func parseTextForTest(input string) *parser.Program {
 	return prog
 }
 
+func testCodeResult(t *testing.T, tn int, expected []byte, prog *object.ProgramObject) {
+	if len(expected) == 0 {
+		return
+	}
+	code := CollectCode(prog)
+	if err := bytesEqual(code, expected); err != nil {
+		t.Errorf("[%d] generated code diff %s", tn, err.Error())
+	}
+}
+
 func testSymValues(t *testing.T, tn int, syms []SymValue, getter func(name string) (*object.SymbolObject, bool)) {
 	for _, sym := range syms {
 		s, ok := getter(sym.name)

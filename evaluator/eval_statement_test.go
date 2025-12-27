@@ -9,60 +9,71 @@ import (
 
 func TestLabelStatement(t *testing.T) {
 	tests := []struct {
-		input  string
-		code   []byte
-		names  []string
-		values []int
+		input string
+		code  []byte
+		syms  []SymValue
 	}{
 		{`addr1: ld hl, $1234 \ addr2: ld a, a \ addr3: ld hl, $5678`,
 			[]byte{0x21, 0x34, 0x12, 0x7f, 0x21, 0x78, 0x56},
-			[]string{"ADDR1", "ADDR2", "ADDR3"},
-			[]int{0, 3, 4},
+			[]SymValue{
+				{"ADDR1", 0},
+				{"ADDR2", 3},
+				{"ADDR3", 4},
+			},
 		},
 		{`addr1: ld a, a\ addr2: ld hl, $1234 \ addr3: ld hl, $5678`,
 			[]byte{0x7f, 0x21, 0x34, 0x12, 0x21, 0x78, 0x56},
-			[]string{"ADDR1", "ADDR2", "ADDR3"},
-			[]int{0, 1, 4},
+			[]SymValue{
+				{"ADDR1", 0},
+				{"ADDR2", 1},
+				{"ADDR3", 4},
+			},
 		},
 		{`addr1: ld hl, $1234 \ addr2: ld hl, $5678 \ addr3: ld hl, $9abc`,
 			[]byte{0x21, 0x34, 0x12, 0x21, 0x78, 0x56, 0x21, 0xbc, 0x9a},
-			[]string{"ADDR1", "ADDR2", "ADDR3"},
-			[]int{0, 3, 6},
+			[]SymValue{
+				{"ADDR1", 0},
+				{"ADDR2", 3},
+				{"ADDR3", 6},
+			},
 		},
 	}
 
 	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, "", e)
 
-		code := CollectCode(prog)
-		if err := bytesEqual(code, tt.code); err != nil {
-			t.Errorf("[%d] %s", tn, err.Error())
+		testCodeResult(t, tn, tt.code, prog)
+
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
 		}
-		for i, name := range tt.names {
-			if v, ok := env.Get(name); !ok {
-				t.Errorf("[%d] no %q in env", tn, name)
-			} else {
-				testSymbolNumberObject(t, tn, v, tt.values[i])
-			}
-		}
+		testSymValues(t, tn, tt.syms, getter)
 	}
 }
 
 func TestConstStatement(t *testing.T) {
 	tests := []struct {
-		input    string
-		name     string
-		expected int
+		input string
+		syms  []SymValue
 	}{
-		{"const abc ## 123 = 456", "ABC123", 456},
-		{"const abc ## (100 + 23) = 456", "ABC123", 456},
-		{"const abc ## (100 + 23) = def ## 456 \\ const def ## (400 + 56) = 999", "ABC123", 999},
-		{"abc ## 123 equ 456", "ABC123", 456},
-		{"abc ## (100 + 23) equ 456", "ABC123", 456},
-		{"abc ## (100 + 23) equ def ## 456 \\ const def ## (400 + 56) = 999", "ABC123", 999},
+		{"const abc ## 123 = 456",
+			[]SymValue{{"ABC123", 456}}},
+		{"const abc ## (100 + 23) = 456",
+			[]SymValue{{"ABC123", 456}}},
+		{"const abc ## (100 + 23) = def ## 456 \\ const def ## (400 + 56) = 999",
+			[]SymValue{{"ABC123", 999}}},
+		{"abc ## 123 equ 456",
+			[]SymValue{{"ABC123", 456}}},
+		{"abc ## (100 + 23) equ 456",
+			[]SymValue{{"ABC123", 456}}},
+		{"abc ## (100 + 23) equ def ## 456 \\ const def ## (400 + 56) = 999",
+			[]SymValue{{"ABC123", 999}}},
 	}
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
@@ -70,39 +81,42 @@ func TestConstStatement(t *testing.T) {
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, "", e)
 
-		obj, ok := env.Get(tt.name)
-		if !ok {
-			t.Fatalf(`[%d] %q not in env`, tn, tt.name)
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
 		}
-		value := evalValue(obj)
-		testNumberObject(t, tn, value, tt.expected)
+		testSymValues(t, tn, tt.syms, getter)
 	}
 }
 
 func TestProcStatement(t *testing.T) {
 	tests := []struct {
-		input    string
-		name     string
-		expected int
+		input string
+		syms  []SymValue
 	}{
-		{`test proc \ const abc ## (100 + 23) = 456 \ endp`, `ABC123`, 456},
-		{`test proc \ const abc ## (100 + 23) = def ## 456 \ const def ## (400 + 56) = 999 \ endp`, `ABC123`, 999},
-		{`test proc \ abc ## 123 equ 456 \ endp`, `ABC123`, 456},
-		{`test proc \ abc ## (100 + 23) equ 456 \ endp`, `ABC123`, 456},
-		{`test proc \ abc ## (100 + 23) equ def ## 456 \ const def ## (400 + 56) = 999  \ endp`, `ABC123`, 999},
+		{`test proc \ const abc ## (100 + 23) = 456 \ endp`,
+			[]SymValue{{"ABC123", 456}}},
+		{`test proc \ const abc ## (100 + 23) = def ## 456 \ const def ## (400 + 56) = 999 \ endp`,
+			[]SymValue{{"ABC123", 999}}},
+		{`test proc \ abc ## 123 equ 456 \ endp`,
+			[]SymValue{{"ABC123", 456}}},
+		{`test proc \ abc ## (100 + 23) equ 456 \ endp`,
+			[]SymValue{{`ABC123`, 456}}},
+		{`test proc \ abc ## (100 + 23) equ def ## 456 \ const def ## (400 + 56) = 999  \ endp`,
+			[]SymValue{{"ABC123", 999}}},
 	}
 	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, "", e)
 
-		obj, ok := env.Get(tt.name)
-		if !ok {
-			t.Fatalf(`[%d] %q not in env`, tn, tt.name)
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
 		}
-		value := evalValue(obj)
-		testNumberObject(t, tn, value, tt.expected)
+		testSymValues(t, tn, tt.syms, getter)
 	}
 }
 
@@ -154,9 +168,14 @@ func TestProcLabel(t *testing.T) {
 		},
 		// 5-
 		{input: `const abc = 1 \ abc proc \ endp`, err: errcode.EPROC_USED},
+		{},
+		{},
 	}
 
 	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		prog, e := evalInput(tt.input, logger, env)
@@ -169,13 +188,10 @@ func TestProcLabel(t *testing.T) {
 			continue
 		}
 
-		// no error, no warning, no information
-		if len(tt.code) > 0 {
-			code := CollectCode(prog)
-			if err := bytesEqual(code, tt.code); err != nil {
-				t.Errorf("[%d] generated code diff %s", tn, err.Error())
-			}
-		}
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
 		getter := func(name string) (*object.SymbolObject, bool) {
 			return e.getSymbolFromEnv(name, env)
 		}
