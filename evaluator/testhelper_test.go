@@ -113,23 +113,23 @@ func evalValue(obj object.Object) object.Object {
 	}
 }
 
-func testSymbolNumberObject(t *testing.T, testnum int, obj object.Object, expected int) bool {
+func testSymbolNumberObject(t *testing.T, tn int, obj object.Object, expected int) bool {
 	sym, ok := obj.(*object.SymbolObject)
 	if !ok {
-		t.Errorf("[%d] Object not SymbolObject. got %T", testnum, obj)
+		t.Errorf("[%d] Object not SymbolObject. got %T", tn, obj)
 		return false
 	}
-	return testNumberObject(t, testnum, sym.Value, expected)
+	return testNumberObject(t, tn, sym.Value, expected)
 }
 
-func testNumberObject(t *testing.T, testnum int, obj object.Object, expected int) bool {
+func testNumberObject(t *testing.T, tn int, obj object.Object, expected int) bool {
 	number, ok := obj.(*object.NumberObject)
 	if !ok {
-		t.Errorf("[%d] Object not NumberObject. got %T", testnum, obj)
+		t.Errorf("[%d] Object not NumberObject. got %T", tn, obj)
 		return false
 	}
 	if number.Value != expected {
-		t.Errorf("[%d] object is not %d. got %d", testnum, expected, number.Value)
+		t.Errorf("[%d] object is not %d. got %d", tn, expected, number.Value)
 		return false
 	}
 	return true

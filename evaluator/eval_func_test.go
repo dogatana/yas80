@@ -187,19 +187,19 @@ func TestFibFunc(t *testing.T) {
 		`, 89},
 	}
 
-	for testnum, tt := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
 		if !ok {
-			t.Fatalf(`[%d] "RESULT" not in env`, testnum)
+			t.Fatalf(`[%d] "RESULT" not in env`, tn)
 		}
 		value := evalValue(obj)
 
 		if tt.expected >= 0 {
-			testNumberObject(t, testnum, value, tt.expected)
+			testNumberObject(t, tn, value, tt.expected)
 			continue
 		}
 	}
@@ -218,19 +218,19 @@ func TestFunction(t *testing.T) {
 			const result = double(add1, 98)`, 100},
 	}
 
-	for testnum, tt := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
 		if !ok {
-			t.Fatalf(`[%d] "RESULT" not in env`, testnum)
+			t.Fatalf(`[%d] "RESULT" not in env`, tn)
 		}
 		value := evalValue(obj)
 
 		if tt.expected >= 0 {
-			testNumberObject(t, testnum, value, tt.expected)
+			testNumberObject(t, tn, value, tt.expected)
 			continue
 		}
 	}
