@@ -10,7 +10,7 @@ SRC = main.go \
 	evaluator/eval_expression.go \
 	evaluator/eval_env.go evaluator/check_symbol.go \
 	evaluator/z80code.go evaluator/helper.go \
-	logger/logger.go \
+	logging/logging.go \
 	errcode/errcode.go \
 	fileblock/fileblock.go
 
@@ -36,13 +36,13 @@ yacc:
 	python ${PATCH} ${PARSER} ${PARSER} ${YOUT}
 
 vet: fmt
-	go vet ./parser ./evaluator ./fileblock ./errtest
+	go vet ./parser ./evaluator ./fileblock ./errtest ./logging
 
 fmt:
-	go fmt ./parser ./evaluator ./fileblock ./errtest
+	go fmt ./parser ./evaluator ./fileblock ./errtest ./logging
 
 check:
-	staticcheck ./parser ./evaluator ./errtest
+	staticcheck ./parser ./evaluator ./errtest ./logging
 
 test: errtest/errcode_names.go
 	go test ./parser ./evaluator ./fileblock ./errtest

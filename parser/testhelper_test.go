@@ -7,12 +7,12 @@ import (
 	"strings"
 	"testing"
 	"yas80/fileblock"
-	"yas80/logger"
+	"yas80/logging"
 )
 
 func newLexerForTest(input string) *Lexer {
 	file := "<string>"
-	logger := logger.New(file)
+	logger := logging.New(file)
 	fb := fileblock.New(file, []byte(input))
 	return NewLexer(fb, logger)
 }

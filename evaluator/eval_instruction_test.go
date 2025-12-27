@@ -2,7 +2,7 @@ package evaluator
 
 import (
 	"testing"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 )
 
@@ -15,7 +15,7 @@ func TestZ80Instruction(t *testing.T) {
 
 	for tn, base := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		input := string(readTestDataFile(t, base+".asm"))
 		expected := readTestDataFile(t, base+".bin")
 

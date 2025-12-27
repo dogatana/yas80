@@ -2,7 +2,7 @@ package evaluator
 
 import (
 	"testing"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 )
 
@@ -30,7 +30,7 @@ func TestEvalExpression(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")

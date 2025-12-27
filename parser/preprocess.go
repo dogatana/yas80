@@ -1,14 +1,12 @@
 package parser
 
-import (
-	"yas80/logger"
-)
+import "yas80/logging"
 
 type MacroTableType map[string]*MacroStatement
 
 var macroTable MacroTableType = make(MacroTableType)
 
-func PreProrocess(logger *logger.Logger, prog *Program) *Program {
+func PreProrocess(logger *logging.Logger, prog *Program) *Program {
 	return prog
 	// // マクロ定義抽出
 	// macroTable = make(map[string]*MacroStatement)

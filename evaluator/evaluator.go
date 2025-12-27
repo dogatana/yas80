@@ -2,19 +2,19 @@ package evaluator
 
 import (
 	"fmt"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
 )
 
 type Evaluator struct {
-	logger   *logger.Logger
+	logger   *logging.Logger
 	Debug    int
 	Resolved bool
 	Counter  func() int
 }
 
-func New(logger *logger.Logger) *Evaluator {
+func New(logger *logging.Logger) *Evaluator {
 	return &Evaluator{logger: logger, Resolved: true, Counter: makeCounter(0)}
 }
 

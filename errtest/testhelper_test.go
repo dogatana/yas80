@@ -8,7 +8,7 @@ import (
 	"testing"
 	"yas80/evaluator"
 	"yas80/fileblock"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -19,7 +19,7 @@ const (
 	TEST_INFORMATION
 )
 
-func evaluateInput(testType int, input string, logger *logger.Logger, env object.Environment) {
+func evaluateInput(testType int, input string, logger *logging.Logger, env object.Environment) {
 	prog := parseText(input, logger)
 
 	if getCount(logger)[testType] > 0 {
@@ -55,7 +55,7 @@ func evaluateInput(testType int, input string, logger *logger.Logger, env object
 	}
 }
 
-func testMessage(t *testing.T, testType int, tn int, logger *logger.Logger, expected string) {
+func testMessage(t *testing.T, testType int, tn int, logger *logging.Logger, expected string) {
 
 	//  logger.LogMessage is not a type エラー回避
 	// var messages []logger.LogMessage
@@ -81,19 +81,19 @@ func testMessage(t *testing.T, testType int, tn int, logger *logger.Logger, expe
 	}
 }
 
-func parseText(input string, logger *logger.Logger) *parser.Program {
+func parseText(input string, logger *logging.Logger) *parser.Program {
 	file := "<string>"
 	fb := fileblock.New(file, []byte(input))
 	l := parser.NewLexer(fb, logger)
 	return parser.Parse(l)
 }
 
-func getCount(logger *logger.Logger) []int {
+func getCount(logger *logging.Logger) []int {
 	e, w, i := logger.Count()
 	return []int{e, w, i}
 }
 
-func hasMessage(messages []logger.LogMessage, expected string) bool {
+func hasMessage(messages []logging.LogMessage, expected string) bool {
 	re := regexp.MustCompile(`\.?%.\.?`)
 	ss := re.Split(expected, -1)
 

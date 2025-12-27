@@ -2,7 +2,7 @@ package evaluator
 
 import (
 	"testing"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 )
 
@@ -13,7 +13,7 @@ func TestMacro(t *testing.T) {
 
 	for tn, base := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		input := string(readTestDataFile(t, base+".asm"))
 		expected := readTestDataFile(t, base+".bin")
 
@@ -58,7 +58,7 @@ func TestExitm(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		input := tt.input
 		expected := tt.code
 
@@ -101,7 +101,7 @@ func TestMacroIf(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		input := tt.input
 		expected := tt.code
 
@@ -136,7 +136,7 @@ func TestMacroIfExitmLocal(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		input := tt.input
 		expected := tt.code
 

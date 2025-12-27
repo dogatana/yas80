@@ -2,7 +2,7 @@ package evaluator
 
 import (
 	"testing"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 )
 
@@ -21,7 +21,7 @@ func TestFuncIfReturn(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
@@ -69,7 +69,7 @@ func TestIf(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
@@ -115,7 +115,7 @@ func TestFunc(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
@@ -151,7 +151,7 @@ func TestClosure(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
@@ -189,7 +189,7 @@ func TestFibFunc(t *testing.T) {
 
 	for testnum, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")
@@ -220,7 +220,7 @@ func TestFunction(t *testing.T) {
 
 	for testnum, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get("RESULT")

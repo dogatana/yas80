@@ -3,7 +3,7 @@ package parser
 import (
 	"strings"
 	"yas80/fileblock"
-	"yas80/logger"
+	"yas80/logging"
 )
 
 const EOF = 0
@@ -26,13 +26,13 @@ func (ctx *LexerContext) toContext(start int) *fileblock.Context {
 type Lexer struct {
 	isEOF   bool
 	start   int // token 開始 index
-	logger  *logger.Logger
+	logger  *logging.Logger
 	program *Program
 	ctx     *LexerContext
 	//	callback FileBlockProvider
 }
 
-func NewLexer(fb *fileblock.FileBlock, logger *logger.Logger) *Lexer {
+func NewLexer(fb *fileblock.FileBlock, logger *logging.Logger) *Lexer {
 	ctx := &LexerContext{filename: fb.Filename, lineNumber: 1, fileBlock: fb}
 	l := &Lexer{logger: logger, program: &Program{}, ctx: ctx}
 	l.nextChar()
@@ -75,11 +75,11 @@ func (l *Lexer) Error(msg string, ctx *fileblock.Context) {
 	}
 }
 
-func NewLexerProvider(callback FileBlockProvider, logger *logger.Logger) *Lexer {
+func NewLexerProvider(callback FileBlockProvider, logger *logging.Logger) *Lexer {
 	return &Lexer{logger: logger}
 }
 
-func (l *Lexer) Logger() *logger.Logger { return l.logger }
+func (l *Lexer) Logger() *logging.Logger { return l.logger }
 
 func (l *Lexer) NextToken() Token {
 	var literal string

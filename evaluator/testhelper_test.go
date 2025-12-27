@@ -9,12 +9,12 @@ import (
 	"strconv"
 	"testing"
 	"yas80/fileblock"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
 )
 
-func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
+func evaluateInput(t *testing.T, input string, logger *logging.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
 	progNode := parseTextForTest(t, input)
 
 	evaluator := New(logger)
@@ -64,7 +64,7 @@ func evaluateInput(t *testing.T, input string, logger *logger.Logger, env object
 
 func parseTextForTest(t *testing.T, input string) *parser.Program {
 	file := "<string>"
-	logger := logger.New(file)
+	logger := logging.New(file)
 	fb := fileblock.New(file, []byte(input))
 	l := parser.NewLexer(fb, logger)
 	prog := parser.Parse(l)

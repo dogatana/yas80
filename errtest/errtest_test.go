@@ -3,7 +3,7 @@ package errtest
 import (
 	"testing"
 	"yas80/errcode"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 )
 
@@ -18,7 +18,7 @@ func TestErrorExpression(t *testing.T) {
 		{`test macro arg \ ld a, 1 / arg \ endm \ test 0`, errcode.EBIN_OP_DIVZERO},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -44,7 +44,7 @@ func TestErrorConstLabel(t *testing.T) {
 		{`const abc = def + 1 \ const def = xyz + 2 \ const xyz = abc + 3`, errcode.ESYM_CYCLIC},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -64,7 +64,7 @@ func TestErrorScrope(t *testing.T) {
 		{`test func arg \ if arg \ const @abc = 1 \ endif\ ld a, @abc \ endf \ _ = test(1)`, errcode.ESCOPE_MACRO},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -87,7 +87,7 @@ func TestErrorFuncDef(t *testing.T) {
 		{`function .abc() 1`, errcode.EFUNC_NAME},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -111,7 +111,7 @@ func TestErrorFuncCall(t *testing.T) {
 		{`const abc = 1 \ _=abc()`, errcode.EFUNC_NOT_FUNC},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -130,7 +130,7 @@ func TestErrorMacroDef(t *testing.T) {
 		{`abc macro \ endm \ abc macro \ endm`, errcode.EMACRO_DUP},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -153,7 +153,7 @@ func TestErrorMacroCall(t *testing.T) {
 		{`aaa macro \ bbb \ endm \ bbb macro \ aaa \ endm \ aaa`, errcode.EMACRO_CYCLIC},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -172,7 +172,7 @@ func TestWarningMacroCall(t *testing.T) {
 		// TODO proc
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_WARNING, tt.input, logger, env)
 		testMessage(t, TEST_WARNING, tn, logger, tt.expected)
@@ -192,7 +192,7 @@ func TestErrorProcDef(t *testing.T) {
 		{`abc proc \ nop \ endp \ ld a, abc.xxx`, errcode.ESYM_UNDEF},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -208,7 +208,7 @@ func TestErrorRept(t *testing.T) {
 		{`rept a \ nop \ endr`, errcode.EREPT_COUNT},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -230,7 +230,7 @@ func TestErrorEnumDef(t *testing.T) {
 		{`abc enum \ aaa = 1 \ ende \ ld a, abc.xyz`, errcode.EENUM_ELE_UNDEF},
 	}
 	for tn, tt := range tests {
-		logger := logger.New("test")
+		logger := logging.New("test")
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)

@@ -2,7 +2,7 @@ package evaluator
 
 import (
 	"testing"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 )
 
@@ -32,7 +32,7 @@ func TestLabelStatement(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		prog, _ := evaluateInput(t, tt.input, logger, env)
 
 		code := CollectCode(prog)
@@ -64,7 +64,7 @@ func TestConstStatement(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get(tt.name)
@@ -90,7 +90,7 @@ func TestProcStatement(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		_, _ = evaluateInput(t, tt.input, logger, env)
 
 		obj, ok := env.Get(tt.name)
@@ -140,7 +140,7 @@ func TestProcLabel(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logger.New("<eval test>")
+		logger := logging.New("<eval test>")
 		prog, e := evaluateInput(t, tt.input, logger, env)
 
 		code := CollectCode(prog)

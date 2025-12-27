@@ -9,7 +9,7 @@ import (
 	"strings"
 	"yas80/evaluator"
 	"yas80/fileblock"
-	"yas80/logger"
+	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -26,7 +26,7 @@ func getDebugEnv(name string) int {
 	return 0
 }
 
-func parse(logger *logger.Logger, input io.Reader, filename string) *parser.Program {
+func parse(logger *logging.Logger, input io.Reader, filename string) *parser.Program {
 	// l := parser.NewLexer(bufio.NewReader(input), filename, logger)
 	fb, err := fileblock.NewFromReader(filename, input)
 	if err != nil {
@@ -76,7 +76,7 @@ func main() {
 	parser.SetYYDebug(getDebugEnv("yydebug"))
 
 	// logger 作成
-	logger := logger.New(file)
+	logger := logging.New(file)
 
 	// 構文解析開始
 	prog := parse(logger, input, file)
