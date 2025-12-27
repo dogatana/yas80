@@ -130,6 +130,21 @@ func testSymValues(t *testing.T, tn int, syms []SymValue, getter func(name strin
 
 }
 
+// sym.Expected < 0: 存在するとエラー
+// sym.Expected >= 0 : 存在しないとエラー
+func testSymValuesEx(t *testing.T, tn int, syms []SymValue, getter func(name string) (*object.SymbolObject, bool)) {
+	for _, sym := range syms {
+		s, ok := getter(sym.name)
+		if sym.Expected >= 0 && !ok {
+			t.Errorf("[%d] symbol %s not found", tn, sym.name)
+		} else if sym.Expected >= 0 {
+			testSymbolNumberObject(t, tn, s, sym.Expected)
+		} else if ok {
+			t.Errorf("[%d] symbol %s exists", tn, sym.name)
+		}
+	}
+}
+
 func testLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
 	ename := errtest.ErrcodeNames[err]
 
