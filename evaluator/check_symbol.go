@@ -7,12 +7,12 @@ import (
 	"yas80/object"
 )
 
-func (e *Evaluator) CheckSymbols(env object.Environment) {
-	e.checkSymbolError(env)
-	e.CheckCyclicError(env)
-}
+// func (e *Evaluator) CheckSymbols(env object.Environment) {
+// 	e.checkSymbolError(env)
+// 	e.CheckCyclicError(env)
+// }
 
-func (e *Evaluator) checkSymbolError(env object.Environment) {
+func (e *Evaluator) CheckSymbolError(env object.Environment) {
 	for name, obj := range env.Store() {
 		switch obj := obj.(type) {
 		case *object.SymbolObject:
@@ -45,7 +45,7 @@ func (e *Evaluator) checkSymbolError(env object.Environment) {
 			}
 
 		case *object.ProcObject:
-			e.checkSymbolError(obj)
+			e.CheckSymbolError(obj)
 		}
 	}
 }

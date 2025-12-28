@@ -42,7 +42,7 @@ func evalInput(input string, logger *logging.Logger, env object.Environment) (*o
 			break
 		}
 	}
-	eval.CheckSymbols(env)
+	eval.CheckSymbolError(env)
 	if len(logger.Errors) > 0 || !eval.Resolved {
 		return &object.ProgramObject{}, eval
 	}

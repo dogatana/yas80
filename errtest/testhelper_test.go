@@ -43,7 +43,7 @@ func evaluateInput(testType int, input string, logger *logging.Logger, env objec
 			break
 		}
 	}
-	e.CheckSymbols(env)
+	e.CheckSymbolError(env)
 	if len(logger.Errors) > 0 || !e.Resolved {
 		return
 	}
