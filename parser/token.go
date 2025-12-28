@@ -42,6 +42,16 @@ var reservedWords map[string]Token = map[string]Token{
 	"FUNCTION": {TokenType: FUNCTION, Literal: "FUNCTION"},
 	"ORG":      {TokenType: ORG, Literal: "ORG"},
 
+	// データ定義
+	"DB":   {TokenType: DATA, TokenSubType: DB, Literal: "DB"},
+	"DEFB": {TokenType: DATA, TokenSubType: DB, Literal: "DEFB"},
+	"DW":   {TokenType: DATA, TokenSubType: DW, Literal: "DW"},
+	"DEWB": {TokenType: DATA, TokenSubType: DW, Literal: "DEFW"},
+	"DS":   {TokenType: DS, TokenSubType: DSB, Literal: "DS"},
+	"DSB":  {TokenType: DS, TokenSubType: DSB, Literal: "DSB"},
+	"DSW":  {TokenType: DSW, TokenSubType: DSW, Literal: "DSW"},
+	"DD":   {TokenType: DD, Literal: "DD"},
+
 	// 複数行構文
 	"IF":    {TokenType: IF, Literal: "IF"},
 	"ELSE":  {TokenType: ELSE, Literal: "ELSE"},

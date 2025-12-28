@@ -54,6 +54,7 @@ var _ = __yyfmt__.Sprintf
 %token<token> CONST VAR EQU
 %token<token> FUNCTION // 1行関数
 
+%token<token> DATA DB DEFB DW DEFW DS DSB DSW DD
 %token<token> CONCAT // 識別子結合 ident ## expr
 
 %token<token> IF ELSE ELIF ENDIF

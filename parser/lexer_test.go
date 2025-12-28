@@ -404,7 +404,8 @@ func TestLexReservedWords(t *testing.T) {
 		"func endf return " +
 		"proc endp " +
 		"block endb " +
-		"for endfor "
+		"for endfor " +
+		"DB DEFB DW DEFW DS DSB DSW DD "
 	l := newLexerForTest(input)
 
 	for {
