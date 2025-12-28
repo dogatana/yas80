@@ -50,11 +50,7 @@ func extractNames(obj object.Object) []string {
 
 // location counter 初期化
 func initLocationCounter(env object.Environment, addr int) {
-	obj, ok := env.Get("$")
-	if !ok {
-		panic("no $ in Environment")
-	}
-	obj.(*object.NumberObject).Value = addr
+	env.Set("$", &object.NumberObject{Value: addr})
 }
 
 // location counter 取得
