@@ -33,14 +33,19 @@ func evaluateInput(testType int, input string, logger *logging.Logger, env objec
 	for i = 0; i < 256; i++ {
 		e.Resolved = true
 		obj = e.EvalProgram(prog, env)
-		e.EvalEnv(env)
-		e.CheckSymbols(env)
+		// e.EvalEnv(env)
+		// e.CheckSymbols(env)
+		e.CheckCyclicError(env)
 		if getCount(logger)[testType] > 0 {
 			return
 		}
 		if e.Resolved {
 			break
 		}
+	}
+	e.CheckSymbols(env)
+	if len(logger.Errors) > 0 || !e.Resolved {
+		return
 	}
 	// finalize
 	code := evaluator.CollectCode(obj.(*object.ProgramObject))

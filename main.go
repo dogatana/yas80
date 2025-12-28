@@ -149,13 +149,12 @@ func main() {
 
 		}
 		showResult(i, prog, obj, env)
+		// $ の評価ができないので、EvalEnvは実行しない
 		// eval.EvalEnv(env)
 		// eval.CheckSymbols(env)
-		// fmt.Println("# after EvalEnv")
-		// object.PrintEnv(env)
-
-		ec, _, _ = logger.Count()
-		if ec > 0 {
+		// 循環参照のエラーチェックは実施
+		eval.CheckCyclicError(env)
+		if len(logger.Errors) > 0 {
 			fmt.Println("*** abort")
 			logger.Print()
 			os.Exit(1)
@@ -165,9 +164,10 @@ func main() {
 			break
 		}
 	}
-	fmt.Printf("eval %d times, eval.Resolved = %v\n", i, eval.Resolved)
-	if !eval.Resolved {
-		fmt.Print("** not resolved")
+	eval.CheckSymbols(env)
+	fmt.Printf("eval %d times, %d errors, eval.Resolved = %v\n", i, len(logger.Errors), eval.Resolved)
+	if len(logger.Errors) > 0 || !eval.Resolved {
+		fmt.Print("** error or  not resolved")
 		logger.Print()
 		os.Exit(1)
 	}

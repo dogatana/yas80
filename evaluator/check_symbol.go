@@ -2,13 +2,14 @@ package evaluator
 
 import (
 	"fmt"
+	"strings"
 	"yas80/errcode"
 	"yas80/object"
 )
 
 func (e *Evaluator) CheckSymbols(env object.Environment) {
 	e.checkSymbolError(env)
-	e.checkCyclicError(env)
+	e.CheckCyclicError(env)
 }
 
 func (e *Evaluator) checkSymbolError(env object.Environment) {
@@ -20,20 +21,36 @@ func (e *Evaluator) checkSymbolError(env object.Environment) {
 			}
 			if obj.Name[0] == '@' && env.EnvType() != object.ENV_MACRO {
 				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), obj.Context)
-			} else if obj.Name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC {
+				continue
+			}
+			if obj.Name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC {
 				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), obj.Context)
-			} else if obj.SymType == object.SYM_UNKNOWN {
+				continue
+			}
+			if obj.SymType == object.SYM_UNKNOWN && strings.Contains(name[1:], ".") {
+				// dotident が仮登録されている場合で、本登録されていれば削除しておく
+				if _, ok := e.getSymbolFromEnv(name, env); ok {
+					delete(env.Store(), name)
+					continue
+				}
 				e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), obj.Context)
-			} else if obj.Value == object.NULL {
+				continue
+			}
+			if obj.SymType == object.SYM_UNKNOWN {
+				e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), obj.Context)
+				continue
+			}
+			if obj.Value == object.NULL {
 				e.logger.Error(fmt.Sprintf(errcode.ESYM_NULL, name), obj.Context)
 			}
+
 		case *object.ProcObject:
 			e.checkSymbolError(obj)
 		}
 	}
 }
 
-func (e *Evaluator) checkCyclicError(env object.Environment) {
+func (e *Evaluator) CheckCyclicError(env object.Environment) {
 	visited := map[string]bool{}
 	visiting := map[string]bool{}
 

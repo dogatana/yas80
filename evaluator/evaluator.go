@@ -102,7 +102,6 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			obj := e.evalStatement(stmt, env)
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			// ValueObject の場合は再度評価するため文を残す（FuncObject 等は文を削除）
-			fmt.Printf("obj %#v\n", obj)
 			if obj.Type() == object.VALUE_OBJ {
 				stmts = append(stmts, node)
 			}

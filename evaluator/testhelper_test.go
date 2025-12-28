@@ -33,8 +33,8 @@ func evalInput(input string, logger *logging.Logger, env object.Environment) (*o
 	for i = 0; i < 256; i++ {
 		eval.Resolved = true
 		obj = eval.EvalProgram(progNode, env)
-		eval.EvalEnv(env)
-		eval.CheckSymbols(env)
+		// eval.EvalEnv(env)
+		eval.CheckCyclicError(env)
 		if len(logger.Errors) > 0 {
 			return &object.ProgramObject{}, eval
 		}
@@ -42,7 +42,8 @@ func evalInput(input string, logger *logging.Logger, env object.Environment) (*o
 			break
 		}
 	}
-	if !eval.Resolved {
+	eval.CheckSymbols(env)
+	if len(logger.Errors) > 0 || !eval.Resolved {
 		return &object.ProgramObject{}, eval
 	}
 
