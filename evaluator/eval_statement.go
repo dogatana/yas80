@@ -280,7 +280,19 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 		env.Set(name, sym)
 		return &object.ValueObject{Value: object.NULL, Context: node.Context}
 
-	case *object.NumberObject, *object.StringObject, *object.RegisterObject, *object.FlagObject:
+	case *object.NumberObject:
+		// NumberObject の copy を値とする Symbol を作成し環境へ登録
+		val := *v // copy
+		sym := object.NewConstSymbol(name, node.Value, &val, []string{}, node.Context)
+		env.Set(name, sym)
+		return &object.ValueObject{Value: v, Context: node.Context}
+	case *object.StringObject:
+		// StringObject の copy を値とする Symbol を作成し環境へ登録
+		val := *v // copy
+		sym := object.NewConstSymbol(name, node.Value, &val, []string{}, node.Context)
+		env.Set(name, sym)
+		return &object.ValueObject{Value: v, Context: node.Context}
+	case *object.RegisterObject, *object.FlagObject:
 		// リテラルを値とする Symbol を作成し環境へ登録
 		sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
 		env.Set(name, sym)
