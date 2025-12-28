@@ -149,10 +149,10 @@ func main() {
 
 		}
 		showResult(i, prog, obj, env)
-		eval.EvalEnv(env)
-		eval.CheckSymbols(env)
-		fmt.Println("# after EvalEnv")
-		object.PrintEnv(env)
+		// eval.EvalEnv(env)
+		// eval.CheckSymbols(env)
+		// fmt.Println("# after EvalEnv")
+		// object.PrintEnv(env)
 
 		ec, _, _ = logger.Count()
 		if ec > 0 {

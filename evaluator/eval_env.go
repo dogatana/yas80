@@ -6,6 +6,8 @@ import (
 )
 
 func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
+	env.Set("$", object.NULL)
+
 	order, err := e.tSortEnv(env)
 	// fmt.Println("order", order)
 	if err != nil {
