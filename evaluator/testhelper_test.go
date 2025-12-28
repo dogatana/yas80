@@ -185,6 +185,7 @@ func hasMessage(messages []logging.LogMessage, expected string) bool {
 	}
 	return false
 }
+
 func evalValue(obj object.Object) object.Object {
 	switch obj := obj.(type) {
 	case *object.SymbolObject:

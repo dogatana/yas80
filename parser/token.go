@@ -46,11 +46,11 @@ var reservedWords map[string]Token = map[string]Token{
 	"DB":   {TokenType: DATA, TokenSubType: DB, Literal: "DB"},
 	"DEFB": {TokenType: DATA, TokenSubType: DB, Literal: "DEFB"},
 	"DW":   {TokenType: DATA, TokenSubType: DW, Literal: "DW"},
-	"DEWB": {TokenType: DATA, TokenSubType: DW, Literal: "DEFW"},
+	"DEFW": {TokenType: DATA, TokenSubType: DW, Literal: "DEFW"},
+	"DD":   {TokenType: DATA, TokenSubType: DD, Literal: "DD"},
 	"DS":   {TokenType: DS, TokenSubType: DSB, Literal: "DS"},
 	"DSB":  {TokenType: DS, TokenSubType: DSB, Literal: "DSB"},
-	"DSW":  {TokenType: DSW, TokenSubType: DSW, Literal: "DSW"},
-	"DD":   {TokenType: DD, Literal: "DD"},
+	"DSW":  {TokenType: DS, TokenSubType: DSW, Literal: "DSW"},
 
 	// 複数行構文
 	"IF":    {TokenType: IF, Literal: "IF"},

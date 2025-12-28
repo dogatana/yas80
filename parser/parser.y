@@ -28,7 +28,7 @@ var _ = __yyfmt__.Sprintf
 
 
 // プログラムの構成要素を指定
-%type<node> statement instruction directive elseifs enum_element
+%type<node> statement instruction directive elseifs enum_element datadef datastore
 %type<label> label
 %type<block> block_statement
 %type<enum_elements> enum_elements
@@ -274,6 +274,72 @@ directive	: CONST ident '=' expr
 						Condition: $3,
 						Consequence: &BlockStatement{Block: []Node{&ExitmStatement{Context: ctx}}},
 						Alternative:  &BlockStatement{Block: []Node{}}}
+				}
+			}
+			| datadef	{ $$ = $1 }
+			| expr datadef	
+			{ 
+				data := $2.(*DataStatement)
+				data.Label = $1
+				$$ = data
+			}
+			| datastore	{ $$ = $1 }
+			| expr datastore	
+			{ 
+				data := $2.(*DataStoreStatement)
+				data.Label = $1
+				$$ = $2 
+			}
+			;
+
+datadef		: DATA expr_list
+			{
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else if len($2.Expressions) == 0 {
+					yylex.Error(errcode.EDATA_EMPTY, $1.Context)
+					return NODE_ERROR
+				} else {
+					size := 0
+					switch $1.TokenSubType {
+					case DB:
+						size = 1
+					case DW:
+						size = 2
+					case DD:
+						size = 0
+					}
+					$$ = &DataStatement{Size: size, Args: $2, Context: $1.Context}
+				}
+			}
+			;
+
+datastore	: DS expr_list
+			{
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else if len($2.Expressions) == 0 {
+					yylex.Error(errcode.EDATA_EMPTY, $1.Context)
+					return NODE_ERROR
+				} else if len($2.Expressions) > 2 {
+					yylex.Error(errcode.EDATA_ARG_COUNT, $1.Context)
+					return NODE_ERROR
+				} else {
+					size := 0
+					switch $1.TokenSubType {
+					case DSB:
+						size = 1
+					case DSW:
+						size = 2
+					}
+					fmt.Printf("expr len %d\n", len($2.Expressions))
+					var filler Expression
+					if len($2.Expressions) == 1 {
+						filler = &NumberLiteral{Value: 0}
+					} else {
+						filler = $2.Expressions[1]
+					}
+					$$ = &DataStoreStatement{Size: size, Count: $2.Expressions[0], Filler: filler, Context: $1.Context}
 				}
 			}
 			;

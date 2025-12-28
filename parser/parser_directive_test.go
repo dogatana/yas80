@@ -3,6 +3,8 @@ package parser
 import (
 	"strings"
 	"testing"
+	"yas80/errcode"
+	"yas80/errtest"
 )
 
 func TestParseConstStatement(t *testing.T) {
@@ -348,5 +350,116 @@ func TestParseReturnStatement(t *testing.T) {
 		default:
 			t.Errorf("[%d] ReturnStatement.Value is unpexcted type %#v", tn, v)
 		}
+	}
+}
+
+func TestParseDataStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		NodeType NodeType
+		size     int
+		length   int
+		err      string
+	}{
+		{"db 1", NODE_DATA_STMT, 1, 1, ""},
+		{"db 1,2,3", NODE_DATA_STMT, 1, 3, ""},
+		{"dw 1", NODE_DATA_STMT, 2, 1, ""},
+		{"dw 1,2,3", NODE_DATA_STMT, 2, 3, ""},
+		{"dd 1", NODE_DATA_STMT, 0, 1, ""},
+		{"dd 1,2,3", NODE_DATA_STMT, 0, 3, ""},
+		{input: "db", err: errcode.EDATA_EMPTY},
+		{input: "dw", err: errcode.EDATA_EMPTY},
+		{input: "dd", err: errcode.EDATA_EMPTY},
+	}
+
+	for tn, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := ParseForTest(t, l, tn)
+
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, l.logger)
+			ename := errtest.ErrcodeNames[tt.err]
+			if ename[0] == 'E' {
+				continue
+			}
+		}
+		if len(l.logger.Errors) > 0 {
+			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
+		}
+
+		if len(prog.Statements) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		}
+		stmt, ok := prog.Statements[0].(*DataStatement)
+		if !ok {
+			t.Errorf("[%d] not DataStatement. got %T", tn, stmt)
+		}
+		if stmt.NodeType() != tt.NodeType {
+			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
+		}
+		if stmt.Size != tt.size {
+			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, stmt.Size)
+		}
+		if len(stmt.Args.Expressions) != tt.length {
+			t.Errorf("[%d] Data Length not %d. got %d", tn, tt.length, len(stmt.Args.Expressions))
+		}
+	}
+}
+
+func TestParseDataStoreStatement(t *testing.T) {
+	tests := []struct {
+		input    string
+		NodeType NodeType
+		size     int
+		count    int
+		filler   int
+		err      string
+	}{
+		{"ds 0", NODE_DATA_STORE_STMT, 1, 0, 0, ""}, // count == 0 は Evaluator でエラーチェックする
+		{"ds 1", NODE_DATA_STORE_STMT, 1, 1, 0, ""},
+		{"ds 1, 255", NODE_DATA_STORE_STMT, 1, 1, 255, ""},
+		{"dsb 0", NODE_DATA_STORE_STMT, 1, 0, 0, ""}, // count == 0 は Evaluator でエラーチェックする
+		{"dsb 1", NODE_DATA_STORE_STMT, 1, 1, 0, ""},
+		{"dsb 1, 255", NODE_DATA_STORE_STMT, 1, 1, 255, ""},
+		{"dsw 0", NODE_DATA_STORE_STMT, 2, 0, 0, ""}, // count == 0 は Evaluator でエラーチェックする
+		{"dsw 1", NODE_DATA_STORE_STMT, 2, 1, 0, ""},
+		{"dsw 1, 65535", NODE_DATA_STORE_STMT, 2, 1, 65535, ""},
+		{input: "ds", err: errcode.EDATA_EMPTY},
+		{input: "ds 1,2,3", err: errcode.EDATA_ARG_COUNT},
+		{input: "dsb", err: errcode.EDATA_EMPTY},
+		{input: "dsb 1,2,3", err: errcode.EDATA_ARG_COUNT},
+		{input: "dsw", err: errcode.EDATA_EMPTY},
+		{input: "dsw 1,2,3", err: errcode.EDATA_ARG_COUNT},
+	}
+
+	for tn, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := ParseForTest(t, l, tn)
+
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, l.logger)
+			ename := errtest.ErrcodeNames[tt.err]
+			if ename[0] == 'E' {
+				continue
+			}
+		}
+		if len(l.logger.Errors) > 0 {
+			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
+		}
+		if len(prog.Statements) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		}
+		stmt, ok := prog.Statements[0].(*DataStoreStatement)
+		if !ok {
+			t.Errorf("[%d] not DataStoreStatement. got %T", tn, stmt)
+		}
+		if stmt.NodeType() != tt.NodeType {
+			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
+		}
+		if stmt.Size != tt.size {
+			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, stmt.Size)
+		}
+		testNumberLiteral(t, tn, stmt.Count, tt.count)
+		testNumberLiteral(t, tn, stmt.Filler, tt.filler)
 	}
 }

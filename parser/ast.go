@@ -39,6 +39,8 @@ const (
 	NODE_MACRO_BLOCK_STMT
 	NODE_EXPANDED_MACRO_CALL_STMT
 	NODE_SET_SYSVAR_STMT
+	NODE_DATA_STMT
+	NODE_DATA_STORE_STMT
 
 	// expression
 	NODE_EXPR
@@ -517,6 +519,35 @@ func (rs *ReturnStatement) String() string {
 		s += " " + rs.Value.String()
 	}
 	return s
+}
+
+type DataStatement struct {
+	Label   Expression
+	Size    int
+	Args    *ExpressionList
+	Context *fileblock.Context
+}
+
+func (s *DataStatement) statementNode()           {}
+func (s *DataStatement) NodeType() NodeType       { return NODE_DATA_STMT }
+func (s *DataStatement) NodeSubType() NodeSubType { return 0 }
+func (s *DataStatement) String() string {
+	return fmt.Sprintf("DATA [size: %d, len: %d]", s.Size, len(s.Args.Expressions))
+}
+
+type DataStoreStatement struct {
+	Label   Expression
+	Size    int
+	Count   Expression
+	Filler  Expression
+	Context *fileblock.Context
+}
+
+func (s *DataStoreStatement) statementNode()           {}
+func (s *DataStoreStatement) NodeType() NodeType       { return NODE_DATA_STORE_STMT }
+func (s *DataStoreStatement) NodeSubType() NodeSubType { return 0 }
+func (s *DataStoreStatement) String() string {
+	return fmt.Sprintf("DS [size: %d, len: %s, fill: %s]", s.Size, s.Count.String(), s.Filler.String())
 }
 
 // Z80 命令文 - Z80Instruction Statement

@@ -3,9 +3,11 @@ package parser
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
+	"yas80/errtest"
 	"yas80/fileblock"
 	"yas80/logging"
 )
@@ -19,17 +21,48 @@ func newLexerForTest(input string) *Lexer {
 
 func ParseForTest(t *testing.T, lexer *Lexer, tn int) *Program {
 	prog := Parse(lexer)
-	prog = PreProrocess(lexer.logger, prog)
-	ec, wc, _ := lexer.logger.Count()
-	if ec > 0 || wc > 0 {
-		lexer.logger.Print()
-		if tn < 0 {
-			t.Fatalf("%d errors and %d warnigs", ec, wc)
-		} else {
-			t.Fatalf("[%d] %d errors and %d warnigs", tn, ec, wc)
+	return PreProrocess(lexer.logger, prog)
+}
+
+func testLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
+	ename := errtest.ErrcodeNames[err]
+
+	var msgs []logging.LogMessage
+	switch ename[0] {
+	case 'E':
+		msgs = logger.Errors
+	case 'W':
+		msgs = logger.Warnings
+	case 'I':
+		msgs = logger.Infomation
+	}
+
+	if !hasMessage(msgs, err) {
+		t.Errorf("[%d] not [%s] \"%s\" => \"%s\"",
+			tn,
+			ename,
+			err,
+			msgs[0])
+	}
+}
+
+func hasMessage(messages []logging.LogMessage, expected string) bool {
+	re := regexp.MustCompile(`\.?%.\.?`)
+	ss := re.Split(expected, -1)
+
+	for _, emsg := range messages {
+		result := true
+		for _, s := range ss {
+			if !strings.Contains(emsg.Message(), s) {
+				result = false
+				break
+			}
+		}
+		if result {
+			return result
 		}
 	}
-	return prog
+	return false
 }
 
 func splitTrim(input string) string {
