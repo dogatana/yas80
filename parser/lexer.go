@@ -121,9 +121,9 @@ LINE_CONT:
 		l.nextChar()
 		return Token{TokenType: EOL, Literal: "\\n", Context: l.ctx.toContext(l.start)}
 
-	case l.ctx.curChar == '"':
+	case l.ctx.curChar == '"' || l.ctx.curChar == '\'':
 		// 文字列リテラル
-		s := l.readString()
+		s := l.readString(l.ctx.curChar)
 		l.nextChar()
 		l.nextChar()
 		return Token{TokenType: STRING, Literal: s, Context: l.ctx.toContext(l.start)}
@@ -363,9 +363,10 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func (l *Lexer) readString() string {
+func (l *Lexer) readString(ch rune) string {
+	quote := byte(ch)
 	startIndex := l.ctx.index
-	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.ctx.fileBlock.Content[l.ctx.index] != '"' {
+	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.ctx.fileBlock.Content[l.ctx.index] != quote {
 		l.ctx.index++
 	}
 	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
