@@ -2,6 +2,7 @@ package parser
 
 import (
 	"strings"
+	"yas80/errcode"
 	"yas80/fileblock"
 	"yas80/logging"
 )
@@ -124,7 +125,6 @@ LINE_CONT:
 	case l.ctx.curChar == '"' || l.ctx.curChar == '\'':
 		// 文字列リテラル
 		s := l.readString(l.ctx.curChar)
-		l.nextChar()
 		l.nextChar()
 		return Token{TokenType: STRING, Literal: s, Context: l.ctx.toContext(l.start)}
 
@@ -354,7 +354,8 @@ func (l *Lexer) peekChar() rune {
 	if l.ctx.index >= len(l.ctx.fileBlock.Content) {
 		return '\n'
 	}
-	return rune(l.ctx.fileBlock.Content[l.ctx.index])
+	end := l.ctx.index + l.charSize(l.ctx.fileBlock.Content[l.ctx.index])
+	return []rune(string(l.ctx.fileBlock.Content[l.ctx.index:end]))[0]
 }
 
 func (l *Lexer) skipWhitespace() {
@@ -363,13 +364,32 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func (l *Lexer) readString(ch rune) string {
-	quote := byte(ch)
-	startIndex := l.ctx.index
-	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.ctx.fileBlock.Content[l.ctx.index] != quote {
-		l.ctx.index++
+func (l *Lexer) readString(quote rune) string {
+	runes := []rune{}
+
+	index := l.ctx.index
+	var ch rune
+	for {
+		l.nextChar()
+		ch = l.ctx.curChar
+		if ch == quote {
+			break
+		}
+		if ch == '\n' {
+			l.logger.Error(errcode.ESTR_END_QUOTE, l.ctx.toContext(index))
+			break
+		}
+		if ch < ' ' {
+			l.logger.Error(errcode.ESTR_CTRL, l.ctx.toContext(index))
+			break
+		}
+		if ch == '\\' && (l.peekChar() == '\'' || l.peekChar() == '"' || l.peekChar() == '\\') {
+			ch = l.peekChar()
+			l.nextChar()
+		}
+		runes = append(runes, ch)
 	}
-	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
+	return string(runes)
 }
 
 func (l *Lexer) readWord() string {

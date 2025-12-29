@@ -5,7 +5,9 @@ const (
 	ESYSTEM = "system error"
 	ESYNTAX = "syntax error"
 
-	// user
+	ESTR_CTRL      = "文字列リテラルに制御文字を含めることは不可"
+	ESTR_END_QUOTE = "文字列リテラル終端の引用符なし"
+
 	E002 = "数値リテラル誤り: '%s'"
 	E003 = "配列名誤り"
 	E004 = "配列インデックス未指定"

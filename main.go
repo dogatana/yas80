@@ -56,6 +56,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	// logger 作成
+	logger := logging.New(file)
+
 	// lexer debug
 	if getDebugEnv("lexdebug") != 0 {
 		fb, err := fileblock.NewFromReader(file, input)
@@ -63,7 +66,7 @@ func main() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		l := parser.NewLexer(fb, nil)
+		l := parser.NewLexer(fb, logger)
 		for {
 			tok := l.NextToken()
 			fmt.Println(tok.String())
@@ -74,9 +77,6 @@ func main() {
 	}
 
 	parser.SetYYDebug(getDebugEnv("yydebug"))
-
-	// logger 作成
-	logger := logging.New(file)
 
 	// 構文解析開始
 	prog := parse(logger, input, file)

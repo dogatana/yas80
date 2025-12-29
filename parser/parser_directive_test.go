@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"yas80/errcode"
@@ -323,6 +324,8 @@ func TestParseReturnStatement(t *testing.T) {
 		prog := ParseForTest(t, l, tn)
 
 		if len(prog.Statements) != 1 {
+			l.logger.Print()
+			fmt.Printf("%#v\n", prog)
 			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
 		}
 		stmt, ok := prog.Statements[0].(*ReturnStatement)

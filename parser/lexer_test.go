@@ -126,18 +126,49 @@ func TestLexInvalidCharacter(t *testing.T) {
 	}
 }
 
+// nextChar, peekChar が正しい rune を返すかのテスト
+func TestLexCurCharAndPeekChar(t *testing.T) {
+	input := "abあいuえo "
+	expected := []rune(input)
+
+	l := newLexerForTest(input)
+
+	for i := 0; l.ctx.curChar != ' '; i++ {
+		if l.ctx.curChar != expected[i] {
+			t.Errorf("[%d] curChar is not %c, got %c", i, expected[i], l.ctx.curChar)
+		}
+		ch := l.peekChar()
+		if ch != expected[i+1] {
+			t.Errorf("[%d] peekChar() is not %c, got %c", i, expected[i+1], ch)
+		}
+		l.nextChar()
+	}
+}
+
 // 文字列リテラルのテスト
 func TestLexString(t *testing.T) {
 	tests := []struct {
 		input            string
 		expected_literal string
 	}{
+		// 0
 		{`"abc"`, "abc"},
 		{` "abc def" `, "abc def"},
 		{`""`, ""},
 		{`'abc'`, "abc"},
 		{` 'abc def' `, "abc def"},
+		// 5-
 		{`''`, ""},
+		{`"abc\"def"`, `abc"def`},
+		{`"abc\'def"`, `abc'def`},
+		{`"abc'def"`, `abc'def`},
+		{`'abc\"def'`, `abc"def`},
+		// 10-
+		{`'abc"def'`, `abc"def`},
+		{`'abc\'def'`, `abc'def`},
+		{`'abc\def'`, `abc\def`},
+		{`'abc\\def'`, `abc\def`},
+		{`'abc\\\def'`, `abc\\def`},
 	}
 
 	for tn, tt := range tests {
