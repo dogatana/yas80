@@ -37,7 +37,7 @@ var _ = __yyfmt__.Sprintf
 %type<expr> expr indexed_expr
 %type<expr> operand
 %type<ident> ident
-
+%type<token> string
 
 %token<token> EOL
 %token<token> NUMBER IDENT STRING
@@ -541,6 +541,16 @@ expr_list	:   { $$ = &ExpressionList{Expressions: []Expression{}}}
 				$$ = $1
 			}
 			;
+
+string		: STRING 	{ $$ = $1 }
+			| string STRING
+			{
+				tok := $$
+				tok.Literal += $2.Literal
+				fmt.Printf("before %#v, tok %#v\n", $$, tok)
+				$$ = tok
+			}
+			;
 	
 expr		: NUMBER
 			{
@@ -551,7 +561,7 @@ expr		: NUMBER
 					$$ = &ParseError{Message: fmt.Sprintf(errcode.E002, $1.Literal),Context: $1.Context}
 				}
 			}
-			| STRING 		{ $$ = &StringLiteral{Value: $1.Literal,Context: $1.Context} }
+			| string 		{ $$ = &StringLiteral{Value: $1.Literal,Context: $1.Context} }
 			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),Context:$1.Context}}
 			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),Context:$1.Context}}
 			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType),Context:$1.Context}}
