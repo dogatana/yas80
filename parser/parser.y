@@ -332,7 +332,6 @@ datastore	: DS expr_list
 					case DSW:
 						size = 2
 					}
-					fmt.Printf("expr len %d\n", len($2.Expressions))
 					var filler Expression
 					if len($2.Expressions) == 1 {
 						filler = &NumberLiteral{Value: 0}
