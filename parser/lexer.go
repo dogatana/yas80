@@ -365,6 +365,19 @@ func (l *Lexer) skipWhitespace() {
 }
 
 func (l *Lexer) readString(quote rune) string {
+	escapes := map[rune]rune{
+		'\'': '\'',
+		'"':  '"',
+		'\\': '\\',
+		'0':  '\x00',
+		'a':  '\a',
+		'b':  '\b',
+		'f':  '\f',
+		'n':  '\n',
+		'r':  '\r',
+		't':  '\t',
+		'v':  '\v',
+	}
 	runes := []rune{}
 
 	index := l.ctx.index
@@ -383,9 +396,12 @@ func (l *Lexer) readString(quote rune) string {
 			l.logger.Error(errcode.ESTR_CTRL, l.ctx.toContext(index))
 			break
 		}
-		if ch == '\\' && (l.peekChar() == '\'' || l.peekChar() == '"' || l.peekChar() == '\\') {
-			ch = l.peekChar()
-			l.nextChar()
+		if ch == '\\' {
+			ec, ok := escapes[l.peekChar()]
+			if ok {
+				ch = ec
+				l.nextChar()
+			}
 		}
 		runes = append(runes, ch)
 	}

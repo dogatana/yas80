@@ -547,7 +547,6 @@ string		: STRING 	{ $$ = $1 }
 			{
 				tok := $$
 				tok.Literal += $2.Literal
-				fmt.Printf("before %#v, tok %#v\n", $$, tok)
 				$$ = tok
 			}
 			;
