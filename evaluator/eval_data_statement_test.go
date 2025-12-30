@@ -51,7 +51,7 @@ func TestDataStoreStatement(t *testing.T) {
 		{input: `dummy func\endf\ const size=dummy() \ dsb size`, err: errcode.EDATA_COUNT},
 		{input: `dummy func\endf\ const size=dummy() \ dsw size`, err: errcode.EDATA_COUNT},
 		// 30-
-		{input: "123 ds 1", err: errcode.ELABEL_EXPR},
+		{input: "123 ds 1", err: errcode.ESYNTAX},
 		{input: `aaa ds 1 \ aaa ds 1`, err: errcode.ELABEL_DUP},
 		{input: `const aaa = 1 \ aaa ds 1`, err: errcode.ELABEL_USED},
 		{input: `aaa ds 1, 1 \ bbb ds 2, 2 \ ccc ds 3, 3`,

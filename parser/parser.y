@@ -34,7 +34,7 @@ var _ = __yyfmt__.Sprintf
 %type<enum_elements> enum_elements
 %type<params> param_list
 %type<expr_list> expr_list
-%type<expr> expr indexed_expr
+%type<expr> expr indexed_expr ident_expr
 %type<expr> operand
 %type<ident> ident
 %type<token> string
@@ -277,14 +277,14 @@ directive	: CONST ident '=' expr
 				}
 			}
 			| datadef	{ $$ = $1 }
-			| expr datadef	
+			| ident_expr datadef	
 			{ 
 				data := $2.(*DataStatement)
 				data.Label = $1
 				$$ = data
 			}
 			| datastore	{ $$ = $1 }
-			| expr datastore	
+			| ident_expr datastore	
 			{ 
 				data := $2.(*DataStoreStatement)
 				data.Label = $1
@@ -352,6 +352,18 @@ ident		: IDENT		 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: ID
 			| LOCAL_IDENT	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,Context: $1.Context}}
 			| AT_IDENT		{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: AT_IDENT,Context: $1.Context}}
 			;
+
+ident_expr	: ident				{ $$ = $1 }
+			| ident CONCAT expr	
+			{ 
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					$$ = buildInfixExpression(CONCAT, $1, $3, $2.Context) 
+				}
+			}
+			;
+
 param_list	: 			{ $$ = []string{}}
 			| IDENT		{ $$ = []string{strings.ToUpper($1.Literal)} }
 			| param_list ',' IDENT
@@ -569,17 +581,17 @@ expr		: NUMBER
 			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),Context:$1.Context}}
 			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType),Context:$1.Context}}
 			| Z80_FLAG 		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType),Context:$1.Context}}
-			| ident { $$ = $1}
-			| IDENT CONCAT expr
-			{
-				id := &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Context: $1.Context}
-			 	$$ = buildInfixExpression(CONCAT, id, $3, $1.Context)
-			}
-			| LOCAL_IDENT CONCAT expr
-			{
-				id := &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,Context: $1.Context}
-			 	$$ = buildInfixExpression(CONCAT, id, $3, $1.Context)
-			}
+			| ident_expr { $$ = $1}
+//			| IDENT CONCAT expr
+//			{
+//				id := &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT,Context: $1.Context}
+//			 	$$ = buildInfixExpression(CONCAT, id, $3, $1.Context)
+//			}
+//			| LOCAL_IDENT CONCAT expr
+//			{
+//				id := &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT,Context: $1.Context}
+//			 	$$ = buildInfixExpression(CONCAT, id, $3, $1.Context)
+//			}
 			| DOT_IDENT
 			{
 				name := strings.ToUpper($1.Literal)
