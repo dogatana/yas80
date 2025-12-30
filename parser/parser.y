@@ -316,6 +316,7 @@ datadef		: DATA expr_list
 
 datastore	: DS expr_list
 			{
+				fmt.Printf("expr_list %#v\n", $2)
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
 				} else if len($2.Expressions) == 0 {

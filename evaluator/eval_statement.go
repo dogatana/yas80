@@ -52,6 +52,10 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 		pb := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
 		return &object.NodeObject{Node: pb}
 
+	// DS/DSB/DSW
+	case *parser.DataStoreStatement:
+		return e.evalDataStoreStatement(node, env)
+
 	// 定数定義
 	case *parser.ConstStatement:
 		return e.evalConstStatement(node, env)

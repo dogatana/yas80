@@ -547,7 +547,7 @@ func (s *DataStoreStatement) statementNode()           {}
 func (s *DataStoreStatement) NodeType() NodeType       { return NODE_DATA_STORE_STMT }
 func (s *DataStoreStatement) NodeSubType() NodeSubType { return 0 }
 func (s *DataStoreStatement) String() string {
-	return fmt.Sprintf("DS [size: %d, len: %s, fill: %s]", s.Size, s.Count.String(), s.Filler.String())
+	return fmt.Sprintf("DS [size: %d, count: %s, fill: %s]", s.Size, s.Count.String(), s.Filler.String())
 }
 
 // Z80 命令文 - Z80Instruction Statement

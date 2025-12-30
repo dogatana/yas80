@@ -198,3 +198,11 @@ func (e *Evaluator) getSymbolFromEnv(name string, env object.Environment) (*obje
 		panic(fmt.Sprintf("getSymbolFromEnv error %#v", obj))
 	}
 }
+
+func (e *Evaluator) isByteRange(n int) bool {
+	return -128 <= n && n <= 255
+}
+
+func (e *Evaluator) isWordRange(n int) bool {
+	return -32768 <= n && n <= 65535
+}

@@ -28,6 +28,8 @@ const (
 	// データ定義
 	EDATA_EMPTY     = "DB/DW/DD/DS には式が必要"
 	EDATA_ARG_COUNT = "DS/DSB/DSW は 1,2 引数のみ有効"
+	EDATA_COUNT     = "DS/DSB/DSW のデータ数が確定できない"
+	EDATA_FILL      = "DS/DSB/DSW の埋め込みデータが確定できない"
 
 	EZ80_FLAG       = "'%s' はフラグでない"
 	EZ80_OP1        = "第1オペランド誤り"
@@ -101,8 +103,8 @@ const (
 	ENOT_IMPL_STMT = "未実装エラー: eval(%T')"
 
 	// warning
-	WEXPR_BYTE = "数値 '%d(0x%x)' をバイト範囲に丸めました"
-	WEXPR_WORD = "数値 '%d(0x%x)' をワード範囲に丸めました"
+	WROUND_BYTE = "数値 '%d(0x%x)' をバイト範囲に丸めました"
+	WROUND_WORD = "数値 '%d(0x%x)' をワード範囲に丸めました"
 
 	// infromation
 	ILABEL_LOCAL = "[I]ローカルラベルには ':' は不要"

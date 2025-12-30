@@ -109,7 +109,7 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 		// LD r, n
 		v, ok := e.intToByte(op2.Value)
 		if !ok {
-			e.logger.Warning(fmt.Sprintf(errcode.WEXPR_BYTE, op2.Value, op2.Value), node.Context)
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, op2.Value, op2.Value), node.Context)
 		}
 		r1 := Z80Reg8Index[int(op1.Register)]
 		b := byte(0x06 | (r1 << 3))
@@ -156,7 +156,7 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		// LD rr, nn
 		v, ok := e.intToWord(op2.Value)
 		if !ok {
-			e.logger.Warning(fmt.Sprintf(errcode.WEXPR_WORD, op2.Value, op2.Value), node.Context)
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, op2.Value, op2.Value), node.Context)
 		}
 		r1 := Z80Reg16Index[int(op1.Register)]
 		b := byte(0x01 | (r1 << 4))
