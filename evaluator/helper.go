@@ -78,6 +78,16 @@ func advanceLocationCounter(env object.Environment, n int) {
 	counter.Value += n
 }
 
+// int -> byte へ。丸め発生した場合は false
+func (e *Evaluator) intToByte(n int) (byte, bool) {
+	return byte(n & 0xff), -128 <= n && n <= 255
+}
+
+// int -> word へ。丸めが発生した場合は false
+func (e *Evaluator) intToWord(n int) (int, bool) {
+	return (n & 0xffff), -32768 <= n && n <= 65535
+}
+
 func boolToInt(value bool) int {
 	if value {
 		return 1
@@ -197,12 +207,4 @@ func (e *Evaluator) getSymbolFromEnv(name string, env object.Environment) (*obje
 	default:
 		panic(fmt.Sprintf("getSymbolFromEnv error %#v", obj))
 	}
-}
-
-func (e *Evaluator) isByteRange(n int) bool {
-	return -128 <= n && n <= 255
-}
-
-func (e *Evaluator) isWordRange(n int) bool {
-	return -32768 <= n && n <= 65535
 }

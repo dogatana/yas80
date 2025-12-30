@@ -174,25 +174,3 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		return object.ERROR
 	}
 }
-
-func (e *Evaluator) intToByte(n int) (byte, bool) {
-	switch {
-	case 0 <= n && n <= 255:
-		return byte(n), true
-	case -128 <= n && n < 0:
-		return byte(n & 0xff), true
-	default:
-		return byte(n & 0xff), false
-	}
-}
-
-func (e *Evaluator) intToWord(n int) (int, bool) {
-	switch {
-	case 0 <= n && n <= 65535:
-		return n, true
-	case -32768 <= n && n < 0:
-		return (n & 0xffff), true
-	default:
-		return (n & 0xffff), false
-	}
-}

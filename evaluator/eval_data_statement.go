@@ -34,14 +34,6 @@ func (e *Evaluator) expr2Label(ptr *parser.Expression, env object.Environment, c
 func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env object.Environment) object.Object {
 	// label
 	if stmt.Label != nil {
-		// e.concatenateSymbol(&stmt.Label, env, stmt.Context)
-		// id, ok := stmt.Label.(*parser.Ident)
-		// if !ok {
-		// 	e.logger.Error(errcode.ELABEL_EXPR, stmt.Context)
-		// 	return object.ERROR
-		// }
-		// label := e.ident2Label(id)
-		// obj := e.evalLabel(label, env)
 		obj := e.expr2Label(&stmt.Label, env, stmt.Context)
 		if isError(obj) {
 			return object.ERROR
@@ -99,13 +91,17 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 		}
 	}
 
-	if stmt.Size == 1 && !e.isByteRange(filler) {
-		e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, filler, filler), stmt.Context)
-		filler &= 0xff
-	}
-	if stmt.Size == 2 && !e.isWordRange(filler) {
-		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, filler, filler), stmt.Context)
-		filler &= 0xffff
+	switch stmt.Size {
+	case 1:
+		filler, ok := e.intToByte(filler)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, filler, filler), stmt.Context)
+		}
+	case 2:
+		filler, ok := e.intToWord(filler)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, filler, filler), stmt.Context)
+		}
 	}
 
 	data := make([]byte, count*stmt.Size)
