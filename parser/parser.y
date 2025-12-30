@@ -326,7 +326,7 @@ datastore	: DS expr
 					case DSW:
 						size = 2
 					}
-					$$ = &DataStoreStatement{Size: size, Count: $2, Filler: nil, Context: $1.Context}
+					$$ = &DataStoreStatement{Size: size, Count: $2, FillValue: nil, Context: $1.Context}
 				}
 			}
 			| DS expr ',' expr
@@ -343,7 +343,7 @@ datastore	: DS expr
 					case DSW:
 						size = 2
 					}
-					$$ = &DataStoreStatement{Size: size, Count: $2, Filler: $4, Context: $1.Context}
+					$$ = &DataStoreStatement{Size: size, Count: $2, FillValue: $4, Context: $1.Context}
 				}
 			}
 			;
