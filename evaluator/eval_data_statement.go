@@ -43,9 +43,9 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 		}
 	}
 
-	if stmt.Filler != nil {
+	if stmt.FillValue != nil {
 		// 文で指定した filler
-		obj = e.evalExpression(stmt.Filler, env, stmt.Context)
+		obj = e.evalExpression(stmt.FillValue, env, stmt.Context)
 		switch obj := obj.(type) {
 		case *object.ErrorObject:
 			return object.ERROR

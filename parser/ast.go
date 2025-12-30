@@ -536,18 +536,24 @@ func (s *DataStatement) String() string {
 }
 
 type DataStoreStatement struct {
-	Label   Expression
-	Size    int
-	Count   Expression
-	Filler  Expression
-	Context *fileblock.Context
+	Label     Expression
+	Size      int
+	Count     Expression
+	FillValue Expression
+	Context   *fileblock.Context
 }
 
 func (s *DataStoreStatement) statementNode()           {}
 func (s *DataStoreStatement) NodeType() NodeType       { return NODE_DATA_STORE_STMT }
 func (s *DataStoreStatement) NodeSubType() NodeSubType { return 0 }
 func (s *DataStoreStatement) String() string {
-	return fmt.Sprintf("DS [size: %d, count: %s, fill: %s]", s.Size, s.Count.String(), s.Filler.String())
+	var f string
+	if s.FillValue == nil {
+		f = "nil"
+	} else {
+		f = s.FillValue.String()
+	}
+	return fmt.Sprintf("DS [size: %d, count: %s, fill: %s]", s.Size, s.Count.String(), f)
 }
 
 // Z80 命令文 - Z80Instruction Statement

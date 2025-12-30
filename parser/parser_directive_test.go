@@ -418,21 +418,24 @@ func TestParseDataStoreStatement(t *testing.T) {
 		filler   int
 		err      string
 	}{
-		{"ds 0", NODE_DATA_STORE_STMT, 1, 0, 0, ""}, // count == 0 は Evaluator でエラーチェックする
-		{"ds 1", NODE_DATA_STORE_STMT, 1, 1, 0, ""},
+		// 0-
+		{"ds 0", NODE_DATA_STORE_STMT, 1, 0, -1, ""},
+		{"ds 1", NODE_DATA_STORE_STMT, 1, 1, -1, ""},
 		{"ds 1, 255", NODE_DATA_STORE_STMT, 1, 1, 255, ""},
-		{"dsb 0", NODE_DATA_STORE_STMT, 1, 0, 0, ""}, // count == 0 は Evaluator でエラーチェックする
-		{"dsb 1", NODE_DATA_STORE_STMT, 1, 1, 0, ""},
+		{"dsb 0", NODE_DATA_STORE_STMT, 1, 0, -1, ""},
+		{"dsb 1", NODE_DATA_STORE_STMT, 1, 1, -1, ""},
+		// 5-
 		{"dsb 1, 255", NODE_DATA_STORE_STMT, 1, 1, 255, ""},
-		{"dsw 0", NODE_DATA_STORE_STMT, 2, 0, 0, ""}, // count == 0 は Evaluator でエラーチェックする
-		{"dsw 1", NODE_DATA_STORE_STMT, 2, 1, 0, ""},
+		{"dsw 0", NODE_DATA_STORE_STMT, 2, 0, -1, ""},
+		{"dsw 1", NODE_DATA_STORE_STMT, 2, 1, -1, ""},
 		{"dsw 1, 65535", NODE_DATA_STORE_STMT, 2, 1, 65535, ""},
-		{input: "ds", err: errcode.EDATA_EMPTY},
-		{input: "ds 1,2,3", err: errcode.EDATA_ARG_COUNT},
-		{input: "dsb", err: errcode.EDATA_EMPTY},
-		{input: "dsb 1,2,3", err: errcode.EDATA_ARG_COUNT},
-		{input: "dsw", err: errcode.EDATA_EMPTY},
-		{input: "dsw 1,2,3", err: errcode.EDATA_ARG_COUNT},
+		{input: "ds", err: errcode.ESYNTAX},
+		// 10-
+		{input: "ds 1,2,3", err: errcode.ESYNTAX},
+		{input: "dsb", err: errcode.ESYNTAX},
+		{input: "dsb 1,2,3", err: errcode.ESYNTAX},
+		{input: "dsw", err: errcode.ESYNTAX},
+		{input: "dsw 1,2,3", err: errcode.ESYNTAX},
 	}
 
 	for tn, tt := range tests {
@@ -463,6 +466,8 @@ func TestParseDataStoreStatement(t *testing.T) {
 			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, stmt.Size)
 		}
 		testNumberLiteral(t, tn, stmt.Count, tt.count)
-		testNumberLiteral(t, tn, stmt.Filler, tt.filler)
+		if tt.filler >= 0 {
+			testNumberLiteral(t, tn, stmt.FillValue, tt.filler)
+		}
 	}
 }

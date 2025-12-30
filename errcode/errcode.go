@@ -26,10 +26,9 @@ const (
 	EBIN_OP_TYPE    = "二項演算子 '%s' は使用不可"
 
 	// データ定義
-	EDATA_EMPTY     = "DB/DW/DD/DS には式が必要"
-	EDATA_ARG_COUNT = "DS/DSB/DSW は 1,2 引数のみ有効"
-	EDATA_COUNT     = "DS/DSB/DSW のデータ数が確定できない"
-	EDATA_FILL      = "DS/DSB/DSW の埋め込みデータが確定できない"
+	EDATA_EMPTY = "DB/DW/DD/DS には式が必要"
+	EDATA_COUNT = "DS/DSB/DSW のデータ数が確定できない"
+	EDATA_FILL  = "DS/DSB/DSW の埋め込みデータが確定できない"
 
 	EZ80_FLAG       = "'%s' はフラグでない"
 	EZ80_OP1        = "第1オペランド誤り"

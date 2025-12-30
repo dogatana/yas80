@@ -314,17 +314,27 @@ datadef		: DATA expr_list
 			}
 			;
 
-datastore	: DS expr_list
+datastore	: DS expr
 			{
-				fmt.Printf("expr_list %#v\n", $2)
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
-				} else if len($2.Expressions) == 0 {
-					yylex.Error(errcode.EDATA_EMPTY, $1.Context)
-					return NODE_ERROR
-				} else if len($2.Expressions) > 2 {
-					yylex.Error(errcode.EDATA_ARG_COUNT, $1.Context)
-					return NODE_ERROR
+				} else {
+					var size int
+					switch $1.TokenSubType {
+					case DSB:
+						size = 1
+					case DSW:
+						size = 2
+					}
+					$$ = &DataStoreStatement{Size: size, Count: $2, Filler: nil, Context: $1.Context}
+				}
+			}
+			| DS expr ',' expr
+			{
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2
+				} else if $4.NodeType() == NODE_ERROR {
+					$$ = $4
 				} else {
 					size := 0
 					switch $1.TokenSubType {
@@ -333,13 +343,7 @@ datastore	: DS expr_list
 					case DSW:
 						size = 2
 					}
-					var filler Expression
-					if len($2.Expressions) == 1 {
-						filler = &NumberLiteral{Value: 0}
-					} else {
-						filler = $2.Expressions[1]
-					}
-					$$ = &DataStoreStatement{Size: size, Count: $2.Expressions[0], Filler: filler, Context: $1.Context}
+					$$ = &DataStoreStatement{Size: size, Count: $2, Filler: $4, Context: $1.Context}
 				}
 			}
 			;
