@@ -8,6 +8,12 @@ import (
 )
 
 func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env object.Environment) object.Object {
+	if stmt.Op1 != nil {
+		e.concatenateSymbol(&stmt.Op1, env, stmt.Context)
+	}
+	if stmt.Op2 != nil {
+		e.concatenateSymbol(&stmt.Op2, env, stmt.Context)
+	}
 	if stmt.Label != nil {
 		e.expr2Label(&stmt.Label, env, stmt.Context)
 	}
