@@ -2,6 +2,8 @@ package parser
 
 import (
 	"testing"
+	"yas80/errcode"
+	"yas80/errtest"
 )
 
 func TestParseNumberLiteral(t *testing.T) {
@@ -95,18 +97,36 @@ func TestParseStringLiteral(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
+		err      string
 	}{
-		{`_ =  "abc" `, "abc"},
-		{`_ = "a\r\n" `, "a\r\n"},
-		{`_ =  " abc" `, " abc"},
-		{`_ =  "abc " `, "abc "},
-		{`_ =  " abc " `, " abc "},
-		{`_ = "xxx '\"\\\0\a\b\f\n\r\t\v xxx"`, "xxx '\"\\\x00\a\b\f\n\r\t\v xxx"},
+		// 0-
+		{`_ =  "abc" `, "abc", ""},
+		{`_ = "a\r\n" `, "a\r\n", ""},
+		{`_ =  " abc" `, " abc", ""},
+		{`_ =  "abc " `, "abc ", ""},
+		{`_ =  " abc " `, " abc ", ""},
+		// 5-
+		{`_ = "xxx '\"\\\0\a\b\f\n\r\t\v xxx"`, "xxx '\"\\\x00\a\b\f\n\r\t\v xxx", ""},
+		{input: "_ = 'abc\ndef'", err: errcode.ESTR_END_QUOTE},
+		{input: "_ = \"abc\ndef\"", err: errcode.ESTR_END_QUOTE},
+		{input: "_ = 'abc\tndef'", err: errcode.ESTR_CTRL},
 	}
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, l.logger)
+			ename := errtest.ErrcodeNames[tt.err]
+			if ename[0] == 'E' {
+				continue
+			}
+		}
+
+		if len(l.logger.Errors) > 0 {
+			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
+		}
 		if len(prog.Statements) == 0 {
 			t.Fatalf("[%d] %d statements", tn, len(prog.Statements))
 		}
