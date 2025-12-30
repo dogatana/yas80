@@ -128,6 +128,12 @@ func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *pa
 			news.Block[i] = e.replaceStatement(s.(parser.Statement), replace)
 		}
 		return &news
+	case *parser.DataStoreStatement:
+		news := *stmt
+		replace(&news.Label)
+		replace(&news.Count)
+		replace(&news.FillValue)
+		return &news
 	default:
 		return stmt
 	}

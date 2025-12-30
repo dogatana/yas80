@@ -54,7 +54,12 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 
 	// DS/DSB/DSW
 	case *parser.DataStoreStatement:
-		return e.evalDataStoreStatement(node, env)
+		obj := e.evalDataStoreStatement(node, env)
+		if isError(obj) {
+			return object.ERROR
+		}
+		advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
+		return obj
 
 	// 定数定義
 	case *parser.ConstStatement:

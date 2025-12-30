@@ -3,11 +3,51 @@ package evaluator
 import (
 	"fmt"
 	"yas80/errcode"
+	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
 )
 
+func (e *Evaluator) ident2Label(id *parser.Ident) *parser.Label {
+	l := &parser.Label{Name: id.Name, LabelType: parser.NODE_LABEL, Context: id.Context}
+	switch id.Name[0] {
+	case '.':
+		l.LabelType = parser.NODE_LOCAL_LABEL
+	case '@':
+		l.LabelType = parser.NODE_AT_LABEL
+	}
+	return l
+}
+
+func (e *Evaluator) expr2Label(ptr *parser.Expression, env object.Environment, ctx *fileblock.Context) object.Object {
+	e.concatenateSymbol(ptr, env, ctx)
+	expr := *ptr
+	id, ok := expr.(*parser.Ident)
+	if !ok {
+		e.logger.Error(errcode.ELABEL_EXPR, ctx)
+		return object.ERROR
+	}
+	label := e.ident2Label(id)
+	return e.evalLabel(label, env)
+}
+
 func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env object.Environment) object.Object {
+	// label
+	if stmt.Label != nil {
+		// e.concatenateSymbol(&stmt.Label, env, stmt.Context)
+		// id, ok := stmt.Label.(*parser.Ident)
+		// if !ok {
+		// 	e.logger.Error(errcode.ELABEL_EXPR, stmt.Context)
+		// 	return object.ERROR
+		// }
+		// label := e.ident2Label(id)
+		// obj := e.evalLabel(label, env)
+		obj := e.expr2Label(&stmt.Label, env, stmt.Context)
+		if isError(obj) {
+			return object.ERROR
+		}
+	}
+
 	// count
 	obj := e.evalExpression(stmt.Count, env, stmt.Context)
 	var count int

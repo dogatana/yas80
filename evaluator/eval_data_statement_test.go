@@ -50,6 +50,25 @@ func TestDataStoreStatement(t *testing.T) {
 		{input: `dummy func\endf\ const size=dummy() \ ds size`, err: errcode.EDATA_COUNT},
 		{input: `dummy func\endf\ const size=dummy() \ dsb size`, err: errcode.EDATA_COUNT},
 		{input: `dummy func\endf\ const size=dummy() \ dsw size`, err: errcode.EDATA_COUNT},
+		// 30-
+		{input: "123 ds 1", err: errcode.ELABEL_EXPR},
+		{input: `aaa ds 1 \ aaa ds 1`, err: errcode.ELABEL_DUP},
+		{input: `const aaa = 1 \ aaa ds 1`, err: errcode.ELABEL_USED},
+		{input: `aaa ds 1, 1 \ bbb ds 2, 2 \ ccc ds 3, 3`,
+			code: []byte{1, 2, 2, 3, 3, 3},
+			syms: []SymValue{
+				{"AAA", 0},
+				{"BBB", 1},
+				{"CCC", 3},
+			},
+		},
+		{input: `test macro num \ abc ## num ds 1, num * 10\ endm \ test 1 \test 2`,
+			code: []byte{10, 20},
+			syms: []SymValue{
+				{"ABC1", 0},
+				{"ABC2", 1},
+			},
+		},
 	}
 
 	for tn, tt := range tests {
