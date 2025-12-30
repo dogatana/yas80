@@ -118,7 +118,7 @@ statement   : EOL { $$ = nil }
 			}
 			;
 
-directive	: CONST ident '=' expr
+directive	: CONST ident_expr '=' expr
 			{ 
 				if $4.NodeType() == NODE_ERROR {
 					$$ =  $4
@@ -126,18 +126,18 @@ directive	: CONST ident '=' expr
 					$$ = &ConstStatement{Name: $2, Value: $4,Context: $1.Context}
 				}
 			}
-			| CONST ident CONCAT expr '=' expr
-			{ 
-				if $4.NodeType() == NODE_ERROR {
-					$$ =  $4
-				} else if $6.NodeType() == NODE_ERROR {
-					$$ = $6
-				} else {
-					id := buildInfixExpression(CONCAT, $2, $4, $1.Context)
-					$$ = &ConstStatement{Name: id, Value: $6, Context: $1.Context}
-				}
-			}
-			| expr EQU expr		
+//			| CONST ident CONCAT expr '=' expr
+//			{ 
+//				if $4.NodeType() == NODE_ERROR {
+//					$$ =  $4
+//				} else if $6.NodeType() == NODE_ERROR {
+//					$$ = $6
+//				} else {
+//					id := buildInfixExpression(CONCAT, $2, $4, $1.Context)
+//					$$ = &ConstStatement{Name: id, Value: $6, Context: $1.Context}
+//				}
+//			}
+			| ident_expr EQU expr		
 			{ 
 				if $1.NodeType() == NODE_ERROR {
 					$$ = $1
