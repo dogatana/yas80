@@ -12,7 +12,9 @@ def main():
         read_testfiles(dir, count)
 
     uncovered = [k for k, v in count.items() if v == 0]
-    print(f"coverage {len(count) - len(uncovered)}/{len(count)}")
+    tested = len(count) - len(uncovered)
+    total = len(count)
+    print(f"case coverage {tested}/{total} {int(tested/total * 100)}%")
     for name in uncovered:
         print(name, end=" ")
 
