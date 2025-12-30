@@ -100,14 +100,14 @@ program		: { }
 			;
 
 statement   : EOL { $$ = nil }
-			| label EOL 
+			| ident_expr ':'  EOL 
 			{
-				$$ = &LabelStatement{Name: $1, Context: $1.Context}
+				$$ = &LabelStatement{Name: $1, Context: $2.Context}
 			}
-			| label instruction EOL
+			| ident_expr ':' instruction EOL
 			{ 
-				$2.(*Z80Instruction).Label = $1
-				$$ = $2 
+				$3.(*Z80Instruction).Label = $1
+				$$ = $3 
 			}
 			| instruction EOL	{ $$ = $1 }
 			| directive	 EOL	{ $$ = $1 }

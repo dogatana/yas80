@@ -167,47 +167,18 @@ func TestParseArrayLiteral(t *testing.T) {
 	}
 }
 
-func TestParseLabel(t *testing.T) {
-	tests := []struct {
-		input     string
-		labelType NodeSubType
-		name      string
-	}{
-		{"abc:", NODE_LABEL, "ABC"},
-		{".abc:", NODE_LOCAL_LABEL, ".ABC"},
-		{"@abc:", NODE_AT_LABEL, "@ABC"},
-	}
-	for tn, tt := range tests {
-		l := newLexerForTest(tt.input)
-		prog := ParseForTest(t, l, tn)
-		if len(prog.Statements) == 0 {
-			t.Fatalf("[%d] statements empty", tn)
-		}
-		stmt, ok := prog.Statements[0].(*LabelStatement)
-		if !ok {
-			t.Errorf("[%d] prog.Statemtes[0] is not LabelStatement. got %T", tn, prog.Statements[0])
-		}
-		if stmt.Name.NodeType() != NODE_LABEL {
-			t.Errorf("[%d] Value.Nodetyp() not NODE_LABEL. got %s", tn, nodeLiteral(int(stmt.Name.NodeType())))
-		}
-		if stmt.Name.NodeSubType() != tt.labelType {
-			t.Errorf("[%d] Value.Nodetyp() not %s. got %s", tn, nodeLiteral(int(tt.labelType)), nodeLiteral(int(stmt.Name.NodeType())))
-		}
-		if stmt.Name.Name != tt.name {
-			t.Errorf("[%d] Value.Name not %q. got %q", tn, tt.name, stmt.Name.Name)
-		}
-	}
-}
 func TestParseLabelStatement(t *testing.T) {
 	tests := []struct {
 		input     string
-		TokenType int
-		expected  string
+		identType int
+		name      string
 	}{
 		{"abc:", IDENT, "ABC"},
 		{"abc :ld a, a", IDENT, "ABC"},
-		{".abc: ld a,a", DOT_IDENT, ".ABC"},
-		// {".abc ", DOT_IDENT, ".ABC"}, // ラベルには : を必須としたので除外
+		{".abc:", LOCAL_IDENT, ".ABC"},
+		{".abc: ld a,a", LOCAL_IDENT, ".ABC"},
+		{"@abc:", AT_IDENT, "@ABC"},
+		{"@abc: ld a,a", AT_IDENT, "@ABC"},
 	}
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
@@ -215,19 +186,24 @@ func TestParseLabelStatement(t *testing.T) {
 		if len(prog.Statements) == 0 {
 			t.Fatalf("[%d] statements empty", tn)
 		}
+		var node Node
 		switch stmt := prog.Statements[0].(type) {
 		case *LabelStatement:
-			name := stmt.Name.Name
-			if name != tt.expected {
-				t.Errorf("[%d] Label.Name is not %q. got %q", tn, tt.expected, name)
-			}
+			node = stmt.Name
 		case *Z80Instruction:
-			name := stmt.Label.Name
-			if name != tt.expected {
-				t.Errorf("[%d] Label.Name is not %q. got %q", tn, tt.expected, name)
-			}
+			node = stmt.Label
 		default:
-			t.Errorf("[%d] not *LabeStatement nor Z80Instruction", tn)
+			t.Errorf("[%d] not *LabeStatement nor *Z80Instruction", tn)
+		}
+		id, ok := node.(*Ident)
+		if !ok {
+			t.Errorf("[%d] Name not *Ident. got %T", tn, node)
+		}
+		if id.IdentType != tt.identType {
+			t.Errorf("[%d] IdentType not %s. got %s", tn, nodeLiteral(tt.identType), nodeLiteral(id.IdentType))
+		}
+		if id.Name != tt.name {
+			t.Errorf("[%d] Name not %s. got %s", tn, tt.name, id.Name)
 		}
 	}
 }

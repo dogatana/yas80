@@ -7,23 +7,23 @@ import (
 	"yas80/parser"
 )
 
-func (e *Evaluator) evalZ80Instruction(node *parser.Z80Instruction, env object.Environment) object.Object {
-	if node.Label != nil {
-		e.evalLabel(node.Label, env)
+func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env object.Environment) object.Object {
+	if stmt.Label != nil {
+		e.expr2Label(&stmt.Label, env, stmt.Context)
 	}
-	switch node.NodeType() {
+	switch stmt.NodeType() {
 	case parser.Z80_INST0:
-		info := Z80CodeTable0[int(node.Opcode)]
-		obj := &object.CodeObject{Line: node.Context.Line, Code: make([]byte, len(info.Bytes))}
+		info := Z80CodeTable0[int(stmt.Opcode)]
+		obj := &object.CodeObject{Line: stmt.Context.Line, Code: make([]byte, len(info.Bytes))}
 		copy(obj.Code, info.Bytes)
 		return obj
 	case parser.Z80_INST1:
-		if node.Opcode == parser.Z80_INST_RET {
-			return e.generateRET(node, env)
+		if stmt.Opcode == parser.Z80_INST_RET {
+			return e.generateRET(stmt, env)
 		}
 		return object.NULL
 	case parser.Z80_INST2:
-		return e.evalZ80Instruction2(node, env)
+		return e.evalZ80Instruction2(stmt, env)
 	default:
 		return object.NULL
 	}

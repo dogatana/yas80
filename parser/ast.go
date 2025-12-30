@@ -123,19 +123,15 @@ func (pe *ParseError) String() string {
 
 // ラベル - 独立した文として生成
 type LabelStatement struct {
-	Name    *Label
+	Name    Expression
 	Context *fileblock.Context
 }
 
-func (ls *LabelStatement) statementNode()           {}
-func (ls *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
-func (ls *LabelStatement) NodeSubType() NodeSubType { return ls.Name.LabelType }
-func (ls *LabelStatement) String() string {
-	out := ls.Name.Name
-	if out[0] != '.' {
-		out += ":"
-	}
-	return out
+func (s *LabelStatement) statementNode()           {}
+func (s *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
+func (s *LabelStatement) NodeSubType() NodeSubType { return 0 }
+func (s *LabelStatement) String() string {
+	return s.Name.String() + ":"
 }
 
 // Proc
@@ -558,7 +554,7 @@ func (s *DataStoreStatement) String() string {
 
 // Z80 命令文 - Z80Instruction Statement
 type Z80Instruction struct {
-	Label    *Label
+	Label    Expression
 	InstType int
 	Opcode   int
 	Op1      Expression
@@ -566,30 +562,30 @@ type Z80Instruction struct {
 	Context  *fileblock.Context
 }
 
-func (zi *Z80Instruction) statementNode() {}
-func (zi *Z80Instruction) NodeType() NodeType {
-	return NodeType(zi.InstType)
+func (s *Z80Instruction) statementNode() {}
+func (s *Z80Instruction) NodeType() NodeType {
+	return NodeType(s.InstType)
 }
-func (zi *Z80Instruction) NodeSubType() NodeSubType {
-	return NodeSubType(zi.Opcode)
+func (s *Z80Instruction) NodeSubType() NodeSubType {
+	return NodeSubType(s.Opcode)
 }
-func (zi *Z80Instruction) String() string {
+func (s *Z80Instruction) String() string {
 	var out bytes.Buffer
 
-	if zi.Label != nil {
-		out.WriteString(zi.Label.Name + ": ")
+	if s.Label != nil {
+		out.WriteString(s.Label.String() + ": ")
 	}
-	out.WriteString(Z80Opcode2Name(zi.Opcode))
+	out.WriteString(Z80Opcode2Name(s.Opcode))
 	switch {
-	case zi.Op1 == nil && zi.Op2 == nil:
+	case s.Op1 == nil && s.Op2 == nil:
 		break
-	case zi.Op1 != nil && zi.Op2 != nil:
-		out.WriteString(" " + opString(zi.Op1))
-		out.WriteString(", " + opString(zi.Op2))
-	case zi.Op1 != nil:
-		out.WriteString(" " + opString(zi.Op1))
+	case s.Op1 != nil && s.Op2 != nil:
+		out.WriteString(" " + opString(s.Op1))
+		out.WriteString(", " + opString(s.Op2))
+	case s.Op1 != nil:
+		out.WriteString(" " + opString(s.Op1))
 	default:
-		out.WriteString(" " + opString(zi.Op2))
+		out.WriteString(" " + opString(s.Op2))
 	}
 
 	return out.String()

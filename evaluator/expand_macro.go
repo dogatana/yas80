@@ -93,9 +93,7 @@ func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *pa
 	switch stmt := stmt.(type) {
 	case *parser.LabelStatement:
 		news := *stmt
-		var expr parser.Expression = news.Name
-		replace(&expr)
-		news.Name = expr.(*parser.Label)
+		replace(&news.Name)
 		return &news
 	case *parser.ConstStatement:
 		news := *stmt
@@ -105,9 +103,7 @@ func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *pa
 	case *parser.Z80Instruction:
 		news := *stmt
 		if news.Label != nil {
-			var expr parser.Expression = news.Label
-			replace(&expr)
-			news.Label = expr.(*parser.Label)
+			replace(&news.Label)
 		}
 		replace(&news.Op1)
 		replace(&news.Op2)

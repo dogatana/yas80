@@ -190,8 +190,8 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env object.E
 }
 
 // ラベル定義文
-func (e *Evaluator) evalLabelStatement(node *parser.LabelStatement, env object.Environment) object.Object {
-	return e.evalLabel(node.Name, env)
+func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env object.Environment) object.Object {
+	return e.expr2Label(&stmt.Name, env, stmt.Context)
 }
 
 func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) object.Object {
