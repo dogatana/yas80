@@ -61,6 +61,15 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 		advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
 		return obj
 
+	// DB/DW/DD
+	case *parser.DataStatement:
+		obj := e.evalDataStatement(node, env)
+		if isError(obj) {
+			return object.ERROR
+		}
+		advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
+		return obj
+
 	// 定数定義
 	case *parser.ConstStatement:
 		return e.evalConstStatement(node, env)
@@ -191,7 +200,8 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env object.E
 
 // ラベル定義文
 func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env object.Environment) object.Object {
-	return e.expr2Label(&stmt.Name, env, stmt.Context)
+	e.concatenateSymbol(&stmt.Name, env, stmt.Context)
+	return e.expr2Label(stmt.Name, env, stmt.Context)
 }
 
 func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) object.Object {

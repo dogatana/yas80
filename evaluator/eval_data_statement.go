@@ -19,9 +19,7 @@ func (e *Evaluator) ident2Label(id *parser.Ident) *parser.Label {
 	return l
 }
 
-func (e *Evaluator) expr2Label(ptr *parser.Expression, env object.Environment, ctx *fileblock.Context) object.Object {
-	e.concatenateSymbol(ptr, env, ctx)
-	expr := *ptr
+func (e *Evaluator) expr2Label(expr parser.Expression, env object.Environment, ctx *fileblock.Context) object.Object {
 	id, ok := expr.(*parser.Ident)
 	if !ok {
 		e.logger.Error(errcode.ELABEL_EXPR, ctx)
@@ -32,9 +30,13 @@ func (e *Evaluator) expr2Label(ptr *parser.Expression, env object.Environment, c
 }
 
 func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env object.Environment) object.Object {
+	e.concatenateSymbol(&stmt.Label, env, stmt.Context)
+	e.concatenateSymbol(&stmt.Count, env, stmt.Context)
+	e.concatenateSymbol(&stmt.FillValue, env, stmt.Context)
+
 	// label
 	if stmt.Label != nil {
-		obj := e.expr2Label(&stmt.Label, env, stmt.Context)
+		obj := e.expr2Label(stmt.Label, env, stmt.Context)
 		if isError(obj) {
 			return object.ERROR
 		}
@@ -116,4 +118,16 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 	}
 	addr := getLocationCounter(env)
 	return &object.CodeObject{Code: data, Addr: addr, Line: stmt.Context.Line}
+}
+
+func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env object.Environment) object.Object {
+	// label
+	if stmt.Label != nil {
+		e.concatenateSymbol(&stmt.Label, env, stmt.Context)
+		obj := e.expr2Label(stmt.Label, env, stmt.Context)
+		if isError(obj) {
+			return object.ERROR
+		}
+	}
+	return object.ERROR
 }

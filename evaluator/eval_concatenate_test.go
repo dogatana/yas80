@@ -27,8 +27,9 @@ func TestConcatenateSymbol(t *testing.T) {
 		{input: `rept 3\ abc ## $i: ld a, $i\ endr`,
 			syms: []SymValue{{"ABC0", 0}, {"ABC1", 2}, {"ABC2", 4}},
 			code: []byte{0x3e, 0, 0x3e, 1, 0x3e, 2}},
-		// error
+		{input: `const abc ## 123 = 1 \ ds abc ## 123, abc ## 123`, syms: []SymValue{{"ABC123", 1}}, code: []byte{1}},
 
+		// error
 		{input: `const 123 ## 123 = 1`, err: errcode.ESYNTAX},
 		{input: `const abc ## a = 1`, err: errcode.ESYM_CONCAT_TYPE},
 		{input: `const abc ## hl = 1`, err: errcode.ESYM_CONCAT_TYPE},
