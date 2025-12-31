@@ -153,6 +153,18 @@ func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env object.Env
 			e.Resolved = false
 		case *object.NumberObject:
 			value = obj.Value
+		case *object.StringObject:
+			if stmt.Size == 2 {
+				e.logger.Error(errcode.EDATA_DW_STR, stmt.Context)
+				return object.ERROR
+			}
+			if s, err := e.utf8ToShiftJis(obj.Value); err != nil {
+				e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, obj.Value), stmt.Context)
+				return object.ERROR
+			} else {
+				code = append(code, s...)
+			}
+			continue
 		}
 		switch stmt.Size {
 		case 0:

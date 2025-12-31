@@ -2,11 +2,15 @@ package evaluator
 
 import (
 	"fmt"
+	"io"
 	"strings"
 	"yas80/errcode"
 	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
+
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/transform"
 )
 
 // 各種 object 判定
@@ -207,4 +211,13 @@ func (e *Evaluator) getSymbolFromEnv(name string, env object.Environment) (*obje
 	default:
 		panic(fmt.Sprintf("getSymbolFromEnv error %#v", obj))
 	}
+}
+
+func (e *Evaluator) utf8ToShiftJis(input string) ([]byte, error) {
+	reader := transform.NewReader(strings.NewReader(input), japanese.ShiftJIS.NewEncoder())
+	data, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+	return data, err
 }

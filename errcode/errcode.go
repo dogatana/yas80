@@ -13,12 +13,14 @@ const (
 	E004 = "配列インデックス未指定"
 	E005 = "配列インデックス誤り"
 	E006 = "間接指定オペランド誤り"
+	E009 = "'%s' は未定義"
+	E028 = "'%s' は指定不可"
+	E030 = "'%s' の定義に循環参照あり"
+	E900 = "E900 内部エラー %s"
 
 	EUNI_OP_STRING = "'%c' は単項文字列演算子ではない"
 	EUNI_OP_NUMBER = "'%c' は単項数値演算子ではない"
 	EUNI_OP_TYPE   = "単項演算子 '%s' が使用できない型"
-
-	E009 = "'%s' は未定義"
 
 	EBIN_OP_DIVZERO = "0 除算"
 	EBIN_OP_STRING  = "文字列は '+' 演算子のみ使用可能"
@@ -26,18 +28,19 @@ const (
 	EBIN_OP_TYPE    = "二項演算子 '%s' は使用不可"
 
 	// データ定義
-	EDATA_EMPTY = "DB/DW/DD に値が指定されていない"
-	EDS_COUNT   = "DS/DSB/DSW のデータ数が確定できない"
-	EDS_FILL    = "DS/DSB/DSW の埋め込みデータが確定できない"
+	EDATA_EMPTY  = "DB/DW/DD に値が指定されていない"
+	EDATA_DW_STR = "DW では文字列は指定できない"
+	EDATA_ENCODE = "文字列 %q を SHIFT-JIS へ変換できない"
 
+	EDS_COUNT = "DS/DSB/DSW のデータ数が確定できない"
+	EDS_FILL  = "DS/DSB/DSW の埋め込みデータが確定できない"
+
+	// Z80
 	EZ80_FLAG       = "'%s' はフラグでない"
 	EZ80_OP1        = "第1オペランド誤り"
 	EZ80_OP2        = "第2オペランド誤り"
 	EZ80_OP1_SP     = "第1オペランドは SP 以外指定不可"
 	EZ80_OP2_HL_IXY = "第2オペランドは HL, IX, IY 以外指定不可"
-
-	E028 = "'%s' は指定不可"
-	E030 = "'%s' の定義に循環参照あり"
 
 	EASSIGN_INVALID_TAGET = "変数/_ 以外へは代入不可"
 	EASSIGN_INVALID_VALUE = "代入右辺式の値が未確定"
@@ -96,8 +99,6 @@ const (
 	ESCOPE_MACRO = "%s は MACRO 内部でしか利用できない"
 
 	WSCOPE_MACRO = "%s は MACRO スコープでは無視"
-
-	E900 = "E900 内部エラー %s"
 
 	ENOT_IMPL_EXPR = "未実装エラー: evalExression(%T)"
 	ENOT_IMPL_STMT = "未実装エラー: eval(%T')"

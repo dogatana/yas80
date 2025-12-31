@@ -114,6 +114,17 @@ func TestDataStatement(t *testing.T) {
 		{input: `db`, err: errcode.ESYNTAX},
 		{input: `dw`, err: errcode.ESYNTAX},
 		{input: `dd`, err: errcode.ESYNTAX},
+		{input: `db "abcd"`, code: []byte{0x61, 0x62, 0x63, 0x64}},
+		// 15-
+		{input: `dd "abcd"`, code: []byte{0x61, 0x62, 0x63, 0x64}},
+		{input: `db "あいう"`, code: []byte{0x82, 0xa0, 0x82, 0xa2, 0x82, 0xa4}},
+		{input: `dd "あいう"`, code: []byte{0x82, 0xa0, 0x82, 0xa2, 0x82, 0xa4}},
+		{input: `db "'\"\\\0\a\b\f\n\r\t\v"`,
+			code: []byte{0x27, 0x22, 0x5c, 0, 0x07, 0x08, 0x0c, 0x0a, 0x0d, 0x09, 0x0b}},
+		{input: `dd "'\"\\\0\a\b\f\n\r\t\v"`,
+			code: []byte{0x27, 0x22, 0x5c, 0, 0x07, 0x08, 0x0c, 0x0a, 0x0d, 0x09, 0x0b}},
+		// 20-
+		// error
 		{input: `
 			db_data db 1, 2
 			dw_data dw $1234, $5678
@@ -127,6 +138,8 @@ func TestDataStatement(t *testing.T) {
 				{"DATA_END", 0x0a},
 			},
 		},
+		{input: `dw "あいう"`, err: errcode.EDATA_DW_STR},
+		{input: `db "` + string([]byte{0x80, 0xff}) + `"`, err: errcode.EDATA_ENCODE},
 	}
 
 	for tn, tt := range tests {
