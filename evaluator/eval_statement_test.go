@@ -178,3 +178,74 @@ func TestProcStatement(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+
+func TestEnumStatement(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []SymValue
+		err   string
+	}{
+		// 0-
+		{input: `test enum \ aaa = 1 \ bbb = 10 \ ccc = 100\ ende`,
+			syms: []SymValue{
+				{"TEST.AAA", 1},
+				{"TEST.BBB", 10},
+				{"TEST.CCC", 100},
+			},
+		},
+		{input: `test enum \ aaa = 1 \ bbb \ ccc\ ende`,
+			syms: []SymValue{
+				{"TEST.AAA", 1},
+				{"TEST.BBB", 2},
+				{"TEST.CCC", 3},
+			},
+		},
+		{input: `test enum \ aaa = 1 \ bbb = .aaa * 2\ ccc = .bbb * 3\ ende`,
+			syms: []SymValue{
+				{"TEST.AAA", 1},
+				{"TEST.BBB", 2},
+				{"TEST.CCC", 6},
+			},
+		},
+		{input: `test enum \ aaa = 1 \ bbb = "value" \ ccc \ ende`,
+			syms: []SymValue{
+				{"TEST.AAA", 1},
+				// {"TEST.BBB", "value"},
+				{"TEST.CCC", 2},
+			},
+		},
+		{input: `test enum \ aaa \ ende \ test enum \ aaa \ende`, err: errcode.EENUM_DUP},
+		{input: `const test = 1 \ test enum \ aaa \ ende`, err: errcode.EENUM_USED},
+		{input: `test enum \ aaa \ aaa \ ende`, err: errcode.EENUM_ELE_DUP},
+		{input: `test enum \ aaa = hl \ ende`, err: errcode.EENUM_ELE_VALUE},
+		{input: `test enum \ aaa = .bbb \ bbb = 1 \ ende`, err: errcode.EENUM_ELE_FWD},
+		{input: `test enum \ aaa = outer_value \ ende`, err: errcode.EENUM_ELE_FWD},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}

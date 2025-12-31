@@ -68,7 +68,7 @@ const (
 	EENUM_USED      = "'%s' を ENUM として再定義不可"
 	EENUM_ELE_DUP   = "ENUM '%s.%s' は定義済み"
 	EENUM_ELE_VALUE = "ENUM 要素に使用できない値"
-	EENUM_ELE_FWD   = "ENUM 要素の定義に前方参照は利用不可"
+	EENUM_ELE_FWD   = "ENUM 要素の値が未確定"
 	// ENUM 参照
 	EENUM_ELE_UNDEF = "ENUM '%s' は未定義"
 
