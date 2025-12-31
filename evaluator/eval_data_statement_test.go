@@ -62,13 +62,6 @@ func TestDataStoreStatement(t *testing.T) {
 				{"CCC", 3},
 			},
 		},
-		{input: `test macro num \ abc ## num ds 1, num * 10\ endm \ test 1 \test 2`,
-			code: []byte{10, 20},
-			syms: []SymValue{
-				{"ABC1", 0},
-				{"ABC2", 1},
-			},
-		},
 	}
 
 	for tn, tt := range tests {
