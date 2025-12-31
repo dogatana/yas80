@@ -370,9 +370,9 @@ func TestParseDataStatement(t *testing.T) {
 		{"dw 1,2,3", NODE_DATA_STMT, 2, 3, ""},
 		{"dd 1", NODE_DATA_STMT, 0, 1, ""},
 		{"dd 1,2,3", NODE_DATA_STMT, 0, 3, ""},
-		{input: "db", err: errcode.EDATA_EMPTY},
-		{input: "dw", err: errcode.EDATA_EMPTY},
-		{input: "dd", err: errcode.EDATA_EMPTY},
+		{input: "db", err: errcode.ESYNTAX},
+		{input: "dw", err: errcode.ESYNTAX},
+		{input: "dd", err: errcode.ESYNTAX},
 	}
 
 	for tn, tt := range tests {
@@ -403,8 +403,8 @@ func TestParseDataStatement(t *testing.T) {
 		if stmt.Size != tt.size {
 			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, stmt.Size)
 		}
-		if len(stmt.Values.Expressions) != tt.length {
-			t.Errorf("[%d] Data Length not %d. got %d", tn, tt.length, len(stmt.Values.Expressions))
+		if len(stmt.Values) != tt.length {
+			t.Errorf("[%d] Data Length not %d. got %d", tn, tt.length, len(stmt.Values))
 		}
 	}
 }

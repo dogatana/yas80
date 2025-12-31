@@ -279,13 +279,30 @@ directive	: CONST ident_expr '=' expr
 			}
 			;
 
-datadef		: DATA expr_list
+//datadef		: DATA expr_list
+//			{
+//				if $2.NodeType() == NODE_ERROR {
+//					$$ = $2
+//				} else if len($2.Expressions) == 0 {
+//					yylex.Error(errcode.EDATA_EMPTY, $1.Context)
+//					return NODE_ERROR
+//				} else {
+//					size := 0
+//					switch $1.TokenSubType {
+//					case DB:
+//						size = 1
+//					case DW:
+//						size = 2
+//					case DD:
+//						size = 0
+//					}
+//					$$ = &DataStatement{Size: size, Values: $2, Context: $1.Context}
+//				}
+//			}
+datadef		: DATA expr
 			{
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2
-				} else if len($2.Expressions) == 0 {
-					yylex.Error(errcode.EDATA_EMPTY, $1.Context)
-					return NODE_ERROR
 				} else {
 					size := 0
 					switch $1.TokenSubType {
@@ -296,7 +313,17 @@ datadef		: DATA expr_list
 					case DD:
 						size = 0
 					}
-					$$ = &DataStatement{Size: size, Values: $2, Context: $1.Context}
+					$$ = &DataStatement{Size: size, Values: []Expression{$2}, Context: $1.Context}
+				}
+			}
+			| datadef ',' expr
+			{
+				if $3.NodeType() == NODE_ERROR {
+					$$ = $3
+				} else {
+					s := $1.(*DataStatement)
+					s.Values = append(s.Values, $3)
+					$$ = s
 				}
 			}
 			;

@@ -520,7 +520,7 @@ func (rs *ReturnStatement) String() string {
 type DataStatement struct {
 	Label   Expression
 	Size    int
-	Values  *ExpressionList
+	Values  []Expression
 	Context *fileblock.Context
 }
 
@@ -528,7 +528,7 @@ func (s *DataStatement) statementNode()           {}
 func (s *DataStatement) NodeType() NodeType       { return NODE_DATA_STMT }
 func (s *DataStatement) NodeSubType() NodeSubType { return 0 }
 func (s *DataStatement) String() string {
-	return fmt.Sprintf("DATA [size: %d, len: %d]", s.Size, len(s.Values.Expressions))
+	return fmt.Sprintf("DATA [size: %d, len: %d]", s.Size, len(s.Values))
 }
 
 type DataStoreStatement struct {
