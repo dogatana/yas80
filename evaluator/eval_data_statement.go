@@ -51,11 +51,11 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 	case *object.NumberObject:
 		count = obj.Value
 	default:
-		e.logger.Error(errcode.EDATA_COUNT, stmt.Context)
+		e.logger.Error(errcode.EDS_COUNT, stmt.Context)
 		return object.ERROR
 	}
 	if count <= 0 {
-		e.logger.Error(errcode.EDATA_COUNT, stmt.Context)
+		e.logger.Error(errcode.EDS_COUNT, stmt.Context)
 		return object.ERROR
 	}
 
@@ -86,7 +86,7 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 		case *object.NumberObject:
 			filler = obj.Value
 		default:
-			e.logger.Error(errcode.EDATA_FILL, stmt.Context)
+			e.logger.Error(errcode.EDS_FILL, stmt.Context)
 			return object.ERROR
 		}
 	}

@@ -29,13 +29,13 @@ func TestDataStoreStatement(t *testing.T) {
 		// 10-
 		{input: `dsw 1, $1234`, code: []byte{0x34, 0x12}},
 		{input: `dsw 2, $1234`, code: []byte{0x34, 0x12, 0x34, 0x12}},
-		{input: `ds 0`, err: errcode.EDATA_COUNT},
-		{input: `dsb 0`, err: errcode.EDATA_COUNT},
-		{input: `dsw 0`, err: errcode.EDATA_COUNT},
+		{input: `ds 0`, err: errcode.EDS_COUNT},
+		{input: `dsb 0`, err: errcode.EDS_COUNT},
+		{input: `dsw 0`, err: errcode.EDS_COUNT},
 		// 15-
-		{input: `ds -1`, err: errcode.EDATA_COUNT},
-		{input: `dsb -1`, err: errcode.EDATA_COUNT},
-		{input: `dsw -1`, err: errcode.EDATA_COUNT},
+		{input: `ds -1`, err: errcode.EDS_COUNT},
+		{input: `dsb -1`, err: errcode.EDS_COUNT},
+		{input: `dsw -1`, err: errcode.EDS_COUNT},
 		{input: "ds 1, -129", code: []byte{0x7f}, err: errcode.WROUND_BYTE},
 		{input: "ds 1, 256", code: []byte{0}, err: errcode.WROUND_BYTE},
 		// 20
@@ -47,9 +47,9 @@ func TestDataStoreStatement(t *testing.T) {
 		// 25-
 		{input: `const size = def + 1 \ dsb size \ const def = 1`, code: []byte{0, 0}},
 		{input: `const size = def + 1 \ dsw size \ const def = 1`, code: []byte{0, 0, 0, 0}},
-		{input: `dummy func\endf\ const size=dummy() \ ds size`, err: errcode.EDATA_COUNT},
-		{input: `dummy func\endf\ const size=dummy() \ dsb size`, err: errcode.EDATA_COUNT},
-		{input: `dummy func\endf\ const size=dummy() \ dsw size`, err: errcode.EDATA_COUNT},
+		{input: `dummy func\endf\ const size=dummy() \ ds size`, err: errcode.EDS_COUNT},
+		{input: `dummy func\endf\ const size=dummy() \ dsb size`, err: errcode.EDS_COUNT},
+		{input: `dummy func\endf\ const size=dummy() \ dsw size`, err: errcode.EDS_COUNT},
 		// 30-
 		{input: "123 ds 1", err: errcode.ESYNTAX},
 		{input: `aaa ds 1 \ aaa ds 1`, err: errcode.ELABEL_DUP},
