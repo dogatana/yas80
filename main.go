@@ -180,7 +180,7 @@ func main() {
 	code := evaluator.CollectCode(obj.(*object.ProgramObject))
 
 	eval.CodeStable = false
-	for i := 0; !eval.CodeStable && i < 256; i++ {
+	for i = 0; !eval.CodeStable && i < 256; i++ {
 		obj = eval.EvalProgram(prog, env)
 		newCode := evaluator.CollectCode(obj.(*object.ProgramObject))
 		eval.CodeStable = bytes.Equal(code, newCode)
