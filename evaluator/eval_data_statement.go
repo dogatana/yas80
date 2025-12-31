@@ -121,13 +121,63 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 }
 
 func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env object.Environment) object.Object {
+	e.concatenateSymbol(&stmt.Label, env, stmt.Context)
+	for i := range stmt.Values {
+		e.concatenateSymbol(&stmt.Values[i], env, stmt.Context)
+	}
+
 	// label
 	if stmt.Label != nil {
-		e.concatenateSymbol(&stmt.Label, env, stmt.Context)
 		obj := e.expr2Label(stmt.Label, env, stmt.Context)
 		if isError(obj) {
 			return object.ERROR
 		}
 	}
-	return object.ERROR
+
+	count := len(stmt.Values)
+	var code []byte
+	if stmt.Size == 2 {
+		code = make([]byte, 0, count*2)
+	} else {
+		code = make([]byte, 0, count)
+	}
+
+	var value int
+	for _, expr := range stmt.Values {
+		obj := e.evalExpression(expr, env, stmt.Context)
+		switch obj := obj.(type) {
+		case *object.ErrorObject:
+			return object.ERROR
+		case *object.RefNotFoundObject:
+			value = 0
+			e.Resolved = false
+		case *object.NumberObject:
+			value = obj.Value
+		}
+		switch stmt.Size {
+		case 0:
+			if -128 <= value && value <= 255 {
+				code = append(code, byte(value))
+			} else {
+				v, ok := e.intToWord(value)
+				if !ok {
+					e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
+				}
+				code = append(code, byte(v&0xff), byte(v>>8))
+			}
+		case 1:
+			v, ok := e.intToByte(value)
+			if !ok {
+				e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, value, value), stmt.Context)
+			}
+			code = append(code, v)
+		case 2:
+			v, ok := e.intToWord(value)
+			if !ok {
+				e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
+			}
+			code = append(code, byte(v&0xff), byte(v>>8))
+		}
+	}
+	return &object.CodeObject{Code: code, Addr: getLocationCounter(env), Line: stmt.Context.Line}
 }

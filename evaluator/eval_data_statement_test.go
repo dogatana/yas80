@@ -90,3 +90,68 @@ func TestDataStoreStatement(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+func TestDataStatement(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []SymValue
+		err   string
+	}{
+		// 0- 単純ケース
+		{input: `db 0`, code: []byte{0}},
+		{input: `db 0,1`, code: []byte{0, 1}},
+		{input: `dw $1234`, code: []byte{0x34, 0x12}},
+		{input: `dw $1234, $5678`, code: []byte{0x34, 0x12, 0x78, 0x56}},
+		{input: `dd 0, 0x1234, 5, 0x6789`, code: []byte{0, 0x34, 0x12, 5, 0x89, 0x67}},
+		// 5-
+		{input: `db -129`, code: []byte{0x7f}, err: errcode.WROUND_BYTE},
+		{input: `db 256`, code: []byte{0}, err: errcode.WROUND_BYTE},
+		{input: `dw -32769`, code: []byte{0xff, 0x7f}, err: errcode.WROUND_WORD},
+		{input: `dw 65536`, code: []byte{0}, err: errcode.WROUND_WORD},
+		{input: `dd -32769`, code: []byte{0xff, 0x7f}, err: errcode.WROUND_WORD},
+		// 10-
+		{input: `dd 65536`, code: []byte{0}, err: errcode.WROUND_WORD},
+		{input: `db`, err: errcode.ESYNTAX},
+		{input: `dw`, err: errcode.ESYNTAX},
+		{input: `dd`, err: errcode.ESYNTAX},
+		{input: `
+			db_data db 1, 2
+			dw_data dw $1234, $5678
+			dd_data dd $9a, $bcde, $f0
+			data_end:`,
+			code: []byte{1, 2, 0x34, 0x12, 0x78, 0x56, 0x9a, 0xde, 0xbc, 0xf0},
+			syms: []SymValue{
+				{"DB_DATA", 0},
+				{"DW_DATA", 2},
+				{"DD_DATA", 6},
+				{"DATA_END", 0x0a},
+			},
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
