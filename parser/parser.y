@@ -16,7 +16,6 @@ var _ = __yyfmt__.Sprintf
 	num Node
 	node Node
 	err any
-	label *Label
 	ident *Ident
 	enum_element *EnumElement
 	enum_elements *EnumElements
@@ -29,7 +28,6 @@ var _ = __yyfmt__.Sprintf
 
 // プログラムの構成要素を指定
 %type<node> statement instruction directive elseifs enum_element datadef datastore
-%type<label> label
 %type<block> block_statement
 %type<enum_elements> enum_elements
 %type<params> param_list
@@ -126,17 +124,6 @@ directive	: CONST ident_expr '=' expr
 					$$ = &ConstStatement{Name: $2, Value: $4,Context: $1.Context}
 				}
 			}
-//			| CONST ident CONCAT expr '=' expr
-//			{ 
-//				if $4.NodeType() == NODE_ERROR {
-//					$$ =  $4
-//				} else if $6.NodeType() == NODE_ERROR {
-//					$$ = $6
-//				} else {
-//					id := buildInfixExpression(CONCAT, $2, $4, $1.Context)
-//					$$ = &ConstStatement{Name: id, Value: $6, Context: $1.Context}
-//				}
-//			}
 			| ident_expr EQU expr		
 			{ 
 				if $1.NodeType() == NODE_ERROR {
@@ -309,7 +296,7 @@ datadef		: DATA expr_list
 					case DD:
 						size = 0
 					}
-					$$ = &DataStatement{Size: size, Args: $2, Context: $1.Context}
+					$$ = &DataStatement{Size: size, Values: $2, Context: $1.Context}
 				}
 			}
 			;
@@ -448,21 +435,6 @@ enum_element : IDENT 			{ $$ = &EnumElement{Name: strings.ToUpper($1.Literal), V
 				}
 			}
 			;
-
-label		: IDENT ':'
-			{
-				$$ = &Label{LabelType: NODE_LABEL, Name: strings.ToUpper($1.Literal),Context: $1.Context}
-			}
-			| LOCAL_IDENT ':'
-			{
-				$$ = &Label{LabelType: NODE_LOCAL_LABEL, Name: strings.ToUpper($1.Literal),Context: $1.Context}
-			}
-			| AT_IDENT ':'
-			{
-				$$ = &Label{LabelType: NODE_AT_LABEL, Name: strings.ToUpper($1.Literal),Context: $1.Context}
-			}
-			;
-
 
 instruction	: Z80_INST0
 			{

@@ -403,8 +403,8 @@ func TestParseDataStatement(t *testing.T) {
 		if stmt.Size != tt.size {
 			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, stmt.Size)
 		}
-		if len(stmt.Args.Expressions) != tt.length {
-			t.Errorf("[%d] Data Length not %d. got %d", tn, tt.length, len(stmt.Args.Expressions))
+		if len(stmt.Values.Expressions) != tt.length {
+			t.Errorf("[%d] Data Length not %d. got %d", tn, tt.length, len(stmt.Values.Expressions))
 		}
 	}
 }
