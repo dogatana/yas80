@@ -445,7 +445,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Env
 			value++
 			continue
 		}
-		v := e.evalExpression(ele.Value, env, node.Context)
+		v := e.evalExpression(ele.Value, enum, node.Context)
 		sym := &object.SymbolObject{Name: ename, SymType: object.SYM_CONST}
 		switch v := v.(type) {
 		case *object.ErrorObject:
