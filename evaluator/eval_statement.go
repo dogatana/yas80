@@ -201,7 +201,7 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env object.E
 // ラベル定義文
 func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env object.Environment) object.Object {
 	e.concatenateSymbol(&stmt.Name, env, stmt.Context)
-	return e.expr2Label(stmt.Name, env, stmt.Context)
+	return e.exprToLabel(stmt.Name, env, stmt.Context)
 }
 
 func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) object.Object {

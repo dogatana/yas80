@@ -221,3 +221,24 @@ func (e *Evaluator) utf8ToShiftJis(input string) ([]byte, error) {
 	}
 	return data, err
 }
+
+func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
+	l := &parser.Label{Name: id.Name, LabelType: parser.NODE_LABEL, Context: id.Context}
+	switch id.Name[0] {
+	case '.':
+		l.LabelType = parser.NODE_LOCAL_LABEL
+	case '@':
+		l.LabelType = parser.NODE_AT_LABEL
+	}
+	return l
+}
+
+func (e *Evaluator) exprToLabel(expr parser.Expression, env object.Environment, ctx *fileblock.Context) object.Object {
+	id, ok := expr.(*parser.Ident)
+	if !ok {
+		e.logger.Error(errcode.ELABEL_EXPR, ctx)
+		return object.ERROR
+	}
+	label := e.identToLabel(id)
+	return e.evalLabel(label, env)
+}

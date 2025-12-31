@@ -3,31 +3,9 @@ package evaluator
 import (
 	"fmt"
 	"yas80/errcode"
-	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
 )
-
-func (e *Evaluator) ident2Label(id *parser.Ident) *parser.Label {
-	l := &parser.Label{Name: id.Name, LabelType: parser.NODE_LABEL, Context: id.Context}
-	switch id.Name[0] {
-	case '.':
-		l.LabelType = parser.NODE_LOCAL_LABEL
-	case '@':
-		l.LabelType = parser.NODE_AT_LABEL
-	}
-	return l
-}
-
-func (e *Evaluator) expr2Label(expr parser.Expression, env object.Environment, ctx *fileblock.Context) object.Object {
-	id, ok := expr.(*parser.Ident)
-	if !ok {
-		e.logger.Error(errcode.ELABEL_EXPR, ctx)
-		return object.ERROR
-	}
-	label := e.ident2Label(id)
-	return e.evalLabel(label, env)
-}
 
 func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env object.Environment) object.Object {
 	e.concatenateSymbol(&stmt.Label, env, stmt.Context)
@@ -36,7 +14,7 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 
 	// label
 	if stmt.Label != nil {
-		obj := e.expr2Label(stmt.Label, env, stmt.Context)
+		obj := e.exprToLabel(stmt.Label, env, stmt.Context)
 		if isError(obj) {
 			return object.ERROR
 		}
@@ -128,7 +106,7 @@ func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env object.Env
 
 	// label
 	if stmt.Label != nil {
-		obj := e.expr2Label(stmt.Label, env, stmt.Context)
+		obj := e.exprToLabel(stmt.Label, env, stmt.Context)
 		if isError(obj) {
 			return object.ERROR
 		}

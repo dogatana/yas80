@@ -13,7 +13,7 @@ func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env object.E
 	e.concatenateSymbol(&stmt.Op2, env, stmt.Context)
 
 	if stmt.Label != nil {
-		e.expr2Label(stmt.Label, env, stmt.Context)
+		e.exprToLabel(stmt.Label, env, stmt.Context)
 	}
 	switch stmt.NodeType() {
 	case parser.Z80_INST0:
