@@ -9,14 +9,14 @@ import (
 func TestFuncIfReturn(t *testing.T) {
 	tests := []struct {
 		input string
-		syms  []SymValue
+		syms  []symValue
 	}{
-		{`function test() 1 \ const result = test()`, []SymValue{{"RESULT", 1}}},
-		{`test func\ const aa=1 \ endf \ const result = test()`, []SymValue{{"RESULT", -1}}},
-		{`test func\ const aa=1 \ return \ const aa=2\ endf \ const result = test()`, []SymValue{{"RESULT", -1}}},
-		{`test func\ const aa=1 \ return 99 \ const aa=2 \ endf \ const result = test()`, []SymValue{{"RESULT", 99}}},
-		{`test func\ if 1 \ if 2 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []SymValue{{"RESULT", 99}}},
-		{`test func\ if 1 \ if 0 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []SymValue{{"RESULT", 98}}},
+		{`function test() 1 \ const result = test()`, []symValue{{"RESULT", 1}}},
+		{`test func\ const aa=1 \ endf \ const result = test()`, []symValue{{"RESULT", nil}}},
+		{`test func\ const aa=1 \ return \ const aa=2\ endf \ const result = test()`, []symValue{{"RESULT", nil}}},
+		{`test func\ const aa=1 \ return 99 \ const aa=2 \ endf \ const result = test()`, []symValue{{"RESULT", 99}}},
+		{`test func\ if 1 \ if 2 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []symValue{{"RESULT", 99}}},
+		{`test func\ if 1 \ if 0 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []symValue{{"RESULT", 98}}},
 	}
 
 	for tn, tt := range tests {
@@ -28,35 +28,35 @@ func TestFuncIfReturn(t *testing.T) {
 		getter := func(name string) (*object.SymbolObject, bool) {
 			return e.getSymbolFromEnv(name, env)
 		}
-		testSymValuesEx(t, tn, tt.syms, getter) // sym.Expected < 0 なので testSymValuesEx を使用する
+		testSymValues(t, tn, tt.syms, getter) // sym.Expected < 0 なので testSymValuesEx を使用する
 	}
 }
 
 func TestIf(t *testing.T) {
 	tests := []struct {
 		input string
-		syms  []SymValue
+		syms  []symValue
 	}{
 		// 式文を除外したことで -1 は RESULT が未定義の意味に変更
-		{`if 1 \ endif`, []SymValue{{"RESULT", -1}}},
-		{`if 0 \ endif`, []SymValue{{"RESULT", -1}}},
-		{`if 1 \ else \ endif`, []SymValue{{"RESULT", -1}}},
-		{`if 0 \ else \ endif`, []SymValue{{"RESULT", -1}}},
+		{`if 1 \ endif`, []symValue{{"RESULT", nil}}},
+		{`if 0 \ endif`, []symValue{{"RESULT", nil}}},
+		{`if 1 \ else \ endif`, []symValue{{"RESULT", nil}}},
+		{`if 0 \ else \ endif`, []symValue{{"RESULT", nil}}},
 
-		{`if 1 \ const result=100 \ endif`, []SymValue{{"RESULT", 100}}},
-		{`if 0 \ const result=100 \ endif`, []SymValue{{"RESULT", -1}}},
+		{`if 1 \ const result=100 \ endif`, []symValue{{"RESULT", 100}}},
+		{`if 0 \ const result=100 \ endif`, []symValue{{"RESULT", nil}}},
 
-		{`if 1 \ const result=100 \ else \ endif`, []SymValue{{"RESULT", 100}}},
-		{`if 0 \ const result=100 \ else \ endif`, []SymValue{{"RESULT", -1}}},
+		{`if 1 \ const result=100 \ else \ endif`, []symValue{{"RESULT", 100}}},
+		{`if 0 \ const result=100 \ else \ endif`, []symValue{{"RESULT", nil}}},
 
-		{`if 1 \ const result=100 \ else \ const result=200  \ endif`, []SymValue{{"RESULT", 100}}},
-		{`if 0 \ const result=100 \ else \ const result=200  \ endif`, []SymValue{{"RESULT", 200}}},
+		{`if 1 \ const result=100 \ else \ const result=200  \ endif`, []symValue{{"RESULT", 100}}},
+		{`if 0 \ const result=100 \ else \ const result=200  \ endif`, []symValue{{"RESULT", 200}}},
 
-		{`const val = 1 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []SymValue{{"RESULT", 100}}},
-		{`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []SymValue{{"RESULT", 200}}},
-		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []SymValue{{"RESULT", -1}}},
+		{`const val = 1 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", 100}}},
+		{`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", 200}}},
+		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", nil}}},
 
-		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ else \ const result=300 \ endif`, []SymValue{{"RESULT", 300}}},
+		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ else \ const result=300 \ endif`, []symValue{{"RESULT", 300}}},
 	}
 
 	for tn, tt := range tests {
@@ -68,7 +68,7 @@ func TestIf(t *testing.T) {
 		getter := func(name string) (*object.SymbolObject, bool) {
 			return e.getSymbolFromEnv(name, env)
 		}
-		testSymValuesEx(t, tn, tt.syms, getter) // sym.Expected < 0 なので testSymValuesEx を使用する
+		testSymValues(t, tn, tt.syms, getter) // sym.Expected < 0 なので testSymValuesEx を使用する
 
 	}
 }
@@ -76,17 +76,17 @@ func TestIf(t *testing.T) {
 func TestFunc(t *testing.T) {
 	tests := []struct {
 		input string
-		syms  []SymValue
+		syms  []symValue
 	}{
-		{`ret100 func \ return 100 \ endf \ const result = ret100()`, []SymValue{{"RESULT", 100}}},
-		{`ret100 func \ _=1 \ _=2 \ return 100 \ _=4 \ endf \ const result = ret100()`, []SymValue{{"RESULT", 100}}},
-		{`abs func arg \ _=1 \ return arg \ _=2 \ endf \  const result = abs(123)`, []SymValue{{"RESULT", 123}}},
-		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \ endif \ endf \ const result = abs(100)`, []SymValue{{"RESULT", 100}}},
-		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \  endif \endf \ const result = abs(-100)`, []SymValue{{"RESULT", 100}}},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(1)`, []SymValue{{"RESULT", -1}}},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(2)`, []SymValue{{"RESULT", 777}}},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(3)`, []SymValue{{"RESULT", 888}}},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(4)`, []SymValue{{"RESULT", 999}}},
+		{`ret100 func \ return 100 \ endf \ const result = ret100()`, []symValue{{"RESULT", 100}}},
+		{`ret100 func \ _=1 \ _=2 \ return 100 \ _=4 \ endf \ const result = ret100()`, []symValue{{"RESULT", 100}}},
+		{`abs func arg \ _=1 \ return arg \ _=2 \ endf \  const result = abs(123)`, []symValue{{"RESULT", 123}}},
+		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \ endif \ endf \ const result = abs(100)`, []symValue{{"RESULT", 100}}},
+		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \  endif \endf \ const result = abs(-100)`, []symValue{{"RESULT", 100}}},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(1)`, []symValue{{"RESULT", nil}}},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(2)`, []symValue{{"RESULT", 777}}},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(3)`, []symValue{{"RESULT", 888}}},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(4)`, []symValue{{"RESULT", 999}}},
 		{`	fib func x
 					if x < 2
 						return 1
@@ -95,7 +95,7 @@ func TestFunc(t *testing.T) {
 					endif
 				endf
 			const result = fib(5)
-			`, []SymValue{{"RESULT", 8}}},
+			`, []symValue{{"RESULT", 8}}},
 	}
 	// t.Fatal("const 再定義要修正")
 
@@ -108,14 +108,14 @@ func TestFunc(t *testing.T) {
 		getter := func(name string) (*object.SymbolObject, bool) {
 			return e.getSymbolFromEnv(name, env)
 		}
-		testSymValuesEx(t, tn, tt.syms, getter)
+		testSymValues(t, tn, tt.syms, getter)
 	}
 }
 
 func TestClosure(t *testing.T) {
 	tests := []struct {
 		input string
-		syms  []SymValue
+		syms  []symValue
 	}{
 
 		{`
@@ -128,7 +128,7 @@ func TestClosure(t *testing.T) {
 		const add3 = adder(3)
 		const result = add3(10)
 		`,
-			[]SymValue{{"RESULT", 13}},
+			[]symValue{{"RESULT", 13}},
 		},
 	}
 
@@ -148,7 +148,7 @@ func TestClosure(t *testing.T) {
 func TestFibFunc(t *testing.T) {
 	tests := []struct {
 		input string
-		syms  []SymValue
+		syms  []symValue
 	}{
 		{`
 		fib func x
@@ -162,7 +162,7 @@ func TestFibFunc(t *testing.T) {
 		endf
 		const result = fib(10)
 		`,
-			[]SymValue{{"RESULT", 89}}},
+			[]symValue{{"RESULT", 89}}},
 	}
 
 	for tn, tt := range tests {
@@ -181,14 +181,14 @@ func TestFibFunc(t *testing.T) {
 func TestFunction(t *testing.T) {
 	tests := []struct {
 		input string
-		syms  []SymValue
+		syms  []symValue
 	}{
-		{`function vram(x, y) 0xd000 + y * 40 + x \ const result = vram(0, 0)`, []SymValue{{"RESULT", 0xd000}}},
-		{`function vram(x, y) 0xd000 + y * 40 + x \ const result = vram(39, 24)`, []SymValue{{"RESULT", 0xd000 + 40*24 + 39}}},
-		{`function add1(x) x + 1 \ const fn = add1 \ const result = fn(99)`, []SymValue{{"RESULT", 100}}},
+		{`function vram(x, y) 0xd000 + y * 40 + x \ const result = vram(0, 0)`, []symValue{{"RESULT", 0xd000}}},
+		{`function vram(x, y) 0xd000 + y * 40 + x \ const result = vram(39, 24)`, []symValue{{"RESULT", 0xd000 + 40*24 + 39}}},
+		{`function add1(x) x + 1 \ const fn = add1 \ const result = fn(99)`, []symValue{{"RESULT", 100}}},
 		{`	function add1(x) x + 1
 			function double(fn, x) fn(fn(x))
-			const result = double(add1, 98)`, []SymValue{{"RESULT", 100}}},
+			const result = double(add1, 98)`, []symValue{{"RESULT", 100}}},
 	}
 
 	for tn, tt := range tests {

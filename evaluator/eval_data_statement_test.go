@@ -11,7 +11,7 @@ func TestDataStoreStatement(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []SymValue
+		syms  []symValue
 		err   string
 	}{
 		// 0- 単純ケース
@@ -56,7 +56,7 @@ func TestDataStoreStatement(t *testing.T) {
 		{input: `const aaa = 1 \ aaa ds 1`, err: errcode.ELABEL_USED},
 		{input: `aaa ds 1, 1 \ bbb ds 2, 2 \ ccc ds 3, 3`,
 			code: []byte{1, 2, 2, 3, 3, 3},
-			syms: []SymValue{
+			syms: []symValue{
 				{"AAA", 0},
 				{"BBB", 1},
 				{"CCC", 3},
@@ -94,7 +94,7 @@ func TestDataStatement(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []SymValue
+		syms  []symValue
 		err   string
 	}{
 		// 0- 単純ケース
@@ -131,7 +131,7 @@ func TestDataStatement(t *testing.T) {
 			dd_data dd $9a, $bcde, $f0
 			data_end:`,
 			code: []byte{1, 2, 0x34, 0x12, 0x78, 0x56, 0x9a, 0xde, 0xbc, 0xf0},
-			syms: []SymValue{
+			syms: []symValue{
 				{"DB_DATA", 0},
 				{"DW_DATA", 2},
 				{"DD_DATA", 6},

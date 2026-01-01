@@ -11,23 +11,23 @@ func TestConcatenateSymbol(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []SymValue
+		syms  []symValue
 		err   string
 	}{
 		// 0-
-		{input: `const abc ## (100 + 23) = 456`, syms: []SymValue{{"ABC123", 456}}},
-		{input: `const abc ## ("_" + "123") = 456`, syms: []SymValue{{"ABC_123", 456}}},
-		{input: `abc ## (100 + 23) equ 456`, syms: []SymValue{{"ABC123", 456}}},
-		{input: `nop \ abc ## (100 + 23): ret`, syms: []SymValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
-		{input: `nop \ abc ## (100 + 23): \ ret`, syms: []SymValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
-		{input: `nop \ abc ## (100 + 23) ds 1, 0xc9`, syms: []SymValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
-		{input: `test proc \ nop \ abc ## (100 + 23) ds 1, 0xc9 \ endp`, syms: []SymValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
-		{input: `test macro arg\ abc ## arg: ret \ endm \ nop \ test 123`, syms: []SymValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
-		{input: `test macro arg\ abc ## arg ds arg, 255 \ endm \ nop \ test 2`, syms: []SymValue{{"ABC2", 1}}, code: []byte{0, 255, 255}},
+		{input: `const abc ## (100 + 23) = 456`, syms: []symValue{{"ABC123", 456}}},
+		{input: `const abc ## ("_" + "123") = 456`, syms: []symValue{{"ABC_123", 456}}},
+		{input: `abc ## (100 + 23) equ 456`, syms: []symValue{{"ABC123", 456}}},
+		{input: `nop \ abc ## (100 + 23): ret`, syms: []symValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
+		{input: `nop \ abc ## (100 + 23): \ ret`, syms: []symValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
+		{input: `nop \ abc ## (100 + 23) ds 1, 0xc9`, syms: []symValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
+		{input: `test proc \ nop \ abc ## (100 + 23) ds 1, 0xc9 \ endp`, syms: []symValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
+		{input: `test macro arg\ abc ## arg: ret \ endm \ nop \ test 123`, syms: []symValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
+		{input: `test macro arg\ abc ## arg ds arg, 255 \ endm \ nop \ test 2`, syms: []symValue{{"ABC2", 1}}, code: []byte{0, 255, 255}},
 		{input: `rept 3\ abc ## $i: ld a, $i\ endr`,
-			syms: []SymValue{{"ABC0", 0}, {"ABC1", 2}, {"ABC2", 4}},
+			syms: []symValue{{"ABC0", 0}, {"ABC1", 2}, {"ABC2", 4}},
 			code: []byte{0x3e, 0, 0x3e, 1, 0x3e, 2}},
-		{input: `const abc ## 123 = 1 \ ds abc ## 123, abc ## 123`, syms: []SymValue{{"ABC123", 1}}, code: []byte{1}},
+		{input: `const abc ## 123 = 1 \ ds abc ## 123, abc ## 123`, syms: []symValue{{"ABC123", 1}}, code: []byte{1}},
 
 		// error
 		{input: `const 123 ## 123 = 1`, err: errcode.ESYNTAX},

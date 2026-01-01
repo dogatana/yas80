@@ -16,9 +16,9 @@ import (
 	"yas80/parser"
 )
 
-type SymValue struct {
+type symValue struct {
 	name     string
-	Expected int
+	expected any
 }
 
 func evalInput(input string, logger *logging.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
@@ -119,29 +119,20 @@ func testCodeResult(t *testing.T, tn int, expected []byte, prog *object.ProgramO
 	}
 }
 
-func testSymValues(t *testing.T, tn int, syms []SymValue, getter func(name string) (*object.SymbolObject, bool)) {
+// sym.Expected nil : 存在するとエラー
+// sym.Expected int, string : 存在しないとエラー
+func testSymValues(t *testing.T, tn int, syms []symValue, getter func(name string) (*object.SymbolObject, bool)) {
 	for _, sym := range syms {
 		s, ok := getter(sym.name)
-		if !ok {
+		switch {
+		case !ok && sym.expected != nil:
 			t.Errorf("[%d] symbol %s not found", tn, sym.name)
-		} else {
-			testSymbolNumberObject(t, tn, s, sym.Expected)
-		}
-	}
-
-}
-
-// sym.Expected < 0: 存在するとエラー
-// sym.Expected >= 0 : 存在しないとエラー
-func testSymValuesEx(t *testing.T, tn int, syms []SymValue, getter func(name string) (*object.SymbolObject, bool)) {
-	for _, sym := range syms {
-		s, ok := getter(sym.name)
-		if sym.Expected >= 0 && !ok {
-			t.Errorf("[%d] symbol %s not found", tn, sym.name)
-		} else if sym.Expected >= 0 {
-			testSymbolNumberObject(t, tn, s, sym.Expected)
-		} else if ok {
+		case !ok:
+			// do nothing
+		case ok && sym.expected == nil:
 			t.Errorf("[%d] symbol %s exists", tn, sym.name)
+		case ok:
+			testSymbolValue(t, tn, s, sym.expected)
 		}
 	}
 }
@@ -196,13 +187,21 @@ func evalValue(obj object.Object) object.Object {
 	}
 }
 
-func testSymbolNumberObject(t *testing.T, tn int, obj object.Object, expected int) bool {
+func testSymbolValue(t *testing.T, tn int, obj object.Object, expected any) bool {
 	sym, ok := obj.(*object.SymbolObject)
 	if !ok {
 		t.Errorf("[%d] Object not SymbolObject. got %T", tn, obj)
 		return false
 	}
-	return testNumberObject(t, tn, sym.Value, expected)
+	switch expected := expected.(type) {
+	case int:
+		return testNumberObject(t, tn, sym.Value, expected)
+	case string:
+		return testStringObject(t, tn, sym.Value, expected)
+	default:
+		t.Fatalf("[%d] expected: unknown type %T", tn, expected)
+		return false
+	}
 }
 
 func testNumberObject(t *testing.T, tn int, obj object.Object, expected int) bool {
@@ -213,6 +212,19 @@ func testNumberObject(t *testing.T, tn int, obj object.Object, expected int) boo
 	}
 	if number.Value != expected {
 		t.Errorf("[%d] object is not %d. got %d", tn, expected, number.Value)
+		return false
+	}
+	return true
+}
+
+func testStringObject(t *testing.T, tn int, obj object.Object, expected string) bool {
+	s, ok := obj.(*object.StringObject)
+	if !ok {
+		t.Errorf("[%d] Object not StringObject. got %T", tn, obj)
+		return false
+	}
+	if s.Value != expected {
+		t.Errorf("[%d] object is not %s. got %s", tn, expected, s.Value)
 		return false
 	}
 	return true

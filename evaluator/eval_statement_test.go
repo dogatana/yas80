@@ -11,11 +11,11 @@ func TestLabelStatement(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []SymValue
+		syms  []symValue
 	}{
 		{`addr1: ld hl, $1234 \ addr2: ld a, a \ addr3: ld hl, $5678`,
 			[]byte{0x21, 0x34, 0x12, 0x7f, 0x21, 0x78, 0x56},
-			[]SymValue{
+			[]symValue{
 				{"ADDR1", 0},
 				{"ADDR2", 3},
 				{"ADDR3", 4},
@@ -23,7 +23,7 @@ func TestLabelStatement(t *testing.T) {
 		},
 		{`addr1: ld a, a\ addr2: ld hl, $1234 \ addr3: ld hl, $5678`,
 			[]byte{0x7f, 0x21, 0x34, 0x12, 0x21, 0x78, 0x56},
-			[]SymValue{
+			[]symValue{
 				{"ADDR1", 0},
 				{"ADDR2", 1},
 				{"ADDR3", 4},
@@ -31,7 +31,7 @@ func TestLabelStatement(t *testing.T) {
 		},
 		{`addr1: ld hl, $1234 \ addr2: ld hl, $5678 \ addr3: ld hl, $9abc`,
 			[]byte{0x21, 0x34, 0x12, 0x21, 0x78, 0x56, 0x21, 0xbc, 0x9a},
-			[]SymValue{
+			[]symValue{
 				{"ADDR1", 0},
 				{"ADDR2", 3},
 				{"ADDR3", 6},
@@ -60,13 +60,13 @@ func TestLabelStatement(t *testing.T) {
 func TestConstStatement(t *testing.T) {
 	tests := []struct {
 		input string
-		syms  []SymValue
+		syms  []symValue
 		err   string
 	}{
 		// 0-
-		{input: `const abc = 123`, syms: []SymValue{{"ABC", 123}}},
-		{input: `const abc = 1 + 2 * 3`, syms: []SymValue{{"ABC", 7}}},
-		{input: `const abc = xyz + 1 \ const xyz = 9`, syms: []SymValue{{"ABC", 10}, {"XYZ", 9}}},
+		{input: `const abc = 123`, syms: []symValue{{"ABC", 123}}},
+		{input: `const abc = 1 + 2 * 3`, syms: []symValue{{"ABC", 7}}},
+		{input: `const abc = xyz + 1 \ const xyz = 9`, syms: []symValue{{"ABC", 10}, {"XYZ", 9}}},
 		{input: `const abc = xyz`, err: errcode.ESYM_UNDEF},
 		{input: `const abc = xyz`, err: errcode.ESYM_NULL},
 	}
@@ -93,13 +93,13 @@ func TestProcStatement(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []SymValue
+		syms  []symValue
 		err   string
 	}{
 		// 0- 単純ケース
 		{input: `abc proc \ nop \ .ret: ret \ nop \ const .xyz = 123 \ endp`,
 			code: []byte{0, 0xc9, 0},
-			syms: []SymValue{{"ABC.RET", 1}, {"ABC.XYZ", 123}},
+			syms: []symValue{{"ABC.RET", 1}, {"ABC.XYZ", 123}},
 		},
 		{},
 		{},
@@ -108,7 +108,7 @@ func TestProcStatement(t *testing.T) {
 		// 5-
 		{`abc proc \ ld a, .abc \ .abc: nop \ endp \ xyz proc \ ld a, .abc \ .abc: ret \ endp`,
 			[]byte{0x3e, 0x02, 0x00, 0x3e, 0x05, 0xc9}, // ld a,2 \ nop \ ld a,5 \ ret
-			[]SymValue{
+			[]symValue{
 				{"ABC.ABC", 2},
 				{"XYZ.ABC", 5},
 			},
@@ -116,7 +116,7 @@ func TestProcStatement(t *testing.T) {
 		},
 		{`abc proc \ ld a, .abc \ nop \ const .abc = 0xa5 \ endp \ xyz proc \ ld a, .abc \ .abc: ret \ endp`,
 			[]byte{0x3e, 0xa5, 0x00, 0x3e, 0x05, 0xc9}, // ld a,2 \ nop \ ld a,5 \ ret
-			[]SymValue{
+			[]symValue{
 				{"ABC.ABC", 0xa5},
 				{"XYZ.ABC", 5},
 			},
@@ -124,7 +124,7 @@ func TestProcStatement(t *testing.T) {
 		},
 		{`abc proc \ const .xxx = zzz + 1 \nop \ endp \ const zzz = 1 \ ld a, abc.xxx`,
 			[]byte{0, 0x3e, 0x02},
-			[]SymValue{
+			[]symValue{
 				{"ABC.XXX", 2},
 				{"ZZZ", 1},
 			},
@@ -132,14 +132,14 @@ func TestProcStatement(t *testing.T) {
 		},
 		{`ld a, abc.def \ abc proc \ nop \ const .def = 4 \ nop \ endp`,
 			[]byte{0x3e, 0x04, 0, 0},
-			[]SymValue{
+			[]symValue{
 				{"ABC.DEF", 4},
 			},
 			"",
 		},
 		{`ld a, abc.def \ abc proc \ nop \ .def: ret \ nop \ endp`,
 			[]byte{0x3e, 0x03, 0, 0xc9, 0},
-			[]SymValue{
+			[]symValue{
 				{"ABC.DEF", 3},
 			},
 			"",
@@ -183,33 +183,33 @@ func TestEnumStatement(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []SymValue
+		syms  []symValue
 		err   string
 	}{
 		// 0-
 		{input: `test enum \ aaa = 1 \ bbb = 10 \ ccc = 100\ ende`,
-			syms: []SymValue{
+			syms: []symValue{
 				{"TEST.AAA", 1},
 				{"TEST.BBB", 10},
 				{"TEST.CCC", 100},
 			},
 		},
 		{input: `test enum \ aaa = 1 \ bbb \ ccc\ ende`,
-			syms: []SymValue{
+			syms: []symValue{
 				{"TEST.AAA", 1},
 				{"TEST.BBB", 2},
 				{"TEST.CCC", 3},
 			},
 		},
 		{input: `test enum \ aaa = 1 \ bbb = .aaa * 2\ ccc = .bbb * 3\ ende`,
-			syms: []SymValue{
+			syms: []symValue{
 				{"TEST.AAA", 1},
 				{"TEST.BBB", 2},
 				{"TEST.CCC", 6},
 			},
 		},
 		{input: `test enum \ aaa = 1 \ bbb = "value" \ ccc \ ende`,
-			syms: []SymValue{
+			syms: []symValue{
 				{"TEST.AAA", 1},
 				// {"TEST.BBB", "value"},
 				{"TEST.CCC", 2},
