@@ -13,7 +13,7 @@ SRC = main.go \
 	evaluator/z80code.go evaluator/helper.go \
 	logging/logging.go \
 	errcode/errcode.go \
-	fileblock/fileblock.go
+	fileblock/fileblock.go fileblock/context.go
 
 TEMP = parser/temp.go
 YACC = parser/parser.y
