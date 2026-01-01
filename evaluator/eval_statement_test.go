@@ -187,6 +187,14 @@ func TestEnumStatement(t *testing.T) {
 		err   string
 	}{
 		// 0-
+		{input: `test enum \ aaa = 123 \ bbb = "value" \ ccc \ ende`,
+			syms: []symValue{
+				{"TEST.AAA", 123},
+				{"TEST.BBB", "value"},
+				{"TEST.CCC", 124},
+				{"TEST.DDD", nil},
+			},
+		},
 		{input: `test enum \ aaa = 1 \ bbb = 10 \ ccc = 100\ ende`,
 			syms: []symValue{
 				{"TEST.AAA", 1},
@@ -206,13 +214,6 @@ func TestEnumStatement(t *testing.T) {
 				{"TEST.AAA", 1},
 				{"TEST.BBB", 2},
 				{"TEST.CCC", 6},
-			},
-		},
-		{input: `test enum \ aaa = 1 \ bbb = "value" \ ccc \ ende`,
-			syms: []symValue{
-				{"TEST.AAA", 1},
-				// {"TEST.BBB", "value"},
-				{"TEST.CCC", 2},
 			},
 		},
 		{input: `test enum \ aaa \ ende \ test enum \ aaa \ende`, err: errcode.EENUM_DUP},
