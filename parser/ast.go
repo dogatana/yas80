@@ -407,10 +407,11 @@ func (bs *BlockStatement) String() string {
 
 // macro block statement
 type MacroBlockStatement struct {
-	Name  string
-	Index int // REPT 用
-	Count int // REPT 用
-	Block []Node
+	Name    string
+	Index   int // REPT 用
+	Count   int // REPT 用
+	Block   []Node
+	Context *fileblock.Context
 }
 
 func (mb *MacroBlockStatement) statementNode()           {}
