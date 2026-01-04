@@ -2,11 +2,12 @@ package evaluator
 
 import (
 	"fmt"
+	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
 )
 
-func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, env object.Environment) object.Object {
+func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, env object.Environment, ectx *fileblock.Context) object.Object {
 	nodes := []parser.Node{}
 	seq := e.Counter()
 
@@ -19,36 +20,43 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	replace := replaceNameInMacro(args, seq, mcall.Name)
 
 	for _, stmt := range macro.Body.Block {
-		news := e.replaceStatement(stmt.(parser.Statement), replace)
+		ectx.Offset += 1
+		c := *ectx
+		news := e.replaceStatement(stmt.(parser.Statement), replace, &c)
 		if news.NodeType() == parser.NODE_MACRO_CALL_STMT {
-			mcall := news.(*parser.MacroCallStatement)
-			sub := e.evalMacroCallStatement(mcall, env)
+			subcall := news.(*parser.MacroCallStatement)
+			sub := e.evalMacroCallStatement(subcall, env)
 			if isError(sub) {
 				return object.ERROR
 			}
-			bs := &parser.MacroBlockStatement{Name: mcall.Name, Block: sub.(*object.NodesObject).Nodes}
+			bs := &parser.MacroBlockStatement{Name: subcall.Name, Block: sub.(*object.NodesObject).Nodes, Context: mcall.Context}
+			bs.ReplaceContext(*ectx) // struct(not *struct)
 			nodes = append(nodes, bs)
 		} else {
+			news.ReplaceContext(*ectx)
 			nodes = append(nodes, news)
 		}
 	}
 	return &object.NodesObject{Nodes: nodes}
 }
 
-func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env object.Environment) object.Object {
+func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env object.Environment, ectx *fileblock.Context) object.Object {
 	seq := e.Counter()
 	args := map[string]parser.Expression{}
 	replace := replaceNameInMacro(args, seq, "REPT")
 	nodes := []parser.Node{}
 	for _, stmt := range rept.Block.Block {
-		news := e.replaceStatement(stmt.(parser.Statement), replace)
+		ectx.Offset += 1
+		c := *ectx
+		news := e.replaceStatement(stmt.(parser.Statement), replace, &c)
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
 			sub := e.evalMacroCallStatement(news, env)
 			if isError(sub) {
 				return object.ERROR
 			}
-			bs := &parser.MacroBlockStatement{Name: news.Name, Block: sub.(*object.NodesObject).Nodes}
+			bs := &parser.MacroBlockStatement{Name: news.Name, Block: sub.(*object.NodesObject).Nodes, Context: rept.Context}
+			bs.ReplaceContext(*ectx)
 			nodes = append(nodes, bs)
 		case *parser.ReptStatement:
 			obj := e.evalReptStatement(news, env)
@@ -59,8 +67,10 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env object.Envir
 			if !ok {
 				panic("not *object.NodeObject")
 			}
+			rs.Node.(parser.Statement).ReplaceContext(*ectx)
 			nodes = append(nodes, rs.Node)
 		default:
+			news.ReplaceContext(*ectx)
 			nodes = append(nodes, news)
 		}
 	}
@@ -89,7 +99,8 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env object.Envir
 // 	return &object.NodesObject{Nodes: nodes}
 // }
 
-func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *parser.Expression)) parser.Statement {
+// ectx 展開後 Context
+func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *parser.Expression), ectx *fileblock.Context) parser.Statement {
 	switch stmt := stmt.(type) {
 	case *parser.LabelStatement:
 		news := *stmt
@@ -112,16 +123,21 @@ func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *pa
 		news := *stmt
 		replace(&news.Condition)
 		if news.Consequence != nil {
-			e.replaceStatement(news.Consequence.(parser.Statement), replace)
+			news.Consequence = e.replaceStatement(news.Consequence.(parser.Statement), replace, ectx)
 		}
 		if news.Alternative != nil {
-			e.replaceStatement(news.Alternative.(parser.Statement), replace)
+			news.Alternative = e.replaceStatement(news.Alternative.(parser.Statement), replace, ectx)
 		}
 		return &news
 	case *parser.BlockStatement:
 		news := *stmt
+		// 元の文を壊さないよう、コピーしたスライスへ置き換え
+		blk := make([]parser.Node, len(stmt.Block))
+		copy(blk, stmt.Block)
+		news.Block = blk
 		for i, s := range news.Block {
-			news.Block[i] = e.replaceStatement(s.(parser.Statement), replace)
+			ectx.Offset += 1
+			news.Block[i] = e.replaceStatement(s.(parser.Statement), replace, ectx)
 		}
 		return &news
 	case *parser.DataStoreStatement:
@@ -129,6 +145,16 @@ func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *pa
 		replace(&news.Label)
 		replace(&news.Count)
 		replace(&news.FillValue)
+		return &news
+	case *parser.MacroCallStatement:
+		news := *stmt
+		args := *stmt.Args
+		args.Expressions = make([]parser.Expression, len(args.Expressions))
+		copy(args.Expressions, stmt.Args.Expressions)
+		for i := range args.Expressions {
+			replace(&args.Expressions[i])
+		}
+		news.Args = &args
 		return &news
 	default:
 		return stmt

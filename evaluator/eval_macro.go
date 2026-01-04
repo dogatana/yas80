@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 	"yas80/errcode"
+	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -31,8 +32,19 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_CYCLIC, stmt.Name), stmt.Context)
 		return object.ERROR
 	}
+
+	var ectx *fileblock.Context
+	if stmt.Context.Offset == 0 {
+		// トップレベルからのマクロ展開の場合 Offset は 1 から
+		tmp := *stmt.Context
+		ectx = &tmp
+	} else {
+		// マクロ内部からのマクロ展開の場合、Offset は前からの継続
+		ectx = stmt.Context
+	}
+
 	expandingMacro[stmt.Name] = true
-	nodes := e.expandMacro(stmt, macro, env)
+	nodes := e.expandMacro(stmt, macro, env, ectx)
 	expandingMacro[stmt.Name] = false
 
 	return nodes
@@ -165,19 +177,36 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env object.Env
 		return object.ERROR
 	}
 
-	nodes := []parser.Node{&parser.SetSysVarStatement{
+	var ectx *fileblock.Context
+	if stmt.Context.Offset == 0 {
+		// トップレベルからのマクロ展開の場合 Offset は 1 から
+		tmp := *stmt.Context
+		ectx = &tmp
+	} else {
+		// マクロ内部からのマクロ展開の場合、Offset は前からの継続
+		ectx = stmt.Context
+	}
+	ectx.Offset += 1
+
+	// 環境に $COUNT を設定
+	s := &parser.SetSysVarStatement{
 		Name:    "$COUNT",
 		Value:   &parser.NumberLiteral{Value: num.Value, Context: stmt.Context},
-		Context: stmt.Context}}
-
+		Context: stmt.Context}
+	s.ReplaceContext(*ectx)
+	nodes := []parser.Node{s}
 	for i := 0; i < num.Value; i++ {
-		nodes = append(nodes, &parser.SetSysVarStatement{
+		ectx.Offset += 1
+		rs := &parser.SetSysVarStatement{
 			Name:    "$I",
 			Value:   &parser.NumberLiteral{Value: i, Context: stmt.Context},
-			Context: stmt.Context})
-		objs := e.expandReptBlock(stmt, env)
+			Context: stmt.Context}
+		rs.ReplaceContext(*ectx)
+		nodes = append(nodes, rs)
+		objs := e.expandReptBlock(stmt, env, ectx)
 		nodes = append(nodes, objs.(*object.NodesObject).Nodes...)
 	}
+	fmt.Printf("expanded rept %d\n", len(nodes))
 	mb := &parser.MacroBlockStatement{
 		Name:  "REPT",
 		Count: num.Value,

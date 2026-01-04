@@ -76,6 +76,7 @@ type Node interface {
 // 文
 type Statement interface {
 	Node
+	ReplaceContext(ctx fileblock.Context)
 	statementNode()
 }
 
@@ -96,6 +97,7 @@ func (p *Program) NodeType() NodeType { return NODE_PROGRAM }
 func (p *Program) String() string {
 	var lines []string
 	for _, s := range p.Statements {
+
 		lines = append(lines, s.String())
 	}
 	return strings.Join(lines, "\n")
@@ -107,7 +109,12 @@ type ParseError struct {
 	Context *fileblock.Context
 }
 
-func (s *ParseError) statementNode()     {}
+func (s *ParseError) statementNode() {}
+func (s *ParseError) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
+
 func (s *ParseError) expressionNode()    {}
 func (s *ParseError) NodeType() NodeType { return NODE_ERROR }
 func (s *ParseError) String() string {
@@ -124,7 +131,11 @@ type LabelStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *LabelStatement) statementNode()     {}
+func (s *LabelStatement) statementNode() {}
+func (s *LabelStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *LabelStatement) NodeType() NodeType { return NODE_LABEL_STMT }
 func (s *LabelStatement) String() string {
 	return s.Name.String() + ":"
@@ -137,7 +148,11 @@ type ProcStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ProcStatement) statementNode()     {}
+func (s *ProcStatement) statementNode() {}
+func (s *ProcStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *ProcStatement) NodeType() NodeType { return NODE_PROC_STMT }
 func (s *ProcStatement) String() string     { return fmt.Sprintf("PROC(%s)", s.Name) }
 
@@ -150,6 +165,10 @@ type ProcBlockStatement struct {
 
 func (s *ProcBlockStatement) statementNode()     {}
 func (s *ProcBlockStatement) NodeType() NodeType { return NODE_PROC_BLOCK_STMT }
+func (s *ProcBlockStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *ProcBlockStatement) String() string {
 	var out bytes.Buffer
 
@@ -170,7 +189,11 @@ type ExpressionStatement struct {
 
 func (s *ExpressionStatement) statementNode()     {}
 func (s *ExpressionStatement) NodeType() NodeType { return NODE_EXPR_STMT }
-func (s *ExpressionStatement) String() string     { return s.Value.String() }
+func (s *ExpressionStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
+func (s *ExpressionStatement) String() string { return s.Value.String() }
 
 // enum 定義文
 type EnumStatement struct {
@@ -181,6 +204,10 @@ type EnumStatement struct {
 
 func (s *EnumStatement) statementNode()     {}
 func (s *EnumStatement) NodeType() NodeType { return NODE_ENUM_STMT }
+func (s *EnumStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *EnumStatement) String() string {
 	var out bytes.Buffer
 
@@ -196,8 +223,9 @@ type EnumElements struct {
 	Elements []*EnumElement
 }
 
-func (s *EnumElements) statementNode()     {}
-func (s *EnumElements) NodeType() NodeType { return NODE_ENUM_ELEMENTS_STMT }
+func (s *EnumElements) statementNode()                       {}
+func (s *EnumElements) NodeType() NodeType                   { return NODE_ENUM_ELEMENTS_STMT }
+func (s *EnumElements) ReplaceContext(ctx fileblock.Context) {}
 func (s *EnumElements) String() string {
 	stmts := []string{}
 	for _, e := range s.Elements {
@@ -215,6 +243,10 @@ type EnumElement struct {
 
 func (s *EnumElement) statementNode()     {}
 func (s *EnumElement) NodeType() NodeType { return NODE_ENUM_ELEMENT }
+func (s *EnumElement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *EnumElement) String() string {
 	if s.Value == nil {
 		return s.Name
@@ -232,6 +264,10 @@ type ReptStatement struct {
 
 func (s *ReptStatement) statementNode()     {}
 func (s *ReptStatement) NodeType() NodeType { return NODE_REPT_STMT }
+func (s *ReptStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *ReptStatement) String() string {
 	var out bytes.Buffer
 
@@ -255,6 +291,10 @@ type SetSysVarStatement struct {
 
 func (s *SetSysVarStatement) statementNode()     {}
 func (s *SetSysVarStatement) NodeType() NodeType { return NODE_SET_SYSVAR_STMT }
+func (s *SetSysVarStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *SetSysVarStatement) String() string {
 	return fmt.Sprintf("SET_SYS_VAR(%s, %s)", s.Name, s.Value.String())
 }
@@ -269,6 +309,10 @@ type IfStatement struct {
 
 func (s *IfStatement) statementNode()     {}
 func (s *IfStatement) NodeType() NodeType { return NODE_IF_STMT }
+func (s *IfStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *IfStatement) String() string {
 	var out bytes.Buffer
 
@@ -305,6 +349,10 @@ type FuncStatement struct {
 
 func (s *FuncStatement) statementNode()     {}
 func (s *FuncStatement) NodeType() NodeType { return NODE_FUNC_STMT }
+func (s *FuncStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *FuncStatement) String() string {
 	var out bytes.Buffer
 
@@ -325,6 +373,10 @@ type MacroStatement struct {
 
 func (s *MacroStatement) statementNode()     {}
 func (s *MacroStatement) NodeType() NodeType { return NODE_MACRO_STMT }
+func (s *MacroStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *MacroStatement) String() string {
 	var out bytes.Buffer
 
@@ -344,6 +396,10 @@ type MacroCallStatement struct {
 
 func (s *MacroCallStatement) statementNode()     {}
 func (s *MacroCallStatement) NodeType() NodeType { return NODE_MACRO_CALL_STMT }
+func (s *MacroCallStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *MacroCallStatement) String() string {
 	args := []string{}
 	for _, arg := range s.Args.Expressions {
@@ -352,32 +408,14 @@ func (s *MacroCallStatement) String() string {
 	return fmt.Sprintf("MACRO %s CALL with %s", s.Name, strings.Join(args, ","))
 }
 
-// macro 呼出し Evaluator 内で変換
-type ExpandedMacroCallStatement struct {
-	Name    string
-	Params  []string
-	Args    *ExpressionList
-	Body    *BlockStatement
-	Context *fileblock.Context
-}
-
-func (s *ExpandedMacroCallStatement) statementNode()     {}
-func (s *ExpandedMacroCallStatement) NodeType() NodeType { return NODE_MACRO_CALL_STMT }
-func (s *ExpandedMacroCallStatement) String() string {
-	args := []string{}
-	for _, arg := range s.Args.Expressions {
-		args = append(args, arg.String())
-	}
-	return fmt.Sprintf("EXPANDED MACRO %s CALL with %s", s.Name, strings.Join(args, ","))
-}
-
 // block statement
 type BlockStatement struct {
 	Block []Node
 }
 
-func (s *BlockStatement) statementNode()     {}
-func (s *BlockStatement) NodeType() NodeType { return NODE_BLOCK_STMT }
+func (s *BlockStatement) statementNode()                       {}
+func (s *BlockStatement) NodeType() NodeType                   { return NODE_BLOCK_STMT }
+func (s *BlockStatement) ReplaceContext(ctx fileblock.Context) {}
 func (s *BlockStatement) String() string {
 	stmts := []string{}
 
@@ -398,6 +436,10 @@ type MacroBlockStatement struct {
 
 func (s *MacroBlockStatement) statementNode()     {}
 func (s *MacroBlockStatement) NodeType() NodeType { return NODE_MACRO_BLOCK_STMT }
+func (s *MacroBlockStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *MacroBlockStatement) String() string {
 	var out bytes.Buffer
 
@@ -419,6 +461,10 @@ type ConstStatement struct {
 
 func (s *ConstStatement) statementNode()     {}
 func (s *ConstStatement) NodeType() NodeType { return NODE_CONST_STMT }
+func (s *ConstStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *ConstStatement) String() string {
 	var out bytes.Buffer
 
@@ -439,6 +485,10 @@ type VariableStatement struct {
 
 func (s *VariableStatement) statementNode()     {}
 func (s *VariableStatement) NodeType() NodeType { return NODE_VAR_STMT }
+func (s *VariableStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *VariableStatement) String() string {
 	var out bytes.Buffer
 
@@ -459,6 +509,10 @@ type AssignStatement struct {
 
 func (s *AssignStatement) statementNode()     {}
 func (s *AssignStatement) NodeType() NodeType { return NODE_ASSIGN_STMT }
+func (s *AssignStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *AssignStatement) String() string {
 	var out bytes.Buffer
 
@@ -476,9 +530,13 @@ type ExitmStatement struct {
 
 func (s *ExitmStatement) statementNode()     {}
 func (s *ExitmStatement) NodeType() NodeType { return NODE_EXITM_STMT }
-func (s *ExitmStatement) String() string     { return "EXITM" }
+func (s *ExitmStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
+func (s *ExitmStatement) String() string { return "EXITM" }
 
-// Exitm 文
+// Return 文
 type ReturnStatement struct {
 	Value   Expression
 	Context *fileblock.Context
@@ -486,6 +544,10 @@ type ReturnStatement struct {
 
 func (s *ReturnStatement) statementNode()     {}
 func (s *ReturnStatement) NodeType() NodeType { return NODE_RETURN_STMT }
+func (s *ReturnStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *ReturnStatement) String() string {
 	str := "RETURN"
 	if s.Value != nil {
@@ -503,6 +565,10 @@ type DataStatement struct {
 
 func (s *DataStatement) statementNode()     {}
 func (s *DataStatement) NodeType() NodeType { return NODE_DATA_STMT }
+func (s *DataStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *DataStatement) String() string {
 	return fmt.Sprintf("DATA [size: %d, len: %d]", s.Size, len(s.Values))
 }
@@ -517,6 +583,10 @@ type DataStoreStatement struct {
 
 func (s *DataStoreStatement) statementNode()     {}
 func (s *DataStoreStatement) NodeType() NodeType { return NODE_DATA_STORE_STMT }
+func (s *DataStoreStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 func (s *DataStoreStatement) String() string {
 	var f string
 	if s.FillValue == nil {
@@ -540,6 +610,10 @@ type Z80Instruction struct {
 func (s *Z80Instruction) statementNode() {}
 func (s *Z80Instruction) NodeType() NodeType {
 	return NodeType(s.InstType)
+}
+func (s *Z80Instruction) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
 }
 func (s *Z80Instruction) String() string {
 	var out bytes.Buffer

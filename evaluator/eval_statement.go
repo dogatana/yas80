@@ -277,6 +277,8 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 				e.logger.Error(fmt.Sprintf(errcode.ESYM_DUP, name), node.Context)
 				return object.ERROR
 			}
+			// fmt.Printf("obj.Context %s\n", obj.Context.String())
+			// fmt.Printf("node.Context %s\n", node.Context.String())
 			// 同一シンボルなら更新
 		case *object.RefNotFoundObject:
 			// 未定で登録済なら更新
