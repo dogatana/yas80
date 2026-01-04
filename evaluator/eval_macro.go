@@ -206,7 +206,6 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env object.Env
 		objs := e.expandReptBlock(stmt, env, ectx)
 		nodes = append(nodes, objs.(*object.NodesObject).Nodes...)
 	}
-	fmt.Printf("expanded rept %d\n", len(nodes))
 	mb := &parser.MacroBlockStatement{
 		Name:  "REPT",
 		Count: num.Value,
