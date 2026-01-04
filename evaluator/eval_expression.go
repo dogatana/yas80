@@ -19,9 +19,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 	case *parser.StringLiteral:
 		return &object.StringObject{Value: node.Value, Context: ctx}
 	case *parser.RegisterLiteral:
-		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
+		return object.Z80RegisterFlagObjects[node.Register]
 	case *parser.FlagLiteral:
-		return object.Z80RegisterFlagObjects[int(node.NodeSubType())]
+		return object.Z80RegisterFlagObjects[node.Flag]
 
 	// 識別子
 	case *parser.Ident:

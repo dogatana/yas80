@@ -1,6 +1,7 @@
 package parser
 
 import (
+	// "bytes"
 	"bytes"
 	"fmt"
 	"strings"
@@ -63,14 +64,12 @@ const (
 )
 
 type NodeType int
-type NodeSubType int
 
 // interface
 
 // Node
 type Node interface {
 	NodeType() NodeType
-	NodeSubType() NodeSubType
 	String() string
 }
 
@@ -93,8 +92,7 @@ type Program struct {
 	Statements []Node
 }
 
-func (p *Program) NodeType() NodeType       { return NODE_PROGRAM }
-func (p *Program) NodeSubType() NodeSubType { return 0 }
+func (p *Program) NodeType() NodeType { return NODE_PROGRAM }
 func (p *Program) String() string {
 	var lines []string
 	for _, s := range p.Statements {
@@ -109,10 +107,9 @@ type ParseError struct {
 	Context *fileblock.Context
 }
 
-func (s *ParseError) statementNode()           {}
-func (s *ParseError) expressionNode()          {}
-func (s *ParseError) NodeType() NodeType       { return NODE_ERROR }
-func (s *ParseError) NodeSubType() NodeSubType { return 0 }
+func (s *ParseError) statementNode()     {}
+func (s *ParseError) expressionNode()    {}
+func (s *ParseError) NodeType() NodeType { return NODE_ERROR }
 func (s *ParseError) String() string {
 	if s.Context == nil {
 		return s.Message
@@ -127,9 +124,8 @@ type LabelStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *LabelStatement) statementNode()           {}
-func (s *LabelStatement) NodeType() NodeType       { return NODE_LABEL_STMT }
-func (s *LabelStatement) NodeSubType() NodeSubType { return 0 }
+func (s *LabelStatement) statementNode()     {}
+func (s *LabelStatement) NodeType() NodeType { return NODE_LABEL_STMT }
 func (s *LabelStatement) String() string {
 	return s.Name.String() + ":"
 }
@@ -141,10 +137,9 @@ type ProcStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ProcStatement) statementNode()           {}
-func (s *ProcStatement) NodeType() NodeType       { return NODE_PROC_STMT }
-func (s *ProcStatement) NodeSubType() NodeSubType { return 0 }
-func (s *ProcStatement) String() string           { return fmt.Sprintf("PROC(%s)", s.Name) }
+func (s *ProcStatement) statementNode()     {}
+func (s *ProcStatement) NodeType() NodeType { return NODE_PROC_STMT }
+func (s *ProcStatement) String() string     { return fmt.Sprintf("PROC(%s)", s.Name) }
 
 // Prock block statement
 type ProcBlockStatement struct {
@@ -153,9 +148,8 @@ type ProcBlockStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ProcBlockStatement) statementNode()           {}
-func (s *ProcBlockStatement) NodeType() NodeType       { return NODE_PROC_BLOCK_STMT }
-func (s *ProcBlockStatement) NodeSubType() NodeSubType { return 0 }
+func (s *ProcBlockStatement) statementNode()     {}
+func (s *ProcBlockStatement) NodeType() NodeType { return NODE_PROC_BLOCK_STMT }
 func (s *ProcBlockStatement) String() string {
 	var out bytes.Buffer
 
@@ -174,10 +168,9 @@ type ExpressionStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ExpressionStatement) statementNode()           {}
-func (s *ExpressionStatement) NodeType() NodeType       { return NODE_EXPR_STMT }
-func (s *ExpressionStatement) NodeSubType() NodeSubType { return 0 }
-func (s *ExpressionStatement) String() string           { return s.Value.String() }
+func (s *ExpressionStatement) statementNode()     {}
+func (s *ExpressionStatement) NodeType() NodeType { return NODE_EXPR_STMT }
+func (s *ExpressionStatement) String() string     { return s.Value.String() }
 
 // enum 定義文
 type EnumStatement struct {
@@ -186,9 +179,8 @@ type EnumStatement struct {
 	Context  *fileblock.Context
 }
 
-func (s *EnumStatement) statementNode()           {}
-func (s *EnumStatement) NodeType() NodeType       { return NODE_ENUM_STMT }
-func (s *EnumStatement) NodeSubType() NodeSubType { return 0 }
+func (s *EnumStatement) statementNode()     {}
+func (s *EnumStatement) NodeType() NodeType { return NODE_ENUM_STMT }
 func (s *EnumStatement) String() string {
 	var out bytes.Buffer
 
@@ -204,9 +196,8 @@ type EnumElements struct {
 	Elements []*EnumElement
 }
 
-func (s *EnumElements) statementNode()           {}
-func (s *EnumElements) NodeType() NodeType       { return NODE_ENUM_ELEMENTS_STMT }
-func (s *EnumElements) NodeSubType() NodeSubType { return 0 }
+func (s *EnumElements) statementNode()     {}
+func (s *EnumElements) NodeType() NodeType { return NODE_ENUM_ELEMENTS_STMT }
 func (s *EnumElements) String() string {
 	stmts := []string{}
 	for _, e := range s.Elements {
@@ -222,9 +213,8 @@ type EnumElement struct {
 	Context *fileblock.Context
 }
 
-func (s *EnumElement) statementNode()           {}
-func (s *EnumElement) NodeType() NodeType       { return NODE_ENUM_ELEMENT }
-func (s *EnumElement) NodeSubType() NodeSubType { return 0 }
+func (s *EnumElement) statementNode()     {}
+func (s *EnumElement) NodeType() NodeType { return NODE_ENUM_ELEMENT }
 func (s *EnumElement) String() string {
 	if s.Value == nil {
 		return s.Name
@@ -240,9 +230,8 @@ type ReptStatement struct {
 	Context  *fileblock.Context
 }
 
-func (s *ReptStatement) statementNode()           {}
-func (s *ReptStatement) NodeType() NodeType       { return NODE_REPT_STMT }
-func (s *ReptStatement) NodeSubType() NodeSubType { return 0 }
+func (s *ReptStatement) statementNode()     {}
+func (s *ReptStatement) NodeType() NodeType { return NODE_REPT_STMT }
 func (s *ReptStatement) String() string {
 	var out bytes.Buffer
 
@@ -264,9 +253,8 @@ type SetSysVarStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *SetSysVarStatement) statementNode()           {}
-func (s *SetSysVarStatement) NodeType() NodeType       { return NODE_SET_SYSVAR_STMT }
-func (s *SetSysVarStatement) NodeSubType() NodeSubType { return 0 }
+func (s *SetSysVarStatement) statementNode()     {}
+func (s *SetSysVarStatement) NodeType() NodeType { return NODE_SET_SYSVAR_STMT }
 func (s *SetSysVarStatement) String() string {
 	return fmt.Sprintf("SET_SYS_VAR(%s, %s)", s.Name, s.Value.String())
 }
@@ -279,9 +267,8 @@ type IfStatement struct {
 	Context     *fileblock.Context
 }
 
-func (s *IfStatement) statementNode()           {}
-func (s *IfStatement) NodeType() NodeType       { return NODE_IF_STMT }
-func (s *IfStatement) NodeSubType() NodeSubType { return 0 }
+func (s *IfStatement) statementNode()     {}
+func (s *IfStatement) NodeType() NodeType { return NODE_IF_STMT }
 func (s *IfStatement) String() string {
 	var out bytes.Buffer
 
@@ -316,9 +303,8 @@ type FuncStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *FuncStatement) statementNode()           {}
-func (s *FuncStatement) NodeType() NodeType       { return NODE_FUNC_STMT }
-func (s *FuncStatement) NodeSubType() NodeSubType { return 0 }
+func (s *FuncStatement) statementNode()     {}
+func (s *FuncStatement) NodeType() NodeType { return NODE_FUNC_STMT }
 func (s *FuncStatement) String() string {
 	var out bytes.Buffer
 
@@ -337,9 +323,8 @@ type MacroStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *MacroStatement) statementNode()           {}
-func (s *MacroStatement) NodeType() NodeType       { return NODE_MACRO_STMT }
-func (s *MacroStatement) NodeSubType() NodeSubType { return 0 }
+func (s *MacroStatement) statementNode()     {}
+func (s *MacroStatement) NodeType() NodeType { return NODE_MACRO_STMT }
 func (s *MacroStatement) String() string {
 	var out bytes.Buffer
 
@@ -357,9 +342,8 @@ type MacroCallStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *MacroCallStatement) statementNode()           {}
-func (s *MacroCallStatement) NodeType() NodeType       { return NODE_MACRO_CALL_STMT }
-func (s *MacroCallStatement) NodeSubType() NodeSubType { return 0 }
+func (s *MacroCallStatement) statementNode()     {}
+func (s *MacroCallStatement) NodeType() NodeType { return NODE_MACRO_CALL_STMT }
 func (s *MacroCallStatement) String() string {
 	args := []string{}
 	for _, arg := range s.Args.Expressions {
@@ -377,9 +361,8 @@ type ExpandedMacroCallStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ExpandedMacroCallStatement) statementNode()           {}
-func (s *ExpandedMacroCallStatement) NodeType() NodeType       { return NODE_MACRO_CALL_STMT }
-func (s *ExpandedMacroCallStatement) NodeSubType() NodeSubType { return 0 }
+func (s *ExpandedMacroCallStatement) statementNode()     {}
+func (s *ExpandedMacroCallStatement) NodeType() NodeType { return NODE_MACRO_CALL_STMT }
 func (s *ExpandedMacroCallStatement) String() string {
 	args := []string{}
 	for _, arg := range s.Args.Expressions {
@@ -393,9 +376,8 @@ type BlockStatement struct {
 	Block []Node
 }
 
-func (s *BlockStatement) statementNode()           {}
-func (s *BlockStatement) NodeType() NodeType       { return NODE_BLOCK_STMT }
-func (s *BlockStatement) NodeSubType() NodeSubType { return 0 }
+func (s *BlockStatement) statementNode()     {}
+func (s *BlockStatement) NodeType() NodeType { return NODE_BLOCK_STMT }
 func (s *BlockStatement) String() string {
 	stmts := []string{}
 
@@ -414,9 +396,8 @@ type MacroBlockStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *MacroBlockStatement) statementNode()           {}
-func (s *MacroBlockStatement) NodeType() NodeType       { return NODE_MACRO_BLOCK_STMT }
-func (s *MacroBlockStatement) NodeSubType() NodeSubType { return 0 }
+func (s *MacroBlockStatement) statementNode()     {}
+func (s *MacroBlockStatement) NodeType() NodeType { return NODE_MACRO_BLOCK_STMT }
 func (s *MacroBlockStatement) String() string {
 	var out bytes.Buffer
 
@@ -436,9 +417,8 @@ type ConstStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ConstStatement) statementNode()           {}
-func (s *ConstStatement) NodeType() NodeType       { return NODE_CONST_STMT }
-func (s *ConstStatement) NodeSubType() NodeSubType { return 0 }
+func (s *ConstStatement) statementNode()     {}
+func (s *ConstStatement) NodeType() NodeType { return NODE_CONST_STMT }
 func (s *ConstStatement) String() string {
 	var out bytes.Buffer
 
@@ -457,9 +437,8 @@ type VariableStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *VariableStatement) statementNode()           {}
-func (s *VariableStatement) NodeType() NodeType       { return NODE_VAR_STMT }
-func (s *VariableStatement) NodeSubType() NodeSubType { return 0 }
+func (s *VariableStatement) statementNode()     {}
+func (s *VariableStatement) NodeType() NodeType { return NODE_VAR_STMT }
 func (s *VariableStatement) String() string {
 	var out bytes.Buffer
 
@@ -478,9 +457,8 @@ type AssignStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *AssignStatement) statementNode()           {}
-func (s *AssignStatement) NodeType() NodeType       { return NODE_ASSIGN_STMT }
-func (s *AssignStatement) NodeSubType() NodeSubType { return 0 }
+func (s *AssignStatement) statementNode()     {}
+func (s *AssignStatement) NodeType() NodeType { return NODE_ASSIGN_STMT }
 func (s *AssignStatement) String() string {
 	var out bytes.Buffer
 
@@ -496,10 +474,9 @@ type ExitmStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ExitmStatement) statementNode()           {}
-func (s *ExitmStatement) NodeType() NodeType       { return NODE_EXITM_STMT }
-func (s *ExitmStatement) NodeSubType() NodeSubType { return 0 }
-func (s *ExitmStatement) String() string           { return "EXITM" }
+func (s *ExitmStatement) statementNode()     {}
+func (s *ExitmStatement) NodeType() NodeType { return NODE_EXITM_STMT }
+func (s *ExitmStatement) String() string     { return "EXITM" }
 
 // Exitm 文
 type ReturnStatement struct {
@@ -507,9 +484,8 @@ type ReturnStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ReturnStatement) statementNode()           {}
-func (s *ReturnStatement) NodeType() NodeType       { return NODE_RETURN_STMT }
-func (s *ReturnStatement) NodeSubType() NodeSubType { return 0 }
+func (s *ReturnStatement) statementNode()     {}
+func (s *ReturnStatement) NodeType() NodeType { return NODE_RETURN_STMT }
 func (s *ReturnStatement) String() string {
 	str := "RETURN"
 	if s.Value != nil {
@@ -525,9 +501,8 @@ type DataStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *DataStatement) statementNode()           {}
-func (s *DataStatement) NodeType() NodeType       { return NODE_DATA_STMT }
-func (s *DataStatement) NodeSubType() NodeSubType { return 0 }
+func (s *DataStatement) statementNode()     {}
+func (s *DataStatement) NodeType() NodeType { return NODE_DATA_STMT }
 func (s *DataStatement) String() string {
 	return fmt.Sprintf("DATA [size: %d, len: %d]", s.Size, len(s.Values))
 }
@@ -540,9 +515,8 @@ type DataStoreStatement struct {
 	Context   *fileblock.Context
 }
 
-func (s *DataStoreStatement) statementNode()           {}
-func (s *DataStoreStatement) NodeType() NodeType       { return NODE_DATA_STORE_STMT }
-func (s *DataStoreStatement) NodeSubType() NodeSubType { return 0 }
+func (s *DataStoreStatement) statementNode()     {}
+func (s *DataStoreStatement) NodeType() NodeType { return NODE_DATA_STORE_STMT }
 func (s *DataStoreStatement) String() string {
 	var f string
 	if s.FillValue == nil {
@@ -566,9 +540,6 @@ type Z80Instruction struct {
 func (s *Z80Instruction) statementNode() {}
 func (s *Z80Instruction) NodeType() NodeType {
 	return NodeType(s.InstType)
-}
-func (s *Z80Instruction) NodeSubType() NodeSubType {
-	return NodeSubType(s.Opcode)
 }
 func (s *Z80Instruction) String() string {
 	var out bytes.Buffer
@@ -596,15 +567,14 @@ func (s *Z80Instruction) String() string {
 
 // ラベル
 type Label struct {
-	LabelType NodeSubType
+	LabelType int
 	Name      string
 	Context   *fileblock.Context
 }
 
-func (e *Label) expressionNode()          {}
-func (e *Label) NodeType() NodeType       { return NODE_LABEL }
-func (e *Label) NodeSubType() NodeSubType { return e.LabelType }
-func (e *Label) String() string           { return e.Name }
+func (e *Label) expressionNode()    {}
+func (e *Label) NodeType() NodeType { return NODE_LABEL }
+func (e *Label) String() string     { return e.Name }
 
 // 数値
 type NumberLiteral struct {
@@ -612,9 +582,8 @@ type NumberLiteral struct {
 	Context *fileblock.Context
 }
 
-func (e *NumberLiteral) expressionNode()          {}
-func (e *NumberLiteral) NodeType() NodeType       { return NODE_NUMBER }
-func (e *NumberLiteral) NodeSubType() NodeSubType { return 0 }
+func (e *NumberLiteral) expressionNode()    {}
+func (e *NumberLiteral) NodeType() NodeType { return NODE_NUMBER }
 func (e *NumberLiteral) String() string {
 	return fmt.Sprintf("%d", e.Value)
 }
@@ -625,9 +594,8 @@ type StringLiteral struct {
 	Context *fileblock.Context
 }
 
-func (e *StringLiteral) expressionNode()          {}
-func (e *StringLiteral) NodeType() NodeType       { return NODE_STRING }
-func (e *StringLiteral) NodeSubType() NodeSubType { return 0 }
+func (e *StringLiteral) expressionNode()    {}
+func (e *StringLiteral) NodeType() NodeType { return NODE_STRING }
 func (e *StringLiteral) String() string {
 	return fmt.Sprintf("%q", e.Value)
 }
@@ -638,9 +606,8 @@ type ArrayLiteral struct {
 	Context  *fileblock.Context
 }
 
-func (e *ArrayLiteral) expressionNode()          {}
-func (e *ArrayLiteral) NodeType() NodeType       { return NODE_ARRAY }
-func (e *ArrayLiteral) NodeSubType() NodeSubType { return 0 }
+func (e *ArrayLiteral) expressionNode()    {}
+func (e *ArrayLiteral) NodeType() NodeType { return NODE_ARRAY }
 func (e *ArrayLiteral) String() string {
 	elems := []string{}
 
@@ -657,9 +624,8 @@ type IndexedExpression struct {
 	Context *fileblock.Context
 }
 
-func (e *IndexedExpression) expressionNode()          {}
-func (e *IndexedExpression) NodeType() NodeType       { return NODE_INDEXED_EXPR }
-func (e *IndexedExpression) NodeSubType() NodeSubType { return 0 }
+func (e *IndexedExpression) expressionNode()    {}
+func (e *IndexedExpression) NodeType() NodeType { return NODE_INDEXED_EXPR }
 func (e *IndexedExpression) String() string {
 	var out bytes.Buffer
 
@@ -680,9 +646,8 @@ type RegisterLiteral struct {
 	Context      *fileblock.Context
 }
 
-func (e *RegisterLiteral) expressionNode()          {}
-func (e *RegisterLiteral) NodeType() NodeType       { return NodeType(e.RegisterType) }
-func (e *RegisterLiteral) NodeSubType() NodeSubType { return NodeSubType(e.Register) }
+func (e *RegisterLiteral) expressionNode()    {}
+func (e *RegisterLiteral) NodeType() NodeType { return NodeType(e.RegisterType) }
 func (e *RegisterLiteral) String() string {
 	return Z80Opcode2Name(e.Register)
 }
@@ -693,9 +658,8 @@ type FlagLiteral struct {
 	Context *fileblock.Context
 }
 
-func (e *FlagLiteral) expressionNode()          {}
-func (e *FlagLiteral) NodeType() NodeType       { return Z80_FLAG }
-func (e *FlagLiteral) NodeSubType() NodeSubType { return NodeSubType(e.Flag) }
+func (e *FlagLiteral) expressionNode()    {}
+func (e *FlagLiteral) NodeType() NodeType { return Z80_FLAG }
 func (e *FlagLiteral) String() string {
 	return Z80Opcode2Name(e.Flag)
 }
@@ -708,10 +672,9 @@ type Ident struct {
 	Context   *fileblock.Context
 }
 
-func (e *Ident) expressionNode()          {}
-func (e *Ident) NodeType() NodeType       { return NODE_IDENT }
-func (e *Ident) NodeSubType() NodeSubType { return NodeSubType(e.IdentType) }
-func (e *Ident) String() string           { return e.Name }
+func (e *Ident) expressionNode()    {}
+func (e *Ident) NodeType() NodeType { return NODE_IDENT }
+func (e *Ident) String() string     { return e.Name }
 
 // ドット識別子
 type DotIdent struct {
@@ -722,19 +685,17 @@ type DotIdent struct {
 	Context *fileblock.Context
 }
 
-func (e *DotIdent) expressionNode()          {}
-func (e *DotIdent) NodeType() NodeType       { return NODE_DOT_IDENT }
-func (e *DotIdent) NodeSubType() NodeSubType { return 0 }
-func (e *DotIdent) String() string           { return e.Name }
+func (e *DotIdent) expressionNode()    {}
+func (e *DotIdent) NodeType() NodeType { return NODE_DOT_IDENT }
+func (e *DotIdent) String() string     { return e.Name }
 
 // 間接指定
 type IndirectExpression struct {
 	Expression Expression
 }
 
-func (e *IndirectExpression) expressionNode()          {}
-func (e *IndirectExpression) NodeType() NodeType       { return NODE_INDIRECT }
-func (e *IndirectExpression) NodeSubType() NodeSubType { return 0 }
+func (e *IndirectExpression) expressionNode()    {}
+func (e *IndirectExpression) NodeType() NodeType { return NODE_INDIRECT }
 func (e *IndirectExpression) String() string {
 	expr := trimParen(e.Expression.String())
 	return "(" + expr + ")"
@@ -748,9 +709,8 @@ type InfixExpression struct {
 	Context  *fileblock.Context
 }
 
-func (e *InfixExpression) expressionNode()          {}
-func (e *InfixExpression) NodeType() NodeType       { return NODE_INFIX_EXPR }
-func (e *InfixExpression) NodeSubType() NodeSubType { return NodeSubType(e.Operator) }
+func (e *InfixExpression) expressionNode()    {}
+func (e *InfixExpression) NodeType() NodeType { return NODE_INFIX_EXPR }
 func (e *InfixExpression) String() string {
 	var op1, op2 string
 	if e.Op1 == nil {
@@ -779,9 +739,8 @@ type PrefixExpression struct {
 	Context  *fileblock.Context
 }
 
-func (e *PrefixExpression) expressionNode()          {}
-func (e *PrefixExpression) NodeType() NodeType       { return NodeType(NODE_PREFIX_EXPR) }
-func (e *PrefixExpression) NodeSubType() NodeSubType { return NodeSubType(e.Operator) }
+func (e *PrefixExpression) expressionNode()    {}
+func (e *PrefixExpression) NodeType() NodeType { return NodeType(NODE_PREFIX_EXPR) }
 func (e *PrefixExpression) String() string {
 	var op string
 	if e.Op == nil {
@@ -800,9 +759,8 @@ type FuncCallExpression struct {
 	Context   *fileblock.Context
 }
 
-func (e *FuncCallExpression) expressionNode()          {}
-func (e *FuncCallExpression) NodeType() NodeType       { return NODE_CALL }
-func (e *FuncCallExpression) NodeSubType() NodeSubType { return 0 }
+func (e *FuncCallExpression) expressionNode()    {}
+func (e *FuncCallExpression) NodeType() NodeType { return NODE_CALL }
 func (e *FuncCallExpression) String() string {
 	var out bytes.Buffer
 
@@ -818,9 +776,8 @@ type ExpressionList struct {
 	Expressions []Expression
 }
 
-func (e *ExpressionList) expressionNode()          {}
-func (e *ExpressionList) NodeType() NodeType       { return NODE_EXPR_LIST }
-func (e *ExpressionList) NodeSubType() NodeSubType { return 0 }
+func (e *ExpressionList) expressionNode()    {}
+func (e *ExpressionList) NodeType() NodeType { return NODE_EXPR_LIST }
 func (e *ExpressionList) String() string {
 	list := []string{}
 

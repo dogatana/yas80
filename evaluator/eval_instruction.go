@@ -41,8 +41,13 @@ func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ object.Environmen
 	}
 	// RET cc
 	index := -1
-	if op1.NodeType() == parser.Z80_FLAG || op1.NodeType() == parser.Z80_REG8 {
-		index = int(op1.NodeSubType())
+	switch op1 := op1.(type) {
+	case *parser.FlagLiteral:
+		index = op1.Flag
+	case *parser.RegisterLiteral: // lexer で C はレジスタとなるため
+		index = op1.Register
+	default:
+		panic(errcode.ESYSTEM)
 	}
 	flag, ok := Z80FlagIndex[index]
 	if !ok {
@@ -54,7 +59,7 @@ func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ object.Environmen
 }
 
 func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env object.Environment) object.Object {
-	switch node.NodeSubType() {
+	switch node.Opcode {
 	case parser.Z80_INST_LD:
 		return e.evalZ80LD(node, env)
 	default:
