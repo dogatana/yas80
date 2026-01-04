@@ -135,25 +135,25 @@ LINE_CONT:
 		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '*' || l.lctx.curChar == '/':
-		// MULDIV
+		// MULDIV（%は数値リテラルとの識別のため別処理）
 		ch := l.lctx.curChar
 		l.nextChar()
 		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 
-	case l.isTowCharTokenStart(l.lctx.curChar):
+	case twoCharTokenChars[l.lctx.curChar]:
 		// 2 文字トークン
 		tok := l.checkTwoCharToken(l.lctx.curChar)
 		tok.Context = l.lctx.toContext(l.start)
 		return tok
 
-	case l.isOneCharToken(l.lctx.curChar):
+	case oneCharTokenChars[l.lctx.curChar]:
 		// 1文字トークン
 		ch = l.lctx.curChar
 		l.nextChar()
 		return Token{TokenType: TokenType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '~':
-		// 単項演算子
+		// 単項演算子（ここでは ~ のみ。'!', '-' はパーサ側で判定
 		ch = l.lctx.curChar
 		l.nextChar()
 		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
@@ -242,7 +242,7 @@ LINE_CONT:
 		}
 		l.nextChar()
 		// AF’の対処
-		if len(literal) == 2 && l.lctx.curChar == '\'' {
+		if strings.ToUpper(literal) == "AF" && l.lctx.curChar == '\'' {
 			literal += "'"
 			l.nextChar()
 		}
@@ -281,9 +281,25 @@ LINE_CONT:
 	}
 }
 
-// 2文字トークンの最初の文字か
-func (l *Lexer) isTowCharTokenStart(c rune) bool {
-	return c == '=' || c == '<' || c == '>' || c == '!' || c == '|' || c == '&' || c == '#'
+// 1 文字トークン
+var oneCharTokenChars = map[rune]bool{
+	'(': true,
+	')': true,
+	',': true,
+	':': true,
+	'[': true,
+	']': true,
+}
+
+// 2文字トークンの最初の文字
+var twoCharTokenChars = map[rune]bool{
+	'=': true,
+	'<': true,
+	'>': true,
+	'!': true,
+	'|': true,
+	'&': true,
+	'#': true,
 }
 
 // 2文字トークンのチェック
@@ -365,7 +381,7 @@ func (l *Lexer) skipWhitespace() {
 }
 
 func (l *Lexer) readString(quote rune) string {
-	escapes := map[rune]rune{
+	escapeChars := map[rune]rune{
 		'\'': '\'',
 		'"':  '"',
 		'\\': '\\',
@@ -397,7 +413,7 @@ func (l *Lexer) readString(quote rune) string {
 			break
 		}
 		if ch == '\\' {
-			ec, ok := escapes[l.peekChar()]
+			ec, ok := escapeChars[l.peekChar()]
 			if ok {
 				ch = ec
 				l.nextChar()
@@ -488,10 +504,6 @@ func (l *Lexer) isAlpha(ch rune) bool {
 
 func (l *Lexer) isWordChar(ch rune) bool {
 	return l.isDigit(ch) || l.isAlpha(ch)
-}
-
-func (l *Lexer) isOneCharToken(ch rune) bool {
-	return ch == '(' || ch == ')' || ch == ',' || ch == ':' || ch == '[' || ch == ']'
 }
 
 func (l *Lexer) charSize(ch byte) int {
