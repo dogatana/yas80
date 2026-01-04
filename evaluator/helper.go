@@ -240,5 +240,6 @@ func (e *Evaluator) exprToLabel(expr parser.Expression, env object.Environment, 
 		return object.ERROR
 	}
 	label := e.identToLabel(id)
+	label.Context = ctx
 	return e.evalLabel(label, env)
 }
