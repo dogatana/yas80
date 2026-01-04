@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"testing"
+	"yas80/errcode"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -92,22 +93,28 @@ func TestMacroIf(t *testing.T) {
 	}
 }
 
-func TestMacroIfExitmLocal(t *testing.T) {
+func TestMacroConst(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
+		syms  []symValue
+		err   string
 	}{
 		{
-			`test macro arg \ if arg == 0 \ const @abc = arg \ elif arg == 1 \ const @abc = arg * 16 \ else \ const @abc = arg * 256\ endif \ ld hl, @abc \ endm \ test 0`,
-			[]byte{0x21, 0x00, 0x00},
+			input: `test macro\ const abc = 123 \ endm \ test`,
+			syms:  []symValue{{"ABC", 123}},
 		},
 		{
-			`test macro arg \ if arg == 0 \ const @abc = arg \ elif arg == 1 \ const @abc = arg * 16 \ else \ const @abc = arg * 256\ endif \ ld hl, @abc \ endm \ test 1`,
-			[]byte{0x21, 0x10, 0x00}, // ld hl, 16
+			input: `test macro\ const abc = 123 \ endm \ test \ test`,
+			err:   errcode.ESYM_DUP,
 		},
 		{
-			`test macro arg \ if arg == 0 \ const @abc = arg \ elif arg == 1 \ const @abc = arg * 16 \ else \ const @abc = arg * 256\ endif \ ld hl, @abc \ endm \ test 2`,
-			[]byte{0x21, 0x00, 0x02}, // ld hl, 512
+			input: `test macro\ const @abc = 123 \ endm \ test \ test`,
+			syms:  []symValue{{"__1_TEST@ABC", 123}, {"__2_TEST@ABC", 123}},
+		},
+		{
+			input: `test macro arg \ if arg == 0 \ const @abc = arg \ elif arg == 1 \ const @abc = arg * 16 \ else \ const @abc = arg * 256\ endif \ ld hl, @abc \ endm \ test 0 \ test 1 \ test 2`,
+			code:  []byte{0x21, 0x00, 0x00, 0x21, 0x10, 0x00, 0x21, 0x00, 0x02},
 		},
 	}
 
@@ -117,11 +124,155 @@ func TestMacroIfExitmLocal(t *testing.T) {
 		}
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
-		input := tt.input
+		prog, e := evalInput(tt.input, logger, env)
 
-		prog, e := evalInput(input, logger, env)
-		testEvalResult(t, tn, "", e)
+		testEvalResult(t, tn, tt.err, e)
 
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
 		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestMacroLabel(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{
+			input: `test macro\ nop \ abc: \ ret \ endm \ test`,
+			code:  []byte{0, 0xc9},
+			syms:  []symValue{{"ABC", 1}},
+		},
+		{
+			input: `test macro\ nop \ abc: \ ret \ endm \ test \ test`,
+			err:   errcode.ELABEL_DUP,
+		},
+		{
+			input: `test macro\ nop \ abc: ret \ endm \ test \ test`,
+			err:   errcode.ELABEL_DUP,
+		},
+		{
+			input: `test macro arg\if arg==0\const abc=0\else\const abc=$1234\endif\ld hl, abc\endm\ test 0`,
+			code:  []byte{0x21, 0x00, 0x00},
+			syms:  []symValue{{"ABC", 0}},
+		},
+		{
+			input: `test macro arg\if arg==0\const abc=0\else\const abc=$1234\endif\ld hl, abc\endm\ test 1`,
+			code:  []byte{0x21, 0x34, 0x12},
+			syms:  []symValue{{"ABC", 0x1234}},
+		},
+		{
+			input: `test macro\ nop \ @abc: \ ret \ endm \ test \ test`,
+			code:  []byte{0, 0xc9, 0, 0xc9},
+			syms: []symValue{
+				{"__1_TEST@ABC", 1},
+				{"__2_TEST@ABC", 3},
+			},
+		},
+		{
+			input: `test macro\ nop \ @abc: ret \ endm \ test \ test`,
+			code:  []byte{0, 0xc9, 0, 0xc9},
+			syms: []symValue{
+				{"__1_TEST@ABC", 1},
+				{"__2_TEST@ABC", 3},
+			},
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestMacroData(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{
+			input: `test macro\ nop \ abc db 1 \ endm \ test`,
+			code:  []byte{0, 1},
+			syms:  []symValue{{"ABC", 1}},
+		},
+		{
+			input: `test macro\ nop \ abc db 1 \ endm \ test \ test`,
+			err:   errcode.ELABEL_DUP,
+		},
+		{
+			input: `test macro\ nop \ abc db 1 \ endm \ test \ test`,
+			err:   errcode.ELABEL_DUP,
+		},
+		{
+			input: `test macro\ nop \ @abc ds 1, 255 \ endm \ test \ test`,
+			code:  []byte{0, 0xff, 0, 0xff},
+			syms: []symValue{
+				{"__1_TEST@ABC", 1},
+				{"__2_TEST@ABC", 3},
+			},
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
 	}
 }
