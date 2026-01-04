@@ -133,9 +133,9 @@ func TestLexCurCharAndPeekChar(t *testing.T) {
 
 	l := newLexerForTest(input)
 
-	for i := 0; l.ctx.curChar != ' '; i++ {
-		if l.ctx.curChar != expected[i] {
-			t.Errorf("[%d] curChar is not %c, got %c", i, expected[i], l.ctx.curChar)
+	for i := 0; l.lctx.curChar != ' '; i++ {
+		if l.lctx.curChar != expected[i] {
+			t.Errorf("[%d] curChar is not %c, got %c", i, expected[i], l.lctx.curChar)
 		}
 		ch := l.peekChar()
 		if ch != expected[i+1] {

@@ -29,13 +29,13 @@ type Lexer struct {
 	start   int // token 開始 index
 	logger  *logging.Logger
 	program *Program
-	ctx     *LexerContext
+	lctx    *LexerContext
 	//	callback FileBlockProvider
 }
 
 func NewLexer(fb *fileblock.FileBlock, logger *logging.Logger) *Lexer {
-	ctx := &LexerContext{filename: fb.Filename, lineNumber: 1, fileBlock: fb}
-	l := &Lexer{logger: logger, program: &Program{}, ctx: ctx}
+	lctx := &LexerContext{filename: fb.Filename, lineNumber: 1, fileBlock: fb}
+	l := &Lexer{logger: logger, program: &Program{}, lctx: lctx}
 	l.nextChar()
 	return l
 }
@@ -89,148 +89,148 @@ func (l *Lexer) NextToken() Token {
 LINE_CONT:
 	// 空白をスキップ
 	l.skipWhitespace()
-	l.start = l.ctx.index - 1
+	l.start = l.lctx.index - 1
 
 	// var tokType int
 	switch {
-	case l.ctx.curChar == EOF:
+	case l.lctx.curChar == EOF:
 		// EOF
-		return Token{TokenType: 0, Literal: "[EOF]", Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: 0, Literal: "[EOF]", Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == ';':
+	case l.lctx.curChar == ';':
 		// コメント
-		for l.ctx.curChar != '\n' && l.ctx.curChar != EOF {
+		for l.lctx.curChar != '\n' && l.lctx.curChar != EOF {
 			l.nextChar()
 		}
 		l.nextChar()
-		return Token{TokenType: EOL, Literal: "\\n", Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: EOL, Literal: "\\n", Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '\\' && l.peekChar() == '\n':
+	case l.lctx.curChar == '\\' && l.peekChar() == '\n':
 		// 行継続
 		l.nextChar()
 		l.nextChar()
 		goto LINE_CONT
 
-	case l.ctx.curChar == '\\':
+	case l.lctx.curChar == '\\':
 		// マルチステートメント
-		tok := Token{TokenType: EOL, Literal: "\\", Context: l.ctx.toContext(l.start)}
+		tok := Token{TokenType: EOL, Literal: "\\", Context: l.lctx.toContext(l.start)}
 		l.nextChar()
 		return tok
 
-	case l.ctx.curChar == '\n':
+	case l.lctx.curChar == '\n':
 		// EOL
 		l.nextChar()
-		return Token{TokenType: EOL, Literal: "\\n", Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: EOL, Literal: "\\n", Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '"' || l.ctx.curChar == '\'':
+	case l.lctx.curChar == '"' || l.lctx.curChar == '\'':
 		// 文字列リテラル
-		s := l.readString(l.ctx.curChar)
+		s := l.readString(l.lctx.curChar)
 		l.nextChar()
-		return Token{TokenType: STRING, Literal: s, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: STRING, Literal: s, Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '+' || l.ctx.curChar == '-' || l.ctx.curChar == '^':
+	case l.lctx.curChar == '+' || l.lctx.curChar == '-' || l.lctx.curChar == '^':
 		// ADDSUB
-		ch := l.ctx.curChar
+		ch := l.lctx.curChar
 		l.nextChar()
-		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '*' || l.ctx.curChar == '/':
+	case l.lctx.curChar == '*' || l.lctx.curChar == '/':
 		// MULDIV
-		ch := l.ctx.curChar
+		ch := l.lctx.curChar
 		l.nextChar()
-		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 
-	case l.isTowCharTokenStart(l.ctx.curChar):
+	case l.isTowCharTokenStart(l.lctx.curChar):
 		// 2 文字トークン
-		tok := l.checkTwoCharToken(l.ctx.curChar)
-		tok.Context = l.ctx.toContext(l.start)
+		tok := l.checkTwoCharToken(l.lctx.curChar)
+		tok.Context = l.lctx.toContext(l.start)
 		return tok
 
-	case l.isOneCharToken(l.ctx.curChar):
+	case l.isOneCharToken(l.lctx.curChar):
 		// 1文字トークン
-		ch = l.ctx.curChar
+		ch = l.lctx.curChar
 		l.nextChar()
-		return Token{TokenType: TokenType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: TokenType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '~':
+	case l.lctx.curChar == '~':
 		// 単項演算子
-		ch = l.ctx.curChar
+		ch = l.lctx.curChar
 		l.nextChar()
-		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '$' && l.isXDigit(l.peekChar()):
+	case l.lctx.curChar == '$' && l.isXDigit(l.peekChar()):
 		// 16進数リテラル($)
 		l.nextChar()
 		literal = "$" + l.readHexString()
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '$' && l.isWordChar(l.peekChar()):
+	case l.lctx.curChar == '$' && l.isWordChar(l.peekChar()):
 		// システム識別子($)
 		l.nextChar()
 		literal = "$" + l.readWord()
 		l.nextChar()
-		return Token{TokenType: IDENT, Literal: literal, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '$':
+	case l.lctx.curChar == '$':
 		// $ ローケーションカウンタ
-		tok := Token{TokenType: IDENT, Literal: "$", Context: l.ctx.toContext(l.start)}
+		tok := Token{TokenType: IDENT, Literal: "$", Context: l.lctx.toContext(l.start)}
 		l.nextChar()
 		return tok
 
-	case l.ctx.curChar == '%' && l.isBinDigit(l.peekChar()):
+	case l.lctx.curChar == '%' && l.isBinDigit(l.peekChar()):
 		// 2進数リテラル(%)
 		l.nextChar()
 		literal = "%" + l.readBinString()
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '%':
+	case l.lctx.curChar == '%':
 		// % 演算子
-		ch := l.ctx.curChar
+		ch := l.lctx.curChar
 		l.nextChar()
-		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
+	case l.lctx.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
 		// 16進数リテラル(0x)
 		l.nextChar() // '0'をスキップ
-		literal = "0" + string(l.ctx.curChar)
+		literal = "0" + string(l.lctx.curChar)
 		l.nextChar() // 'x'または'X'をスキップ
 		literal += l.readHexString()
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '0' && (l.peekChar() == 'b' || l.peekChar() == 'B'):
+	case l.lctx.curChar == '0' && (l.peekChar() == 'b' || l.peekChar() == 'B'):
 		// 2数リテラル(0b)
 		l.nextChar() // '0'をスキップ
-		literal = "0" + string(l.ctx.curChar)
+		literal = "0" + string(l.lctx.curChar)
 		l.nextChar() // 'b'または'B'をスキップ
 		literal += l.readBinString()
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '0' && (l.peekChar() == 'o' || l.peekChar() == 'O'):
+	case l.lctx.curChar == '0' && (l.peekChar() == 'o' || l.peekChar() == 'O'):
 		// 8数リテラル(0o)
 		l.nextChar() // '0'をスキップ
-		literal = "0" + string(l.ctx.curChar)
+		literal = "0" + string(l.lctx.curChar)
 		l.nextChar() // 'o'または'O'をスキップ
 		literal += l.readOctString()
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 
-	case l.isDigit(l.ctx.curChar):
+	case l.isDigit(l.lctx.curChar):
 		// 10進リテラル, 16進リテラル（末尾 h）
 		literal = l.readHexString()
 		l.nextChar()
-		ch := l.ctx.curChar
+		ch := l.lctx.curChar
 		if l.isHexString(literal) && (ch == 'h' || ch == 'H') {
 			literal += string(ch)
 			l.nextChar()
-			return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+			return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 		}
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 
-	case l.isAlpha(l.ctx.curChar):
+	case l.isAlpha(l.lctx.curChar):
 		// IDENT, DOT_IDENT, 予約語
 		literal = l.readWord()
 		if l.peekChar() == '.' {
@@ -238,46 +238,46 @@ LINE_CONT:
 			l.nextChar()
 			literal += l.readWord()
 			l.nextChar()
-			return Token{TokenType: DOT_IDENT, Literal: literal, Context: l.ctx.toContext(l.start)}
+			return Token{TokenType: DOT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 		}
 		l.nextChar()
 		// AF’の対処
-		if len(literal) == 2 && l.ctx.curChar == '\'' {
+		if len(literal) == 2 && l.lctx.curChar == '\'' {
 			literal += "'"
 			l.nextChar()
 		}
 		// z80 予約語
 		tok, ok := z80ReservedWords[strings.ToUpper(literal)]
 		if ok {
-			tok.Context = l.ctx.toContext(l.start)
+			tok.Context = l.lctx.toContext(l.start)
 			return tok
 		}
 		// yas80 予約語
 		tok, ok = reservedWords[strings.ToUpper(literal)]
 		if ok {
-			tok.Context = l.ctx.toContext(l.start)
+			tok.Context = l.lctx.toContext(l.start)
 			return tok
 		}
 		// これ以外は IDENT
-		return Token{TokenType: IDENT, Literal: literal, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 
-	case l.ctx.curChar == '@' || l.ctx.curChar == '.':
+	case l.lctx.curChar == '@' || l.lctx.curChar == '.':
 		// AT_IDENT, LOCAL_IDENT
-		prefix := l.ctx.curChar
-		literal = string(l.ctx.curChar)
+		prefix := l.lctx.curChar
+		literal = string(l.lctx.curChar)
 		l.nextChar()
 		literal += l.readWord()
 		l.nextChar()
 		if prefix == '@' {
-			return Token{TokenType: AT_IDENT, Literal: literal, Context: l.ctx.toContext(l.start)}
+			return Token{TokenType: AT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 		} else {
-			return Token{TokenType: LOCAL_IDENT, Literal: literal, Context: l.ctx.toContext(l.start)}
+			return Token{TokenType: LOCAL_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 		}
 
 	default:
-		literal = string(l.ctx.curChar)
+		literal = string(l.lctx.curChar)
 		l.nextChar()
-		return Token{TokenType: INVALID, Literal: literal, Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: INVALID, Literal: literal, Context: l.lctx.toContext(l.start)}
 	}
 }
 
@@ -295,34 +295,34 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 	switch {
 	// COMP
 	case ch1 == '<' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: LE, Literal: "<=", Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: COMP, TokenSubType: LE, Literal: "<=", Context: l.lctx.toContext(l.start)}
 	case ch1 == '<' && ch2 == '<':
-		tok = Token{TokenType: SHIFT, TokenSubType: SL, Literal: "<<", Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: SHIFT, TokenSubType: SL, Literal: "<<", Context: l.lctx.toContext(l.start)}
 	case ch1 == '>' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: GE, Literal: ">=", Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: COMP, TokenSubType: GE, Literal: ">=", Context: l.lctx.toContext(l.start)}
 	case ch1 == '>' && ch2 == '>':
-		tok = Token{TokenType: SHIFT, TokenSubType: SR, Literal: ">>", Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: SHIFT, TokenSubType: SR, Literal: ">>", Context: l.lctx.toContext(l.start)}
 	case ch1 == '<' || ch1 == '>':
-		tok = Token{TokenType: COMP, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: COMP, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Context: l.lctx.toContext(l.start)}
 	case ch1 == '=' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: EQ, Literal: "==", Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: COMP, TokenSubType: EQ, Literal: "==", Context: l.lctx.toContext(l.start)}
 	case ch1 == '!' && ch2 == '=':
-		tok = Token{TokenType: COMP, TokenSubType: NEQ, Literal: "!=", Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: COMP, TokenSubType: NEQ, Literal: "!=", Context: l.lctx.toContext(l.start)}
 	case ch1 == '!':
-		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Context: l.lctx.toContext(l.start)}
 	case ch1 == '&' && ch2 == '&':
-		tok = Token{TokenType: AND, TokenSubType: 0, Literal: "&&", Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: AND, TokenSubType: 0, Literal: "&&", Context: l.lctx.toContext(l.start)}
 	case ch1 == '&':
-		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Context: l.lctx.toContext(l.start)}
 	case ch1 == '|' && ch2 == '|':
-		tok = Token{TokenType: OR, TokenSubType: 0, Literal: "||", Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: OR, TokenSubType: 0, Literal: "||", Context: l.lctx.toContext(l.start)}
 	case ch1 == '|':
-		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch1), Literal: string(ch1), Context: l.lctx.toContext(l.start)}
 	case ch1 == '#' && ch2 == '#':
-		tok = Token{TokenType: CONCAT, TokenSubType: 0, Literal: "##", Context: l.ctx.toContext(l.start)}
+		tok = Token{TokenType: CONCAT, TokenSubType: 0, Literal: "##", Context: l.lctx.toContext(l.start)}
 	default:
 		// 1文字トークンを返す
-		return Token{TokenType: TokenType(ch1), Literal: string(rune(ch1)), Context: l.ctx.toContext(l.start)}
+		return Token{TokenType: TokenType(ch1), Literal: string(rune(ch1)), Context: l.lctx.toContext(l.start)}
 	}
 	l.nextChar()
 	return tok
@@ -330,36 +330,36 @@ func (l *Lexer) checkTwoCharToken(ch1 rune) Token {
 
 func (l *Lexer) nextChar() {
 	if l.isEOF {
-		l.ctx.curChar = EOF
+		l.lctx.curChar = EOF
 		return
 	}
-	if l.ctx.index >= len(l.ctx.fileBlock.Content) {
-		if l.ctx.curChar != '\n' {
-			l.ctx.curChar = '\n'
+	if l.lctx.index >= len(l.lctx.fileBlock.Content) {
+		if l.lctx.curChar != '\n' {
+			l.lctx.curChar = '\n'
 			return
 		}
-		l.ctx.curChar = EOF
+		l.lctx.curChar = EOF
 		l.isEOF = true
 		return
 	}
-	start := l.ctx.index
-	l.ctx.index += l.charSize(l.ctx.fileBlock.Content[l.ctx.index])
-	l.ctx.curChar = []rune(string(l.ctx.fileBlock.Content[start:l.ctx.index]))[0]
-	if l.ctx.curChar == '\n' {
-		l.ctx.lineNumber++
+	start := l.lctx.index
+	l.lctx.index += l.charSize(l.lctx.fileBlock.Content[l.lctx.index])
+	l.lctx.curChar = []rune(string(l.lctx.fileBlock.Content[start:l.lctx.index]))[0]
+	if l.lctx.curChar == '\n' {
+		l.lctx.lineNumber++
 	}
 }
 
 func (l *Lexer) peekChar() rune {
-	if l.ctx.index >= len(l.ctx.fileBlock.Content) {
+	if l.lctx.index >= len(l.lctx.fileBlock.Content) {
 		return '\n'
 	}
-	end := l.ctx.index + l.charSize(l.ctx.fileBlock.Content[l.ctx.index])
-	return []rune(string(l.ctx.fileBlock.Content[l.ctx.index:end]))[0]
+	end := l.lctx.index + l.charSize(l.lctx.fileBlock.Content[l.lctx.index])
+	return []rune(string(l.lctx.fileBlock.Content[l.lctx.index:end]))[0]
 }
 
 func (l *Lexer) skipWhitespace() {
-	for !l.isEOF && (l.ctx.curChar == ' ' || l.ctx.curChar == '\t' || l.ctx.curChar == '\r') {
+	for !l.isEOF && (l.lctx.curChar == ' ' || l.lctx.curChar == '\t' || l.lctx.curChar == '\r') {
 		l.nextChar()
 	}
 }
@@ -380,20 +380,20 @@ func (l *Lexer) readString(quote rune) string {
 	}
 	runes := []rune{}
 
-	index := l.ctx.index
+	index := l.lctx.index
 	var ch rune
 	for {
 		l.nextChar()
-		ch = l.ctx.curChar
+		ch = l.lctx.curChar
 		if ch == quote {
 			break
 		}
 		if ch == '\n' {
-			l.logger.Error(errcode.ESTR_END_QUOTE, l.ctx.toContext(index))
+			l.logger.Error(errcode.ESTR_END_QUOTE, l.lctx.toContext(index))
 			break
 		}
 		if ch < ' ' {
-			l.logger.Error(errcode.ESTR_CTRL, l.ctx.toContext(index))
+			l.logger.Error(errcode.ESTR_CTRL, l.lctx.toContext(index))
 			break
 		}
 		if ch == '\\' {
@@ -409,44 +409,44 @@ func (l *Lexer) readString(quote rune) string {
 }
 
 func (l *Lexer) readWord() string {
-	startIndex := l.ctx.index - 1
-	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.isWordChar(rune(l.ctx.fileBlock.Content[l.ctx.index])) {
-		l.ctx.index++
+	startIndex := l.lctx.index - 1
+	for l.lctx.index < len(l.lctx.fileBlock.Content) && l.isWordChar(rune(l.lctx.fileBlock.Content[l.lctx.index])) {
+		l.lctx.index++
 	}
-	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
+	return string(l.lctx.fileBlock.Content[startIndex:l.lctx.index])
 }
 
 func (l *Lexer) readHexString() string {
-	if !l.isHexChar(l.ctx.curChar) {
+	if !l.isHexChar(l.lctx.curChar) {
 		return ""
 	}
-	startIndex := l.ctx.index - 1
-	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.isHexChar(rune(l.ctx.fileBlock.Content[l.ctx.index])) {
-		l.ctx.index++
+	startIndex := l.lctx.index - 1
+	for l.lctx.index < len(l.lctx.fileBlock.Content) && l.isHexChar(rune(l.lctx.fileBlock.Content[l.lctx.index])) {
+		l.lctx.index++
 	}
-	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
+	return string(l.lctx.fileBlock.Content[startIndex:l.lctx.index])
 }
 
 func (l *Lexer) readBinString() string {
-	if !l.isBinChar(l.ctx.curChar) {
+	if !l.isBinChar(l.lctx.curChar) {
 		return ""
 	}
-	startIndex := l.ctx.index - 1
-	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.isBinChar(rune(l.ctx.fileBlock.Content[l.ctx.index])) {
-		l.ctx.index++
+	startIndex := l.lctx.index - 1
+	for l.lctx.index < len(l.lctx.fileBlock.Content) && l.isBinChar(rune(l.lctx.fileBlock.Content[l.lctx.index])) {
+		l.lctx.index++
 	}
-	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
+	return string(l.lctx.fileBlock.Content[startIndex:l.lctx.index])
 }
 
 func (l *Lexer) readOctString() string {
-	if !l.isOctChar(l.ctx.curChar) {
+	if !l.isOctChar(l.lctx.curChar) {
 		return ""
 	}
-	startIndex := l.ctx.index - 1
-	for l.ctx.index < len(l.ctx.fileBlock.Content) && l.isOctChar(rune(l.ctx.fileBlock.Content[l.ctx.index])) {
-		l.ctx.index++
+	startIndex := l.lctx.index - 1
+	for l.lctx.index < len(l.lctx.fileBlock.Content) && l.isOctChar(rune(l.lctx.fileBlock.Content[l.lctx.index])) {
+		l.lctx.index++
 	}
-	return string(l.ctx.fileBlock.Content[startIndex:l.ctx.index])
+	return string(l.lctx.fileBlock.Content[startIndex:l.lctx.index])
 }
 
 func (l *Lexer) isDigit(ch rune) bool {
