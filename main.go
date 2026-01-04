@@ -180,11 +180,19 @@ func main() {
 	code := evaluator.CollectCode(obj.(*object.ProgramObject))
 
 	eval.CodeStable = false
-	for i = 0; !eval.CodeStable && i < 256; i++ {
+	for i = 0; i < 256 && !eval.CodeStable; i++ {
 		obj = eval.EvalProgram(prog, env)
+		if len(logger.Errors) > 0 {
+			logger.Print()
+			break
+		}
 		newCode := evaluator.CollectCode(obj.(*object.ProgramObject))
 		eval.CodeStable = bytes.Equal(code, newCode)
+		if !eval.CodeStable {
+			code = newCode
+		}
 	}
+
 	fmt.Printf("finalize %d times, codeStable %v\n", i, eval.CodeStable)
 	showResult(-1, prog, obj, env)
 }
