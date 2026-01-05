@@ -96,6 +96,46 @@ func TestParseNumberLiteral(t *testing.T) {
 	}
 }
 
+func TestParseExpresssionError(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+		err      string
+	}{
+		{input: `_ = 0x`, err: errcode.ENUMBER},
+		{input: `_ = 0b`, err: errcode.ENUMBER},
+		{input: `_ = 0o`, err: errcode.ENUMBER},
+		{input: `_ = 0xG`, err: errcode.ESYNTAX},
+		{input: `_ = 0bG`, err: errcode.ESYNTAX},
+		{input: `_ = 0oG`, err: errcode.ESYNTAX},
+		{input: `_ = abc[]`, err: errcode.EARRAY_INDEX},
+		// {input: `_ = abc[LD]`, err: errcode.EARRAY_INDEX}, // 評価でエラー検出
+		// {input: `_ = abc[nc]`, err: errcode.EARRAY_INDEX}, // 評価でエラー検出
+	}
+
+	for tn, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := ParseForTest(t, l, tn)
+
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, l.logger)
+			ename := errtest.ErrcodeNames[tt.err]
+			if ename[0] == 'E' {
+				continue
+			}
+		}
+
+		if len(l.logger.Errors) > 0 {
+			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
+		}
+		if len(prog.Statements) == 0 {
+			t.Fatalf("[%d] %d statements", tn, len(prog.Statements))
+		}
+		stmt := testAssignStatement(t, tn, prog.Statements[0])
+		testStringLiteral(t, tn, stmt.Value, tt.expected)
+	}
+}
+
 func TestParseStringLiteral(t *testing.T) {
 	tests := []struct {
 		input    string

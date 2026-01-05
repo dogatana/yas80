@@ -144,10 +144,22 @@ func testLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
 	switch ename[0] {
 	case 'E':
 		msgs = logger.Errors
+		if len(msgs) == 0 {
+			t.Fatalf("[%d] no error", tn)
+			return
+		}
 	case 'W':
 		msgs = logger.Warnings
+		if len(msgs) == 0 {
+			t.Fatalf("[%d] no warning", tn)
+			return
+		}
 	case 'I':
 		msgs = logger.Infomation
+		if len(msgs) == 0 {
+			t.Fatalf("[%d] no information", tn)
+			return
+		}
 	}
 
 	if !hasMessage(msgs, err) {

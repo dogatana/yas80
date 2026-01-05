@@ -24,6 +24,27 @@ func ParseForTest(t *testing.T, lexer *Lexer, tn int) *Program {
 	return PreProrocess(lexer.logger, prog)
 }
 
+func testInputEnd(t *testing.T, tn int, lexer *Lexer) {
+	// EOL
+	for {
+		tok := lexer.NextToken()
+		if tok.TokenType == EOL {
+			break
+		}
+		if tok.TokenType == EOF {
+			t.Errorf("[%d] not EOL before EOF", tn)
+			return
+		}
+	}
+	for {
+		tok := lexer.NextToken()
+		if tok.TokenType == EOF {
+			return
+		}
+		t.Errorf("[%d] not EOF. got %s", tn, tok.String())
+	}
+}
+
 func testLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
 	ename := errtest.ErrcodeNames[err]
 
@@ -31,10 +52,22 @@ func testLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
 	switch ename[0] {
 	case 'E':
 		msgs = logger.Errors
+		if len(msgs) == 0 {
+			t.Fatalf("[%d] no error", tn)
+			return
+		}
 	case 'W':
 		msgs = logger.Warnings
+		if len(msgs) == 0 {
+			t.Fatalf("[%d] no warning", tn)
+			return
+		}
 	case 'I':
 		msgs = logger.Infomation
+		if len(msgs) == 0 {
+			t.Fatalf("[%d] no information", tn)
+			return
+		}
 	}
 
 	if !hasMessage(msgs, err) {

@@ -62,21 +62,22 @@ func TestLexSymbols(t *testing.T) {
 
 	l := newLexerForTest(input)
 
-	for _, e := range expected {
+	for tn, e := range expected {
 		tok := l.NextToken()
 		if tok.Context.Line == 0 {
-			t.Errorf("LineNumber not set. got %s", tok.String())
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
 		if tok.TokenType != e.TokenType {
-			t.Errorf("expected Token.TokenType %s. got %s", TokenLiteral(int(e.TokenType)), tok.String())
+			t.Errorf("[%d] expected Token.TokenType %s. got %s", tn, TokenLiteral(int(e.TokenType)), tok.String())
 		}
 		if e.SubType != 0 && tok.TokenSubType != e.SubType {
-			t.Errorf("expected Token.SubType %s. got %s", TokenLiteral(int(e.SubType)), tok.String())
+			t.Errorf("[%d] expected Token.SubType %s. got %s", tn, TokenLiteral(int(e.SubType)), tok.String())
 		}
 		if tok.Literal != e.Literal {
-			t.Errorf("expected Token.Literal %q. got %s", e.Literal, tok.String())
+			t.Errorf("[%d] expected Token.Literal %q. got %s", tn, e.Literal, tok.String())
 		}
 	}
+	testInputEnd(t, -1, l)
 }
 
 // 空白入力、コメントのみの入力のテスト(最後に EOL, EOFが返ること)
