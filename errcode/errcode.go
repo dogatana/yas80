@@ -2,16 +2,18 @@ package errcode
 
 const (
 	// system
-	ESYSTEM = "system error"
-	ESYNTAX = "syntax error"
+	ESYSTEM   = "system error"
+	ESYNTAX   = "syntax error"
+	EINTERNAL = "internal error %s"
 
 	ESTR_CTRL      = "文字列リテラルに制御文字を含めることは不可"
 	ESTR_END_QUOTE = "文字列リテラル終端の引用符なし"
 
-	E002 = "数値リテラル誤り: '%s'"
-	E003 = "配列名誤り"
-	E004 = "配列インデックス未指定"
-	E005 = "配列インデックス誤り"
+	ENUMBER = "数値リテラル誤り: '%s'"
+
+	EARRAY_NAME  = "配列名誤り"
+	EARRAY_INDEX = "配列インデックス誤り"
+
 	E006 = "間接指定オペランド誤り"
 	E009 = "'%s' は未定義"
 	E028 = "'%s' は指定不可"
