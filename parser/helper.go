@@ -199,7 +199,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression, ctx *fileblock.Contex
 		if ok {
 			return &NumberLiteral{Value: fn(num1.Value, num2.Value), Context: ctx}
 		} else {
-			return &ParseError{Message: fmt.Sprintf(errcode.EBIN_OP_NUMBER, TokenLiteral(opcode)), Context: ctx}
+			return &ParseError{Message: fmt.Sprintf(errcode.EBIN_OP_TYPE, TokenLiteral(opcode)), Context: ctx}
 		}
 	}
 	// 文字列演算(+)の畳み込み

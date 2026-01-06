@@ -177,7 +177,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 		return e.evalNumberInfixExpression(node.Operator, op1, op2, ctx)
 	case isString(op1) && isString(op2):
 		if node.Operator != '+' {
-			e.logger.Error(errcode.EBIN_OP_STRING, ctx)
+			e.logger.Error(errcode.EBIN_OP_TYPE, ctx)
 			return object.ERROR
 		}
 		s1 := op1.(*object.StringObject).Value
@@ -237,7 +237,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 	case parser.AND:
 		return &object.NumberObject{Value: boolToInt(v1 != 1 && v2 != 1), Context: ctx}
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_NUMBER, string(rune(opCode))), nil)
+		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_TYPE, string(rune(opCode))), nil)
 		return object.ERROR
 	}
 }

@@ -4,29 +4,58 @@ import (
 	"testing"
 )
 
-func TestParseExpression(t *testing.T) {
+// parse 時の定数式演算結果のテスト
+func TestParsePrefixExpression(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected int
 	}{
-		{"_ = 1", 1},
-		{"_ = -1", -1},
+		{"_ = +123", 123},
+		{"_ = -123", -123},
+		{"_ = --123", 123},
 		{"_ = ~0", -1},
 		{"_ = ~1", -2},
 		{"_ = ~-1", 0},
 		{"_ = !0", 1},
 		{"_ = !1", 0},
-		{"_ = !-1", 0},
+		{"_ = !2", 0},
+		{"_ = !!0", 0},
+		{"_ = !!1", 1},
+		{`_ = !""`, 1},
+		{`_ = !"a"`, 0},
+		{`_ = !("" + "")`, 1},
+		{`_ = !("a" + "b")`, 0},
+	}
+
+	for tn, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := ParseForTest(t, l, tn)
+
+		if len(prog.Statements) != 1 {
+			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))
+		}
+		stmt := testAssignStatement(t, tn, prog.Statements[0])
+		testNumberLiteral(t, tn, stmt.Value, tt.expected)
+	}
+}
+
+// parse 時の定数式演算結果のテスト
+func TestParseInfixExpression(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected int
+	}{
 		{"_ = 2 + 3", 5},
 		{"_ = 2 - 3", -1},
 		{"_ = 2 * 3", 6},
 		{"_ = 4 / 2", 2},
+		{"_ = 5 % 2", 1},
 		{"_ = 2 + 3 * 4", 14},
 		{"_ = 2 * 3 + 4", 10},
 		{"_ = 2 * (3 + 4)", 14},
 		{"_ = 0x55 | 0xaa", 255},
 		{"_ = 0x55 & 0xaa", 0},
-		{"_ = 0xf ^ 1", 14},
+		{"_ = 0xf ^ 1", 0xe},
 		{"_ = 1 << 8", 256},
 		{"_ = 256 >> 4", 16},
 		{"_ = 1 > 0", 1},
@@ -37,10 +66,18 @@ func TestParseExpression(t *testing.T) {
 		{"_ = 2 >= 3", 0},
 		{"_ = 2 < 3", 1},
 		{"_ = 2 <= 3", 1},
-		{"_ = 2 != 3", 1},
+		{"_ = 2 == 2", 1},
 		{"_ = 2 == 3", 0},
-		{"_ = 100 || 0", 1},
-		{"_ = 100 && 0", 0},
+		{"_ = 2 != 3", 1},
+		{"_ = 2 != 2", 0},
+		{"_ = 0 || 0", 0},
+		{"_ = 1 || 0", 1},
+		{"_ = 0 || 1", 1},
+		{"_ = 1 || 1", 1},
+		{"_ = 0 && 0", 0},
+		{"_ = 1 && 0", 0},
+		{"_ = 0 && 1", 0},
+		{"_ = 1 && 1", 1},
 	}
 
 	for tn, tt := range tests {

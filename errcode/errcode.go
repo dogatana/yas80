@@ -25,8 +25,6 @@ const (
 	EUNI_OP_TYPE   = "単項演算子 '%s' が使用できない型"
 
 	EBIN_OP_DIVZERO = "0 除算"
-	EBIN_OP_STRING  = "文字列は '+' 演算子のみ使用可能"
-	EBIN_OP_NUMBER  = "不明な整数演算子 '%s'"
 	EBIN_OP_TYPE    = "二項演算子 '%s' は使用不可"
 
 	// データ定義
