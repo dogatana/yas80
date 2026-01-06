@@ -85,14 +85,14 @@ func (v *ValueObject) String() string {
 
 // code
 type CodeObject struct {
-	Line int
-	Addr int
-	Code []byte
+	Addr    int
+	Code    []byte
+	Context *fileblock.Context
 }
 
 func (f *CodeObject) Type() ObjectType { return CODE_OBJ }
 func (f *CodeObject) String() string {
-	text := fmt.Sprintf("%d:%04x: ", f.Line, f.Addr)
+	text := fmt.Sprintf("%d:%04x: ", f.Context, f.Addr)
 	for _, b := range f.Code {
 		text += fmt.Sprintf("%02x ", b)
 	}

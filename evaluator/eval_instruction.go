@@ -17,8 +17,8 @@ func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env object.E
 	}
 	switch stmt.NodeType() {
 	case parser.Z80_INST0:
-		info := Z80CodeTable0[int(stmt.Opcode)]
-		obj := &object.CodeObject{Line: stmt.Context.Line, Code: make([]byte, len(info.Bytes))}
+		info := Z80CodeTable0[stmt.Opcode]
+		obj := &object.CodeObject{Code: make([]byte, len(info.Bytes)), Context: stmt.Context}
 		copy(obj.Code, info.Bytes)
 		return obj
 	case parser.Z80_INST1:
@@ -37,7 +37,7 @@ func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ object.Environmen
 	op1 := node.Op1
 	// RET
 	if op1 == nil {
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0xc9}}
+		return &object.CodeObject{Code: []byte{0xc9}, Context: node.Context}
 	}
 	// RET cc
 	index := -1
@@ -55,7 +55,7 @@ func (e *Evaluator) generateRET(node *parser.Z80Instruction, _ object.Environmen
 		return object.ERROR
 	}
 	b := byte(0xc0 | flag<<3)
-	return &object.CodeObject{Line: node.Context.Line, Code: []byte{b}}
+	return &object.CodeObject{Code: []byte{b}, Context: node.Context}
 }
 
 func (e *Evaluator) evalZ80Instruction2(node *parser.Z80Instruction, env object.Environment) object.Object {
@@ -87,7 +87,7 @@ func (e *Evaluator) evalZ80LD(node *parser.Z80Instruction, env object.Environmen
 	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
 	// 	return object.ERROR
 	default:
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
+		return &object.CodeObject{Code: []byte{0x7f}, Context: node.Context}
 	}
 }
 
@@ -113,7 +113,7 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 		}
 
 		b := 0x40 | r1<<3 | r2
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{byte(b)}}
+		return &object.CodeObject{Code: []byte{byte(b)}, Context: node.Context}
 	case *object.NumberObject:
 		// LD r, n
 		v, ok := e.intToByte(op2.Value)
@@ -122,13 +122,14 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 		}
 		r1 := Z80Reg8Index[int(op1.Register)]
 		b := byte(0x06 | (r1 << 3))
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{b, v}}
+		return &object.CodeObject{Code: []byte{b, v}, Context: node.Context}
 	// case *object.IndirectExpression:
 	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
 	// 	return object.ERROR
 	case *object.RefNotFoundObject:
+		// 未確定の場合として LD A,0 を返す
 		e.Resolved = false
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x7f}}
+		return &object.CodeObject{Code: []byte{0x3e, 00}, Context: node.Context}
 
 	default:
 		e.logger.Error(errcode.EZ80_OP2, node.Context)
@@ -152,11 +153,11 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		}
 		switch op2.Register {
 		case parser.Z80_REG_HL:
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0xf9}}
+			return &object.CodeObject{Code: []byte{0xf9}, Context: node.Context}
 		case parser.Z80_REG_IX:
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0xdd, 0xf9}}
+			return &object.CodeObject{Code: []byte{0xdd, 0xf9}, Context: node.Context}
 		case parser.Z80_REG_IY:
-			return &object.CodeObject{Line: node.Context.Line, Code: []byte{0xfd, 0xf9}}
+			return &object.CodeObject{Code: []byte{0xfd, 0xf9}, Context: node.Context}
 		default:
 			e.logger.Error(errcode.EZ80_OP2_HL_IXY, node.Context)
 			return object.ERROR
@@ -169,13 +170,14 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		}
 		r1 := Z80Reg16Index[int(op1.Register)]
 		b := byte(0x01 | (r1 << 4))
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{b, byte(v & 0xff), byte((v >> 8) & 0xff)}}
+		return &object.CodeObject{Code: []byte{b, byte(v & 0xff), byte((v >> 8) & 0xff)}, Context: node.Context}
 	// case *object.IndirectExpression:
 	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
 	// 	return object.ERROR
 	case *object.RefNotFoundObject:
+		// 未確定として LD HL,0 を返す
 		e.Resolved = false
-		return &object.CodeObject{Line: node.Context.Line, Code: []byte{0x21, 0, 0}}
+		return &object.CodeObject{Code: []byte{0x21, 0, 0}, Context: node.Context}
 
 	default:
 		fmt.Printf("%#v\n", op2)
