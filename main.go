@@ -79,6 +79,7 @@ func main() {
 	parser.SetYYDebug(getDebugEnv("yydebug"))
 
 	// 構文解析開始
+	fmt.Println("# parse")
 	prog := parse(logger, input, file)
 
 	// 構文解析直後の AST 表示
@@ -96,9 +97,8 @@ func main() {
 	}
 
 	// プリプロセス
-	fmt.Println("\n# preprocess")
+	fmt.Println("# preprocess")
 	prog = parser.PreProrocess(logger, prog)
-	logger.Print()
 
 	// プリプロセス直後の AST 表示
 	if getDebugEnv("astdebug") > 1 {
@@ -109,6 +109,11 @@ func main() {
 		fmt.Println("--")
 		fmt.Println(prog.String())
 		os.Exit(0)
+	}
+	logger.Print()
+	if len(logger.Errors) > 0 {
+		fmt.Printf("*** parser program returns ERROR")
+		os.Exit(1)
 	}
 	// AST 表示
 	fmt.Println("# ast")
