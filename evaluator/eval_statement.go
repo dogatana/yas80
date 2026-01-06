@@ -26,7 +26,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 	case *parser.LabelStatement:
 		return e.evalLabelStatement(node, env)
 
-	// Proc
+	// PROC
 	case *parser.ProcStatement:
 		name := node.Name
 		obj, ok := env.Get(name)
@@ -40,7 +40,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 					e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
 					return object.ERROR
 				}
-				// SYM_UNKNOWN なら proc として登録
+				// SYM_UNKNOWN（前方参照）なら proc として登録
 			default:
 				e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
 				return object.ERROR
@@ -49,8 +49,8 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 		penv := object.NewProcEnvironment(env)
 		env.Set(name, &object.ProcObject{Name: name, Addr: getLocationCounter(env), Env: penv})
 
-		pb := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
-		return &object.NodeObject{Node: pb}
+		pbs := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
+		return &object.NodeObject{Node: pbs}
 
 	// DS/DSB/DSW
 	case *parser.DataStoreStatement:

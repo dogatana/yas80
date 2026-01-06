@@ -34,7 +34,7 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) ob
 	return e.evalBlockPtr(&prog.Statements, env)
 }
 
-// Program.Statements 評価
+// Program.Statements, ProcBlockStatement.Block 評価
 func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) object.Object {
 	statements := *ptr
 	objects := []object.Object{}
@@ -42,15 +42,14 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 
 	var obj object.Object
 
-	for i := 0; i < len(statements); i++ {
-		node := statements[i]
+	for i, node := range statements {
 
 	EVAL_AGAIN:
 		if e.Debug > 0 {
-			fmt.Printf("eval BlockPtr.satements[%d] %T\n", i, node)
 			addr, _ := env.Get("$")
-			fmt.Printf("$ %s\n", addr.String())
+			fmt.Printf("eval BlockPtr.satements[%d/%d] %T. $%s\n", i, len(statements), node, addr.String())
 		}
+
 		switch stmt := node.(type) {
 
 		// PROC
@@ -63,7 +62,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			if !ok {
 				panic("not NodeObject")
 			}
-			node = nobj.Node
+			node = nobj.Node // ProcBlockStatement
 			goto EVAL_AGAIN
 
 		// PROC BLOCK
@@ -72,6 +71,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			if !ok {
 				panic(fmt.Sprintf("no ProcEnv(%s)", stmt.Name))
 			}
+			// ProcObject は Environment intterface を実装
 			obj = e.evalBlockPtr(&stmt.Block, pobj.(*object.ProcObject))
 			prog, ok := obj.(*object.ProgramObject)
 			if !ok {
@@ -81,7 +81,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			stmts = append(stmts, stmt)
 			continue
 
-		// 命令
+		// Z80 命令
 		case *parser.Z80Instruction:
 			obj = e.evalStatement(stmt, env)
 			objects = append(objects, obj)
