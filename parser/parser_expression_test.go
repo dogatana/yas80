@@ -2,6 +2,8 @@ package parser
 
 import (
 	"testing"
+	"yas80/errcode"
+	"yas80/errtest"
 )
 
 // parse 時の定数式演算結果のテスト
@@ -188,6 +190,42 @@ func TestParseStringExpression(t *testing.T) {
 
 		if len(prog.Statements) != 1 {
 			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))
+		}
+		stmt := testAssignStatement(t, tn, prog.Statements[0])
+		testStringLiteral(t, tn, stmt.Value, tt.expected)
+	}
+}
+
+func TestParseExpressionError(t *testing.T) {
+	tests := []struct {
+		input    string
+		expected string
+		err      string
+	}{
+		// 0-
+		{input: `_ = 1 / 0`, err: errcode.EBIN_OP_DIVZERO},
+		// {input: `_ = 1 + "a"`, err: errcode.EBIN_OP_TYPE}, // 評価で検出
+		// {input: `_ = "a" + 1`, err: errcode.EBIN_OP_TYPE}, // 評価で検出
+		// {input: `_ = "a" * "b"`, err: errcode.EBIN_OP_TYPE}, // 評価で検出
+	}
+
+	for tn, tt := range tests {
+		l := newLexerForTest(tt.input)
+		prog := ParseForTest(t, l, tn)
+
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, l.logger)
+			ename := errtest.ErrcodeNames[tt.err]
+			if ename[0] == 'E' {
+				continue
+			}
+		}
+
+		if len(l.logger.Errors) > 0 {
+			t.Errorf("[%d] %d errors", tn, len(l.logger.Errors))
+		}
+		if len(prog.Statements) == 0 {
+			t.Errorf("[%d] %d statements", tn, len(prog.Statements))
 		}
 		stmt := testAssignStatement(t, tn, prog.Statements[0])
 		testStringLiteral(t, tn, stmt.Value, tt.expected)
