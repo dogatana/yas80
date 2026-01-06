@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"strings"
 	"yas80/errcode"
 	"yas80/fileblock"
@@ -125,7 +126,10 @@ LINE_CONT:
 	case l.lctx.curChar == '"' || l.lctx.curChar == '\'':
 		// 文字列リテラル
 		s := l.readString(l.lctx.curChar)
-		l.nextChar()
+		if l.lctx.curChar != '\n' {
+			// ESTR_END_QUOTE の場合、nextChar すると EOL トークンを出力しない
+			l.nextChar()
+		}
 		return Token{TokenType: STRING, Literal: s, Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '+' || l.lctx.curChar == '-' || l.lctx.curChar == '^':

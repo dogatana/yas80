@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"yas80/errcode"
 )
 
 //lint:ignore U1000 非テスト：文字列に対してトークン列を返す
@@ -213,15 +214,7 @@ func TestLexNumber(t *testing.T) {
 		{"1234_5467h", "1234_5467h"},
 		// 15-
 		{"89ab_cdefH", "89ab_cdefH"},
-
-		{"0abc", "0abc"}, // 0-9 で始まる場合は16進数まで含めて受け付ける
-		{"0xhoge", "0x"},
-		{"0ohoge", "0o"},
-		{"$0ggg", "$0"},
-		// 20-
-		{"$9ggg", "$9"},
-		{"$aggg", "$a"},
-		{"$fggg", "$f"},
+		{"0abc", "0abc"}, // このエラーは parser で検出する
 	}
 
 	for tn, tt := range tests {
@@ -233,6 +226,7 @@ func TestLexNumber(t *testing.T) {
 		if tok.TokenType != NUMBER || tok.Literal != tt.expected_literal {
 			t.Errorf("[%d] expected=NUMBER(%q), got=%s", tn, tt.expected_literal, tok.String())
 		}
+		testInputEnd(t, tn, l)
 	}
 }
 
@@ -246,7 +240,6 @@ func TestLexInterface(t *testing.T) {
 		NUMBER,
 		ADDSUB,
 		NUMBER,
-		EOL,
 	}
 
 	var lval yySymType
@@ -256,6 +249,7 @@ func TestLexInterface(t *testing.T) {
 			t.Errorf("expected=%d, got=%d", expected, lval.token.TokenType)
 		}
 	}
+	testInputEnd(t, 0, l)
 }
 
 // 識別子のテスト
@@ -287,6 +281,7 @@ func TestLexIdent(t *testing.T) {
 		if tok.Literal != tt.expectedLiteral {
 			t.Errorf("[%d] expected Literal %q. got %s", tn, tt.expectedLiteral, tok.String())
 		}
+		testInputEnd(t, tn, l)
 	}
 }
 
@@ -326,6 +321,7 @@ func TestLexZ80REG8(t *testing.T) {
 		if tok.Literal != tt.input {
 			t.Errorf("[%d] expected Literal %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
+		testInputEnd(t, tn, l)
 	}
 }
 
@@ -359,6 +355,7 @@ func TestLexZ80REG16(t *testing.T) {
 		if tok.Literal != TokenLiteral(int(tt.expected)) {
 			t.Errorf("[%d] expected Literal %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
+		testInputEnd(t, tn, l)
 	}
 }
 
@@ -393,6 +390,7 @@ func TestLexZ80FLAG(t *testing.T) {
 		if tok.Literal != TokenLiteral(int(tt.expected)) {
 			t.Errorf("[%d] expected Literal %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
+		testInputEnd(t, tn, l)
 	}
 }
 
@@ -471,36 +469,32 @@ func TestLexReservedWords(t *testing.T) {
 func TestLexDoller(t *testing.T) {
 	tests := []struct {
 		input    string
-		expected []TokenType
+		expected TokenType
 	}{
 		// 0-
-		{"$", []TokenType{IDENT, EOL}},
-		{"$ ", []TokenType{IDENT, EOL}},
-		{"$0", []TokenType{NUMBER, EOL}},
-		{"$a", []TokenType{NUMBER, EOL}},
-		{"$f", []TokenType{NUMBER, EOL}},
+		{"$", IDENT},
+		{"$ ", IDENT},
+		{"$0", NUMBER},
+		{"$a", NUMBER},
+		{"$f", NUMBER},
 		// 5-
-		{"$A", []TokenType{NUMBER, EOL}},
-		{"$F", []TokenType{NUMBER, EOL}},
-		{"$_", []TokenType{IDENT, EOL}},
-		{"$g", []TokenType{IDENT, EOL}},
+		{"$A", NUMBER},
+		{"$F", NUMBER},
+		{"$_", IDENT},
+		{"$g", IDENT},
 		// {"$$", []TokenType{IDENT, EOL}}, // $$ は2つの $ になる
 	}
 
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
-		for _, tokenType := range tt.expected {
-			tok := l.NextToken()
-			if tok.Context.Line == 0 {
-				t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
-			}
-			if tok.TokenType != tokenType {
-				t.Errorf("[%d] expected TokenType %s. got %#v", tn, TokenLiteral(int(tokenType)), tok)
-			}
-			if tok.TokenType == EOL {
-				break
-			}
+		tok := l.NextToken()
+		if tok.Context.Line == 0 {
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
+		if tok.TokenType != tt.expected {
+			t.Errorf("[%d] expected TokenType %s. got %#v", tn, TokenLiteral(int(tt.expected)), tok)
+		}
+		testInputEnd(t, tn, l)
 	}
 }
 
@@ -513,7 +507,7 @@ func TestLexLineContinuation(t *testing.T) {
 		{`ld \
 		a \
 		,\
-		b`, []TokenType{Z80_INST2, Z80_REG8, ',', Z80_REG8, EOL}},
+		b`, []TokenType{Z80_INST2, Z80_REG8, ',', Z80_REG8}},
 	}
 
 	for tn, tt := range tests {
@@ -526,10 +520,8 @@ func TestLexLineContinuation(t *testing.T) {
 			if tok.TokenType != tokenType {
 				t.Errorf("[%d] expected TokenType %s. got %#v", tn, TokenLiteral(int(tokenType)), tok)
 			}
-			if tok.TokenType == EOL {
-				break
-			}
 		}
+		testInputEnd(t, tn, l)
 	}
 }
 
@@ -546,11 +538,16 @@ func TestLexerContextLineNumber(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		ln := 1
+		gotEOL := false
 		for {
 			tok := l.NextToken()
 			if tok.TokenType == EOL {
+				gotEOL = true
 				continue
 			} else if tok.TokenType == EOF {
+				if !gotEOL {
+					t.Errorf("[%d] no EOL before EOF", tn)
+				}
 				break
 			}
 			if tok.Context.Line != ln {
@@ -561,5 +558,37 @@ func TestLexerContextLineNumber(t *testing.T) {
 			}
 			ln++
 		}
+	}
+}
+
+// Lex で検知するエラー
+func TestLexError(t *testing.T) {
+	tests := []struct {
+		input string
+		err   string
+	}{
+		{"0x", errcode.ENUMBER},
+		{"0o", errcode.ENUMBER},
+		{"0b", errcode.ENUMBER},
+		{" 0x ", errcode.ENUMBER},
+		{" 0o ", errcode.ENUMBER},
+		// 5-
+		{" 0b ", errcode.ENUMBER},
+		{"'\x01'", errcode.ESTR_CTRL},
+		{"\"\x01\"", errcode.ESTR_CTRL},
+		{"'a\x01b", errcode.ESTR_CTRL},
+		{"\"a\x01b\"", errcode.ESTR_CTRL},
+		{"'abc", errcode.ESTR_END_QUOTE},
+		{"\"abc", errcode.ESTR_END_QUOTE},
+	}
+
+	for tn, tt := range tests {
+		l := newLexerForTest(tt.input)
+		testInputEnd(t, tn, l)
+
+		if len(l.logger.Errors) == 0 {
+			t.Fatalf("[%d] no errors", tn)
+		}
+		testLogMessage(t, tn, tt.err, l.logger)
 	}
 }

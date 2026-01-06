@@ -32,12 +32,15 @@ func testInputEnd(t *testing.T, tn int, lexer *Lexer) {
 			break
 		}
 		if tok.TokenType == EOF {
-			t.Errorf("[%d] not EOL before EOF", tn)
+			t.Errorf("[%d] no EOL before EOF", tn)
 			return
 		}
 	}
 	for {
 		tok := lexer.NextToken()
+		if tok.TokenType == EOL {
+			continue
+		}
 		if tok.TokenType == EOF {
 			return
 		}

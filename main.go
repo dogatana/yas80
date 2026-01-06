@@ -71,6 +71,7 @@ func main() {
 			tok := l.NextToken()
 			fmt.Println(tok.String())
 			if tok.TokenType == 0 {
+				logger.Print()
 				os.Exit(0)
 			}
 		}
@@ -110,11 +111,7 @@ func main() {
 		fmt.Println(prog.String())
 		os.Exit(0)
 	}
-	logger.Print()
-	if len(logger.Errors) > 0 {
-		fmt.Printf("*** parser program returns ERROR")
-		os.Exit(1)
-	}
+
 	// AST 表示
 	fmt.Println("# ast")
 	if len(prog.Statements) == 0 {
