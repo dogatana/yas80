@@ -81,15 +81,15 @@ func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, env object.Environmen
 			// LD rr, x
 			return e.evalZ80LD_reg16(stmt, op1, env)
 		}
-		e.logger.Error(errcode.EZ80_OP1, stmt.Context)
-		return object.ERROR
 	// case *object.IndirectExpression:
 	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
 	// 	return object.ERROR
-	default:
-		// 仮として LD A,A を返す
-		return &object.CodeObject{Code: []byte{0x7f}, Context: stmt.Context}
+	case *object.RefNotFoundObject:
+		// 仮として LD A,0 を返す
+		return &object.CodeObject{Code: []byte{0x3e, 0}, Context: stmt.Context}
 	}
+	e.logger.Error(errcode.EZ80_OP1, stmt.Context)
+	return object.ERROR
 }
 
 func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
@@ -144,12 +144,12 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:
 		// LD rr, rr'
-		if op1.Register != parser.Z80_REG_SP {
-			e.logger.Error(errcode.EZ80_OP1_SP, node.Context)
-			return object.ERROR
-		}
 		if op2.RegisterType != parser.Z80_REG16 {
 			e.logger.Error(errcode.EZ80_OP2, node.Context)
+			return object.ERROR
+		}
+		if op1.Register != parser.Z80_REG_SP {
+			e.logger.Error(errcode.EZ80_OP1_SP, node.Context)
 			return object.ERROR
 		}
 		switch op2.Register {
@@ -181,7 +181,6 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		return &object.CodeObject{Code: []byte{0x21, 0, 0}, Context: node.Context}
 
 	default:
-		fmt.Printf("%#v\n", op2)
 		e.logger.Error(errcode.EZ80_OP2, node.Context)
 		return object.ERROR
 	}

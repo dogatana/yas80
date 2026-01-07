@@ -41,6 +41,7 @@ func TestInstructionDefault(t *testing.T) {
 	}{
 		// 0-
 		{input: `ld a, VAL`, code: []byte{0x3e, 0}},
+		{input: `ld VAL, a`, code: []byte{0x3e, 0}},
 		{input: `ld hl, VAL`, code: []byte{0x21, 0, 0}},
 	}
 
@@ -89,6 +90,13 @@ func TestInstructionError(t *testing.T) {
 		err   string
 	}{
 		// 0-
+		{input: `ld 123, 456`, err: errcode.EZ80_OP1},
+		{input: `ld a, nc`, err: errcode.EZ80_OP2},
+		{input: `ld a, hl`, err: errcode.EZ80_OP2},
+		{input: `ld hl, nc`, err: errcode.EZ80_OP2},
+		{input: `ld hl, a`, err: errcode.EZ80_OP2},
+		{input: `ld hl, hl`, err: errcode.EZ80_OP1_SP},
+		{input: `ld sp, de`, err: errcode.EZ80_OP2_HL_IXY},
 		{input: `ret VAL`, err: errcode.EZ80_FLAG},
 	}
 
