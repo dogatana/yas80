@@ -7,22 +7,30 @@ import (
 )
 
 func TestAssembleFile(t *testing.T) {
-	tests := []string{
-		"label-backward",
-		"equ-backward",
-		"label-forward",
-		"equ-forward",
-		"forward",
-		"forward_symbol",
-		"forward_mix",
-		"macro",
+	tests := []struct {
+		input string
+		code  []byte
+	}{
+		{input: "label-backward"},
+		{input: "equ-backward"},
+		{input: "label-forward"},
+		{input: "equ-forward"},
+		{input: "forward"},
+		{input: "forward_symbol"},
+		{input: "forward_mix"},
+		{input: "macro"},
+		{input: "var-macro", code: []byte{1, 0, 0x10, 2, 0, 0x20, 3, 0, 0x30}},
 	}
 
-	for tn, base := range tests {
+	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
-		input := string(readTestDataFile(t, base+".asm"))
-		expected := readTestDataFile(t, base+".bin")
+		input := string(readTestDataFile(t, tt.input+".asm"))
+
+		code := tt.code
+		if code == nil {
+			code = readTestDataFile(t, tt.input+".bin")
+		}
 
 		prog, e := evalInput(input, logger, env)
 		testEvalResult(t, tn, "", e)
@@ -30,7 +38,7 @@ func TestAssembleFile(t *testing.T) {
 		logger.Print()
 		result := CollectCode(prog)
 
-		if err := bytesEqual(result, expected); err != nil {
+		if err := bytesEqual(result, code); err != nil {
 			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 	}
