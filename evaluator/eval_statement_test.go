@@ -250,3 +250,49 @@ func TestEnumStatement(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+
+func TestVarStatement(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `var v = 1 \ v = v + 1`, syms: []symValue{{"V", 2}}},
+		{input: `var .test = 1`, err: errcode.ESCOPE_PROC},
+		{input: `var @test = 1`, err: errcode.ESCOPE_MACRO},
+		{input: `var _ = 1`, err: errcode.EVAR_SYS},
+		{input: `const abc = 1 \ var abc = 1`, err: errcode.EVAR_USED},
+		// 5-
+		{input: `var abc = 1 \ var abc = 2`, err: errcode.EVAR_USED},
+		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE},
+		{input: `const def = 1\ var abc = def`, syms: []symValue{{"ABC", 1}}},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
