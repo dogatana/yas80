@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"fmt"
+	"slices"
 	"yas80/errcode"
 	"yas80/object"
 	"yas80/parser"
@@ -17,7 +18,9 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 		obj := e.evalZ80Instruction(node, env)
 		if obj.Type() == object.CODE_OBJ {
 			code := obj.(*object.CodeObject)
+			// アドレス設定はコード生成後
 			code.Addr = getLocationCounter(env)
+			// 生成コードのサイズ文ロケーションカウンタを進める
 			advanceLocationCounter(env, code.Size())
 		}
 		return obj
@@ -204,6 +207,7 @@ func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env object.E
 	return e.exprToLabel(stmt.Name, env, stmt.Context)
 }
 
+// parser.Label 評価&環境登録
 func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) object.Object {
 	name := label.Name
 
@@ -235,12 +239,13 @@ func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) objec
 		e.logger.Error(fmt.Sprintf(errcode.ELABEL_DUP, name), label.Context)
 		return object.ERROR
 	}
+
+	// SYM_UNKNOWN の場合 SYM_LABEL として登録後値を更新
 	if sym.SymType == object.SYM_UNKNOWN {
 		sym = object.NewLabelSymbol(name, 0, label.Context)
 		env.Set(name, sym)
 	}
-	// SYM_UNKNOWN の場合も上書き
-	// 同じラベルなら値を更新
+	// 値を更新
 	sym.Value.(*object.NumberObject).Value = getLocationCounter(env)
 	return sym
 }
@@ -252,6 +257,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 
 	id, ok := node.Name.(*parser.Ident)
 	if !ok {
+		// rule で回避されているため発生しない
 		return object.ERROR
 	}
 	name := id.Name
@@ -297,7 +303,6 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 	case *object.RefNotFoundObject:
 		names := removeSelfName(v.Names, name)
 		sym := object.NewConstSymbol(name, node.Value, object.NULL, names, node.Context)
-		// sym := object.NewConstSymbol(name, node.Value, object.NULL, v.Names, node.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: object.NULL, Context: node.Context}
 
@@ -307,17 +312,20 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 		sym := object.NewConstSymbol(name, node.Value, &val, []string{}, node.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: node.Context}
+
 	case *object.StringObject:
 		// StringObject の copy を値とする Symbol を作成し環境へ登録
 		val := *v // copy
 		sym := object.NewConstSymbol(name, node.Value, &val, []string{}, node.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: node.Context}
+
 	case *object.RegisterObject, *object.FlagObject:
 		// リテラルを値とする Symbol を作成し環境へ登録
 		sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: node.Context}
+
 	default:
 		if e.Debug > 0 {
 			fmt.Printf("const %s = %#v\n", name, v)
@@ -327,20 +335,11 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.E
 	}
 }
 
+// RefNotFoundObjectの依存リストから名前を削除
 func removeSelfName(names []string, name string) []string {
-	nmap := map[string]bool{}
-	for _, n := range names {
-		nmap[n] = true
-	}
-	nmap[name] = false
-
-	result := []string{}
-	for k, v := range nmap {
-		if v {
-			result = append(result, k)
-		}
-	}
-	return result
+	// slices パッケージ利用へ変更
+	s := slices.Clone(names)
+	return slices.DeleteFunc(s, func(v string) bool { return v == name })
 }
 
 // if 文

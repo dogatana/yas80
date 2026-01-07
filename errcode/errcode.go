@@ -42,7 +42,7 @@ const (
 	EZ80_OP2_HL_IXY = "第2オペランドは HL, IX, IY 以外指定不可"
 
 	EASSIGN_INVALID_TAGET = "変数/_ 以外へは代入不可"
-	EASSIGN_INVALID_VALUE = "代入右辺式の値が未確定"
+	EASSIGN_INVALID_VALUE = "代入文の値が未確定"
 
 	ESYM_DUP    = "CONST/EQU '%s' は定義済み"
 	ESYM_USED   = "%s を CONST/EQU として再定義不可"

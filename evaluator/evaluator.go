@@ -84,6 +84,9 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 		// Z80 命令
 		case *parser.Z80Instruction:
 			obj = e.evalStatement(stmt, env)
+			if isError(obj) {
+				continue
+			}
 			objects = append(objects, obj)
 			stmts = append(stmts, node)
 
@@ -101,7 +104,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 		case *parser.ConstStatement:
 			obj := e.evalStatement(stmt, env)
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
-			// ValueObject の場合は再度評価するため文を残す（FuncObject 等は文を削除）
+			// ValueObject の場合は再度評価のため文を残す（FuncObject 等は文を削除し再評価しない）
 			if obj.Type() == object.VALUE_OBJ {
 				stmts = append(stmts, node)
 			}

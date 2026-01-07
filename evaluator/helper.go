@@ -213,6 +213,7 @@ func (e *Evaluator) getSymbolFromEnv(name string, env object.Environment) (*obje
 	}
 }
 
+// utf-8 string を Shift-JIS []byte へ変換
 func (e *Evaluator) utf8ToShiftJis(input string) ([]byte, error) {
 	reader := transform.NewReader(strings.NewReader(input), japanese.ShiftJIS.NewEncoder())
 	data, err := io.ReadAll(reader)
@@ -222,6 +223,20 @@ func (e *Evaluator) utf8ToShiftJis(input string) ([]byte, error) {
 	return data, err
 }
 
+// parser.Expression -> parser.Ident - >parser.Label を評価・環境登録し object.SymbolObject を返す
+func (e *Evaluator) exprToLabel(expr parser.Expression, env object.Environment, ctx *fileblock.Context) object.Object {
+	id, ok := expr.(*parser.Ident)
+	if !ok {
+		e.logger.Error(errcode.ELABEL_EXPR, ctx)
+		return object.ERROR
+	}
+	label := e.identToLabel(id)
+	label.Context = ctx // Ident の Context でなく、引数（文）の Conext を設定する
+
+	return e.evalLabel(label, env)
+}
+
+// parser.Ident -> parser.Label 変換
 func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 	l := &parser.Label{Name: id.Name, LabelType: parser.NODE_LABEL, Context: id.Context}
 	switch id.Name[0] {
@@ -231,15 +246,4 @@ func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 		l.LabelType = parser.NODE_AT_LABEL
 	}
 	return l
-}
-
-func (e *Evaluator) exprToLabel(expr parser.Expression, env object.Environment, ctx *fileblock.Context) object.Object {
-	id, ok := expr.(*parser.Ident)
-	if !ok {
-		e.logger.Error(errcode.ELABEL_EXPR, ctx)
-		return object.ERROR
-	}
-	label := e.identToLabel(id)
-	label.Context = ctx
-	return e.evalLabel(label, env)
 }
