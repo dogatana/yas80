@@ -104,12 +104,12 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 		}
 		r1, ok := Z80Reg8Index[int(op1.Register)]
 		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.E028, parser.TokenLiteral(op1.Register)), node.Context)
+			e.logger.Error(errcode.EZ80_OP1, node.Context)
 			return object.ERROR
 		}
 		r2, ok := Z80Reg8Index[int(op2.Register)]
 		if !ok {
-			e.logger.Error(fmt.Sprintf(errcode.E028, parser.TokenLiteral(op2.Register)), node.Context)
+			e.logger.Error(errcode.EZ80_OP2, node.Context)
 			return object.ERROR
 		}
 
