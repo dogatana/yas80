@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"testing"
+	"yas80/errcode"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -27,6 +28,103 @@ func TestZ80Instruction(t *testing.T) {
 
 		if err := bytesEqual(result, expected); err != nil {
 			t.Errorf("[%d] generated code diff %s", tn, err.Error())
+		}
+	}
+}
+
+func TestInstructionDefault(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `ld a, VAL`, code: []byte{0x3e, 0}},
+		{input: `ld hl, VAL`, code: []byte{0x21, 0, 0}},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		logger := logging.New("<eval test>")
+		pnode := parseTextForTest(tt.input, logger)
+
+		e := New(logger)
+		env := object.NewEnvironment(nil)
+		pobj := e.EvalProgram(pnode, env).(*object.ProgramObject)
+
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, pobj)
+
+		// sym
+		obj, ok := env.Get("VAL")
+		if !ok {
+			t.Errorf("[%d] VAL not in env", tn)
+			continue
+		}
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok {
+			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
+			continue
+		}
+		if sym.SymType != object.SYM_UNKNOWN {
+			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
+		}
+	}
+}
+
+func TestInstructionError(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `ret VAL`, err: errcode.EZ80_FLAG},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		logger := logging.New("<eval test>")
+		pnode := parseTextForTest(tt.input, logger)
+
+		e := New(logger)
+		env := object.NewEnvironment(nil)
+		pobj := e.EvalProgram(pnode, env).(*object.ProgramObject)
+
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, pobj)
+
+		// sym
+		obj, ok := env.Get("VAL")
+		if !ok {
+			t.Errorf("[%d] VAL not in env", tn)
+			continue
+		}
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok {
+			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
+			continue
+		}
+		if sym.SymType != object.SYM_UNKNOWN {
+			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
 		}
 	}
 }
