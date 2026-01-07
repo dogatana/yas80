@@ -104,6 +104,10 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 	case *parser.ReptStatement:
 		return e.evalReptStatement(node, env)
 
+	// var
+	case *parser.VariableStatement:
+		return e.evalVariableStatement(node, env)
+
 	// 代入文
 	case *parser.AssignStatement:
 		return e.evalAsignStatement(node, env)
@@ -315,35 +319,113 @@ func removeSelfName(names []string, name string) []string {
 	return slices.DeleteFunc(s, func(v string) bool { return v == name })
 }
 
-func (e *Evaluator) evalAsignStatement(node *parser.AssignStatement, env object.Environment) object.Object {
-	target := e.evalExpression(node.Left, env, node.Context)
+// var 文
+func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env object.Environment) object.Object {
+	e.concatenateSymbol(&stmt.Value, env, stmt.Context)
 
-	if isError(target) {
+	id := stmt.Name
+	name := id.Name
+
+	if name == "_" {
+		e.logger.Error(errcode.EVAR_SYS, stmt.Context)
 		return object.ERROR
 	}
-	sym, ok := target.(*object.SymbolObject)
+
+	switch {
+	case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), stmt.Context)
+		return object.ERROR
+	case name[0] == '@' && env.EnvType() != object.ENV_MACRO:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), stmt.Context)
+		return object.ERROR
+	}
+
+	// 定義済みならエラー
+	obj, ok := env.Get(name)
+	if ok {
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok || sym.Name != name || sym.SymType != object.SYM_VAR || !sym.Context.Equal(stmt.Context) {
+			e.logger.Error(fmt.Sprintf(errcode.EVAR_USED, name), stmt.Context)
+		}
+	}
+
+	v := e.evalExpression(stmt.Value, env, stmt.Context)
+	if isError(v) {
+		return object.ERROR
+	}
+
+	switch v := v.(type) {
+	case *object.NumberObject:
+		// NumberObject の copy を値とする Symbol を作成し環境へ登録
+		val := *v // copy
+		sym := object.NewVarSymbol(name, stmt.Value, &val, []string{}, stmt.Context)
+		env.Set(name, sym)
+		return &object.ValueObject{Value: v, Context: stmt.Context}
+
+	case *object.StringObject:
+		// StringObject の copy を値とする Symbol を作成し環境へ登録
+		val := *v // copy
+		sym := object.NewVarSymbol(name, stmt.Value, &val, []string{}, stmt.Context)
+		env.Set(name, sym)
+		return &object.ValueObject{Value: v, Context: stmt.Context}
+
+	case *object.RegisterObject, *object.FlagObject:
+		// リテラルを値とする Symbol を作成し環境へ登録
+		sym := object.NewVarSymbol(name, stmt.Value, v, []string{}, stmt.Context)
+		env.Set(name, sym)
+		return &object.ValueObject{Value: v, Context: stmt.Context}
+
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EVAR_VALUE, name), stmt.Context)
+		return object.ERROR
+	}
+}
+
+// 代入
+func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env object.Environment) object.Object {
+	e.concatenateSymbol(&stmt.Left, env, stmt.Context)
+	e.concatenateSymbol(&stmt.Value, env, stmt.Context)
+
+	id, ok := stmt.Left.(*parser.Ident)
 	if !ok {
-		e.logger.Error(errcode.EASSIGN_INVALID_TAGET, node.Context)
+		// rule で回避されているため発生しない
 		return object.ERROR
 	}
-	if sym.Name != "_" && sym.SymType != object.SYM_VAR {
-		e.logger.Error(errcode.EASSIGN_INVALID_TAGET, node.Context)
+	name := id.Name
+
+	switch {
+	case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), stmt.Context)
+		return object.ERROR
+	case name[0] == '@' && env.EnvType() != object.ENV_MACRO:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), stmt.Context)
 		return object.ERROR
 	}
 
-	value := e.evalExpression(node.Value, env, node.Context)
+	obj, ok := env.Get(name)
+	if !ok {
+		// 未定義ならエラー
+		e.logger.Error(fmt.Sprintf(errcode.EVAR_UNDEF, name), stmt.Context)
+		return object.ERROR
+
+	}
+	sym, ok := obj.(*object.SymbolObject)
+	if !ok || sym.SymType != object.SYM_VAR {
+		// SymbolObject でないか変数でない
+		e.logger.Error(errcode.EASSIGN_LEFT, stmt.Context)
+		return object.ERROR
+	}
+
+	value := e.evalExpression(stmt.Value, env, stmt.Context)
 	if isError(value) {
 		return object.ERROR
 	} else if isRefNotFound(value) {
-		e.logger.Error(errcode.EASSIGN_INVALID_VALUE, node.Context)
+		e.logger.Error(errcode.EASSIGN_VALUE, stmt.Context)
 		return object.ERROR
 	}
 
-	if sym.Name != "_" {
-		e.logger.Error("_ 以外への代入は未実装", node.Context)
-		return object.ERROR
-	}
-	return &object.ValueObject{Value: value, Context: node.Context}
+	sym.Value = value
+	return &object.ValueObject{Value: value, Context: stmt.Context}
 }
 
 // if 文

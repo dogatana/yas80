@@ -62,6 +62,16 @@ func NewConstSymbol(name string, node parser.Node, value Object, depends []strin
 	}
 }
 
+func NewVarSymbol(name string, node parser.Node, value Object, depends []string, ctx *fileblock.Context) *SymbolObject {
+	return &SymbolObject{Name: name,
+		SymType:   SYM_VAR,
+		Node:      node,
+		Value:     value,
+		DependsOn: depends,
+		Context:   ctx,
+	}
+}
+
 func NewUnknownSymbol(name string, ctx *fileblock.Context) *SymbolObject {
 	return &SymbolObject{
 		Name:      name,

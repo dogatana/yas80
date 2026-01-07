@@ -109,6 +109,12 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 				stmts = append(stmts, node)
 			}
 
+		case *parser.VariableStatement:
+			obj := e.evalStatement(stmt, env)
+			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
+			// 変数は毎回評価する
+			stmts = append(stmts, node)
+
 		// 代入
 		case *parser.AssignStatement:
 			obj := e.evalStatement(stmt, env)

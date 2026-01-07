@@ -41,22 +41,31 @@ const (
 	EZ80_OP1_SP     = "第1オペランドは SP 以外指定不可"
 	EZ80_OP2_HL_IXY = "第2オペランドは HL, IX, IY 以外指定不可"
 
-	EASSIGN_INVALID_TAGET = "変数/_ 以外へは代入不可"
-	EASSIGN_INVALID_VALUE = "代入文の値が未確定"
-
+	// CONST/EQU
 	ESYM_DUP    = "CONST/EQU '%s' は定義済み"
 	ESYM_USED   = "%s を CONST/EQU として再定義不可"
 	ESYM_UNDEF  = "シンボル %s は未定義"
 	ESYM_CYCLIC = "シンボル %s の定義が循環参照を含む"
 	ESYM_NULL   = "シンボル %s の値を確定できない"
 
+	// ##
 	ESYM_CONCAT_NOTSYM = "シンボル結合にはシンボルが必要"
 	ESYM_CONCAT_EXPR   = "シンボル結合式の誤り"
 	ESYM_CONCAT_TYPE   = "シンボル結合は数値、文字列のみ可能"
 
+	// ラベル
 	ELABEL_DUP  = "LABEL %s は定義済み"        // symbol 以外で利用済
 	ELABEL_USED = "%s は利用済のため LABEL 定義不可" // symbol 以外で利用済
 	ELABEL_EXPR = "LABEL としてシンボルが必要"
+
+	// VAR/ASSIGN
+	EVAR_UNDEF    = "変数 %s は未定義"
+	EVAR_SYS      = "_ は再定義不可"
+	EVAR_USED     = "%s を変数として再定義不可"
+	EVAR_VALUE    = "変数 %s の初期値が未確定"
+	EASSIGN_LEFT  = "変数/_ 以外へは代入不可"
+	EASSIGN_VALUE = "代入文の値が未確定"
+	// EASSIGN_UNDEF         = "変数 %s は未定義"
 
 	// PROC 定義
 	EPROC_DUP  = "PROC '%s' は定義済み"
