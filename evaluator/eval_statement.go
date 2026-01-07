@@ -106,34 +106,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 
 	// 代入文
 	case *parser.AssignStatement:
-		target := e.evalExpression(node.Left, env, node.Context)
-
-		if isError(target) {
-			return object.ERROR
-		}
-		sym, ok := target.(*object.SymbolObject)
-		if !ok {
-			e.logger.Error(errcode.EASSIGN_INVALID_TAGET, node.Context)
-			return object.ERROR
-		}
-		if sym.Name != "_" && sym.SymType != object.SYM_VAR {
-			e.logger.Error(errcode.EASSIGN_INVALID_TAGET, node.Context)
-			return object.ERROR
-		}
-
-		value := e.evalExpression(node.Value, env, node.Context)
-		if isError(value) {
-			return object.ERROR
-		} else if isRefNotFound(value) {
-			e.logger.Error(errcode.EASSIGN_INVALID_VALUE, node.Context)
-			return object.ERROR
-		}
-
-		if sym.Name != "_" {
-			e.logger.Error("_ 以外への代入は未実装", node.Context)
-			return object.ERROR
-		}
-		return &object.ValueObject{Value: value, Context: node.Context}
+		return e.evalAsignStatement(node, env)
 
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
@@ -340,6 +313,37 @@ func removeSelfName(names []string, name string) []string {
 	// slices パッケージ利用へ変更
 	s := slices.Clone(names)
 	return slices.DeleteFunc(s, func(v string) bool { return v == name })
+}
+
+func (e *Evaluator) evalAsignStatement(node *parser.AssignStatement, env object.Environment) object.Object {
+	target := e.evalExpression(node.Left, env, node.Context)
+
+	if isError(target) {
+		return object.ERROR
+	}
+	sym, ok := target.(*object.SymbolObject)
+	if !ok {
+		e.logger.Error(errcode.EASSIGN_INVALID_TAGET, node.Context)
+		return object.ERROR
+	}
+	if sym.Name != "_" && sym.SymType != object.SYM_VAR {
+		e.logger.Error(errcode.EASSIGN_INVALID_TAGET, node.Context)
+		return object.ERROR
+	}
+
+	value := e.evalExpression(node.Value, env, node.Context)
+	if isError(value) {
+		return object.ERROR
+	} else if isRefNotFound(value) {
+		e.logger.Error(errcode.EASSIGN_INVALID_VALUE, node.Context)
+		return object.ERROR
+	}
+
+	if sym.Name != "_" {
+		e.logger.Error("_ 以外への代入は未実装", node.Context)
+		return object.ERROR
+	}
+	return &object.ValueObject{Value: value, Context: node.Context}
 }
 
 // if 文
