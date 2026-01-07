@@ -146,6 +146,14 @@ func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *pa
 		replace(&news.Count)
 		replace(&news.FillValue)
 		return &news
+	case *parser.DataStatement:
+		news := *stmt
+		replace(&news.Label)
+		for i := 0; i < len(news.Values); i++ {
+			replace(&news.Values[i])
+		}
+		return &news
+
 	case *parser.MacroCallStatement:
 		news := *stmt
 		args := *stmt.Args
