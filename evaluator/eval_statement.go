@@ -468,7 +468,7 @@ func (e *Evaluator) evalIfStatementWithFunc(
 	}
 }
 
-// function 文
+// func 文
 func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env object.Environment) object.Object {
 	name := stmt.Name
 	if name[0] == '@' || name[0] == '.' {
@@ -480,13 +480,32 @@ func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env object.Env
 			e.logger.Error(fmt.Sprintf(errcode.EFUNC_DUP, name), stmt.Context)
 		} else {
 			e.logger.Error(fmt.Sprintf(errcode.EFUNC_USED, name), stmt.Context)
-
 		}
 		return object.NULL
 	}
+	// 無効な文をチェック
+	e.filterValidStatementForFunc(stmt.Block)
+
 	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env}
 	env.Set(name, obj)
 	return obj
+}
+
+// func 内で利用可能な文を抽出するフィルタ
+func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
+	stmts := make([]parser.Node, 0, len(bs.Block))
+
+	for _, stmt := range bs.Block {
+		switch stmt := stmt.(type) {
+		case *parser.ConstStatement, *parser.VariableStatement, *parser.AssignStatement, *parser.ReturnStatement:
+			stmts = append(stmts, stmt)
+		case *parser.FuncStatement, *parser.IfStatement:
+			stmts = append(stmts, stmt)
+		default:
+			e.logger.Warning(fmt.Sprintf(errcode.WFUNC_INVALID_STMT, stmt), stmt.(parser.Statement).StatementNode())
+		}
+	}
+	bs.Block = stmts
 }
 
 // return 文

@@ -77,7 +77,7 @@ type Node interface {
 type Statement interface {
 	Node
 	ReplaceContext(ctx fileblock.Context)
-	statementNode() *fileblock.Context
+	StatementNode() *fileblock.Context
 }
 
 // 式
@@ -109,7 +109,7 @@ type ParseError struct {
 	Context *fileblock.Context
 }
 
-func (s *ParseError) statementNode() *fileblock.Context { return s.Context }
+func (s *ParseError) StatementNode() *fileblock.Context { return s.Context }
 func (s *ParseError) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
@@ -131,7 +131,7 @@ type LabelStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *LabelStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *LabelStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *LabelStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
@@ -148,7 +148,7 @@ type ProcStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ProcStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *ProcStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *ProcStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
@@ -163,7 +163,7 @@ type ProcBlockStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ProcBlockStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *ProcBlockStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *ProcBlockStatement) NodeType() NodeType                { return NODE_PROC_BLOCK_STMT }
 func (s *ProcBlockStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -187,7 +187,7 @@ type ExpressionStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ExpressionStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *ExpressionStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *ExpressionStatement) NodeType() NodeType                { return NODE_EXPR_STMT }
 func (s *ExpressionStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -202,7 +202,7 @@ type EnumStatement struct {
 	Context  *fileblock.Context
 }
 
-func (s *EnumStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *EnumStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *EnumStatement) NodeType() NodeType                { return NODE_ENUM_STMT }
 func (s *EnumStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -223,7 +223,7 @@ type EnumElements struct {
 	Elements []*EnumElement
 }
 
-func (s *EnumElements) statementNode() *fileblock.Context    { return nil }
+func (s *EnumElements) StatementNode() *fileblock.Context    { return nil }
 func (s *EnumElements) NodeType() NodeType                   { return NODE_ENUM_ELEMENTS_STMT }
 func (s *EnumElements) ReplaceContext(ctx fileblock.Context) {}
 func (s *EnumElements) String() string {
@@ -241,7 +241,7 @@ type EnumElement struct {
 	Context *fileblock.Context
 }
 
-func (s *EnumElement) statementNode() *fileblock.Context { return s.Context }
+func (s *EnumElement) StatementNode() *fileblock.Context { return s.Context }
 func (s *EnumElement) NodeType() NodeType                { return NODE_ENUM_ELEMENT }
 func (s *EnumElement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -262,7 +262,7 @@ type ReptStatement struct {
 	Context  *fileblock.Context
 }
 
-func (s *ReptStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *ReptStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *ReptStatement) NodeType() NodeType                { return NODE_REPT_STMT }
 func (s *ReptStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -289,7 +289,7 @@ type SetSysVarStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *SetSysVarStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *SetSysVarStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *SetSysVarStatement) NodeType() NodeType                { return NODE_SET_SYSVAR_STMT }
 func (s *SetSysVarStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -307,7 +307,7 @@ type IfStatement struct {
 	Context     *fileblock.Context
 }
 
-func (s *IfStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *IfStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *IfStatement) NodeType() NodeType                { return NODE_IF_STMT }
 func (s *IfStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -347,7 +347,7 @@ type FuncStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *FuncStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *FuncStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *FuncStatement) NodeType() NodeType                { return NODE_FUNC_STMT }
 func (s *FuncStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -371,7 +371,7 @@ type MacroStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *MacroStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *MacroStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *MacroStatement) NodeType() NodeType                { return NODE_MACRO_STMT }
 func (s *MacroStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -394,7 +394,7 @@ type MacroCallStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *MacroCallStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *MacroCallStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *MacroCallStatement) NodeType() NodeType                { return NODE_MACRO_CALL_STMT }
 func (s *MacroCallStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -413,7 +413,7 @@ type BlockStatement struct {
 	Block []Node
 }
 
-func (s *BlockStatement) statementNode() *fileblock.Context    { return nil }
+func (s *BlockStatement) StatementNode() *fileblock.Context    { return nil }
 func (s *BlockStatement) NodeType() NodeType                   { return NODE_BLOCK_STMT }
 func (s *BlockStatement) ReplaceContext(ctx fileblock.Context) {}
 func (s *BlockStatement) String() string {
@@ -434,7 +434,7 @@ type MacroBlockStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *MacroBlockStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *MacroBlockStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *MacroBlockStatement) NodeType() NodeType                { return NODE_MACRO_BLOCK_STMT }
 func (s *MacroBlockStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -459,7 +459,7 @@ type ConstStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ConstStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *ConstStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *ConstStatement) NodeType() NodeType                { return NODE_CONST_STMT }
 func (s *ConstStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -483,7 +483,7 @@ type VariableStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *VariableStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *VariableStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *VariableStatement) NodeType() NodeType                { return NODE_VAR_STMT }
 func (s *VariableStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -507,7 +507,7 @@ type AssignStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *AssignStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *AssignStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *AssignStatement) NodeType() NodeType                { return NODE_ASSIGN_STMT }
 func (s *AssignStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -528,7 +528,7 @@ type ExitmStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ExitmStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *ExitmStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *ExitmStatement) NodeType() NodeType                { return NODE_EXITM_STMT }
 func (s *ExitmStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -542,7 +542,7 @@ type ReturnStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *ReturnStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *ReturnStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *ReturnStatement) NodeType() NodeType                { return NODE_RETURN_STMT }
 func (s *ReturnStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -563,7 +563,7 @@ type DataStatement struct {
 	Context *fileblock.Context
 }
 
-func (s *DataStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *DataStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *DataStatement) NodeType() NodeType                { return NODE_DATA_STMT }
 func (s *DataStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -581,7 +581,7 @@ type DataStoreStatement struct {
 	Context   *fileblock.Context
 }
 
-func (s *DataStoreStatement) statementNode() *fileblock.Context { return s.Context }
+func (s *DataStoreStatement) StatementNode() *fileblock.Context { return s.Context }
 func (s *DataStoreStatement) NodeType() NodeType                { return NODE_DATA_STORE_STMT }
 func (s *DataStoreStatement) ReplaceContext(ctx fileblock.Context) {
 	ctx.Source = s.Context
@@ -607,7 +607,7 @@ type Z80Instruction struct {
 	Context  *fileblock.Context
 }
 
-func (s *Z80Instruction) statementNode() *fileblock.Context { return s.Context }
+func (s *Z80Instruction) StatementNode() *fileblock.Context { return s.Context }
 func (s *Z80Instruction) NodeType() NodeType {
 	return NodeType(s.InstType)
 }

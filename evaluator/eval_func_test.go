@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"testing"
+	"yas80/errcode"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -201,5 +202,41 @@ func TestFunction(t *testing.T) {
 			return e.getSymbolFromEnv(name, env)
 		}
 		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestFuncErrorWarning(t *testing.T) {
+	tests := []struct {
+		input string
+		err   string
+	}{
+		{`t func \ ld a,a \endf`, errcode.WFUNC_INVALID_STMT},
+		{`t func \ abc: \endf`, errcode.WFUNC_INVALID_STMT},
+		{`t func \ rept 3 \ nop \ endr \endf`, errcode.WFUNC_INVALID_STMT},
+		{`t func \ tm macro \ nop \ endm \endf`, errcode.WFUNC_INVALID_STMT},
+		{`tm macro \ _ = 1 \ endm \ t func \ tm \endf`, errcode.WFUNC_INVALID_STMT},
+		// 5-
+		{`tm macro \ exitm \ endm \ t func \ tm \ endf`, errcode.WFUNC_INVALID_STMT},
+		{`f1 func \ endf \ f1 func \ endf`, errcode.EFUNC_DUP},
+		{`const f1 = 1 \ f1 func \ endf`, errcode.EFUNC_USED},
+		{`.t func \ endf`, errcode.EFUNC_NAME},
+		{`@t func \ endf`, errcode.EFUNC_NAME},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		_, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
 	}
 }
