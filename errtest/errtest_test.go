@@ -31,15 +31,15 @@ func TestErrorConstLabel(t *testing.T) {
 		expected string
 	}{
 		// 0-
-		{`const abc = 0 \ const abc = 1`, errcode.ESYM_DUP},
+		{`const abc = 0 \ const abc = 1`, errcode.ECONST_DUP},
 		{`abc: nop \ abc: nop`, errcode.ELABEL_DUP},
 		{`abc: \ nop \ abc: nop`, errcode.ELABEL_DUP},
 		{`abc: nop \ abc:  \ nop`, errcode.ELABEL_DUP},
 		{`abc: \  nop \ abc: \ nop`, errcode.ELABEL_DUP},
 		// 5-
-		{`abc: nop \ const abc = 123`, errcode.ESYM_DUP},
+		{`abc: nop \ const abc = 123`, errcode.ECONST_DUP},
 		{`const abc = 123 \ abc: nop`, errcode.ELABEL_USED},
-		{`function abc() x \ const abc = 1`, errcode.ESYM_USED},
+		{`function abc() x \ const abc = 1`, errcode.ECONST_USED},
 		{`const abc = def \ const def = abc`, errcode.ESYM_CYCLIC},
 		{`const abc = def + 1 \ const def = xyz + 2 \ const xyz = abc + 3`, errcode.ESYM_CYCLIC},
 	}

@@ -31,13 +31,13 @@ func TestConcatenateSymbol(t *testing.T) {
 
 		// error
 		{input: `const 123 ## 123 = 1`, err: errcode.ESYNTAX},
-		{input: `const abc ## a = 1`, err: errcode.ESYM_CONCAT_TYPE},
-		{input: `const abc ## hl = 1`, err: errcode.ESYM_CONCAT_TYPE},
-		{input: `const abc ## cy = 1`, err: errcode.ESYM_CONCAT_TYPE},
-		{input: `function abc() 1 \ const aaa ## abc = 1`, err: errcode.ESYM_CONCAT_TYPE},
+		{input: `const abc ## a = 1`, err: errcode.ECONCAT_TYPE},
+		{input: `const abc ## hl = 1`, err: errcode.ECONCAT_TYPE},
+		{input: `const abc ## cy = 1`, err: errcode.ECONCAT_TYPE},
+		{input: `function abc() 1 \ const aaa ## abc = 1`, err: errcode.ECONCAT_TYPE},
 		{input: `const abc ## cy ## 1 = 1`, err: errcode.ESYNTAX}, // syntax error
-		{input: `const abc ## 123 = 456 \ const abc123 = 123`, err: errcode.ESYM_DUP},
-		{input: `const abc123 = 123 \ const abc ## 123 = 456`, err: errcode.ESYM_DUP},
+		{input: `const abc ## 123 = 456 \ const abc123 = 123`, err: errcode.ECONST_DUP},
+		{input: `const abc123 = 123 \ const abc ## 123 = 456`, err: errcode.ECONST_DUP},
 	}
 
 	for tn, tt := range tests {

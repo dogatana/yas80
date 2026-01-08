@@ -106,7 +106,7 @@ func TestMacroConst(t *testing.T) {
 		},
 		{
 			input: `test macro\ const abc = 123 \ endm \ test \ test`,
-			err:   errcode.ESYM_DUP,
+			err:   errcode.ECONST_DUP,
 		},
 		{
 			input: `test macro\ const @abc = 123 \ endm \ test \ test`,

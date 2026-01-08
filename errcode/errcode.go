@@ -41,17 +41,19 @@ const (
 	EZ80_OP1_SP     = "第1オペランドは SP 以外指定不可"
 	EZ80_OP2_HL_IXY = "第2オペランドは HL, IX, IY 以外指定不可"
 
-	// CONST/EQU
-	ESYM_DUP    = "CONST/EQU '%s' は定義済み"
-	ESYM_USED   = "%s を CONST/EQU として再定義不可"
+	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"
 	ESYM_CYCLIC = "シンボル %s の定義が循環参照を含む"
 	ESYM_NULL   = "シンボル %s の値を確定できない"
 
+	// CONST/EQU
+	ECONST_DUP  = "CONST/EQU '%s' は定義済み"
+	ECONST_USED = "%s を CONST/EQU として再定義不可"
+
 	// ##
-	ESYM_CONCAT_NOTSYM = "シンボル結合にはシンボルが必要"
-	ESYM_CONCAT_EXPR   = "シンボル結合式の誤り"
-	ESYM_CONCAT_TYPE   = "シンボル結合は数値、文字列のみ可能"
+	ECONCAT_NOTSYM = "シンボル結合にはシンボルが必要"
+	ECONCAT_EXPR   = "シンボル結合式の誤り"
+	ECONCAT_TYPE   = "シンボル結合は数値、文字列のみ可能"
 
 	// ラベル
 	ELABEL_DUP  = "LABEL %s は定義済み"        // symbol 以外で利用済
