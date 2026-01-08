@@ -76,7 +76,7 @@ const (
 	// ENUM 定義
 	EENUM_DUP       = "ENUM '%s' は定義済み"
 	EENUM_USED      = "'%s' を ENUM として再定義不可"
-	EENUM_ELE_DUP   = "ENUM '%s.%s' は定義済み"
+	EENUM_ELE_DUP   = "ENUM '%s.%s' は定義済みのため無効"
 	EENUM_ELE_VALUE = "ENUM 要素に使用できない値"
 	EENUM_ELE_FWD   = "ENUM 要素の値が未確定"
 	// ENUM 参照

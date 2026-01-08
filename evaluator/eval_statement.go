@@ -532,15 +532,18 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Env
 		return object.ERROR
 	}
 
+	// EnumObject は Enviromnet interface を実装している
 	enum := &object.EnumObject{Name: name, Env: object.NewEnvironment(env)}
 	env.Set(name, enum)
 
-	value := 0
+	// enum element の評価でエラーが発生した場合、単に無効とする
+	value := 0 // 初期値
 	for _, ele := range node.Elements.Elements {
-		ename := "." + ele.Name
+		ename := "." + ele.Name // . を先頭に付けたものを要素に内部名
 		if _, ok := enum.Get(ename); ok {
 			e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_DUP, name, ename), node.Context)
-			return object.ERROR
+			// 定義済みなら無効（無視）
+			continue
 		}
 		if ele.Value == nil {
 			esym := &object.SymbolObject{
@@ -552,13 +555,14 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Env
 			continue
 		}
 		v := e.evalExpression(ele.Value, enum, node.Context)
+		if isError(v) {
+			// 値がエラーなら無効（無視）
+			continue
+		}
 		sym := &object.SymbolObject{Name: ename, SymType: object.SYM_CONST}
 		switch v := v.(type) {
-		case *object.ErrorObject:
-			continue
 		case *object.RefNotFoundObject:
 			e.logger.Error(errcode.EENUM_ELE_FWD, ele.Context)
-			continue
 		case *object.NumberObject:
 			sym.Value = v
 			enum.Set(ename, sym)
@@ -568,7 +572,6 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Env
 			enum.Set(ename, sym)
 		default:
 			e.logger.Error(errcode.EENUM_ELE_VALUE, ele.Context)
-			continue
 		}
 	}
 	return enum

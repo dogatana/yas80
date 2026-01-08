@@ -100,7 +100,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			stmts = append(stmts, node)
 
-		// const/equ
+		// const/equ 定数定義
 		case *parser.ConstStatement:
 			obj := e.evalStatement(stmt, env)
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
@@ -109,6 +109,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 				stmts = append(stmts, node)
 			}
 
+		// var 変数定義
 		case *parser.VariableStatement:
 			obj := e.evalStatement(stmt, env)
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
@@ -200,7 +201,6 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			if isError(obj) {
 				return object.ERROR
 			}
-			// stmts, objects 両方に追加しない
 
 		// システム変数設定
 		case *parser.SetSysVarStatement:
@@ -209,13 +209,13 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 				return object.ERROR
 			}
 
+		// enum
 		case *parser.EnumStatement:
 			obj := e.evalStatement(stmt, env)
 			if isError(obj) {
 				return object.ERROR
 			}
 		default:
-			// e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil)
 			obj = e.evalStatement(node, env)
 			if isError(obj) {
 				continue
