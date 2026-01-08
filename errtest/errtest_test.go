@@ -211,25 +211,3 @@ func TestErrorRept(t *testing.T) {
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 }
-
-func TestErrorEnumDef(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		// 0-
-		{`abc enum \ ende \ abc enum \ ende`, errcode.EENUM_DUP},
-		{`const abc = 1 \ abc enum \ ende`, errcode.EENUM_USED},
-		{`abc: nop \ abc enum \ ende`, errcode.EENUM_USED},
-		{`abc enum \ aaa = 1 \ aaa = 1 \ ende`, errcode.EENUM_ELE_DUP},
-		{`abc enum \ aaa = zzz \ ende \ const zzz = 1`, errcode.EENUM_ELE_FWD},
-		// 5-
-		{`abc enum \ aaa = 1 \ ende \ ld a, abc.xyz`, errcode.EENUM_ELE_UNDEF},
-	}
-	for tn, tt := range tests {
-		logger := logging.New("test")
-		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
-	}
-}

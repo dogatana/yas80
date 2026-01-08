@@ -218,10 +218,12 @@ func TestEnumStatement(t *testing.T) {
 		},
 		{input: `test enum \ aaa \ ende \ test enum \ aaa \ende`, err: errcode.EENUM_DUP},
 		{input: `const test = 1 \ test enum \ aaa \ ende`, err: errcode.EENUM_USED},
+		{input: `test: nop \ test enum \ aaa \ ende`, err: errcode.EENUM_USED},
 		{input: `test enum \ aaa \ aaa \ ende`, err: errcode.EENUM_ELE_DUP},
 		{input: `test enum \ aaa = hl \ ende`, err: errcode.EENUM_ELE_VALUE},
 		{input: `test enum \ aaa = .bbb \ bbb = 1 \ ende`, err: errcode.EENUM_ELE_FWD},
 		{input: `test enum \ aaa = outer_value \ ende`, err: errcode.EENUM_ELE_FWD},
+		{input: `abc enum \ aaa = 1 \ ende \ ld a, abc.xyz`, err: errcode.EENUM_ELE_UNDEF},
 	}
 
 	for tn, tt := range tests {
