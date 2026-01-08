@@ -3,9 +3,6 @@ package evaluator
 import (
 	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
-	"runtime"
 	"testing"
 	"yas80/fileblock"
 	"yas80/logging"
@@ -184,19 +181,6 @@ func testStringObject(t *testing.T, tn int, obj object.Object, expected string) 
 		return false
 	}
 	return true
-}
-
-func readTestDataFile(t *testing.T, filename string) []byte {
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("runtime.Caller(0) failed")
-	}
-	path := filepath.Join(filepath.Dir(file), "testdata", filename)
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("ReadFile(%q) returns %s", path, err.Error())
-	}
-	return data
 }
 
 func collectValue(prog *object.ProgramObject) []*object.ValueObject {

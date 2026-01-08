@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"testing"
+	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -25,11 +26,11 @@ func TestAssembleFile(t *testing.T) {
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
-		input := string(readTestDataFile(t, tt.input+".asm"))
+		input := string(testutil.ReadTestDataFile(t, tt.input+".asm"))
 
 		code := tt.code
 		if code == nil {
-			code = readTestDataFile(t, tt.input+".bin")
+			code = testutil.ReadTestDataFile(t, tt.input+".bin")
 		}
 
 		prog, e := evalInput(input, logger, env)

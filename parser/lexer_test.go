@@ -397,7 +397,7 @@ func TestLexZ80FLAG(t *testing.T) {
 
 // Z80命令のテスト
 func TestLexZ80Instructions(t *testing.T) {
-	input := strings.ToLower(readTestDataFile(t, "z80instruction.txt"))
+	input := strings.ToLower(string(testutil.ReadTestDataFile(t, "z80instruction.txt")))
 
 	l := newLexerForTest(input)
 	for {

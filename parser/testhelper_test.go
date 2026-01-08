@@ -1,9 +1,6 @@
 package parser
 
 import (
-	"os"
-	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 	"yas80/fileblock"
@@ -84,16 +81,4 @@ func testStringLiteral(t *testing.T, tn int, node Node, expected string) {
 	if literal.Value != expected {
 		t.Errorf("[%d] not %q. got %q", tn, expected, literal.Value)
 	}
-}
-func readTestDataFile(t *testing.T, filename string) string {
-	_, file, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Fatal("runtime.Caller(0) failed")
-	}
-	path := filepath.Join(filepath.Dir(file), "testdata", filename)
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("could read %s", path)
-	}
-	return string(data)
 }

@@ -1,7 +1,10 @@
 package testutil
 
 import (
+	"os"
+	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 	"yas80/logging"
@@ -58,4 +61,17 @@ func hasMessage(messages []logging.LogMessage, expected string) bool {
 		}
 	}
 	return false
+}
+
+func ReadTestDataFile(t *testing.T, filename string) []byte {
+	_, file, _, ok := runtime.Caller(1)
+	if !ok {
+		t.Fatal("runtime.Caller(1) failed")
+	}
+	path := filepath.Join(filepath.Dir(file), "testdata", filename)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile(%q) returns %s", path, err.Error())
+	}
+	return data
 }
