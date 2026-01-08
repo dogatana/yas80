@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"yas80/errtest"
 	"yas80/fileblock"
+	"yas80/internal/testutil"
 	"yas80/logging"
 )
 
@@ -49,7 +49,7 @@ func testInputEnd(t *testing.T, tn int, lexer *Lexer) {
 }
 
 func testLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
-	ename := errtest.ErrcodeNames[err]
+	ename := testutil.ErrcodeNames[err]
 
 	var msgs []logging.LogMessage
 	switch ename[0] {

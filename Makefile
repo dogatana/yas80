@@ -45,12 +45,16 @@ fmt:
 check:
 	staticcheck ./parser ./evaluator ./errtest ./logging
 
-test: errtest/errcode_names.go
+tc:
+	python internal/testutil/errcode_coverage.py
+
+test: internal/testutil/errcode_names.go
 	go test ./parser ./evaluator ./fileblock ./errtest
 
-errtest/errcode_names.go: errcode/errcode.go
-	python errtest/errcode_names.py $< $@
+testv: internal/testutil/errcode_names.go
+	go test -v ./parser ./evaluator ./fileblock ./errtest
+
+internal/testutil/errcode_names.go: errcode/errcode.go
+	python internal/testutil/errcode_names.py $< $@
 	go fmt $@
 	
-testv:
-	go test -v ./parser ./evaluator ./fileblock ./errtest

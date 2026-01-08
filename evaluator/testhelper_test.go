@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"yas80/errtest"
 	"yas80/fileblock"
+	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
@@ -138,7 +138,7 @@ func testSymValues(t *testing.T, tn int, syms []symValue, getter func(name strin
 }
 
 func testLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
-	ename := errtest.ErrcodeNames[err]
+	ename := testutil.ErrcodeNames[err]
 
 	var msgs []logging.LogMessage
 	switch ename[0] {

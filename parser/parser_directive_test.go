@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 	"yas80/errcode"
-	"yas80/errtest"
+	"yas80/internal/testutil"
 )
 
 func TestParseConstStatement(t *testing.T) {
@@ -381,7 +381,7 @@ func TestParseDataStatement(t *testing.T) {
 
 		if tt.err != "" {
 			testLogMessage(t, tn, tt.err, l.logger)
-			ename := errtest.ErrcodeNames[tt.err]
+			ename := testutil.ErrcodeNames[tt.err]
 			if ename[0] == 'E' {
 				continue
 			}
@@ -444,7 +444,7 @@ func TestParseDataStoreStatement(t *testing.T) {
 
 		if tt.err != "" {
 			testLogMessage(t, tn, tt.err, l.logger)
-			ename := errtest.ErrcodeNames[tt.err]
+			ename := testutil.ErrcodeNames[tt.err]
 			if ename[0] == 'E' {
 				continue
 			}

@@ -3,7 +3,7 @@ package parser
 import (
 	"testing"
 	"yas80/errcode"
-	"yas80/errtest"
+	"yas80/internal/testutil"
 )
 
 // parse 時の定数式演算結果のテスト
@@ -215,7 +215,7 @@ func TestParseExpressionError(t *testing.T) {
 
 		if tt.err != "" {
 			testLogMessage(t, tn, tt.err, l.logger)
-			ename := errtest.ErrcodeNames[tt.err]
+			ename := testutil.ErrcodeNames[tt.err]
 			if ename[0] == 'E' {
 				continue
 			}

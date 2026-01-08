@@ -8,6 +8,7 @@ import (
 	"testing"
 	"yas80/evaluator"
 	"yas80/fileblock"
+	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
@@ -118,7 +119,7 @@ func hasMessage(messages []logging.LogMessage, expected string) bool {
 }
 
 func getErrcodeName(msg string) string {
-	if name, ok := ErrcodeNames[msg]; ok {
+	if name, ok := testutil.ErrcodeNames[msg]; ok {
 		return name
 	}
 	panic(fmt.Sprintf("not found '%s", msg))

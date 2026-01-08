@@ -19,7 +19,7 @@ def main():
         print(name, end=" ")
 
 def get_codenames()->list[str]:
-    path = os.path.join(os.path.dirname(__file__), "..", "errcode", "errcode.go")
+    path = os.path.join(os.path.dirname(__file__), "..", "..", "errcode", "errcode.go")
     names = []
     with open(path, encoding="utf-8") as fp:
         for line in fp:
@@ -33,7 +33,7 @@ def get_codenames()->list[str]:
     return names
 
 def read_testfiles(dir: str, count: map):
-    path = os.path.join(os.path.dirname(__file__), "..", dir, "*_test.go")
+    path = os.path.join(os.path.dirname(__file__), "..", "..", dir, "*_test.go")
     for file in glob.glob(path):
         names = read_testfile(file)
         for name in names:

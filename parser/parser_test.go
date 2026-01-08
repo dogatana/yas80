@@ -3,7 +3,7 @@ package parser
 import (
 	"testing"
 	"yas80/errcode"
-	"yas80/errtest"
+	"yas80/internal/testutil"
 )
 
 func TestParseNumberLiteral(t *testing.T) {
@@ -65,7 +65,7 @@ func TestParseNumberLiteralError(t *testing.T) {
 
 		if tt.err != "" {
 			testLogMessage(t, tn, tt.err, l.logger)
-			ename := errtest.ErrcodeNames[tt.err]
+			ename := testutil.ErrcodeNames[tt.err]
 			if ename[0] == 'E' {
 				continue
 			}
@@ -107,7 +107,7 @@ func TestParseStringLiteral(t *testing.T) {
 
 		if tt.err != "" {
 			testLogMessage(t, tn, tt.err, l.logger)
-			ename := errtest.ErrcodeNames[tt.err]
+			ename := testutil.ErrcodeNames[tt.err]
 			if ename[0] == 'E' {
 				continue
 			}
