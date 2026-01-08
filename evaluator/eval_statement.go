@@ -100,7 +100,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 	case *parser.MacroCallStatement:
 		return e.evalMacroCallStatement(node, env)
 
-	// REPT
+	// rept
 	case *parser.ReptStatement:
 		return e.evalReptStatement(node, env)
 
@@ -112,18 +112,22 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 	case *parser.AssignStatement:
 		return e.evalAsignStatement(node, env)
 
+	// if
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
 
 	case *parser.BlockStatement:
 		return e.evalBlockStatement(node, env)
 
+	// func
 	case *parser.FuncStatement:
 		return e.evalFuncStatement(node, env)
 
+	// return
 	case *parser.ReturnStatement:
 		return e.evalReturnStatement(node, env)
 
+	// システム変数設定
 	case *parser.SetSysVarStatement:
 		obj := e.evalExpression(node.Value, env, node.Context)
 		if isError(obj) {
@@ -132,17 +136,13 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 		env.Set(node.Name, obj)
 		return obj // 形式的に必要
 
+	// enum
 	case *parser.EnumStatement:
-		v := e.evalEnumStatement(node, env)
-		switch v.Type() {
-		case object.ENUM_OBJ:
-			env.Set(v.(*object.EnumObject).Name, v)
-			return v
-		case object.NULL_OBJ: // TODO
-			return &object.NodeObject{Node: node}
-		default:
+		obj := e.evalEnumStatement(node, env)
+		if isError(obj) {
 			return object.ERROR
 		}
+		return obj
 
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil) // TODO
@@ -520,14 +520,14 @@ func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env object
 }
 
 // enum 文
-func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Environment) object.Object {
-	name := node.Name
+func (e *Evaluator) evalEnumStatement(stmt *parser.EnumStatement, env object.Environment) object.Object {
+	name := stmt.Name
 	obj, ok := env.Get(name)
 	if ok {
 		if obj.Type() == object.ENUM_OBJ {
-			e.logger.Error(fmt.Sprintf(errcode.EENUM_DUP, name), node.Context)
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_DUP, name), stmt.Context)
 		} else {
-			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED, name), node.Context)
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED, name), stmt.Context)
 		}
 		return object.ERROR
 	}
@@ -538,10 +538,10 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Env
 
 	// enum element の評価でエラーが発生した場合、単に無効とする
 	value := 0 // 初期値
-	for _, ele := range node.Elements.Elements {
+	for _, ele := range stmt.Elements.Elements {
 		ename := "." + ele.Name // . を先頭に付けたものを要素に内部名
 		if _, ok := enum.Get(ename); ok {
-			e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_DUP, name, ename), node.Context)
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_DUP, name, ename), stmt.Context)
 			// 定義済みなら無効（無視）
 			continue
 		}
@@ -554,7 +554,7 @@ func (e *Evaluator) evalEnumStatement(node *parser.EnumStatement, env object.Env
 			value++
 			continue
 		}
-		v := e.evalExpression(ele.Value, enum, node.Context)
+		v := e.evalExpression(ele.Value, enum, stmt.Context)
 		if isError(v) {
 			// 値がエラーなら無効（無視）
 			continue

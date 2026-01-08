@@ -56,7 +56,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 		case *parser.ProcStatement:
 			obj := e.evalStatement(stmt, env)
 			if isError(obj) {
-				return object.ERROR
+				continue
 			}
 			nobj, ok := obj.(*object.NodeObject)
 			if !ok {
@@ -75,7 +75,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			obj = e.evalBlockPtr(&stmt.Block, pobj.(*object.ProcObject))
 			prog, ok := obj.(*object.ProgramObject)
 			if !ok {
-				return object.ERROR
+				continue
 			}
 			objects = append(objects, prog.Objects...)
 			stmts = append(stmts, stmt)
@@ -103,6 +103,9 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 		// const/equ 定数定義
 		case *parser.ConstStatement:
 			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				continue
+			}
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			// ValueObject の場合は再度評価のため文を残す（FuncObject 等は文を削除し再評価しない）
 			if obj.Type() == object.VALUE_OBJ {
@@ -112,6 +115,9 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 		// var 変数定義
 		case *parser.VariableStatement:
 			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				continue
+			}
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
 			// 変数は毎回評価する
 			stmts = append(stmts, node)
@@ -119,16 +125,15 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 		// 代入
 		case *parser.AssignStatement:
 			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				continue
+			}
 			objects = append(objects, obj)
 			stmts = append(stmts, node)
 
 		// マクロ定義
 		case *parser.MacroStatement:
-			obj := e.evalStatement(stmt, env)
-			if isError(obj) {
-				return object.ERROR
-			}
-			continue
+			_ = e.evalStatement(stmt, env)
 
 		// マクロ呼出し
 		case *parser.MacroCallStatement:
@@ -151,8 +156,6 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 
 			node = bs
 			goto EVAL_AGAIN
-			// stmts = append(stmts, bs)
-			// e.Resolved = false
 
 		// マクロブロック (展開済みマクロ)
 		case *parser.MacroBlockStatement:
@@ -195,26 +198,23 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) obj
 			stmts = append(stmts, nodeObj.Node)
 			e.Resolved = false
 
-		// 関数定義
+		// func
 		case *parser.FuncStatement:
-			obj := e.evalStatement(stmt, env)
-			if isError(obj) {
-				return object.ERROR
-			}
+			_ = e.evalStatement(stmt, env)
+
+		// enum
+		case *parser.EnumStatement:
+			_ = e.evalStatement(stmt, env)
 
 		// システム変数設定
 		case *parser.SetSysVarStatement:
 			obj := e.evalStatement(stmt, env)
 			if isError(obj) {
-				return object.ERROR
+				continue
 			}
+			objects = append(objects, obj)
+			stmts = append(stmts, node)
 
-		// enum
-		case *parser.EnumStatement:
-			obj := e.evalStatement(stmt, env)
-			if isError(obj) {
-				return object.ERROR
-			}
 		default:
 			obj = e.evalStatement(node, env)
 			if isError(obj) {
