@@ -502,7 +502,7 @@ func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
 		case *parser.FuncStatement, *parser.IfStatement:
 			stmts = append(stmts, stmt)
 		default:
-			e.logger.Warning(fmt.Sprintf(errcode.WFUNC_INVALID_STMT, stmt), stmt.(parser.Statement).StatementNode())
+			e.logger.Warning(fmt.Sprintf(errcode.WFUNC_INVALID_STMT, stmt), stmt.(parser.Statement).GetContext())
 		}
 	}
 	bs.Block = stmts
