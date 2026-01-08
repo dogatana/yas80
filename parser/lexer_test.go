@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 	"yas80/errcode"
+	"yas80/internal/testutil"
 )
 
 //lint:ignore U1000 非テスト：文字列に対してトークン列を返す
@@ -589,6 +590,6 @@ func TestLexError(t *testing.T) {
 		if len(l.logger.Errors) == 0 {
 			t.Fatalf("[%d] no errors", tn)
 		}
-		testLogMessage(t, tn, tt.err, l.logger)
+		testutil.TestLogMessage(t, tn, tt.err, l.logger)
 	}
 }

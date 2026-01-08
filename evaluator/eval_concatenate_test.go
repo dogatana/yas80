@@ -3,6 +3,7 @@ package evaluator
 import (
 	"testing"
 	"yas80/errcode"
+	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -52,7 +53,7 @@ func TestConcatenateSymbol(t *testing.T) {
 
 		// error, warning, information
 		if tt.err != "" {
-			testLogMessage(t, tn, tt.err, e.logger)
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
 			continue
 		}
 

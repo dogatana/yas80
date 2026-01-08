@@ -214,7 +214,7 @@ func TestParseExpressionError(t *testing.T) {
 		prog := ParseForTest(t, l, tn)
 
 		if tt.err != "" {
-			testLogMessage(t, tn, tt.err, l.logger)
+			testutil.TestLogMessage(t, tn, tt.err, l.logger)
 			ename := testutil.ErrcodeNames[tt.err]
 			if ename[0] == 'E' {
 				continue
