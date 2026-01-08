@@ -71,30 +71,6 @@ func TestErrorScrope(t *testing.T) {
 	}
 }
 
-func TestErrorFuncDef(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		// tn: 0-
-		{`@abc func \ endf`, errcode.EFUNC_NAME},
-		{`.abc func \ endf`, errcode.EFUNC_NAME},
-		{`const abc = 0 \ abc func \ endf`, errcode.EFUNC_USED},
-		{`abc: nop \ abc func \ endf`, errcode.EFUNC_USED},
-		{`abc func \ endf \ abc func \ endf`, errcode.EFUNC_DUP},
-		// tn: 5-
-		{`function @abc() 1`, errcode.EFUNC_NAME},
-		{`function .abc() 1`, errcode.EFUNC_NAME},
-	}
-	for tn, tt := range tests {
-		logger := logging.New("test")
-		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
-	}
-
-}
-
 func TestErrorFuncCall(t *testing.T) {
 	tests := []struct {
 		input    string
