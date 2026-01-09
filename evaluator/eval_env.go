@@ -5,7 +5,7 @@ import (
 	"yas80/object"
 )
 
-func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
+func (e *Evaluator) EvalEnv(env TEnv) ([]string, error) {
 	env.Set("$", object.NULL)
 
 	order, err := e.tSortEnv(env)
@@ -38,7 +38,7 @@ func (e *Evaluator) EvalEnv(env object.Environment) ([]string, error) {
 }
 
 // 環境をトポロジカルソート
-func (e *Evaluator) tSortEnv(env object.Environment) ([]string, error) {
+func (e *Evaluator) tSortEnv(env TEnv) ([]string, error) {
 	visited := map[string]bool{}
 	visiting := map[string]bool{}
 	order := []string{}
@@ -77,7 +77,7 @@ func (e *Evaluator) tSortEnv(env object.Environment) ([]string, error) {
 	return order, nil
 }
 
-func (e *Evaluator) collectSymbolNames(env object.Environment) []string {
+func (e *Evaluator) collectSymbolNames(env TEnv) []string {
 	names := []string{}
 
 	for {

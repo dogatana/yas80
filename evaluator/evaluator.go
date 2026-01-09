@@ -28,14 +28,14 @@ func makeCounter(start int) func() int {
 }
 
 // Program 評価
-func (e *Evaluator) EvalProgram(prog *parser.Program, env object.Environment) object.Object {
+func (e *Evaluator) EvalProgram(prog *parser.Program, env TEnv) object.Object {
 	// 一旦 0 に初期化し ORG 他で上書きする
 	initLocationCounter(env, 0)
 	return e.evalBlockPtr(&prog.Statements, env)
 }
 
 // Program.Statements, ProcBlockStatement.Block 評価
-func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env object.Environment) object.Object {
+func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env TEnv) object.Object {
 	statements := *ptr
 	objects := []object.Object{}
 	stmts := []parser.Node{}

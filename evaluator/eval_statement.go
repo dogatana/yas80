@@ -9,7 +9,7 @@ import (
 )
 
 // evalStatement
-func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) object.Object {
+func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 
 	switch node := node.(type) {
 
@@ -136,7 +136,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 }
 
 // 複合文 BlockStatement
-func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env TEnv) object.Object {
 	block := &object.BlockObject{Block: []object.Object{}}
 
 	for i, node := range stmt.Block {
@@ -164,13 +164,13 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env object.E
 }
 
 // ラベル定義文
-func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Name, env, stmt.Context)
 	return e.exprToLabel(stmt.Name, env, stmt.Context)
 }
 
 // parser.Label 評価&環境登録
-func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) object.Object {
+func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 	name := label.Name
 
 	switch {
@@ -213,7 +213,7 @@ func (e *Evaluator) evalLabel(label *parser.Label, env object.Environment) objec
 }
 
 // const / equ 文
-func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&node.Name, env, node.Context)
 	e.concatenateSymbol(&node.Value, env, node.Context)
 
@@ -305,7 +305,7 @@ func removeSelfName(names []string, name string) []string {
 }
 
 // var 文
-func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Value, env, stmt.Context)
 
 	id := stmt.Name
@@ -367,7 +367,7 @@ func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env ob
 }
 
 // 代入
-func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Left, env, stmt.Context)
 	e.concatenateSymbol(&stmt.Value, env, stmt.Context)
 
@@ -414,7 +414,7 @@ func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env object.
 }
 
 // if 文
-func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env TEnv) object.Object {
 	cond, ok := e.evalExpression(stmt.Condition, env, stmt.Context).(*object.NumberObject)
 	if !ok {
 		return &object.NodeObject{Node: stmt}
@@ -431,12 +431,12 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env object.Environ
 	}
 }
 
-type evalBlockStatementFunc func(block parser.Node, env object.Environment) object.Object
+type evalBlockStatementFunc func(block parser.Node, env TEnv) object.Object
 
 // block 評価関数指定の If 文評価
 func (e *Evaluator) evalIfStatementWithFunc(
 	stmt *parser.IfStatement,
-	env object.Environment,
+	env TEnv,
 	fn evalBlockStatementFunc) object.Object {
 
 	cond := e.evalExpression(stmt.Condition, env, stmt.Context)
@@ -454,7 +454,7 @@ func (e *Evaluator) evalIfStatementWithFunc(
 }
 
 // func 文
-func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env TEnv) object.Object {
 	name := stmt.Name
 	if name[0] == '@' || name[0] == '.' {
 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NAME, name), stmt.Context)
@@ -495,7 +495,7 @@ func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
 }
 
 // return 文
-func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env TEnv) object.Object {
 	var ret object.Object
 	if stmt.Value == nil {
 		ret = object.NULL
@@ -506,7 +506,7 @@ func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env object
 }
 
 // enum 文
-func (e *Evaluator) evalEnumStatement(stmt *parser.EnumStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalEnumStatement(stmt *parser.EnumStatement, env TEnv) object.Object {
 	name := stmt.Name
 	obj, ok := env.Get(name)
 	if ok {

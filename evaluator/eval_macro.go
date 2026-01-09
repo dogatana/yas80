@@ -3,13 +3,12 @@ package evaluator
 import (
 	"fmt"
 	"yas80/errcode"
-	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
 )
 
 // macro 定義
-func (e *Evaluator) evalMacroStatement(stmt *parser.MacroStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalMacroStatement(stmt *parser.MacroStatement, env TEnv) object.Object {
 	name := stmt.Name
 	if name[0] == '@' || name[0] == '.' {
 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NAME, name), stmt.Context)
@@ -65,7 +64,7 @@ func (e *Evaluator) filterValidStatementForMacro(bs *parser.BlockStatement) {
 var expandingMacro map[string]bool = map[string]bool{}
 
 // マクロ評価（展開のみで引数は評価しない）
-func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env TEnv) object.Object {
 	obj, ok := env.Get(stmt.Name)
 	if !ok {
 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_UNDEF, stmt.Name), stmt.Context)
@@ -87,7 +86,7 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 		return object.ERROR
 	}
 
-	var ectx *fileblock.Context
+	var ectx TContext
 	if stmt.Context.Offset == 0 {
 		// トップレベルからのマクロ展開の場合 Offset は 1 からに変更する
 		tmp := *stmt.Context
@@ -105,7 +104,7 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 }
 
 // macro 用 BlockStatement 評価
-func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environment) object.Object {
+func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.Object {
 	var block []parser.Node
 
 	switch node := node.(type) {
@@ -207,7 +206,7 @@ BREAK:
 	return &object.BlockObject{Block: objects}
 }
 
-func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) object.Object {
 	obj := e.evalExpression(stmt.MaxCount, env, stmt.Context)
 	if isError(obj) || isRefNotFound(obj) {
 		return obj
@@ -218,7 +217,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env object.Env
 		return object.ERROR
 	}
 
-	var ectx *fileblock.Context
+	var ectx TContext
 	if stmt.Context.Offset == 0 {
 		// トップレベルからのマクロ展開の場合 Offset は 1 から
 		tmp := *stmt.Context

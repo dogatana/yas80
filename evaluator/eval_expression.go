@@ -3,13 +3,12 @@ package evaluator
 import (
 	"fmt"
 	"yas80/errcode"
-	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
 )
 
 // 式評価
-func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx *fileblock.Context) object.Object {
+func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) object.Object {
 
 	switch node := node.(type) {
 
@@ -116,7 +115,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env object.Environment, ctx
 }
 
 // 関数呼出し
-func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env object.Environment, ctx *fileblock.Context) object.Object {
+func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	obj, ok := env.Get(expr.Name)
 	if !ok {
 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_UNDEF, expr.Name), expr.Context)
@@ -162,7 +161,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env obje
 }
 
 // 中置演算子式
-func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object.Environment, ctx *fileblock.Context) object.Object {
+func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, ctx TContext) object.Object {
 	op1 := e.evalExpression(node.Op1, env, ctx)
 	op2 := e.evalExpression(node.Op2, env, ctx)
 
@@ -192,7 +191,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env object
 	}
 }
 
-func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, ctx *fileblock.Context) object.Object {
+func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
 	v1 := op1.(*object.NumberObject).Value
 	v2 := op2.(*object.NumberObject).Value
 	switch opCode {
@@ -243,7 +242,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 }
 
 // 前置演算子式
-func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env object.Environment, ctx *fileblock.Context) object.Object {
+func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv, ctx TContext) object.Object {
 	opcode := expr.Operator
 
 	op := e.evalExpression(expr.Op, env, ctx)

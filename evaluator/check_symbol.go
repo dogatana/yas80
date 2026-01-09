@@ -7,12 +7,12 @@ import (
 	"yas80/object"
 )
 
-// func (e *Evaluator) CheckSymbols(env object.Environment) {
+// func (e *Evaluator) CheckSymbols(env TEnv) {
 // 	e.checkSymbolError(env)
 // 	e.CheckCyclicError(env)
 // }
 
-func (e *Evaluator) CheckSymbolError(env object.Environment) {
+func (e *Evaluator) CheckSymbolError(env TEnv) {
 	for name, obj := range env.Store() {
 		switch obj := obj.(type) {
 		case *object.SymbolObject:
@@ -50,7 +50,7 @@ func (e *Evaluator) CheckSymbolError(env object.Environment) {
 	}
 }
 
-func (e *Evaluator) CheckCyclicError(env object.Environment) {
+func (e *Evaluator) CheckCyclicError(env TEnv) {
 	visited := map[string]bool{}
 	visiting := map[string]bool{}
 

@@ -7,7 +7,7 @@ import (
 	"yas80/parser"
 )
 
-func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Label, env, stmt.Context)
 	e.concatenateSymbol(&stmt.Count, env, stmt.Context)
 	e.concatenateSymbol(&stmt.FillValue, env, stmt.Context)
@@ -98,7 +98,7 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 	return &object.CodeObject{Code: data, Addr: addr, Context: stmt.Context}
 }
 
-func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env object.Environment) object.Object {
+func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Label, env, stmt.Context)
 	for i := range stmt.Values {
 		e.concatenateSymbol(&stmt.Values[i], env, stmt.Context)

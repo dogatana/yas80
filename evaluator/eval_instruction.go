@@ -7,7 +7,7 @@ import (
 	"yas80/parser"
 )
 
-func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env object.Environment) object.Object {
+func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Label, env, stmt.Context)
 	e.concatenateSymbol(&stmt.Op1, env, stmt.Context)
 	e.concatenateSymbol(&stmt.Op2, env, stmt.Context)
@@ -58,7 +58,7 @@ func (e *Evaluator) generateRET(stmt *parser.Z80Instruction, _ object.Environmen
 	return &object.CodeObject{Code: []byte{b}, Context: stmt.Context}
 }
 
-func (e *Evaluator) evalZ80Instruction2(stmt *parser.Z80Instruction, env object.Environment) object.Object {
+func (e *Evaluator) evalZ80Instruction2(stmt *parser.Z80Instruction, env TEnv) object.Object {
 	switch stmt.Opcode {
 	case parser.Z80_INST_LD:
 		return e.evalZ80LD(stmt, env)
@@ -68,7 +68,7 @@ func (e *Evaluator) evalZ80Instruction2(stmt *parser.Z80Instruction, env object.
 	}
 }
 
-func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, env object.Environment) object.Object {
+func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, env TEnv) object.Object {
 	op1 := e.evalExpression(stmt.Op1, env, stmt.Context)
 
 	switch op1 := op1.(type) {
@@ -92,7 +92,7 @@ func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, env object.Environmen
 	return object.ERROR
 }
 
-func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
+func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, env TEnv) object.Object {
 	op2 := e.evalExpression(node.Op2, env, node.Context)
 
 	switch op2 := op2.(type) {
@@ -138,7 +138,7 @@ func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.Regi
 	}
 }
 
-func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, env object.Environment) object.Object {
+func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, env TEnv) object.Object {
 	op2 := e.evalExpression(node.Op2, env, node.Context)
 
 	switch op2 := op2.(type) {

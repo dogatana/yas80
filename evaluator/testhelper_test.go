@@ -15,7 +15,7 @@ type symValue struct {
 	expected any
 }
 
-func evalInput(input string, logger *logging.Logger, env object.Environment) (*object.ProgramObject, *Evaluator) {
+func evalInput(input string, logger *logging.Logger, env TEnv) (*object.ProgramObject, *Evaluator) {
 	progNode := parseTextForTest(input, logger)
 
 	eval := New(logger)

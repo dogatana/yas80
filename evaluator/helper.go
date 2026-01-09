@@ -5,7 +5,6 @@ import (
 	"io"
 	"strings"
 	"yas80/errcode"
-	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
 
@@ -53,12 +52,12 @@ func extractNames(obj object.Object) []string {
 }
 
 // location counter 初期化
-func initLocationCounter(env object.Environment, addr int) {
+func initLocationCounter(env TEnv, addr int) {
 	env.Set("$", &object.NumberObject{Value: addr})
 }
 
 // location counter 取得
-func getLocationCounter(env object.Environment) int {
+func getLocationCounter(env TEnv) int {
 	counter, ok := env.Get("$")
 	if !ok {
 		panic("getLocationCounter failed")
@@ -68,12 +67,12 @@ func getLocationCounter(env object.Environment) int {
 }
 
 // location counter 表示
-func printLocationCounter(env object.Environment) {
+func printLocationCounter(env TEnv) {
 	fmt.Printf("$ %04x\n", getLocationCounter(env))
 }
 
 // location counter 更新
-func advanceLocationCounter(env object.Environment, n int) {
+func advanceLocationCounter(env TEnv, n int) {
 	obj, ok := env.Get("$")
 	if !ok {
 		panic("getLocationCounter failed")
@@ -124,7 +123,7 @@ func CollectCode(prog *object.ProgramObject) []byte {
 }
 
 // シンボル結合処理
-func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env object.Environment, ctx *fileblock.Context) bool {
+func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TContext) bool {
 	switch expr := (*ptr).(type) {
 	case *parser.InfixExpression:
 		if expr.Operator != parser.CONCAT {
@@ -170,7 +169,7 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env object.Environ
 	}
 }
 
-func (e *Evaluator) getSymbolFromEnv(name string, env object.Environment) (*object.SymbolObject, bool) {
+func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObject, bool) {
 	names := strings.Split(name, ".")
 	if len(names) == 1 {
 		if obj, ok := env.Get(name); ok {
@@ -224,7 +223,7 @@ func (e *Evaluator) utf8ToShiftJis(input string) ([]byte, error) {
 }
 
 // parser.Expression -> parser.Ident - >parser.Label を評価・環境登録し object.SymbolObject を返す
-func (e *Evaluator) exprToLabel(expr parser.Expression, env object.Environment, ctx *fileblock.Context) object.Object {
+func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) object.Object {
 	id, ok := expr.(*parser.Ident)
 	if !ok {
 		e.logger.Error(errcode.ELABEL_EXPR, ctx)

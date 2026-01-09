@@ -2,12 +2,11 @@ package evaluator
 
 import (
 	"fmt"
-	"yas80/fileblock"
 	"yas80/object"
 	"yas80/parser"
 )
 
-func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, env object.Environment, ectx *fileblock.Context) object.Object {
+func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, env TEnv, ectx TContext) object.Object {
 	nodes := []parser.Node{}
 	seq := e.Counter()
 
@@ -40,7 +39,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	return &object.NodesObject{Nodes: nodes}
 }
 
-func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env object.Environment, ectx *fileblock.Context) object.Object {
+func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx TContext) object.Object {
 	seq := e.Counter()
 	args := map[string]parser.Expression{}
 	replace := replaceNameInMacro(args, seq, "REPT")
@@ -77,7 +76,7 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env object.Envir
 	return &object.NodesObject{Nodes: nodes}
 }
 
-// func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, count int, env object.Environment) object.Object {
+// func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, count int, env TEnv) object.Object {
 // 	seq := e.Counter()
 // 	args := map[string]parser.Expression{}
 // 	replace := replaceNameInMacro(args, seq, "REPT")
@@ -100,7 +99,7 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env object.Envir
 // }
 
 // ectx 展開後 Context
-func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *parser.Expression), ectx *fileblock.Context) parser.Statement {
+func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *parser.Expression), ectx TContext) parser.Statement {
 	switch stmt := stmt.(type) {
 	case *parser.LabelStatement:
 		news := *stmt
