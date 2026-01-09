@@ -130,6 +130,7 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.O
 			continue
 
 		case *parser.IfStatement:
+			// exitm の評価をするため、評価関数を渡す
 			obj := e.evalIfStatementWithFunc(stmt, env, e.evalMacroBlockStatement)
 			if isError(obj) {
 				continue
@@ -180,10 +181,6 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.O
 			}
 			objs := bo.Block
 			objects = append(objects, objs...)
-			// 評価結果の末尾が EXITM なら評価を終了し戻る
-			// if len(objs) >= 1 && objs[0].Type() == object.EXITM_OBJ {
-			// 	goto BREAK
-			// }
 
 		default:
 			obj := e.evalStatement(node, env)

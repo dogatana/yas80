@@ -44,12 +44,12 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx TContext) object.Object {
 	seq := e.Counter()
 	args := map[string]parser.Expression{}
-	replace := buildMangleNamesFunc(args, seq, "REPT")
+	mangleFn := buildMangleNamesFunc(args, seq, "REPT")
 	nodes := []parser.Node{}
 	for _, stmt := range rept.Block.Block {
 		ectx.Offset += 1
 		c := *ectx
-		news := e.mangleNamesInStatement(stmt.(parser.Statement), replace, &c)
+		news := e.mangleNamesInStatement(stmt.(parser.Statement), mangleFn, &c)
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
 			sub := e.evalMacroCallStatement(news, env)
