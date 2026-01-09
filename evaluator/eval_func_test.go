@@ -222,6 +222,7 @@ func TestFuncErrorWarning(t *testing.T) {
 		{`const f1 = 1 \ f1 func \ endf`, errcode.EFUNC_USED},
 		{`.t func \ endf`, errcode.EFUNC_NAME},
 		{`@t func \ endf`, errcode.EFUNC_NAME},
+		{`test func \ if 0 \ elif 1 \ elif 2 \elif 3 \ elif 4 \ aaa enum \ende \endif \endf`, errcode.WSCOPE_FUNC},
 	}
 
 	for tn, tt := range tests {

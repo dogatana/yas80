@@ -482,12 +482,29 @@ func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
 
 	for _, stmt := range bs.Block {
 		switch stmt := stmt.(type) {
+		// 利用可能
 		case *parser.ConstStatement, *parser.VariableStatement, *parser.AssignStatement, *parser.ReturnStatement:
 			stmts = append(stmts, stmt)
-		case *parser.FuncStatement, *parser.IfStatement:
+
+		// 要再帰チェック
+		case *parser.FuncStatement:
+			e.filterValidStatementForFunc(stmt.Block)
+			stmts = append(stmts, stmt)
+
+		case *parser.IfStatement:
+			if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
+				e.filterValidStatementForFunc(bs)
+			}
+			if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
+				e.filterValidStatementForFunc(bs)
+			}
+			stmts = append(stmts, stmt)
+
+		case *parser.BlockStatement:
+			e.filterValidStatementForFunc(stmt)
 			stmts = append(stmts, stmt)
 		default:
-			// 有効な文以外は警告
+			// 利用不可
 			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_FUNC, stmt), stmt.(parser.Statement).GetContext())
 		}
 	}
