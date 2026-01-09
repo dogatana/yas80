@@ -503,6 +503,7 @@ func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
 		case *parser.BlockStatement:
 			e.filterValidStatementForFunc(stmt)
 			stmts = append(stmts, stmt)
+
 		default:
 			// 利用不可
 			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_FUNC, stmt), stmt.(parser.Statement).GetContext())

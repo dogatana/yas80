@@ -41,19 +41,32 @@ func (e *Evaluator) filterValidStatementForMacro(bs *parser.BlockStatement) {
 			e.logger.Error(errcode.EMACRO_NEST, stmt.GetContext())
 
 		// warning
+		case *parser.FuncStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
 		case *parser.ReturnStatement:
 			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
 		case *parser.ProcStatement:
 			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
-			continue
-		case *parser.FuncStatement:
+		case *parser.ProcBlockStatement:
 			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
-			continue
 		case *parser.EnumStatement:
 			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
-			continue
+
+		// 要再帰チェック
+		case *parser.IfStatement:
+			if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
+				e.filterValidStatementForMacro(bs)
+			}
+			if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
+				e.filterValidStatementForMacro(bs)
+			}
+			stmts = append(stmts, stmt)
+		case *parser.BlockStatement:
+			e.filterValidStatementForMacro(stmt)
+			stmts = append(stmts, stmt)
 
 		default:
+			// 利用可能
 			stmts = append(stmts, stmt)
 		}
 	}

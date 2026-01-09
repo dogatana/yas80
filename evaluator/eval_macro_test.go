@@ -18,6 +18,8 @@ func TestErrorMacroDef(t *testing.T) {
 		{`.abc macro \ endm`, errcode.EMACRO_NAME},
 		{`const abc = 1 \ abc macro \ endm`, errcode.EMACRO_USED},
 		{`abc macro \ endm \ abc macro \ endm`, errcode.EMACRO_DUP},
+		{`tm macro \ if 0 \ tm2 macro \ nop \ endm \ endif \ endm`, errcode.EMACRO_NEST},
+		{`tm macro \ if 0 \ te enum \ ende \ endif \ endm`, errcode.WSCOPE_MACRO},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
