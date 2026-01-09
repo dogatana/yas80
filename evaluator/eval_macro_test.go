@@ -193,6 +193,14 @@ func TestMacroConst(t *testing.T) {
 			input: `test macro arg \ if arg == 0 \ const @abc = arg \ elif arg == 1 \ const @abc = arg * 16 \ else \ const @abc = arg * 256\ endif \ ld hl, @abc \ endm \ test 0 \ test 1 \ test 2`,
 			code:  []byte{0x21, 0x00, 0x00, 0x21, 0x10, 0x00, 0x21, 0x00, 0x02},
 		},
+		{
+			input: `test macro arg \ const @local = arg \ const @local2 = -@local \ ld a, @local2 \ endm \ test 1`,
+			code:  []byte{0x3e, 0xff},
+			syms: []symValue{
+				{"__1_TEST@LOCAL", 1},
+				{"__1_TEST@LOCAL2", -1},
+			},
+		},
 	}
 
 	for tn, tt := range tests {
