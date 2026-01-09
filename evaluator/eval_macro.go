@@ -248,6 +248,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		Value:   &parser.NumberLiteral{Value: num.Value, Context: stmt.Context},
 		Context: stmt.Context}
 	s.ReplaceContext(*ectx)
+
 	nodes := []parser.Node{s}
 	for i := 0; i < num.Value; i++ {
 		ectx.Offset += 1
@@ -260,6 +261,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		objs := e.expandReptBlock(stmt, env, ectx)
 		nodes = append(nodes, objs.(*object.NodesObject).Nodes...)
 	}
+
 	mb := &parser.MacroBlockStatement{
 		Name:  "REPT",
 		Count: num.Value,
