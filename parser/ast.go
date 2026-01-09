@@ -181,20 +181,6 @@ func (s *ProcBlockStatement) String() string {
 	return out.String()
 }
 
-// 式文 - Expression Statement
-type ExpressionStatement struct {
-	Value   Expression
-	Context *fileblock.Context
-}
-
-func (s *ExpressionStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *ExpressionStatement) NodeType() NodeType             { return NODE_EXPR_STMT }
-func (s *ExpressionStatement) ReplaceContext(ctx fileblock.Context) {
-	ctx.Source = s.Context
-	s.Context = &ctx
-}
-func (s *ExpressionStatement) String() string { return s.Value.String() }
-
 // enum 定義文
 type EnumStatement struct {
 	Name     string
