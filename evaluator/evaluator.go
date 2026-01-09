@@ -175,6 +175,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env TEnv) object.Object {
 			case len(objs) == 1 && objs[0].Type() == object.EXITM_OBJ:
 				// do nothing
 			case len(objs) > 1 && objs[len(objs)-1].Type() == object.EXITM_OBJ:
+				// exitm までの obj を append
 				objects = append(objects, objs[:len(objs)-1]...)
 			default:
 				objects = append(objects, objs...)

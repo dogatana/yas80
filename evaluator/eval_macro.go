@@ -137,8 +137,10 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.O
 	stmts := []parser.Node{}
 
 	for _, node := range block {
+	EVAL_AGAIN:
 		switch stmt := node.(type) {
 		case *parser.MacroStatement:
+			// マクロ定義時除外されているはず
 			e.logger.Error(errcode.EMACRO_NEST, stmt.Context)
 			continue
 
@@ -181,8 +183,10 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.O
 			// }
 			// fmt.Println("-- expanded")
 
-			stmts = append(stmts, bs)
-			e.Resolved = false
+			node = bs
+			goto EVAL_AGAIN // 戻らずに自己ループする
+			// stmts = append(stmts, bs)
+			// e.Resolved = false
 
 		// マクロ ブロック (展開済み)
 		case *parser.MacroBlockStatement:
