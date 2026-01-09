@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"fmt"
+	"slices"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -16,19 +17,20 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 		args[param] = mcall.Args.Expressions[i]
 	}
 
-	replace := replaceNameInMacro(args, seq, mcall.Name)
+	mfn := buildMangleNamesFunc(args, seq, mcall.Name)
 
 	for _, stmt := range macro.Body.Block {
 		ectx.Offset += 1
+		// 引数のContextの内容を壊さないよう Clone してから使用する
 		c := *ectx
-		news := e.replaceStatement(stmt.(parser.Statement), replace, &c)
+		news := e.mangleNamesInStatement(stmt.(parser.Statement), mfn, &c)
 		if news.NodeType() == parser.NODE_MACRO_CALL_STMT {
 			subcall := news.(*parser.MacroCallStatement)
-			sub := e.evalMacroCallStatement(subcall, env)
-			if isError(sub) {
-				return object.ERROR
+			obj := e.evalMacroCallStatement(subcall, env)
+			if isError(obj) {
+				continue
 			}
-			bs := &parser.MacroBlockStatement{Name: subcall.Name, Block: sub.(*object.NodesObject).Nodes, Context: mcall.Context}
+			bs := &parser.MacroBlockStatement{Name: subcall.Name, Block: obj.(*object.NodesObject).Nodes, Context: mcall.Context}
 			bs.ReplaceContext(*ectx) // struct(not *struct)
 			nodes = append(nodes, bs)
 		} else {
@@ -42,12 +44,12 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx TContext) object.Object {
 	seq := e.Counter()
 	args := map[string]parser.Expression{}
-	replace := replaceNameInMacro(args, seq, "REPT")
+	replace := buildMangleNamesFunc(args, seq, "REPT")
 	nodes := []parser.Node{}
 	for _, stmt := range rept.Block.Block {
 		ectx.Offset += 1
 		c := *ectx
-		news := e.replaceStatement(stmt.(parser.Statement), replace, &c)
+		news := e.mangleNamesInStatement(stmt.(parser.Statement), replace, &c)
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
 			sub := e.evalMacroCallStatement(news, env)
@@ -76,40 +78,27 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx T
 	return &object.NodesObject{Nodes: nodes}
 }
 
-// func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, count int, env TEnv) object.Object {
-// 	seq := e.Counter()
-// 	args := map[string]parser.Expression{}
-// 	replace := replaceNameInMacro(args, seq, "REPT")
-// 	nodes := []parser.Node{}
-// 	for _, stmt := range rept.Block.Block {
-// 		news := e.replaceStatement(stmt.(parser.Statement), replace)
-// 		if news.NodeType() == parser.NODE_MACRO_CALL_STMT {
-// 			mcall := news.(*parser.MacroCallStatement)
-// 			sub := e.evalMacroCallStatement(mcall, env)
-// 			if isError(sub) {
-// 				return object.ERROR
-// 			}
-// 			bs := &parser.MacroBlockStatement{Name: mcall.Name, Block: sub.(*object.NodesObject).Nodes}
-// 			nodes = append(nodes, bs)
-// 		} else {
-// 			nodes = append(nodes, news)
-// 		}
-// 	}
-// 	return &object.NodesObject{Nodes: nodes}
-// }
-
-// ectx 展開後 Context
-func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *parser.Expression), ectx TContext) parser.Statement {
+// 文の中のマクロローカル名をマングリングする
+// 引数 ecx は展開後の Context
+func (e *Evaluator) mangleNamesInStatement(stmt parser.Statement, replace func(ptr *parser.Expression), ectx TContext) parser.Statement {
 	switch stmt := stmt.(type) {
 	case *parser.LabelStatement:
 		news := *stmt
 		replace(&news.Name)
 		return &news
+
 	case *parser.ConstStatement:
 		news := *stmt
 		replace(&news.Name)
 		replace(&news.Value)
 		return &news
+
+	case *parser.VariableStatement:
+		// TODO: Name は @name でないので対象外
+		news := *stmt
+		replace(&news.Value)
+		return &news
+
 	case *parser.Z80Instruction:
 		news := *stmt
 		if news.Label != nil {
@@ -118,33 +107,36 @@ func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *pa
 		replace(&news.Op1)
 		replace(&news.Op2)
 		return &news
+
 	case *parser.IfStatement:
 		news := *stmt
 		replace(&news.Condition)
 		if news.Consequence != nil {
-			news.Consequence = e.replaceStatement(news.Consequence.(parser.Statement), replace, ectx)
+			news.Consequence = e.mangleNamesInStatement(news.Consequence.(parser.Statement), replace, ectx)
 		}
 		if news.Alternative != nil {
-			news.Alternative = e.replaceStatement(news.Alternative.(parser.Statement), replace, ectx)
+			news.Alternative = e.mangleNamesInStatement(news.Alternative.(parser.Statement), replace, ectx)
 		}
 		return &news
+
 	case *parser.BlockStatement:
 		news := *stmt
-		// 元の文を壊さないよう、コピーしたスライスへ置き換え
-		blk := make([]parser.Node, len(stmt.Block))
-		copy(blk, stmt.Block)
+		// 元の文を壊さないよう Clone する
+		blk := slices.Clone(stmt.Block)
 		news.Block = blk
 		for i, s := range news.Block {
 			ectx.Offset += 1
-			news.Block[i] = e.replaceStatement(s.(parser.Statement), replace, ectx)
+			news.Block[i] = e.mangleNamesInStatement(s.(parser.Statement), replace, ectx)
 		}
 		return &news
+
 	case *parser.DataStoreStatement:
 		news := *stmt
 		replace(&news.Label)
 		replace(&news.Count)
 		replace(&news.FillValue)
 		return &news
+
 	case *parser.DataStatement:
 		news := *stmt
 		replace(&news.Label)
@@ -163,19 +155,24 @@ func (e *Evaluator) replaceStatement(stmt parser.Statement, replace func(ptr *pa
 		}
 		news.Args = &args
 		return &news
+
 	default:
 		return stmt
 	}
 }
 
-func replaceNameInMacro(args map[string]parser.Expression, seq int, macroName string) func(ptr *parser.Expression) {
-	var replacer func(ptr *parser.Expression)
-	replacer = func(ptr *parser.Expression) {
+// マクロローカルシンボルを置き換える関数を返す
+func buildMangleNamesFunc(args map[string]parser.Expression, seq int, macroName string) func(ptr *parser.Expression) {
+	// __<seq>_<macroName><local name>
+	mangleName := func(seq int, macroName, name string) string { return fmt.Sprintf("__%d_%s%s", seq, macroName, name) }
+
+	var fn func(ptr *parser.Expression)
+	fn = func(ptr *parser.Expression) {
 		switch expr := (*ptr).(type) {
 		case *parser.Label:
 			if expr.Name[0] == '@' {
 				newLabel := *expr
-				newLabel.Name = replacedName(seq, macroName, expr.Name)
+				newLabel.Name = mangleName(seq, macroName, expr.Name)
 				newLabel.LabelType = parser.NODE_LABEL
 				*ptr = &newLabel
 			} else if arg, ok := args[expr.Name]; ok {
@@ -185,7 +182,7 @@ func replaceNameInMacro(args map[string]parser.Expression, seq int, macroName st
 		case *parser.Ident:
 			if expr.Name[0] == '@' {
 				newIdent := *expr
-				newIdent.Name = replacedName(seq, macroName, expr.Name)
+				newIdent.Name = mangleName(seq, macroName, expr.Name)
 				newIdent.IdentType = parser.IDENT
 				*ptr = &newIdent
 			} else if arg, ok := args[expr.Name]; ok {
@@ -194,16 +191,17 @@ func replaceNameInMacro(args map[string]parser.Expression, seq int, macroName st
 
 		case *parser.InfixExpression:
 			newe := *expr
-			replacer(&newe.Op1)
-			replacer(&newe.Op2)
+			fn(&newe.Op1)
+			fn(&newe.Op2)
 			*ptr = &newe
+
+		case *parser.PrefixExpression:
+			newe := *expr
+			fn(&newe.Op)
+			*ptr = &newe
+
 		default:
 		}
 	}
-	return replacer
-}
-
-// @name => @<seq>_<macro>_name
-func replacedName(seq int, macroName, name string) string {
-	return fmt.Sprintf("__%d_%s@%s", seq, macroName, string(name[1:]))
+	return fn
 }
