@@ -92,7 +92,7 @@ type CodeObject struct {
 
 func (f *CodeObject) Type() ObjectType { return CODE_OBJ }
 func (f *CodeObject) String() string {
-	text := fmt.Sprintf("%d:%04x: ", f.Context.Line, f.Addr)
+	text := fmt.Sprintf("code %d.%d:%04x: ", f.Context.Line, f.Context.Offset, f.Addr)
 	for _, b := range f.Code {
 		text += fmt.Sprintf("%02x ", b)
 	}
