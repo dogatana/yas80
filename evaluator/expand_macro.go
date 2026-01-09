@@ -94,8 +94,8 @@ func (e *Evaluator) mangleNamesInStatement(stmt parser.Statement, replace func(p
 		return &news
 
 	case *parser.VariableStatement:
-		// TODO: Name は @name でないので対象外
 		news := *stmt
+		replace(&news.Name)
 		replace(&news.Value)
 		return &news
 

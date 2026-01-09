@@ -308,7 +308,7 @@ func removeSelfName(names []string, name string) []string {
 func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Value, env, stmt.Context)
 
-	id := stmt.Name
+	id := stmt.Name.(*parser.Ident)
 	name := id.Name
 
 	if name == "_" {

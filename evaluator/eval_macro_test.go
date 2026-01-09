@@ -170,7 +170,7 @@ func TestMacroIf(t *testing.T) {
 	}
 }
 
-func TestMacroConst(t *testing.T) {
+func TestMacroConstVar(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -199,6 +199,13 @@ func TestMacroConst(t *testing.T) {
 			syms: []symValue{
 				{"__1_TEST@LOCAL", 1},
 				{"__1_TEST@LOCAL2", -1},
+			},
+		},
+		{
+			input: `test macro \ var @aaa = 1 \ const @bbb = 2 \ endm\ test`,
+			syms: []symValue{
+				{"__1_TEST@AAA", 1},
+				{"__1_TEST@BBB", 2},
 			},
 		},
 	}

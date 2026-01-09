@@ -478,7 +478,7 @@ func (s *ConstStatement) String() string {
 
 // 変数定義文 - VAR
 type VariableStatement struct {
-	Name    *Ident
+	Name    Expression
 	Value   Expression
 	Context *fileblock.Context
 }
@@ -493,7 +493,7 @@ func (s *VariableStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("VAR ")
-	out.WriteString(s.Name.Name)
+	out.WriteString(s.Name.(*Ident).Name)
 	out.WriteString(" = ")
 	out.WriteString(s.Value.String())
 
