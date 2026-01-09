@@ -211,13 +211,13 @@ func TestFuncErrorWarning(t *testing.T) {
 		input string
 		err   string
 	}{
-		{`t func \ ld a,a \endf`, errcode.WFUNC_INVALID_STMT},
-		{`t func \ abc: \endf`, errcode.WFUNC_INVALID_STMT},
-		{`t func \ rept 3 \ nop \ endr \endf`, errcode.WFUNC_INVALID_STMT},
-		{`t func \ tm macro \ nop \ endm \endf`, errcode.WFUNC_INVALID_STMT},
-		{`tm macro \ _ = 1 \ endm \ t func \ tm \endf`, errcode.WFUNC_INVALID_STMT},
+		{`t func \ ld a,a \endf`, errcode.WSCOPE_FUNC},
+		{`t func \ abc: \endf`, errcode.WSCOPE_FUNC},
+		{`t func \ rept 3 \ nop \ endr \endf`, errcode.WSCOPE_FUNC},
+		{`t func \ tm macro \ nop \ endm \endf`, errcode.WSCOPE_FUNC},
+		{`tm macro \ _ = 1 \ endm \ t func \ tm \endf`, errcode.WSCOPE_FUNC},
 		// 5-
-		{`tm macro \ exitm \ endm \ t func \ tm \ endf`, errcode.WFUNC_INVALID_STMT},
+		{`tm macro \ exitm \ endm \ t func \ tm \ endf`, errcode.WSCOPE_FUNC},
 		{`f1 func \ endf \ f1 func \ endf`, errcode.EFUNC_DUP},
 		{`const f1 = 1 \ f1 func \ endf`, errcode.EFUNC_USED},
 		{`.t func \ endf`, errcode.EFUNC_NAME},

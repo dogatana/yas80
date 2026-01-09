@@ -108,15 +108,14 @@ const (
 	ESCOPE_PROC  = "%s は PROC 内部でしか利用できない"
 	ESCOPE_MACRO = "%s は MACRO 内部でしか利用できない"
 
-	WSCOPE_MACRO = "%s は MACRO スコープでは無視"
-
 	ENOT_IMPL_EXPR = "未実装エラー: evalExression(%T)"
 	ENOT_IMPL_STMT = "未実装エラー: eval(%T')"
 
 	// warning
-	WROUND_BYTE        = "数値 '%d(0x%x)' をバイト範囲に丸めました"
-	WROUND_WORD        = "数値 '%d(0x%x)' をワード範囲に丸めました"
-	WFUNC_INVALID_STMT = "関数内では無効 %T"
+	WROUND_BYTE  = "数値 '%d(0x%x)' をバイト範囲に丸めました"
+	WROUND_WORD  = "数値 '%d(0x%x)' をワード範囲に丸めました"
+	WSCOPE_MACRO = "MACRO 内では無効"
+	WSCOPE_FUNC  = "FUNC 内では無効 %T"
 
 	// infromation
 	ILABEL_LOCAL = "[I]ローカルラベルには ':' は不要"

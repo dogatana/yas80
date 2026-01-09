@@ -8,6 +8,59 @@ import (
 	"yas80/parser"
 )
 
+// macro 定義
+func (e *Evaluator) evalMacroStatement(stmt *parser.MacroStatement, env object.Environment) object.Object {
+	name := stmt.Name
+	if name[0] == '@' || name[0] == '.' {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NAME, name), stmt.Context)
+		return object.ERROR
+	}
+	if obj, ok := env.Get(name); ok {
+		if obj.Type() == object.MACRO_OBJ {
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), stmt.Context)
+		} else {
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, name), stmt.Context)
+		}
+		return object.ERROR
+	}
+	// 無効な文をチェック
+	e.filterValidStatementForMacro(stmt.Body)
+
+	obj := &object.MacroObject{Name: name, Params: stmt.Params, Body: stmt.Body}
+	env.Set(name, obj)
+	return obj // 形式上必要
+}
+
+// macro 内で利用可能な文を抽出するフィルタ
+func (e *Evaluator) filterValidStatementForMacro(bs *parser.BlockStatement) {
+	stmts := make([]parser.Node, 0, len(bs.Block))
+
+	for _, stmt := range bs.Block {
+		switch stmt := stmt.(type) {
+		// error
+		case *parser.MacroStatement:
+			e.logger.Error(errcode.EMACRO_NEST, stmt.GetContext())
+
+		// warning
+		case *parser.ReturnStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
+		case *parser.ProcStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
+			continue
+		case *parser.FuncStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
+			continue
+		case *parser.EnumStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
+			continue
+
+		default:
+			stmts = append(stmts, stmt)
+		}
+	}
+	bs.Block = stmts
+}
+
 // マクロ展開が再帰しているかのチェック用
 var expandingMacro map[string]bool = map[string]bool{}
 
@@ -74,19 +127,6 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env object.Environ
 		switch stmt := node.(type) {
 		case *parser.MacroStatement:
 			e.logger.Error(errcode.EMACRO_NEST, stmt.Context)
-			continue
-
-		case *parser.ReturnStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "RETURN 文"), stmt.Context)
-			continue
-		case *parser.ProcStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "PROC 文"), stmt.Context)
-			continue
-		case *parser.FuncStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "FUNC 文"), stmt.Context)
-			continue
-		case *parser.EnumStatement:
-			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_MACRO, "ENUM 文"), stmt.Context)
 			continue
 
 		case *parser.IfStatement:

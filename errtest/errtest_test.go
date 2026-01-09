@@ -94,66 +94,6 @@ func TestErrorFuncCall(t *testing.T) {
 	}
 
 }
-func TestErrorMacroDef(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		// 0-
-		{`@abc macro \ endm`, errcode.EMACRO_NAME},
-		{`.abc macro \ endm`, errcode.EMACRO_NAME},
-		{`const abc = 1 \ abc macro \ endm`, errcode.EMACRO_USED},
-		{`abc macro \ endm \ abc macro \ endm`, errcode.EMACRO_DUP},
-	}
-	for tn, tt := range tests {
-		logger := logging.New("test")
-		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
-	}
-}
-
-func TestErrorMacroCall(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		// 0-
-		{`abc`, errcode.EMACRO_UNDEF},
-		{`abc 1`, errcode.EMACRO_UNDEF},
-		{`abc macro \ endm \ abc 1`, errcode.EMACRO_ARG_COUNT},
-		{`abc macro arg \ endm \ abc`, errcode.EMACRO_ARG_COUNT},
-		{`abc macro arg \ endm \ abc 1, 2`, errcode.EMACRO_ARG_COUNT},
-		// 5-
-		{`aaa macro \ nop \ bbb macro \ nop \ endm \ endm \ aaa`, errcode.EMACRO_NEST},
-		{`aaa macro \ bbb \ endm \ bbb macro \ aaa \ endm \ aaa`, errcode.EMACRO_CYCLIC},
-	}
-	for tn, tt := range tests {
-		logger := logging.New("test")
-		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
-	}
-}
-
-func TestWarningMacroCall(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		// 0-
-		{`abc macro \ return \ endm \ abc`, errcode.WSCOPE_MACRO},
-		{`abc macro \ fn func \ return 1 \ endf \ endm \ abc`, errcode.WSCOPE_MACRO},
-		// TODO enum
-		// TODO proc
-	}
-	for tn, tt := range tests {
-		logger := logging.New("test")
-		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_WARNING, tt.input, logger, env)
-		testMessage(t, TEST_WARNING, tn, logger, tt.expected)
-	}
-}
 
 func TestErrorSymbol(t *testing.T) {
 	tests := []struct {

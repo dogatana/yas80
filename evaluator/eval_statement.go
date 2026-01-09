@@ -79,22 +79,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env object.Environment) obje
 
 	// マクロ定義
 	case *parser.MacroStatement:
-		name := node.Name
-		if name[0] == '@' || name[0] == '.' {
-			e.logger.Error(fmt.Sprintf(errcode.EMACRO_NAME, name), node.Context)
-			return object.ERROR
-		}
-		if obj, ok := env.Get(name); ok {
-			if obj.Type() == object.MACRO_OBJ {
-				e.logger.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), node.Context)
-			} else {
-				e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, name), node.Context)
-			}
-			return object.ERROR
-		}
-		obj := &object.MacroObject{Name: name, Params: node.Params, Body: node.Body}
-		env.Set(name, obj)
-		return obj // 形式上必要
+		return e.evalMacroStatement(node, env)
 
 	// マクロ呼出し
 	case *parser.MacroCallStatement:
@@ -502,7 +487,8 @@ func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
 		case *parser.FuncStatement, *parser.IfStatement:
 			stmts = append(stmts, stmt)
 		default:
-			e.logger.Warning(fmt.Sprintf(errcode.WFUNC_INVALID_STMT, stmt), stmt.(parser.Statement).GetContext())
+			// 有効な文以外は警告
+			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_FUNC, stmt), stmt.(parser.Statement).GetContext())
 		}
 	}
 	bs.Block = stmts
