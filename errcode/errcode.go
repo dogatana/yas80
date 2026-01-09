@@ -87,7 +87,7 @@ const (
 	EFUNC_USED = "%s を FUNC として再定義不可"
 	EFUNC_DUP  = "FUNC '%s' は定義済み"
 	// FUNC 呼出し
-	EFUNC_NOT_FUNC  = "%s は関数名ではない"
+	EFUNC_NOT_FUNC  = "%s は FUNC でない"
 	EFUNC_UNDEF     = "FUNC '%s' は未定義"
 	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
 
@@ -97,6 +97,7 @@ const (
 	EMACRO_DUP  = "MACRO %s は定義済み" // TODO 最終的に不要
 	EMACRO_NEST = "MACRO 定義はネスト不可" // TODO 最終的に不要
 	// MACRO 呼出し
+	EMACRO_NOT_MACRO = "%s は MACRO でない"
 	EMACRO_UNDEF     = "MACRO %s は未定義"
 	EMACRO_ARG_COUNT = "MACRO %s の仮引数と引数の個数不一致"
 	EMACRO_CYCLIC    = "MACRO %s の展開が再帰"

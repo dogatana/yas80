@@ -73,7 +73,8 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 	}
 	macro, ok := obj.(*object.MacroObject)
 	if !ok {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, stmt.Name), stmt.Context)
+		// rule 上発生しない
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, stmt.Name), stmt.Context)
 		return object.ERROR
 	}
 	if len(stmt.Args.Expressions) != len(macro.Params) {
@@ -88,11 +89,11 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 
 	var ectx *fileblock.Context
 	if stmt.Context.Offset == 0 {
-		// トップレベルからのマクロ展開の場合 Offset は 1 から
+		// トップレベルからのマクロ展開の場合 Offset は 1 からに変更する
 		tmp := *stmt.Context
 		ectx = &tmp
 	} else {
-		// マクロ内部からのマクロ展開の場合、Offset は前からの継続
+		// マクロ内部からのマクロ展開の場合、Offset は前から継続する
 		ectx = stmt.Context
 	}
 
