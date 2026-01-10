@@ -107,6 +107,7 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 	} else {
 		// マクロ内部からのマクロ展開の場合、Offset は前から継続する
 		ectx = stmt.Context
+		ectx.Offset--
 	}
 
 	expandingMacro[stmt.Name] = true
@@ -259,6 +260,9 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		rs.ReplaceContext(*ectx)
 		nodes = append(nodes, rs)
 		objs := e.expandReptBlock(stmt, env, ectx)
+		if isError(objs) {
+			continue
+		}
 		nodes = append(nodes, objs.(*object.NodesObject).Nodes...)
 	}
 

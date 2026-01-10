@@ -24,6 +24,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 		// 引数のContextの内容を壊さないよう Clone してから使用する
 		c := *ectx
 		news := e.mangleNamesInStatement(stmt.(parser.Statement), mfn, &c)
+		news.ReplaceContext(*ectx)
 		if news.NodeType() == parser.NODE_MACRO_CALL_STMT {
 			subcall := news.(*parser.MacroCallStatement)
 			obj := e.evalMacroCallStatement(subcall, env)
@@ -33,8 +34,10 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 			bs := &parser.MacroBlockStatement{Name: subcall.Name, Block: obj.(*object.NodesObject).Nodes, Context: mcall.Context}
 			bs.ReplaceContext(*ectx) // struct(not *struct)
 			nodes = append(nodes, bs)
+			if len(bs.Block) > 0 {
+				ectx.Offset = bs.Block[len(bs.Block)-1].(parser.Statement).GetContext().Offset
+			}
 		} else {
-			news.ReplaceContext(*ectx)
 			nodes = append(nodes, news)
 		}
 	}
