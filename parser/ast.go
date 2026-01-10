@@ -423,7 +423,11 @@ type MacroBlockStatement struct {
 func (s *MacroBlockStatement) GetContext() *fileblock.Context { return s.Context }
 func (s *MacroBlockStatement) NodeType() NodeType             { return NODE_MACRO_BLOCK_STMT }
 func (s *MacroBlockStatement) ReplaceContext(ctx fileblock.Context) {
-	ctx.Source = s.Context
+	if s.Context.Source == nil {
+		ctx.Source = s.Context
+	} else {
+		ctx.Source = s.Context.Source
+	}
 	s.Context = &ctx
 }
 func (s *MacroBlockStatement) String() string {

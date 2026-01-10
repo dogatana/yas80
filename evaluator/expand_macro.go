@@ -20,7 +20,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	mfn := buildMangleNamesFunc(args, seq, mcall.Name)
 
 	for _, stmt := range macro.Body.Block {
-		ectx.Offset += 1
+		ectx.Offset++
 		// 引数のContextの内容を壊さないよう Clone してから使用する
 		c := *ectx
 		news := e.mangleNamesInStatement(stmt.(parser.Statement), mfn, &c)
@@ -31,7 +31,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 			if isError(obj) {
 				continue
 			}
-			bs := &parser.MacroBlockStatement{Name: subcall.Name, Block: obj.(*object.NodesObject).Nodes, Context: mcall.Context}
+			bs := &parser.MacroBlockStatement{Name: subcall.Name, Block: obj.(*object.NodesObject).Nodes, Context: subcall.Context}
 			bs.ReplaceContext(*ectx) // struct(not *struct)
 			nodes = append(nodes, bs)
 			if len(bs.Block) > 0 {

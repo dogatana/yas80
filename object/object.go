@@ -92,11 +92,19 @@ type CodeObject struct {
 
 func (f *CodeObject) Type() ObjectType { return CODE_OBJ }
 func (f *CodeObject) String() string {
-	text := fmt.Sprintf("code %d.%d:%04x: ", f.Context.Line, f.Context.Offset, f.Addr)
-	for _, b := range f.Code {
-		text += fmt.Sprintf("%02x ", b)
+	var out bytes.Buffer
+
+	out.WriteString(fmt.Sprintf("code %2d:%2d", f.Context.Line, f.Context.Offset))
+	if f.Context.Source == nil {
+		out.WriteString("(  )")
+	} else {
+		out.WriteString(fmt.Sprintf("(%2d)", f.Context.Source.Line))
 	}
-	return text
+	out.WriteString(fmt.Sprintf(" :%04x: ", f.Addr))
+	for _, b := range f.Code {
+		out.WriteString(fmt.Sprintf("%02x ", b))
+	}
+	return out.String()
 }
 func (f *CodeObject) Size() int {
 	return len(f.Code)

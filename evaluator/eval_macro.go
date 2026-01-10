@@ -118,6 +118,9 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 
 // macro 用 BlockStatement 評価
 func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.Object {
+	objects := []object.Object{}
+	stmts := []parser.Node{}
+
 	var block []parser.Node
 
 	switch node := node.(type) {
@@ -127,14 +130,12 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.O
 			env = object.NewMacroEnvironment(env)
 		}
 		block = node.Block
+		objects = append(objects, &object.CodeObject{Context: node.Context})
 	case *parser.BlockStatement:
 		block = node.Block
 	default:
 		panic("invalid node type in evalMacroBlockStatement")
 	}
-
-	objects := []object.Object{}
-	stmts := []parser.Node{}
 
 	for _, node := range block {
 	EVAL_AGAIN:
