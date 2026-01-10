@@ -177,7 +177,7 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.O
 			if obj.Type() != object.NODES_OBJ {
 				panic("not nodes object")
 			}
-			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.NodesObject).Nodes}
+			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.NodesObject).Nodes, Context: stmt.Context}
 			// fmt.Println("-- expanded")
 			// for _, n := range bs.Block {
 			// 	fmt.Println(n.String())
