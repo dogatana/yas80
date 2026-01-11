@@ -130,7 +130,12 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.O
 			env = object.NewMacroEnvironment(env)
 		}
 		block = node.Block
-		objects = append(objects, &object.CodeObject{Context: node.Context})
+		comment := node.Name
+		if comment == "REPT" {
+			comment = fmt.Sprintf("REPT %d", node.Count)
+		}
+		co := &object.CommentObject{Comments: []string{comment}, Context: node.Context}
+		objects = append(objects, co)
 	case *parser.BlockStatement:
 		block = node.Block
 	default:
@@ -267,8 +272,9 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 	}
 
 	mb := &parser.MacroBlockStatement{
-		Name:  "REPT",
-		Count: num.Value,
-		Block: nodes}
+		Name:    "REPT",
+		Count:   num.Value,
+		Block:   nodes,
+		Context: stmt.Context}
 	return &object.NodeObject{Node: mb}
 }
