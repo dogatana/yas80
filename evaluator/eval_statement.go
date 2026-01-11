@@ -119,7 +119,8 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 			return object.ERROR
 		}
 		env.Set(node.Name, obj)
-		return obj // 形式的に必要
+		comment := fmt.Sprintf("%s = %s", node.Name, obj.String())
+		return &object.CommentObject{Comments: []string{comment}, Context: node.Context}
 
 	// enum
 	case *parser.EnumStatement:
