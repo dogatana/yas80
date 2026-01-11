@@ -42,6 +42,7 @@ const (
 	NODE_SET_SYSVAR_STMT
 	NODE_DATA_STMT
 	NODE_DATA_STORE_STMT
+	NODE_COMMENT_STMT
 
 	// expression
 	NODE_EXPR
@@ -626,6 +627,20 @@ func (s *Z80Instruction) String() string {
 
 	return out.String()
 }
+
+// Return 文
+type CommentStatement struct {
+	Text    string
+	Context *fileblock.Context
+}
+
+func (s *CommentStatement) GetContext() *fileblock.Context { return s.Context }
+func (s *CommentStatement) NodeType() NodeType             { return NODE_COMMENT_STMT }
+func (s *CommentStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
+func (s *CommentStatement) String() string { return s.Text }
 
 // これ以降は 式 (Exspression)
 

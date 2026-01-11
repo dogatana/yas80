@@ -27,8 +27,9 @@ const (
 	REF_NOTFOUND_OBJ
 	SYMBOL_OBJ
 	DELETE_OBJ
-	VALUE_OBJ
 	EXITM_OBJ
+	VALUE_OBJ
+	COMMENT_OBJ
 )
 
 // 同一判定のため定数的に定義しておく
@@ -81,6 +82,26 @@ type ValueObject struct {
 func (v *ValueObject) Type() ObjectType { return VALUE_OBJ }
 func (v *ValueObject) String() string {
 	return fmt.Sprintf("VALUE(%s)", v.Value.String())
+}
+
+// value - list ファイル出力用
+type CommentObject struct {
+	Comments []string
+	Context  *fileblock.Context
+}
+
+func (o *CommentObject) Type() ObjectType { return COMMENT_OBJ }
+func (o *CommentObject) String() string {
+	var out bytes.Buffer
+
+	out.WriteString(fmt.Sprintf("comt %2d:%2d", o.Context.Line, o.Context.Offset))
+	if o.Context.Source == nil {
+		out.WriteString("(  ) ")
+	} else {
+		out.WriteString(fmt.Sprintf("(%2d) ", o.Context.Source.Line))
+	}
+	out.WriteString(strings.Join(o.Comments, "\n"))
+	return out.String()
 }
 
 // code
