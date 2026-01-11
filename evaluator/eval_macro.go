@@ -246,7 +246,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		// マクロ内部からのマクロ展開の場合、Offset は前からの継続
 		ectx = stmt.Context
 	}
-	ectx.Offset += 1
+	ectx.Offset++
 
 	// 環境に $COUNT を設定
 	s := &parser.SetSysVarStatement{
@@ -257,7 +257,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 
 	nodes := []parser.Node{s}
 	for i := 0; i < num.Value; i++ {
-		ectx.Offset += 1
+		ectx.Offset++
 		rs := &parser.SetSysVarStatement{
 			Name:    "$I",
 			Value:   &parser.NumberLiteral{Value: i, Context: stmt.Context},
@@ -271,6 +271,9 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		nodes = append(nodes, objs.(*object.NodesObject).Nodes...)
 	}
 
+	ectx.Offset++
+	c := *ectx
+	nodes = append(nodes, &parser.CommentStatement{Text: "ENDR", Context: &c})
 	mb := &parser.MacroBlockStatement{
 		Name:    "REPT",
 		Count:   num.Value,

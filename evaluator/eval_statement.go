@@ -112,6 +112,10 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 	case *parser.ReturnStatement:
 		return e.evalReturnStatement(node, env)
 
+	// comment
+	case *parser.CommentStatement:
+		return &object.CommentObject{Comments: []string{node.Text}, Context: node.Context}
+
 	// システム変数設定
 	case *parser.SetSysVarStatement:
 		obj := e.evalExpression(node.Value, env, node.Context)
