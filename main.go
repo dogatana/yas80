@@ -214,9 +214,52 @@ func showResult(count int, prog *parser.Program, obj object.Object, env object.E
 		}
 	}
 	fmt.Printf("\n# %sast\n", path)
-	fmt.Println(prog.String())
+	for _, node := range prog.Statements {
+		switch stmt := node.(type) {
+		case *parser.MacroBlockStatement:
+			printContext(stmt.GetContext())
+			if stmt.Name == "REPT" {
+				fmt.Printf("REPT %d\n", stmt.Count)
+			} else {
+				fmt.Println("MACRO", stmt.Name)
+			}
+			for _, s := range stmt.Block {
+				printStatement(s.(parser.Statement))
+			}
+		default:
+			printStatement(node.(parser.Statement))
+		}
+	}
+	// fmt.Println(prog.String())
 
 	fmt.Printf("\n# %senv\n", path)
 	object.PrintEnv(env)
 
+}
+
+func printStatement(stmt parser.Statement) {
+	switch stmt := stmt.(type) {
+	case *parser.MacroBlockStatement:
+		printContext(stmt.GetContext())
+		if stmt.Name == "REPT" {
+			fmt.Printf("REPT %d\n", stmt.Count)
+		} else {
+			fmt.Println("MACRO", stmt.Name)
+		}
+		for _, s := range stmt.Block {
+			printContext(s.(parser.Statement).GetContext())
+			fmt.Println(s.String())
+		}
+	default:
+		printContext(stmt.(parser.Statement).GetContext())
+		fmt.Println(stmt.String())
+	}
+}
+func printContext(ctx *fileblock.Context) {
+	fmt.Printf("%2d:%2d ", ctx.Line, ctx.Offset)
+	if ctx.Source == nil {
+		fmt.Print("(  ) ")
+	} else {
+		fmt.Printf("(%2d) ", ctx.Source.Line)
+	}
 }
