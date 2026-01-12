@@ -9,6 +9,7 @@ import (
 	"strings"
 	"yas80/evaluator"
 	"yas80/fileblock"
+	"yas80/lister"
 	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
@@ -185,7 +186,6 @@ func main() {
 	for i = 0; i < 256 && !eval.CodeStable; i++ {
 		obj = eval.EvalProgram(prog, env)
 		if len(logger.Errors) > 0 {
-			logger.Print()
 			break
 		}
 		newCode := evaluator.CollectCode(obj.(*object.ProgramObject))
@@ -196,7 +196,13 @@ func main() {
 	}
 
 	fmt.Printf("finalize %d times, codeStable %v\n", i, eval.CodeStable)
-	showResult(-1, prog, obj, env)
+	if len(logger.Errors) > 0 {
+		logger.Print()
+		os.Exit(1)
+	}
+
+	lister := lister.New(prog, obj.(*object.ProgramObject))
+	lister.ProgramList(os.Stdout)
 }
 
 func showResult(count int, prog *parser.Program, obj object.Object, env object.Environment) {
