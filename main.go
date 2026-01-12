@@ -251,7 +251,7 @@ func printStatement(stmt parser.Statement) {
 			fmt.Println(s.String())
 		}
 	default:
-		printContext(stmt.(parser.Statement).GetContext())
+		printContext(stmt.GetContext())
 		fmt.Println(stmt.String())
 	}
 }
