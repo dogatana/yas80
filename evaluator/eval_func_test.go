@@ -8,71 +8,6 @@ import (
 	"yas80/object"
 )
 
-func TestFuncIfReturn(t *testing.T) {
-	tests := []struct {
-		input string
-		syms  []symValue
-	}{
-		{`function test() 1 \ const result = test()`, []symValue{{"RESULT", 1}}},
-		{`test func\ const aa=1 \ return 99 \ const aa=2 \ endf \ const result = test()`, []symValue{{"RESULT", 99}}},
-		{`test func\ if 1 \ if 2 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []symValue{{"RESULT", 99}}},
-		{`test func\ if 1 \ if 0 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []symValue{{"RESULT", 98}}},
-	}
-
-	for tn, tt := range tests {
-		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
-		_, e := evalInput(tt.input, logger, env)
-		testEvalResult(t, tn, "", e)
-
-		getter := func(name string) (*object.SymbolObject, bool) {
-			return e.getSymbolFromEnv(name, env)
-		}
-		testSymValues(t, tn, tt.syms, getter) // sym.Expected < 0 なので testSymValuesEx を使用する
-	}
-}
-
-func TestIf(t *testing.T) {
-	tests := []struct {
-		input string
-		syms  []symValue
-	}{
-		// 式文を除外したことで -1 は RESULT が未定義の意味に変更
-		{`if 1 \ endif`, []symValue{{"RESULT", nil}}},
-		{`if 0 \ endif`, []symValue{{"RESULT", nil}}},
-		{`if 1 \ else \ endif`, []symValue{{"RESULT", nil}}},
-		{`if 0 \ else \ endif`, []symValue{{"RESULT", nil}}},
-
-		{`if 1 \ const result=100 \ endif`, []symValue{{"RESULT", 100}}},
-		{`if 0 \ const result=100 \ endif`, []symValue{{"RESULT", nil}}},
-
-		{`if 1 \ const result=100 \ else \ endif`, []symValue{{"RESULT", 100}}},
-		{`if 0 \ const result=100 \ else \ endif`, []symValue{{"RESULT", nil}}},
-
-		{`if 1 \ const result=100 \ else \ const result=200  \ endif`, []symValue{{"RESULT", 100}}},
-		{`if 0 \ const result=100 \ else \ const result=200  \ endif`, []symValue{{"RESULT", 200}}},
-
-		{`const val = 1 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", 100}}},
-		{`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", 200}}},
-		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", nil}}},
-
-		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ else \ const result=300 \ endif`, []symValue{{"RESULT", 300}}},
-	}
-
-	for tn, tt := range tests {
-		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
-		_, e := evalInput(tt.input, logger, env)
-		testEvalResult(t, tn, "", e)
-
-		getter := func(name string) (*object.SymbolObject, bool) {
-			return e.getSymbolFromEnv(name, env)
-		}
-		testSymValues(t, tn, tt.syms, getter) // sym.Expected < 0 なので testSymValuesEx を使用する
-
-	}
-}
-
 func TestFunc(t *testing.T) {
 	tests := []struct {
 		input string
@@ -86,83 +21,12 @@ func TestFunc(t *testing.T) {
 		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(2)`, []symValue{{"RESULT", 777}}},
 		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(3)`, []symValue{{"RESULT", 888}}},
 		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(4)`, []symValue{{"RESULT", 999}}},
-		{`	fib func x
-					if x < 2
-						return 1
-					else
-						return fib(x - 1) + fib(x - 2)
-					endif
-				endf
-			const result = fib(5)
-			`, []symValue{{"RESULT", 8}}},
+		{`function test() 1 \ const result = test()`, []symValue{{"RESULT", 1}}},
+		{`test func\ const aa=1 \ return 99 \ const aa=2 \ endf \ const result = test()`, []symValue{{"RESULT", 99}}},
+		{`test func\ if 1 \ if 2 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []symValue{{"RESULT", 99}}},
+		{`test func\ if 1 \ if 0 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []symValue{{"RESULT", 98}}},
 	}
 	// t.Fatal("const 再定義要修正")
-
-	for tn, tt := range tests {
-		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
-		_, e := evalInput(tt.input, logger, env)
-		testEvalResult(t, tn, "", e)
-
-		getter := func(name string) (*object.SymbolObject, bool) {
-			return e.getSymbolFromEnv(name, env)
-		}
-		testSymValues(t, tn, tt.syms, getter)
-	}
-}
-
-func TestClosure(t *testing.T) {
-	tests := []struct {
-		input string
-		syms  []symValue
-	}{
-
-		{`
-		adder func x
-			inner func y
-				return x + y
-			endf
-			return inner
-		endf
-		const add3 = adder(3)
-		const result = add3(10)
-		`,
-			[]symValue{{"RESULT", 13}},
-		},
-	}
-
-	for tn, tt := range tests {
-		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
-		_, e := evalInput(tt.input, logger, env)
-		testEvalResult(t, tn, "", e)
-
-		getter := func(name string) (*object.SymbolObject, bool) {
-			return e.getSymbolFromEnv(name, env)
-		}
-		testSymValues(t, tn, tt.syms, getter)
-	}
-}
-
-func TestFibFunc(t *testing.T) {
-	tests := []struct {
-		input string
-		syms  []symValue
-	}{
-		{`
-		fib func x
-			if x == 0
-				return 1
-			elif x == 1
-				return 1
-			else
-				return fib(x - 1) + fib(x - 2)
-			endif
-		endf
-		const result = fib(10)
-		`,
-			[]symValue{{"RESULT", 89}}},
-	}
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
@@ -241,5 +105,91 @@ func TestFuncErrorWarning(t *testing.T) {
 			testutil.TestLogMessage(t, tn, tt.err, e.logger)
 			continue
 		}
+	}
+}
+
+func TestClosure(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+	}{
+
+		{`
+		adder func x
+			inner func y
+				return x + y
+			endf
+			return inner
+		endf
+		const add3 = adder(3)
+		const result = add3(10)
+		`,
+			[]symValue{{"RESULT", 13}},
+		},
+		{`
+		counter func start
+			var value = start - 1
+			up func
+				value = value + 1
+				return value
+			endf
+			return up
+		endf
+
+		const fn = counter(1)
+		const a1 = fn()
+		const a2 = fn()
+		const a3 = fn()
+		`,
+			[]symValue{
+				{"A1", 1},
+				{"A2", 2},
+				{"A3", 3},
+			}},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, "", e)
+
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestFibFunc(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+	}{
+		{`
+		fib func x
+			if x == 0
+				return 1
+			elif x == 1
+				return 1
+			else
+				return fib(x - 1) + fib(x - 2)
+			endif
+		endf
+		const result = fib(10)
+		`,
+			[]symValue{{"RESULT", 89}}},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, "", e)
+
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
 	}
 }

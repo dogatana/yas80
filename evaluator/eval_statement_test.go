@@ -299,3 +299,44 @@ func TestVarStatement(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+
+func TestIfStatement(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+	}{
+		// 式文を除外したことで -1 は RESULT が未定義の意味に変更
+		{`if 1 \ endif`, []symValue{{"RESULT", nil}}},
+		{`if 0 \ endif`, []symValue{{"RESULT", nil}}},
+		{`if 1 \ else \ endif`, []symValue{{"RESULT", nil}}},
+		{`if 0 \ else \ endif`, []symValue{{"RESULT", nil}}},
+
+		{`if 1 \ const result=100 \ endif`, []symValue{{"RESULT", 100}}},
+		{`if 0 \ const result=100 \ endif`, []symValue{{"RESULT", nil}}},
+
+		{`if 1 \ const result=100 \ else \ endif`, []symValue{{"RESULT", 100}}},
+		{`if 0 \ const result=100 \ else \ endif`, []symValue{{"RESULT", nil}}},
+
+		{`if 1 \ const result=100 \ else \ const result=200  \ endif`, []symValue{{"RESULT", 100}}},
+		{`if 0 \ const result=100 \ else \ const result=200  \ endif`, []symValue{{"RESULT", 200}}},
+
+		{`const val = 1 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", 100}}},
+		{`const val = 2 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", 200}}},
+		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", nil}}},
+
+		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ else \ const result=300 \ endif`, []symValue{{"RESULT", 300}}},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, "", e)
+
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter) // sym.Expected < 0 なので testSymValuesEx を使用する
+
+	}
+}
