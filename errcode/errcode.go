@@ -47,6 +47,7 @@ const (
 	// CONST/EQU
 	ECONST_DUP  = "CONST/EQU '%s' は定義済み"
 	ECONST_USED = "%s を CONST/EQU として再定義不可"
+	ECONST_NULL = "%s の値が未確定"
 
 	// ##
 	ECONCAT_NOTSYM = "シンボル結合にはシンボルが必要"
