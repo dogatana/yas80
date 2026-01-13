@@ -107,10 +107,10 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env TEnv) object.Object {
 				continue
 			}
 			objects = append(objects, &object.ValueObject{Value: obj, Context: stmt.Context})
-			// ValueObject の場合は再度評価のため文を残す（FuncObject 等は文を削除し再評価しない）
-			if obj.Type() == object.VALUE_OBJ {
-				stmts = append(stmts, node)
-			}
+			// 常に再評価するよう変更
+			// if obj.Type() == object.VALUE_OBJ {
+			stmts = append(stmts, node)
+			// }
 
 		// var 変数定義
 		case *parser.VariableStatement:
