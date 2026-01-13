@@ -21,10 +21,10 @@ const (
 
 	EUNI_OP_STRING = "'%c' は単項文字列演算子ではない"
 	EUNI_OP_NUMBER = "'%c' は単項数値演算子ではない"
-	EUNI_OP_TYPE   = "単項演算子 '%s' が使用できない型"
+	EUNI_OP_TYPE   = "単項演算子 '%s' は使用できない"
 
 	EBIN_OP_DIVZERO = "0 除算"
-	EBIN_OP_TYPE    = "二項演算子 '%s' は使用不可"
+	EBIN_OP_TYPE    = "%s が使用できない値"
 
 	// データ定義
 	EDATA_EMPTY  = "DB/DW/DD に値が指定されていない"
