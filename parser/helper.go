@@ -233,12 +233,11 @@ func buildPrefixExpression(opcode int, op Expression, ctx *fileblock.Context) Ex
 	}
 	switch op := op.(type) {
 	case *NumberLiteral:
-		fn, ok := prefixFuncs[opcode]
-		if ok {
+		if fn, ok := prefixFuncs[opcode]; ok {
 			return &NumberLiteral{Value: fn(op.Value), Context: ctx}
-		} else {
-			return &ParseError{Message: fmt.Sprintf(errcode.EUNI_OP_NUMBER, rune(opcode)), Context: ctx}
 		}
+		panic("buildPrefixExpression")
+
 	case *StringLiteral:
 		if opcode == '!' {
 			var result int
@@ -249,7 +248,7 @@ func buildPrefixExpression(opcode int, op Expression, ctx *fileblock.Context) Ex
 			}
 			return &NumberLiteral{Value: result, Context: ctx}
 		}
-		return &ParseError{Message: fmt.Sprintf(errcode.EUNI_OP_STRING, rune(opcode)), Context: ctx}
+		return &ParseError{Message: fmt.Sprintf(errcode.EUNI_OP_TYPE, TokenLiteral(opcode)), Context: ctx}
 	}
 	return &PrefixExpression{Operator: opcode, Op: op, Context: ctx}
 }

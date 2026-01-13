@@ -261,7 +261,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 	case parser.AND:
 		return &object.NumberObject{Value: boolToInt(v1 != 0 && v2 != 0), Context: ctx}
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_TYPE, string(rune(opCode))), nil)
+		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_TYPE, parser.TokenLiteral(opCode)), nil)
 		return object.ERROR
 	}
 }
