@@ -123,6 +123,12 @@ func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env TEnv
 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_UNDEF, expr.Name), expr.Context)
 		return object.ERROR
 	}
+
+	// Symbol なら値を取り出す
+	if sym, ok := obj.(*object.SymbolObject); ok {
+		obj = sym.Value
+	}
+
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
 		e.logger.Error(errcode.EFUNC_NOT_FUNC, ctx)
