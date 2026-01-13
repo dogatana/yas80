@@ -255,6 +255,11 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env TEnv) ob
 			// 同一シンボルなら更新
 		case *object.RefNotFoundObject:
 			// 未定で登録済なら更新
+		case *object.NullObject:
+			// NULL ならエラー
+			e.logger.Error(fmt.Sprintf(errcode.ECONST_NULL, name), node.Context)
+			return object.ERROR
+
 		default:
 			e.logger.Error(fmt.Sprintf(errcode.ECONST_USED, name), node.Context)
 			return object.ERROR
@@ -287,8 +292,8 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env TEnv) ob
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: node.Context}
 
-	case *object.RegisterObject, *object.FlagObject:
-		// リテラルを値とする Symbol を作成し環境へ登録
+	case *object.RegisterObject, *object.FlagObject, *object.FunctionObject:
+		// 値を SymbolObject として環境へ登録
 		sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: node.Context}
@@ -330,7 +335,7 @@ func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TE
 		return object.ERROR
 	}
 
-	// 定義済みならエラー
+	// 定義済みで同じ Symbol でないならエラー
 	obj, ok := env.Get(name)
 	if ok {
 		sym, ok := obj.(*object.SymbolObject)
@@ -340,11 +345,11 @@ func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TE
 	}
 
 	v := e.evalExpression(stmt.Value, env, stmt.Context)
-	if isError(v) {
-		return object.ERROR
-	}
 
 	switch v := v.(type) {
+	case *object.ErrorObject:
+		return object.ERROR
+
 	case *object.NumberObject:
 		// NumberObject の copy を値とする Symbol を作成し環境へ登録
 		val := *v // copy
@@ -359,8 +364,8 @@ func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TE
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: stmt.Context}
 
-	case *object.RegisterObject, *object.FlagObject:
-		// リテラルを値とする Symbol を作成し環境へ登録
+	case *object.RegisterObject, *object.FlagObject, *object.FunctionObject:
+		// 値を持つ Symbol を作成し環境へ登録
 		sym := object.NewVarSymbol(name, stmt.Value, v, []string{}, stmt.Context)
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: stmt.Context}

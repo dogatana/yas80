@@ -14,8 +14,6 @@ func TestFuncIfReturn(t *testing.T) {
 		syms  []symValue
 	}{
 		{`function test() 1 \ const result = test()`, []symValue{{"RESULT", 1}}},
-		{`test func\ const aa=1 \ endf \ const result = test()`, []symValue{{"RESULT", nil}}},
-		{`test func\ const aa=1 \ return \ const aa=2\ endf \ const result = test()`, []symValue{{"RESULT", nil}}},
 		{`test func\ const aa=1 \ return 99 \ const aa=2 \ endf \ const result = test()`, []symValue{{"RESULT", 99}}},
 		{`test func\ if 1 \ if 2 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []symValue{{"RESULT", 99}}},
 		{`test func\ if 1 \ if 0 \ const aa=3 \ return 99 \ \ endif \ return 98 \ const aa=5 \ endif \ endf \ const result = test()`, []symValue{{"RESULT", 98}}},
@@ -85,7 +83,6 @@ func TestFunc(t *testing.T) {
 		{`abs func arg \ _=1 \ return arg \ _=2 \ endf \  const result = abs(123)`, []symValue{{"RESULT", 123}}},
 		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \ endif \ endf \ const result = abs(100)`, []symValue{{"RESULT", 100}}},
 		{`abs func arg \ if arg > 0 \ return arg \ else \ return -arg \  endif \endf \ const result = abs(-100)`, []symValue{{"RESULT", 100}}},
-		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(1)`, []symValue{{"RESULT", nil}}},
 		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(2)`, []symValue{{"RESULT", 777}}},
 		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(3)`, []symValue{{"RESULT", 888}}},
 		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(4)`, []symValue{{"RESULT", 999}}},
@@ -222,7 +219,11 @@ func TestFuncErrorWarning(t *testing.T) {
 		{`const f1 = 1 \ f1 func \ endf`, errcode.EFUNC_USED},
 		{`.t func \ endf`, errcode.EFUNC_NAME},
 		{`@t func \ endf`, errcode.EFUNC_NAME},
+		// 10-
 		{`test func \ if 0 \ elif 1 \ elif 2 \elif 3 \ elif 4 \ aaa enum \ende \endif \endf`, errcode.WSCOPE_FUNC},
+		{`test func\ const aa=1 \ endf \ const result = test()`, errcode.ECONST_NULL},
+		{`test func\ const aa=1 \ return \ const aa=2\ endf \ const result = test()`, errcode.ECONST_NULL},
+		{`deep func arg \ if arg > 1 \ if arg > 2 \ if arg > 3 \ return 999 \ endif \ return 888 \ endif \  return 777 \ endif \ endf \ const result = deep(1)`, errcode.ECONST_NULL},
 	}
 
 	for tn, tt := range tests {
