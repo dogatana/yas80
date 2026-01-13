@@ -120,6 +120,9 @@ func TestEvalInfixExpressionError(t *testing.T) {
 		{input: `const val = "a" \ const result = +val`, err: errcode.EUNI_OP_TYPE},
 		{input: `const val = "a" \ const result = -val`, err: errcode.EUNI_OP_TYPE},
 		{input: `const val = "a" \ const result = ~val`, err: errcode.EUNI_OP_TYPE},
+		// 10-
+		{input: `const abc = 123 / 0`, err: errcode.EBIN_OP_DIVZERO}, // これは parser で出力される
+		{input: `test macro arg \ ld a, 1 / arg \ endm \ test 0`, err: errcode.EBIN_OP_DIVZERO},
 	}
 
 	for tn, tt := range tests {

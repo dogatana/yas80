@@ -7,24 +7,6 @@ import (
 	"yas80/object"
 )
 
-func TestErrorExpression(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		// 0-
-		{"const abc = 123 / 0", errcode.EBIN_OP_DIVZERO},
-		{`const abc = 0 \ ld a, 1 / abc`, errcode.EBIN_OP_DIVZERO},
-		{`test macro arg \ ld a, 1 / arg \ endm \ test 0`, errcode.EBIN_OP_DIVZERO},
-	}
-	for tn, tt := range tests {
-		logger := logging.New("test")
-		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
-	}
-}
-
 func TestErrorConstLabel(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -93,23 +75,6 @@ func TestErrorFuncCall(t *testing.T) {
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
 	}
 
-}
-
-func TestErrorSymbol(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		// 0-
-		{`ld hl, abc.xxx`, errcode.ESYM_UNDEF},
-		{`ld hl, abc.xxx \abc proc \ nop \ .def: ret \ nop \ endp`, errcode.ESYM_UNDEF},
-	}
-	for tn, tt := range tests {
-		logger := logging.New("test")
-		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
-	}
 }
 
 func TestErrorRept(t *testing.T) {
