@@ -27,72 +27,74 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 		name := node.Name
 		obj, ok := env.Get(name)
 		if !ok {
-			// 未定義の場合
+			// 未定義の場合、遅延評価するため RefNotFound を返す
 			e.Resolved = false
 			sym := object.NewUnknownSymbol(name, node.Context)
 			env.Set(name, sym)
 			return &object.RefNotFoundObject{Names: []string{name}}
 		}
 
-		// PROC の名前ならそのアドレスを返す
-		if obj.Type() == object.PROC_OBJ {
-			return &object.NumberObject{Value: obj.(*object.ProcObject).Addr, Context: node.Context}
-		}
-
-		sym, ok := obj.(*object.SymbolObject)
-		if !ok {
-			// SymbolObject 以外ならそのまま返す
-			return obj
-		}
-
-		// _ ならそのまま返す
-		if sym.Name == "_" {
-			return sym
-		}
-		if sym.Value == object.NULL {
+		switch obj := obj.(type) {
+		case *object.ProcObject:
+			return &object.NumberObject{Value: obj.Addr, Context: node.Context}
+		case *object.SymbolObject:
+			// _ ならそのまま返す
+			if obj.Name == "_" {
+				return obj
+			}
 			// 値が NULL なら RefNotFound にして返す
-			return &object.RefNotFoundObject{Names: []string{sym.Name}}
-		} else {
-			// 値が NULL でないなら value を返す
-			return sym.Value
+			if obj.Value == object.NULL {
+				return &object.RefNotFoundObject{Names: []string{obj.Name}}
+			}
+			// 値が NULL でないなら Value を返す
+			return obj.Value
+		default:
+			return obj
 		}
 
 	// enum or proc.local
 	case *parser.DotIdent:
 		obj, ok := env.Get(node.Left)
+		// node.Left(PROC or ENUM) が未定義の場合、Name を SYM_UNKNOWN で登録
 		if !ok {
-			// node.Left(PROC or ENUM) が未定義の場合、Name を SYM_UNKNOWN で登録
 			e.Resolved = false
 			sym := object.NewUnknownSymbol(node.Name, node.Context)
 			env.Set(node.Name, sym)
 			return &object.RefNotFoundObject{Names: []string{node.Name}}
 		}
+
 		switch obj := obj.(type) {
 		case *object.ProcObject:
 			vobj, ok := obj.Get(node.Right)
 			if !ok {
 				// ローカルラベルが未定義の場合、PROC 環境に SYM_UNKNOWN で登録
+				e.Resolved = false
 				sym := object.NewUnknownSymbol(node.Right, node.Context)
 				obj.Set(node.Right, sym) // env でなく ProcObject に登録
 				return &object.RefNotFoundObject{Names: []string{node.Name}}
 			}
 			sym, ok := vobj.(*object.SymbolObject)
+			// SymbolObject でないならそのまま返す
 			if !ok {
 				return vobj
 			}
+			// SymbolObject で値に応じた内容を返す
 			if sym.Value == object.NULL {
+				e.Resolved = false
 				return &object.RefNotFoundObject{Names: []string{sym.Name}}
 			} else {
 				return sym.Value
 			}
+
 		case *object.EnumObject:
-			vobj, ok := obj.Get(node.Right)
-			if !ok {
-				e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_UNDEF, node.Name), node.Context)
-				return object.ERROR
+			if vobj, ok := obj.Get(node.Right); ok {
+				return vobj.(*object.SymbolObject).Value
 			}
-			return vobj.(*object.SymbolObject).Value
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_UNDEF, node.Name), node.Context)
+			return object.ERROR
+
 		default:
+			e.Resolved = false
 			return &object.RefNotFoundObject{Names: []string{node.Name}}
 		}
 
@@ -172,8 +174,14 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, 
 		e.Resolved = false
 		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
 
+	case node.Operator == parser.OR || node.Operator == parser.AND:
+		return e.evalLogicalInfixExpression(node.Operator, op1, op2, ctx)
+
+	// 数値演算
 	case isNumber(op1) && isNumber(op2):
 		return e.evalNumberInfixExpression(node.Operator, op1, op2, ctx)
+
+	// 文字列演算
 	case isString(op1) && isString(op2):
 		if node.Operator != '+' {
 			e.logger.Error(errcode.EBIN_OP_TYPE, ctx)
@@ -181,7 +189,8 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, 
 		}
 		s1 := op1.(*object.StringObject).Value
 		s2 := op2.(*object.StringObject).Value
-		return &object.StringObject{Value: s1 + " " + s2}
+		return &object.StringObject{Value: s1 + s2}
+
 	default:
 		if e.Debug > 0 {
 			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
@@ -191,6 +200,22 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, 
 	}
 }
 
+// 論理演算 && ||
+func (e *Evaluator) evalLogicalInfixExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
+	var v1, v2 bool
+	v1 = isTruthy(op1)
+	v2 = isTruthy(op2)
+	switch opCode {
+	case parser.OR:
+		return &object.NumberObject{Value: boolToInt(v1 || v2), Context: ctx}
+	case parser.AND:
+		return &object.NumberObject{Value: boolToInt(v1 && v2), Context: ctx}
+	default:
+		panic("invalid evalLogcalInfixExpression")
+	}
+}
+
+// 中置演算子式（数値）
 func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
 	v1 := op1.(*object.NumberObject).Value
 	v2 := op2.(*object.NumberObject).Value
@@ -234,7 +259,7 @@ func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object
 	case parser.OR:
 		return &object.NumberObject{Value: boolToInt(v1 != 0 || v2 != 0), Context: ctx}
 	case parser.AND:
-		return &object.NumberObject{Value: boolToInt(v1 != 1 && v2 != 1), Context: ctx}
+		return &object.NumberObject{Value: boolToInt(v1 != 0 && v2 != 0), Context: ctx}
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_TYPE, string(rune(opCode))), nil)
 		return object.ERROR
@@ -254,30 +279,23 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv
 		return op
 	}
 
-	switch op := op.(type) {
-	case *object.NumberObject:
+	// 論理否定は非演算子の Truthy を反転して返す
+	if opcode == '!' {
+		return &object.NumberObject{Value: boolToInt(!isTruthy(op)), Context: ctx}
+	}
+
+	// +, -, ~ は数値のみ利用可能
+	if num, ok := op.(*object.NumberObject); ok {
 		switch opcode {
 		case '+':
-			return &object.NumberObject{Value: op.Value, Context: ctx}
+			return &object.NumberObject{Value: num.Value, Context: ctx}
 		case '-':
-			return &object.NumberObject{Value: -op.Value, Context: ctx}
+			return &object.NumberObject{Value: -num.Value, Context: ctx}
 		case '~':
-			return &object.NumberObject{Value: op.Value ^ -1, Context: ctx}
-		case '!':
-			return &object.NumberObject{Value: boolToInt(op.Value == 0), Context: ctx}
-		default:
-			e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_NUMBER, rune(opcode)), ctx)
-			return object.ERROR
+			return &object.NumberObject{Value: num.Value ^ -1, Context: ctx}
 		}
-	case *object.StringObject:
-		if opcode == '!' {
-			return &object.NumberObject{Value: boolToInt(op.Value == ""), Context: ctx}
-		}
-		e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_STRING, rune(opcode)), ctx)
-		return object.ERROR
-
-	default:
-		e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
-		return object.ERROR
 	}
+
+	e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
+	return object.ERROR
 }
