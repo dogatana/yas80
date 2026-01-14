@@ -30,6 +30,7 @@ const (
 	EXITM_OBJ
 	VALUE_OBJ
 	COMMENT_OBJ
+	ARRAY_OBJ
 )
 
 // 同一判定のため定数的に定義しておく
@@ -353,6 +354,27 @@ func (mo *MacroObject) String() string {
 		out.WriteString(strings.Join(mo.Params, ", "))
 	}
 	out.WriteString(" \\ " + mo.Body.String() + " \\ ENDM")
+
+	return out.String()
+}
+
+// 配列
+type ArrayObject struct {
+	Values []Object
+}
+
+func (o *ArrayObject) Type() ObjectType { return ARRAY_OBJ }
+func (o *ArrayObject) String() string {
+
+	values := []string{}
+	for _, v := range o.Values {
+		values = append(values, v.String())
+	}
+
+	var out bytes.Buffer
+	out.WriteRune('[')
+	out.WriteString(strings.Join(values, ","))
+	out.WriteRune(']')
 
 	return out.String()
 }

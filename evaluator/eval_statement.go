@@ -299,7 +299,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env TEnv) ob
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: node.Context}
 
-	case *object.RegisterObject, *object.FlagObject, *object.FunctionObject:
+	case *object.RegisterObject, *object.FlagObject, *object.FunctionObject, *object.ArrayObject:
 		// 値を SymbolObject として環境へ登録
 		sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
 		env.Set(name, sym)
@@ -371,7 +371,7 @@ func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TE
 		env.Set(name, sym)
 		return &object.ValueObject{Value: v, Context: stmt.Context}
 
-	case *object.RegisterObject, *object.FlagObject, *object.FunctionObject:
+	case *object.RegisterObject, *object.FlagObject, *object.FunctionObject, *object.ArrayObject:
 		// 値を持つ Symbol を作成し環境へ登録
 		sym := object.NewVarSymbol(name, stmt.Value, v, []string{}, stmt.Context)
 		env.Set(name, sym)

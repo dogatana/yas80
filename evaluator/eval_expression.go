@@ -98,6 +98,10 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 			return &object.RefNotFoundObject{Names: []string{node.Name}}
 		}
 
+	// 配列リテラル
+	case *parser.ArrayLiteral:
+		return e.evalArrayLiteral(node, env, ctx)
+
 	// 関数呼出し
 	case *parser.FuncCallExpression:
 		return e.evalCallExpression(node, env, ctx)
@@ -304,4 +308,22 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv
 
 	e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
 	return object.ERROR
+}
+
+func (e *Evaluator) evalArrayLiteral(a *parser.ArrayLiteral, env TEnv, ctx TContext) object.Object {
+	// ## の処理
+	for i := range a.Elements.Expressions {
+		e.concatenateSymbol(&a.Elements.Expressions[i], env, ctx)
+	}
+
+	values := []object.Object{}
+	for _, ele := range a.Elements.Expressions {
+		obj := e.evalExpression(ele, env, ctx)
+		if isError(obj) {
+			continue
+		}
+		values = append(values, obj)
+	}
+
+	return &object.ArrayObject{Values: values}
 }
