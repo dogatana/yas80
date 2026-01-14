@@ -271,6 +271,7 @@ func TestVarStatement(t *testing.T) {
 		{input: `var abc = 1 \ var abc = 2`, err: errcode.EVAR_USED},
 		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE},
 		{input: `const def = 1\ var abc = def`, syms: []symValue{{"ABC", 1}}},
+		{input: `abc = 123`, err: errcode.EVAR_UNDEF},
 	}
 
 	for tn, tt := range tests {
