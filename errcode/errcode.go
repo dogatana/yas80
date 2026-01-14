@@ -65,7 +65,7 @@ const (
 	EVAR_USED     = "%s を変数として再定義不可"
 	EVAR_VALUE    = "変数 %s の初期値が未確定"
 	EASSIGN_LEFT  = "変数/_ 以外へは代入不可"
-	EASSIGN_VALUE = "代入文の値が未確定"
+	EASSIGN_VALUE = "代入する値が未確定"
 	// EASSIGN_UNDEF         = "変数 %s は未定義"
 
 	// PROC 定義

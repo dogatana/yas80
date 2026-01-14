@@ -383,7 +383,7 @@ func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env TEnv) o
 
 	id, ok := stmt.Left.(*parser.Ident)
 	if !ok {
-		// rule で回避されているため発生しない
+		e.logger.Error(errcode.EASSIGN_LEFT, stmt.Context)
 		return object.ERROR
 	}
 	name := id.Name
@@ -412,9 +412,14 @@ func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env TEnv) o
 	}
 
 	value := e.evalExpression(stmt.Value, env, stmt.Context)
-	if isError(value) {
+
+	switch value.(type) {
+	case *object.ErrorObject:
 		return object.ERROR
-	} else if isRefNotFound(value) {
+	case *object.RefNotFoundObject:
+		e.logger.Error(errcode.EASSIGN_VALUE, stmt.Context)
+		return object.ERROR
+	case *object.NullObject:
 		e.logger.Error(errcode.EASSIGN_VALUE, stmt.Context)
 		return object.ERROR
 	}

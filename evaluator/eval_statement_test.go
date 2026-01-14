@@ -254,7 +254,7 @@ func TestEnumStatement(t *testing.T) {
 	}
 }
 
-func TestVarStatement(t *testing.T) {
+func TestVarAssignStatement(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -272,6 +272,10 @@ func TestVarStatement(t *testing.T) {
 		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE},
 		{input: `const def = 1\ var abc = def`, syms: []symValue{{"ABC", 1}}},
 		{input: `abc = 123`, err: errcode.EVAR_UNDEF},
+		{input: `hl = 123`, err: errcode.EASSIGN_LEFT},
+		// 10-
+		{input: `fn func \ endf \ var abc = 1 \ abc = fn()`, err: errcode.EASSIGN_VALUE},
+		{input: `fn func \ endf \ var abc = 1 \ abc = fn()`, err: errcode.EASSIGN_VALUE},
 	}
 
 	for tn, tt := range tests {
