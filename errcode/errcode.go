@@ -14,10 +14,10 @@ const (
 	EARRAY_NAME  = "配列名誤り"
 	EARRAY_INDEX = "配列インデックス誤り"
 
-	E006 = "間接指定オペランド誤り"
-	E009 = "'%s' は未定義"
-	E030 = "'%s' の定義に循環参照あり"
-	E900 = "E900 内部エラー %s"
+	// E006 = "間接指定オペランド誤り"
+	// E009 = "'%s' は未定義"
+	// E030 = "'%s' の定義に循環参照あり"
+	// E900 = "E900 内部エラー %s"
 
 	EUNI_OP_TYPE = "単項演算子 '%s' は使用できない"
 
@@ -25,7 +25,7 @@ const (
 	EBIN_OP_TYPE    = "%s が使用できない値"
 
 	// データ定義
-	EDATA_EMPTY  = "DB/DW/DD に値が指定されていない"
+	// EDATA_EMPTY  = "DB/DW/DD に値が指定されていない"
 	EDATA_DW_STR = "DW では文字列は指定できない"
 	EDATA_ENCODE = "文字列 %q を SHIFT-JIS へ変換できない"
 
@@ -50,14 +50,14 @@ const (
 	ECONST_NULL = "%s の値が未確定"
 
 	// ##
-	ECONCAT_NOTSYM = "シンボル結合にはシンボルが必要"
-	ECONCAT_EXPR   = "シンボル結合式の誤り"
-	ECONCAT_TYPE   = "シンボル結合は数値、文字列のみ可能"
+	// ECONCAT_NOTSYM = "シンボル結合にはシンボルが必要"
+	// ECONCAT_EXPR   = "シンボル結合式の誤り"
+	ECONCAT_TYPE = "シンボル結合は数値、文字列のみ可能"
 
 	// ラベル
 	ELABEL_DUP  = "LABEL %s は定義済み"        // symbol 以外で利用済
 	ELABEL_USED = "%s は利用済のため LABEL 定義不可" // symbol 以外で利用済
-	ELABEL_EXPR = "LABEL としてシンボルが必要"
+	// ELABEL_EXPR = "LABEL としてシンボルが必要"
 
 	// VAR/ASSIGN
 	EVAR_UNDEF    = "変数 %s は未定義"
@@ -118,5 +118,5 @@ const (
 	WSCOPE_FUNC  = "FUNC 内では無効 %T"
 
 	// infromation
-	ILABEL_LOCAL = "[I]ローカルラベルには ':' は不要"
+	// ILABEL_LOCAL = "[I]ローカルラベルには ':' は不要"
 )

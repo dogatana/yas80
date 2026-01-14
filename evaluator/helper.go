@@ -149,7 +149,7 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TCon
 			return false
 		case *object.RefNotFoundObject:
 			names := strings.Join(op2.Names, ", ")
-			e.logger.Error(fmt.Sprintf(errcode.E009, names), ctx)
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, names), ctx)
 			return false
 		case *object.NumberObject:
 			suffix = fmt.Sprintf("%d", op2.Value)
@@ -226,7 +226,6 @@ func (e *Evaluator) utf8ToShiftJis(input string) ([]byte, error) {
 func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) object.Object {
 	id, ok := expr.(*parser.Ident)
 	if !ok {
-		e.logger.Error(errcode.ELABEL_EXPR, ctx)
 		return object.ERROR
 	}
 	label := e.identToLabel(id)
@@ -235,7 +234,7 @@ func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) 
 	return e.evalLabel(label, env)
 }
 
-// parser.Ident -> parser.Label 変換
+// parser.Ident -> parser.Label 変換(exprToLabel から呼ばれる)
 func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 	l := &parser.Label{Name: id.Name, LabelType: parser.NODE_LABEL, Context: id.Context}
 	switch id.Name[0] {
