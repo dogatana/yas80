@@ -31,7 +31,14 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 
 	// PROC
 	case *parser.ProcStatement:
-		name := node.Name
+		e.concatenateSymbol(&node.Name, env, node.Context)
+
+		id, ok := node.Name.(*parser.Ident)
+		if !ok {
+			e.logger.Error(errcode.ECONCAT_TYPE, node.Context)
+			return object.ERROR
+		}
+		name := id.Name
 		obj, ok := env.Get(name)
 		if ok {
 			switch obj := obj.(type) {

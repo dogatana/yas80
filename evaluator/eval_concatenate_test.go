@@ -29,6 +29,7 @@ func TestConcatenateSymbol(t *testing.T) {
 			syms: []symValue{{"ABC0", 0}, {"ABC1", 2}, {"ABC2", 4}},
 			code: []byte{0x3e, 0, 0x3e, 1, 0x3e, 2}},
 		{input: `const abc ## 123 = 1 \ ds abc ## 123, abc ## 123`, syms: []symValue{{"ABC123", 1}}, code: []byte{1}},
+		{input: `nop \ abc ## 123 proc \ ret \ endp`, syms: []symValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
 	}
 
 	for tn, tt := range tests {
@@ -73,6 +74,10 @@ func TestConcatenateSymbolError(t *testing.T) {
 		{input: `const abc ## 123 = 456 \ const abc123 = 123`, err: errcode.ECONST_DUP},
 		{input: `const abc123 = 123 \ const abc ## 123 = 456`, err: errcode.ECONST_DUP},
 		{input: `const abc ## def = 123`, err: errcode.ESYM_UNDEF},
+		{input: `abc ## a proc \ endp`, err: errcode.ECONCAT_TYPE},
+		{input: `abc ## cy proc \ endp`, err: errcode.ECONCAT_TYPE},
+		{input: `abc ## def proc \ endp`, err: errcode.ESYM_UNDEF},
+		{input: `const abc123 = 123 \ abc ## 123 proc \ endp`, err: errcode.EPROC_USED},
 	}
 
 	for tn, tt := range tests {

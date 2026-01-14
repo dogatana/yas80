@@ -144,7 +144,7 @@ func (s *LabelStatement) String() string {
 
 // Proc
 type ProcStatement struct {
-	Name    string
+	Name    Expression
 	Block   *BlockStatement
 	Context *fileblock.Context
 }

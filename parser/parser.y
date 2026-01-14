@@ -144,9 +144,13 @@ directive	: CONST ident_expr '=' expr
 					$$ = &ConstStatement{Name: $1, Value: $3, Context: $2.Context}
 				}
 			}
-			| IDENT PROC EOL block_statement ENDP
+			| ident_expr PROC EOL block_statement ENDP
 			{
-				$$ = &ProcStatement{Name: strings.ToUpper($1.Literal), Block: $4, Context: $1.Context}
+				if $1.NodeType() == NODE_ERROR {
+					$$ = $1
+				} else {
+					$$ = &ProcStatement{Name: $1, Block: $4, Context: $2.Context}
+				}
 			}
 			| ident ENUM EOL enum_elements ENDE
 			{
