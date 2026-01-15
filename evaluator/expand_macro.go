@@ -25,19 +25,25 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 		c := *ectx
 		news := e.mangleNamesInStatement(stmt.(parser.Statement), mfn, &c)
 		news.ReplaceContext(*ectx)
-		if news.NodeType() == parser.NODE_MACRO_CALL_STMT {
-			subcall := news.(*parser.MacroCallStatement)
-			obj := e.evalMacroCallStatement(subcall, env)
+
+		switch news := news.(type) {
+		case *parser.MacroCallStatement:
+			obj := e.evalMacroCallStatement(news, env)
 			if isError(obj) {
 				continue
 			}
-			bs := &parser.MacroBlockStatement{Name: subcall.Name, Block: obj.(*object.NodesObject).Nodes, Context: subcall.Context}
+			bs := &parser.MacroBlockStatement{Name: news.Name, Block: obj.(*object.NodesObject).Nodes, Context: news.Context}
 			bs.ReplaceContext(*ectx) // struct(not *struct)
 			nodes = append(nodes, bs)
 			if len(bs.Block) > 0 {
 				ectx.Offset = bs.Block[len(bs.Block)-1].(parser.Statement).GetContext().Offset
 			}
-		} else {
+
+		case *parser.ReptStatement:
+			obj := e.evalReptStatement(news, env)
+			nodes = append(nodes, obj.(*object.NodeObject).Node)
+
+		default:
 			nodes = append(nodes, news)
 		}
 	}
