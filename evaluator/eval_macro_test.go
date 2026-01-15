@@ -370,3 +370,91 @@ func TestMacroData(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+
+func TestReptArray(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{
+			input: `rept [1, 2, 3] \ ld a, $v \ endr`,
+			code:  []byte{0x3e, 1, 0x3e, 2, 0x3e, 3},
+		},
+		{
+			input: `const val = [1,2,3] \ rept val \ ld a, $v \ endr`,
+			code:  []byte{0x3e, 1, 0x3e, 2, 0x3e, 3},
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestMacroCallInMacro(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{ // macro / macro
+			input: `t1 macro arg\ld a,arg\endm\t2 macro arg\ld hl,arg\endm\t3 macro arg\t1 arg\t2 arg\endm\t3 255`,
+			code:  []byte{0x3e, 0xff, 0x21, 0xff, 0},
+		},
+		{ // macro / rept
+			input: `t1 macro arg\ rept arg \ ld a, $v \endr \ endm \ t1 3`,
+			code:  []byte{0x3e, 0, 0x3e, 1, 0x3e, 2},
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}

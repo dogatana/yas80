@@ -310,6 +310,7 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv
 	return object.ERROR
 }
 
+// 配列リテラル
 func (e *Evaluator) evalArrayLiteral(a *parser.ArrayLiteral, env TEnv, ctx TContext) object.Object {
 	// ## の処理
 	for i := range a.Elements.Expressions {
@@ -325,5 +326,5 @@ func (e *Evaluator) evalArrayLiteral(a *parser.ArrayLiteral, env TEnv, ctx TCont
 		values = append(values, obj)
 	}
 
-	return &object.ArrayObject{Values: values}
+	return &object.ArrayObject{Values: values, Expressions: a.Elements.Expressions}
 }

@@ -163,6 +163,11 @@ func (e *Evaluator) mangleNamesInStatement(stmt parser.Statement, replace func(p
 		news.Args = &args
 		return &news
 
+	case *parser.ReptStatement:
+		news := *stmt
+		replace(&news.MaxCount)
+		return &news
+
 	default:
 		return stmt
 	}

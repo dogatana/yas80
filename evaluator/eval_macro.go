@@ -231,8 +231,17 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 	if isError(obj) || isRefNotFound(obj) {
 		return obj
 	}
-	num, ok := obj.(*object.NumberObject)
-	if !ok {
+
+	var num *object.NumberObject
+	var values []parser.Expression
+
+	switch obj := obj.(type) {
+	case *object.NumberObject:
+		num = obj
+	case *object.ArrayObject:
+		num = &object.NumberObject{Value: len(obj.Values), Context: stmt.Context}
+		values = obj.Expressions
+	default:
 		e.logger.Error(errcode.EREPT_COUNT, stmt.Context)
 		return object.ERROR
 	}
@@ -264,6 +273,17 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 			Context: stmt.Context}
 		rs.ReplaceContext(*ectx)
 		nodes = append(nodes, rs)
+
+		if values != nil {
+			ectx.Offset++
+			rs = &parser.SetSysVarStatement{
+				Name:    "$V",
+				Value:   values[i],
+				Context: stmt.Context}
+			rs.ReplaceContext(*ectx)
+			nodes = append(nodes, rs)
+		}
+
 		objs := e.expandReptBlock(stmt, env, ectx)
 		if isError(objs) {
 			continue

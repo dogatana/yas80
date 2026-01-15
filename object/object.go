@@ -360,7 +360,8 @@ func (mo *MacroObject) String() string {
 
 // 配列
 type ArrayObject struct {
-	Values []Object
+	Values      []Object
+	Expressions []parser.Expression
 }
 
 func (o *ArrayObject) Type() ObjectType { return ARRAY_OBJ }
