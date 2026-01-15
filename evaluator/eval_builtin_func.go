@@ -11,23 +11,52 @@ import (
 // TODO: map[e.Name] func としたいが、循環エラーになるので switch/case とする
 func (e *Evaluator) evalBuiltinFunction(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	switch expr.Name {
+	case "$W", "$WORD":
+		return e.ebfuncWord(expr, env, ctx)
 	case "$H", "$HI", "$L", "$LO":
-		return e.bfuncHighLow(expr, env, ctx)
+		return e.ebfuncHighLow(expr, env, ctx)
 	case "$LEN", "$LENGTH":
-		return e.bfuncLength(expr, env, ctx)
+		return e.ebfuncLength(expr, env, ctx)
 	case "$REV", "$REVERSE":
-		return e.bfuncReverse(expr, env, ctx)
+		return e.ebfuncReverse(expr, env, ctx)
 	case "$DEFINED":
-		return e.bfuncDefined(expr, env, ctx)
+		return e.ebfuncDefined(expr, env, ctx)
 	case "$FMT", "$FORMAT":
-		return e.bfuncFormat(expr, env, ctx)
+		return e.ebfuncFormat(expr, env, ctx)
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_NOT_FOUND, expr.Name), ctx)
 		return object.ERROR
 	}
 }
 
-func (e *Evaluator) bfuncHighLow(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+func (e *Evaluator) ebfuncWord(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+	args := expr.Arguments.Expressions
+
+	if len(args) != 1 {
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
+		return object.ERROR
+	}
+	v := e.evalExpression(args[0], env, ctx)
+
+	switch v := v.(type) {
+	case *object.ErrorObject:
+		return v
+	case *object.RefNotFoundObject:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_NULL, expr.Name), ctx)
+		return object.ERROR
+	case *object.NumberObject:
+		w, ok := e.intToWord(v.Value)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, v.Value, v.Value), ctx)
+		}
+		return &object.NumberObject{Value: w, ForceWord: true, Context: ctx}
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_VALUE, expr.Name), ctx)
+		return object.ERROR
+	}
+}
+
+func (e *Evaluator) ebfuncHighLow(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	args := expr.Arguments.Expressions
 
 	if len(args) != 1 {
@@ -56,7 +85,7 @@ func (e *Evaluator) bfuncHighLow(expr *parser.FuncCallExpression, env TEnv, ctx 
 	}
 }
 
-func (e *Evaluator) bfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+func (e *Evaluator) ebfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	args := expr.Arguments.Expressions
 
 	if len(args) != 1 {
@@ -79,7 +108,7 @@ func (e *Evaluator) bfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx T
 	}
 }
 
-func (e *Evaluator) bfuncReverse(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+func (e *Evaluator) ebfuncReverse(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	args := expr.Arguments.Expressions
 
 	if len(args) != 1 {
@@ -105,7 +134,7 @@ func (e *Evaluator) bfuncReverse(expr *parser.FuncCallExpression, env TEnv, ctx 
 	}
 }
 
-func (e *Evaluator) bfuncDefined(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+func (e *Evaluator) ebfuncDefined(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	args := expr.Arguments.Expressions
 
 	if len(args) != 1 {
@@ -121,7 +150,7 @@ func (e *Evaluator) bfuncDefined(expr *parser.FuncCallExpression, env TEnv, ctx 
 	}
 }
 
-func (e *Evaluator) bfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+func (e *Evaluator) ebfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	args := expr.Arguments.Expressions
 
 	if len(args) == 0 {

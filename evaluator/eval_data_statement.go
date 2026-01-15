@@ -123,6 +123,7 @@ func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) obje
 	var value int
 	for _, expr := range stmt.Values {
 		obj := e.evalExpression(expr, env, stmt.Context)
+		fword := false
 		switch obj := obj.(type) {
 		case *object.ErrorObject:
 			return object.ERROR
@@ -131,6 +132,7 @@ func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) obje
 			e.Resolved = false
 		case *object.NumberObject:
 			value = obj.Value
+			fword = obj.ForceWord
 		case *object.StringObject:
 			if stmt.Size == 2 {
 				e.logger.Error(errcode.EDATA_DW_STR, stmt.Context)
@@ -144,10 +146,14 @@ func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) obje
 			}
 			continue
 		}
-		switch stmt.Size {
-		case 0:
+		switch {
+		case stmt.Size == 0:
 			if -128 <= value && value <= 255 {
-				code = append(code, byte(value))
+				if fword {
+					code = append(code, byte(value), 0)
+				} else {
+					code = append(code, byte(value))
+				}
 			} else {
 				v, ok := e.intToWord(value)
 				if !ok {
@@ -155,13 +161,15 @@ func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) obje
 				}
 				code = append(code, byte(v&0xff), byte(v>>8))
 			}
-		case 1:
+
+		case stmt.Size == 1 && !fword:
 			v, ok := e.intToByte(value)
 			if !ok {
 				e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, value, value), stmt.Context)
 			}
 			code = append(code, v)
-		case 2:
+
+		case stmt.Size == 2 || fword:
 			v, ok := e.intToWord(value)
 			if !ok {
 				e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)

@@ -240,8 +240,9 @@ func (r *ReturnObject) String() string {
 
 // 数値
 type NumberObject struct {
-	Value   int
-	Context *fileblock.Context
+	Value     int
+	ForceWord bool // true: word 強制
+	Context   *fileblock.Context
 }
 
 func (n *NumberObject) Type() ObjectType { return NUMBER_OBJ }
