@@ -330,6 +330,10 @@ func (e *Evaluator) evalArrayLiteral(a *parser.ArrayLiteral, env TEnv, ctx TCont
 		if isError(obj) {
 			continue
 		}
+		if isRefNotFound(obj) {
+			e.Resolved = false
+			return obj
+		}
 		values = append(values, obj)
 	}
 

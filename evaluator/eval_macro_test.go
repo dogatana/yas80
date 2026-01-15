@@ -386,6 +386,14 @@ func TestReptArray(t *testing.T) {
 			input: `const val = [1,2,3] \ rept val \ ld a, $v \ endr`,
 			code:  []byte{0x3e, 1, 0x3e, 2, 0x3e, 3},
 		},
+		{
+			input: `const val = [1,def,3] \ rept val \ ld a, $v \ endr \ const def = 2`,
+			code:  []byte{0x3e, 1, 0x3e, 2, 0x3e, 3},
+		},
+		{
+			input: `tm macro arg \ rept arg \ ld a, $v \ endr \ endm \ tm [1,2,3]`,
+			code:  []byte{0x3e, 1, 0x3e, 2, 0x3e, 3},
+		},
 	}
 
 	for tn, tt := range tests {
