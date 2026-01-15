@@ -11,6 +11,8 @@ import (
 // TODO: map[e.Name] func としたいが、循環エラーになるので switch/case とする
 func (e *Evaluator) evalBuiltinFunction(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	switch expr.Name {
+	case "$H", "$HI", "$L", "$LO":
+		return e.bfuncHighLow(expr, env, ctx)
 	case "$LEN", "$LENGTH":
 		return e.bfuncLength(expr, env, ctx)
 	case "$REV", "$REVERSE":
@@ -21,6 +23,35 @@ func (e *Evaluator) evalBuiltinFunction(expr *parser.FuncCallExpression, env TEn
 		return e.bfuncFormat(expr, env, ctx)
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_NOT_FOUND, expr.Name), ctx)
+		return object.ERROR
+	}
+}
+
+func (e *Evaluator) bfuncHighLow(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+	args := expr.Arguments.Expressions
+
+	if len(args) != 1 {
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
+		return object.ERROR
+	}
+	v := e.evalExpression(args[0], env, ctx)
+
+	switch v := v.(type) {
+	case *object.ErrorObject:
+		return v
+	case *object.RefNotFoundObject:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_NULL, expr.Name), ctx)
+		return object.ERROR
+	case *object.NumberObject:
+		var b int
+		if expr.Name[1] == 'H' {
+			b = (v.Value >> 8) & 0xff
+		} else {
+			b = v.Value & 0xff
+		}
+		return &object.NumberObject{Value: b, Context: ctx}
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR
 	}
 }

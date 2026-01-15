@@ -140,3 +140,50 @@ func TestBuiltinFuncFormat(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+
+func TestBuiltinFuncHighLow(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `const v = $h(0x1234)`, syms: []symValue{{"V", 0x12}}},
+		{input: `const v = $hi(0x1234)`, syms: []symValue{{"V", 0x12}}},
+		{input: `const v = $l(0x1234)`, syms: []symValue{{"V", 0x34}}},
+		{input: `const v = $lo(0x1234)`, syms: []symValue{{"V", 0x34}}},
+		{input: `const v = $h()`, err: errcode.EBFN_ARG_COUNT},
+		{input: `const v = $h(1,2)`, err: errcode.EBFN_ARG_COUNT},
+		{input: `const v = $h("a")`, err: errcode.EBFN_ARG_VALUE},
+		{input: `const v = $h(xyz)`, err: errcode.EBFN_ARG_NULL},
+		{input: `const v = $l(1,2)`, err: errcode.EBFN_ARG_COUNT},
+		{input: `const v = $l("a")`, err: errcode.EBFN_ARG_VALUE},
+		{input: `const v = $l(xyz)`, err: errcode.EBFN_ARG_NULL},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
