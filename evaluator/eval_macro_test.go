@@ -423,6 +423,54 @@ func TestReptArray(t *testing.T) {
 	}
 }
 
+func TestMacroArray(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{
+			input: `
+			const ary = [1,2,3]
+			tm macro arg
+			ld a, arg[0]
+			ld a, arg[1]
+			ld a, arg[2]
+			endm
+			tm ary
+			tm [4,5,6]`,
+
+			code: []byte{0x3e, 1, 0x3e, 2, 0x3e, 3, 0x3e, 4, 0x3e, 5, 0x3e, 6},
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
 func TestMacroReptCombination(t *testing.T) {
 	tests := []struct {
 		input string

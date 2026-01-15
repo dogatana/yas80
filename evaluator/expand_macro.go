@@ -207,6 +207,12 @@ func buildMangleNamesFunc(args map[string]parser.Expression, seq int, macroName 
 				*ptr = arg
 			}
 
+		case *parser.IndexedExpression:
+			newe := *expr
+			fn(&newe.Left)
+			fn(&newe.Index)
+			*ptr = &newe
+
 		case *parser.InfixExpression:
 			newe := *expr
 			fn(&newe.Op1)

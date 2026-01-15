@@ -11,8 +11,9 @@ const (
 
 	ENUMBER = "数値リテラル誤り: '%s'"
 
-	EARRAY_NAME  = "配列名誤り"
-	EARRAY_INDEX = "配列インデックス誤り"
+	EARRAY_NAME         = "配列名誤り"
+	EARRAY_INDEX        = "配列インデックス誤り"
+	EARRAY_OUT_OF_INDEX = "配列インデックスが範囲外"
 
 	// E006 = "間接指定オペランド誤り"
 	// E009 = "'%s' は未定義"

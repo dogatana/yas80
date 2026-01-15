@@ -219,3 +219,46 @@ func TestEvalPrefixExpressionError(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+
+func TestIndexExpression(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `const v = [1,2,3][0]`, syms: []symValue{{"V", 1}}},
+		{input: `const v = [1,2,3][1]`, syms: []symValue{{"V", 2}}},
+		{input: `const v = [1,2,3][2]`, syms: []symValue{{"V", 3}}},
+		{input: `const v = [1,2,3][-1]`, err: errcode.EARRAY_OUT_OF_INDEX},
+		{input: `const v = [1,2,3][3]`, err: errcode.EARRAY_OUT_OF_INDEX},
+		{input: `const ary = [1,2,3] \ const v = ary[0]`, syms: []symValue{{"V", 1}}},
+		{input: `const ary = [1,2,3] \ const v = ary[1]`, syms: []symValue{{"V", 2}}},
+		{input: `const ary = [1,2,3] \ const v = ary[2]`, syms: []symValue{{"V", 3}}},
+		{input: `const ary = [1,2,3] \ const v = ary[-1]`, err: errcode.EARRAY_OUT_OF_INDEX},
+		{input: `const ary = [1,2,3] \ const v = ary[3]`, err: errcode.EARRAY_OUT_OF_INDEX},
+		{input: `const v = [1,2,3][a]`, err: errcode.EARRAY_INDEX},
+		{input: `const v = [1,2,3]["a"]`, err: errcode.EARRAY_INDEX},
+		{input: `const v = ary[1] \ const ary = [1,2,3]`, syms: []symValue{{"V", 2}}},
+		{input: `const v = xyz[1] \ const ary = [1,2,3]`, err: errcode.ESYM_UNDEF},
+		{input: `const v = [1,2,3][xyz] \ const ary = [2,2,3]`, err: errcode.ESYM_UNDEF},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+
+}
