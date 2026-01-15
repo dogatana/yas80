@@ -415,7 +415,7 @@ func TestReptArray(t *testing.T) {
 	}
 }
 
-func TestMacroCallInMacro(t *testing.T) {
+func TestMacroReptCombination(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -427,7 +427,35 @@ func TestMacroCallInMacro(t *testing.T) {
 			code:  []byte{0x3e, 0xff, 0x21, 0xff, 0},
 		},
 		{ // macro / rept
+			input: `t1 macro arg\ rept arg \ ld a, $i \endr \ endm \ t1 3`,
+			code:  []byte{0x3e, 0, 0x3e, 1, 0x3e, 2},
+		},
+		{ // macro / rept - error
 			input: `t1 macro arg\ rept arg \ ld a, $v \endr \ endm \ t1 3`,
+			err:   errcode.ESYM_UNDEF,
+		},
+		{ // macro / rept
+			input: `t1 macro arg\ rept arg \ ld a, $v \endr \ endm \ t1 [16, 17, 18]`,
+			code:  []byte{0x3e, 16, 0x3e, 17, 0x3e, 18},
+		},
+		{ // macro / rept
+			input: `t1 macro arg\ rept arg \ ld a, $i \endr \ endm \ t1 [16, 17, 18]`,
+			code:  []byte{0x3e, 0, 0x3e, 1, 0x3e, 2},
+		},
+		{ // rept / macro
+			input: `t1 macro arg\ ld a, arg \ endm \ rept 3 \ t1 $i \ endr`,
+			code:  []byte{0x3e, 0, 0x3e, 1, 0x3e, 2},
+		},
+		{ // rept / macro - error
+			input: `t1 macro arg\ ld a, arg \ endm \ rept 3 \ t1 $v \ endr`,
+			err:   errcode.ESYM_UNDEF,
+		},
+		{ // rept / macro
+			input: `t1 macro arg\ ld a, arg \ endm \ rept [16, 17, 18] \ t1 $v \ endr`,
+			code:  []byte{0x3e, 16, 0x3e, 17, 0x3e, 18},
+		},
+		{ // rept / macro
+			input: `t1 macro arg\ ld a, arg \ endm \ rept [16, 17, 18] \ t1 $i \ endr`,
 			code:  []byte{0x3e, 0, 0x3e, 1, 0x3e, 2},
 		},
 	}
