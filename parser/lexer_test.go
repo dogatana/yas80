@@ -483,6 +483,7 @@ func TestLexDoller(t *testing.T) {
 		{"$F", NUMBER},
 		{"$_", IDENT},
 		{"$g", IDENT},
+		{"$defined", IDENT},
 		// {"$$", []TokenType{IDENT, EOL}}, // $$ は2つの $ になる
 	}
 

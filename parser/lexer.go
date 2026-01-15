@@ -162,19 +162,23 @@ LINE_CONT:
 		l.nextChar()
 		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 
-	case l.lctx.curChar == '$' && l.isXDigit(l.peekChar()):
-		// 16進数リテラル($)
-		l.nextChar()
-		literal = "$" + l.readHexString()
-		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
+	// case l.lctx.curChar == '$' && l.isXDigit(l.peekChar()):
+	// 	// 16進数リテラル($)
+	// 	l.nextChar()
+	// 	literal = "$" + l.readHexString()
+	// 	l.nextChar()
+	// 	return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '$' && l.isWordChar(l.peekChar()):
 		// システム識別子($)
 		l.nextChar()
 		literal = "$" + l.readWord()
 		l.nextChar()
-		return Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+		if l.isHexString(string(literal[1:])) && literal[1] != '_' {
+			return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
+		} else {
+			return Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+		}
 
 	case l.lctx.curChar == '$':
 		// $ ローケーションカウンタ
