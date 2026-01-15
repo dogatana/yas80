@@ -26,7 +26,11 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	case *parser.Ident:
 		name := node.Name
 		obj, ok := env.Get(name)
-		if !ok {
+		if !ok && name[0] == '$' {
+			// システム変数で未登録の場合はエラー
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), node.Context)
+			return object.ERROR
+		} else if !ok {
 			// 未定義の場合、遅延評価するため RefNotFound を返す
 			e.Resolved = false
 			sym := object.NewUnknownSymbol(name, node.Context)
