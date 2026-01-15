@@ -73,10 +73,10 @@ func testEvalResult(t *testing.T, tn int, err string, eval *Evaluator) {
 			t.Fatalf("[%d] EvalProgram() %d errors", tn, len(eval.logger.Errors))
 		}
 		if !eval.Resolved {
-			t.Fatalf("[%d] eval.Resolved fasle", tn)
+			t.Fatalf("[%d] eval.Resolved false", tn)
 		}
 		if !eval.CodeStable {
-			t.Fatalf("[%d] eval.CodeStable fasle", tn)
+			t.Fatalf("[%d] eval.CodeStable false", tn)
 		}
 	} else {
 		e, w, i := eval.logger.Count()
