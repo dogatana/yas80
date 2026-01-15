@@ -125,12 +125,20 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 
 	// システム変数設定
 	case *parser.SetSysVarStatement:
-		obj := e.evalExpression(node.Value, env, node.Context)
-		if isError(obj) {
-			return object.ERROR
+		var v object.Object
+
+		if obj, ok := node.Value.(object.Object); ok {
+			v = obj
+		} else {
+			obj := e.evalExpression(node.Value.(parser.Expression), env, node.Context)
+			if isError(obj) {
+				return object.ERROR
+			}
+			v = obj
 		}
-		env.Set(node.Name, obj)
-		comment := fmt.Sprintf("%s = %s", node.Name, obj.String())
+
+		env.Set(node.Name, v)
+		comment := fmt.Sprintf("%s = %s", node.Name, v.String())
 		return &object.CommentObject{Comments: []string{comment}, Context: node.Context}
 
 	// enum

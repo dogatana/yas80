@@ -272,7 +272,7 @@ func (s *ReptStatement) String() string {
 // システム変数設定 - REPT 展開時で使用する
 type SetSysVarStatement struct {
 	Name    string
-	Value   Expression
+	Value   any // Expression or Object
 	Context *fileblock.Context
 }
 
@@ -283,7 +283,7 @@ func (s *SetSysVarStatement) ReplaceContext(ctx fileblock.Context) {
 	s.Context = &ctx
 }
 func (s *SetSysVarStatement) String() string {
-	return fmt.Sprintf("SET_SYS_VAR(%s, %s)", s.Name, s.Value.String())
+	return fmt.Sprintf("SET_SYS_VAR(%s, %v)", s.Name, s.Value)
 }
 
 // if statement

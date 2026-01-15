@@ -233,14 +233,17 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 	}
 
 	var num *object.NumberObject
-	var values []parser.Expression
+	var values []any
 
 	switch obj := obj.(type) {
 	case *object.NumberObject:
 		num = obj
 	case *object.ArrayObject:
 		num = &object.NumberObject{Value: len(obj.Values), Context: stmt.Context}
-		values = obj.Expressions
+		values = make([]any, len(obj.Values))
+		for i, o := range obj.Values {
+			values[i] = o
+		}
 	default:
 		e.logger.Error(errcode.EREPT_COUNT, stmt.Context)
 		return object.ERROR
