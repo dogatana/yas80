@@ -94,6 +94,7 @@ const (
 	EBFN_NOT_FOUND = "組み込み関数 %s は未定義"
 	EBFN_ARG_COUNT = "組み込み関数 %s の引数の数に誤り"
 	EBFN_ARG_VALUE = "組み込み関数 %s の引数誤り"
+	EBFN_ARG_NULL  = "組み込み関数 %s の引数が未確定"
 
 	// MACRO 定義
 	EMACRO_NAME = "%s は MACRO 名として使用不可"

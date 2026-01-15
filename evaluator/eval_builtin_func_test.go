@@ -9,7 +9,7 @@ import (
 )
 
 // Len, Length
-func TestBuiltinFuncLen(t *testing.T) {
+func TestBuiltinFuncLength(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -20,7 +20,9 @@ func TestBuiltinFuncLen(t *testing.T) {
 		{input: `const v = $len([1,2,3])`, syms: []symValue{{"V", 3}}},
 		{input: `const array = [1,2,3] \ var v = $length(array)`, syms: []symValue{{"V", 3}}},
 		{input: `const v = $len()`, err: errcode.EBFN_ARG_COUNT},
+		{input: `const v = $len(1,2)`, err: errcode.EBFN_ARG_COUNT},
 		{input: `const v = $len(1)`, err: errcode.EBFN_ARG_VALUE},
+		{input: `const v = $len(xyz)`, err: errcode.EBFN_ARG_NULL},
 	}
 
 	for tn, tt := range tests {
@@ -51,7 +53,7 @@ func TestBuiltinFuncLen(t *testing.T) {
 }
 
 // Len, Length
-func TestBuiltinFuncRev(t *testing.T) {
+func TestBuiltinFuncReverse(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -61,6 +63,56 @@ func TestBuiltinFuncRev(t *testing.T) {
 		// 0-
 		{input: `rept [1,2,3] \ ld a, $v \endr\ rept $rev([1,2,3]) \ ld a, $v \endr`, code: []byte{0x3e, 1, 0x3e, 2, 0x3e, 3, 0x3e, 3, 0x3e, 2, 0x3e, 1}},
 		{input: `rept [1,2,3] \ ld a, $v \endr\ rept $reverse($rev([1,2,3])) \ ld a, $v \endr`, code: []byte{0x3e, 1, 0x3e, 2, 0x3e, 3, 0x3e, 1, 0x3e, 2, 0x3e, 3}},
+		{input: `const abc = $rev()`, err: errcode.EBFN_ARG_COUNT},
+		{input: `const abc = $rev(1, 2)`, err: errcode.EBFN_ARG_COUNT},
+		{input: `const abc = $rev(1)`, err: errcode.EBFN_ARG_VALUE},
+		{input: `const abc = $rev(def)`, err: errcode.EBFN_ARG_NULL},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestBuiltinFuncFormat(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `db $fmt("ABC")`, code: []byte("ABC")},
+		{input: `db $fmt("ABC_%d", 1)`, code: []byte("ABC_1")},
+		{input: `db $fmt("ABC_%03d", 1)`, code: []byte("ABC_001")},
+		{
+			input: `ret \ var num = 123 \ data ## $fmt("_%03d", num) db num`,
+			code:  []byte{0xc9, 123},
+			syms:  []symValue{{"DATA_123", 1}},
+		},
+		{input: `db $fmt()`, err: errcode.EBFN_ARG_COUNT},
+		{input: `db $fmt(1,2)`, err: errcode.EBFN_ARG_VALUE},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {

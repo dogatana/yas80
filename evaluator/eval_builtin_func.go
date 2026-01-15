@@ -17,6 +17,8 @@ func (e *Evaluator) evalBuiltinFunction(expr *parser.FuncCallExpression, env TEn
 		return e.bfuncReverse(expr, env, ctx)
 	case "$DEFINED":
 		return e.bfuncDefined(expr, env, ctx)
+	case "$FMT", "$FORMAT":
+		return e.bfuncFormat(expr, env, ctx)
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_NOT_FOUND, expr.Name), ctx)
 		return object.ERROR
@@ -31,14 +33,18 @@ func (e *Evaluator) bfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx T
 		return object.ERROR
 	}
 	v := e.evalExpression(args[0], env, ctx)
-	if isError(v) {
+
+	switch v := v.(type) {
+	case *object.ErrorObject:
+		return v
+	case *object.RefNotFoundObject:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
-	}
-	if v, ok := v.(*object.ArrayObject); !ok {
+	case *object.ArrayObject:
+		return &object.NumberObject{Value: len(v.Values)}
+	default:
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR
-	} else {
-		return &object.NumberObject{Value: len(v.Values)}
 	}
 }
 
@@ -50,17 +56,21 @@ func (e *Evaluator) bfuncReverse(expr *parser.FuncCallExpression, env TEnv, ctx 
 		return object.ERROR
 	}
 	v := e.evalExpression(args[0], env, ctx)
-	if isError(v) {
+
+	switch v := v.(type) {
+	case *object.ErrorObject:
+		return v
+	case *object.RefNotFoundObject:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
-	}
-	if v, ok := v.(*object.ArrayObject); !ok {
-		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_VALUE, expr.Name), ctx)
-		return object.ERROR
-	} else {
+	case *object.ArrayObject:
 		nv := *v
 		nv.Values = slices.Clone(nv.Values)
 		slices.Reverse(nv.Values)
 		return &nv
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_VALUE, expr.Name), ctx)
+		return object.ERROR
 	}
 }
 
@@ -78,4 +88,49 @@ func (e *Evaluator) bfuncDefined(expr *parser.FuncCallExpression, env TEnv, ctx 
 		_, ok = env.Get(id.Name)
 		return &object.NumberObject{Value: boolToInt(!ok), Context: ctx}
 	}
+}
+
+func (e *Evaluator) bfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+	args := expr.Arguments.Expressions
+
+	if len(args) == 0 {
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
+		return object.ERROR
+	}
+
+	var fmts string
+	obj := e.evalExpression(args[0], env, ctx)
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_NULL, expr.Name), ctx)
+		return object.ERROR
+	case *object.StringObject:
+		if len(args) == 1 {
+			return obj
+		}
+		fmts = obj.Value
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_VALUE, expr.Name), ctx)
+		return object.ERROR
+	}
+
+	fargs := make([]any, 0, len(args)-1)
+	for _, arg := range args[1:] {
+		v := e.evalExpression(arg, env, ctx)
+		switch v := v.(type) {
+		case *object.NumberObject:
+			fargs = append(fargs, v.Value)
+		case *object.StringObject:
+			fargs = append(fargs, v.Value)
+		case *object.ErrorObject:
+			return v
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_VALUE, expr.Name), ctx)
+			return object.ERROR
+		}
+	}
+	s := fmt.Sprintf(fmts, fargs...)
+	return &object.StringObject{Value: s, Context: ctx}
 }
