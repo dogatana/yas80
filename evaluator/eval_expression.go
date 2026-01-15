@@ -126,6 +126,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 
 // 関数呼出し
 func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+	if expr.Name[0] == '$' {
+		return e.evalBuiltinFunction(expr, env, ctx)
+	}
 	obj, ok := env.Get(expr.Name)
 	if !ok {
 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_UNDEF, expr.Name), expr.Context)

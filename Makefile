@@ -11,6 +11,7 @@ SRC = main.go \
 	evaluator/eval_expression.go \
 	evaluator/eval_env.go evaluator/check_symbol.go \
 	evaluator/z80code.go evaluator/helper.go \
+	evaluator/eval_builtin_func.go \
 	logging/logging.go \
 	errcode/errcode.go \
 	fileblock/fileblock.go fileblock/context.go \

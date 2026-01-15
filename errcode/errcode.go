@@ -90,6 +90,11 @@ const (
 	EFUNC_UNDEF     = "FUNC '%s' は未定義"
 	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
 
+	// 組み込み関数
+	EBFN_NOT_FOUND = "組み込み関数 %s は未定義"
+	EBFN_ARG_COUNT = "組み込み関数 %s の引数の数に誤り"
+	EBFN_ARG_VALUE = "組み込み関数 %s の引数誤り"
+
 	// MACRO 定義
 	EMACRO_NAME = "%s は MACRO 名として使用不可"
 	EMACRO_USED = "%s を MACRO として再定義不可"
