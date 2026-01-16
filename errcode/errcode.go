@@ -34,6 +34,7 @@ const (
 	EDS_FILL  = "DS/DSB/DSW の埋め込みデータが確定できない"
 
 	// Z80
+	EZ80_NOT_IMPL   = "評価未実装 %s"
 	EZ80_FLAG       = "'%s' はフラグでない"
 	EZ80_OP1        = "第1オペランド誤り"
 	EZ80_OP2        = "第2オペランド誤り"
