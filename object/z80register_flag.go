@@ -44,14 +44,14 @@ var (
 	Z80_REG_DE   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_DE}
 	Z80_REG_HL   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_HL}
 
-	Z80_FLAG_C  = &FlagObject{Flag: parser.Z80_FLAG}
-	Z80_FLAG_NC = &FlagObject{Flag: parser.Z80_FLAG}
-	Z80_FLAG_Z  = &FlagObject{Flag: parser.Z80_FLAG}
-	Z80_FLAG_NZ = &FlagObject{Flag: parser.Z80_FLAG}
-	Z80_FLAG_PO = &FlagObject{Flag: parser.Z80_FLAG}
-	Z80_FLAG_PE = &FlagObject{Flag: parser.Z80_FLAG}
-	Z80_FLAG_P  = &FlagObject{Flag: parser.Z80_FLAG}
-	Z80_FLAG_M  = &FlagObject{Flag: parser.Z80_FLAG}
+	Z80_FLAG_C  = &FlagObject{Flag: parser.Z80_FLAG_C}
+	Z80_FLAG_NC = &FlagObject{Flag: parser.Z80_FLAG_NC}
+	Z80_FLAG_Z  = &FlagObject{Flag: parser.Z80_FLAG_Z}
+	Z80_FLAG_NZ = &FlagObject{Flag: parser.Z80_FLAG_NZ}
+	Z80_FLAG_PO = &FlagObject{Flag: parser.Z80_FLAG_PO}
+	Z80_FLAG_PE = &FlagObject{Flag: parser.Z80_FLAG_PE}
+	Z80_FLAG_P  = &FlagObject{Flag: parser.Z80_FLAG_P}
+	Z80_FLAG_M  = &FlagObject{Flag: parser.Z80_FLAG_M}
 )
 
 // TokenSubtype to Object
