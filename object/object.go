@@ -109,6 +109,8 @@ func (o *CommentObject) String() string {
 type CodeObject struct {
 	Addr    int
 	Code    []byte
+	CZ80    int
+	CR800   int
 	Context *fileblock.Context
 }
 
