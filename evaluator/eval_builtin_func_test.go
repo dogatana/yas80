@@ -8,7 +8,6 @@ import (
 	"yas80/object"
 )
 
-// Len, Length
 func TestBuiltinFuncLength(t *testing.T) {
 	tests := []struct {
 		input string
@@ -52,7 +51,51 @@ func TestBuiltinFuncLength(t *testing.T) {
 	}
 }
 
-// Len, Length
+func TestBuiltinFuncIsArray(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `const v = $isary([1,2,3])`, syms: []symValue{{"V", 1}}},
+		{input: `const v = $isarray([1,2,3])`, syms: []symValue{{"V", 1}}},
+		{input: `const v = $isary(1)`, syms: []symValue{{"V", 0}}},
+		{input: `const v = $isary("a")`, syms: []symValue{{"V", 0}}},
+		{input: `const v = $isary(hl)`, syms: []symValue{{"V", 0}}},
+		{input: `const v = $isary()`, err: errcode.EBFN_ARG_COUNT},
+		{input: `const v = $isary(1,2)`, err: errcode.EBFN_ARG_COUNT},
+		{input: `const v = $isary(xyz)`, err: errcode.EBFN_ARG_NULL},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
 func TestBuiltinFuncReverse(t *testing.T) {
 	tests := []struct {
 		input string

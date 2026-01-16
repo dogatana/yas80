@@ -23,6 +23,8 @@ func (e *Evaluator) evalBuiltinFunction(expr *parser.FuncCallExpression, env TEn
 		return e.ebfuncDefined(expr, env, ctx)
 	case "$FMT", "$FORMAT":
 		return e.ebfuncFormat(expr, env, ctx)
+	case "$ISARY", "$ISARRAY":
+		return e.ebfuncIsArray(expr, env, ctx)
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_NOT_FOUND, expr.Name), ctx)
 		return object.ERROR
@@ -82,6 +84,28 @@ func (e *Evaluator) ebfuncHighLow(expr *parser.FuncCallExpression, env TEnv, ctx
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR
+	}
+}
+
+func (e *Evaluator) ebfuncIsArray(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+	args := expr.Arguments.Expressions
+
+	if len(args) != 1 {
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
+		return object.ERROR
+	}
+	v := e.evalExpression(args[0], env, ctx)
+
+	switch v := v.(type) {
+	case *object.ErrorObject:
+		return v
+	case *object.RefNotFoundObject:
+		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_NULL, expr.Name), ctx)
+		return object.ERROR
+	case *object.ArrayObject:
+		return &object.NumberObject{Value: 1}
+	default:
+		return &object.NumberObject{Value: 0}
 	}
 }
 
