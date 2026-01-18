@@ -10,8 +10,10 @@ import (
 type evalZ80InstructionFunc func(e *Evaluator, stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object
 
 var evalZ80InstructionFuncs = map[int]evalZ80InstructionFunc{
-	parser.Z80_INST_LD:  (*Evaluator).evalZ80LD,
-	parser.Z80_INST_RET: (*Evaluator).evalZ80_RET,
+	parser.Z80_INST_LD:   (*Evaluator).evalZ80LD,
+	parser.Z80_INST_RET:  (*Evaluator).evalZ80_RET,
+	parser.Z80_INST_CALL: (*Evaluator).evalZ80_CALL,
+	parser.Z80_INST_RST:  (*Evaluator).evalZ80_RST,
 }
 
 func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) object.Object {
