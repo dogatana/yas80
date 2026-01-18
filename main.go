@@ -170,7 +170,7 @@ func main() {
 	eval.CheckSymbolError(env)
 	fmt.Printf("eval %d times, %d errors, eval.Resolved = %v\n", i, len(logger.Errors), eval.Resolved)
 	if len(logger.Errors) > 0 || !eval.Resolved {
-		fmt.Print("** error or  not resolved")
+		fmt.Print("\n** error or  not resolved")
 		logger.Print()
 		os.Exit(1)
 	}
