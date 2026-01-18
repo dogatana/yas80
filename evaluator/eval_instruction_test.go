@@ -102,6 +102,7 @@ func TestInstructionError(t *testing.T) {
 		{input: `ret hl`, err: errcode.EZ80_FLAG},
 		{input: `ret 123`, err: errcode.EZ80_FLAG},
 		// 10-
+		{input: `call -1`, err: errcode.WROUND_ADDR},
 		{input: `call hl`, err: errcode.EZ80_OP},
 		{input: `call hl,1234`, err: errcode.EZ80_FLAG},
 		{input: `call 123,1234`, err: errcode.EZ80_FLAG},
@@ -109,6 +110,7 @@ func TestInstructionError(t *testing.T) {
 		{input: `rst 1`, err: errcode.EZ80_RST},
 		{input: `rst 40h`, err: errcode.EZ80_RST},
 		{input: `rst hl`, err: errcode.EZ80_OP},
+		{input: `jp -1`, err: errcode.WROUND_ADDR},
 		{input: `jp hl`, err: errcode.EZ80_OP},
 		{input: `jp c,hl`, err: errcode.EZ80_OP2},
 		{input: `jp a,$1234`, err: errcode.EZ80_FLAG},

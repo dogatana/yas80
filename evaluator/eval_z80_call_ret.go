@@ -40,10 +40,10 @@ func (e *Evaluator) evalZ80_RET(stmt *parser.Z80Instruction, op1, _ object.Objec
 func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
 	code := &object.CodeObject{Code: []byte{0xcd, 0x00, 0x00}, CZ80: 17, Context: stmt.Context}
 
-	addr := 0
+	value := 0
 	switch op2 := op2.(type) {
 	case *object.NumberObject:
-		addr = op2.Value
+		value = op2.Value
 	case *object.RefNotFoundObject:
 		return code
 	default:
@@ -53,6 +53,12 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 			e.logger.Error(errcode.EZ80_OP2, stmt.Context)
 		}
 		return code
+	}
+
+	// addr check
+	addr, ok := e.intToAddr(value)
+	if !ok {
+		e.logger.Warning(fmt.Sprintf(errcode.WROUND_ADDR, value, value), stmt.Context)
 	}
 
 	// addr set
@@ -113,10 +119,10 @@ func (e *Evaluator) evalZ80_RST(stmt *parser.Z80Instruction, op1, op2 object.Obj
 func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
 	code := &object.CodeObject{Code: []byte{0xc3, 0x00, 0x00}, CZ80: 10, Context: stmt.Context}
 
-	addr := 0
+	value := 0
 	switch op2 := op2.(type) {
 	case *object.NumberObject:
-		addr = op2.Value
+		value = op2.Value
 	case *object.RefNotFoundObject:
 		return code
 	default:
@@ -126,6 +132,12 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 			e.logger.Error(errcode.EZ80_OP2, stmt.Context)
 		}
 		return code
+	}
+
+	// addr check
+	addr, ok := e.intToAddr(value)
+	if !ok {
+		e.logger.Warning(fmt.Sprintf(errcode.WROUND_ADDR, value, value), stmt.Context)
 	}
 
 	// addr set

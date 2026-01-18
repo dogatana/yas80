@@ -91,6 +91,11 @@ func (e *Evaluator) intToWord(n int) (int, bool) {
 	return (n & 0xffff), -32768 <= n && n <= 65535
 }
 
+// int -> unsigned word へ。丸めが発生した場合は false
+func (e *Evaluator) intToAddr(n int) (int, bool) {
+	return (n & 0xffff), 0 <= n && n <= 65535
+}
+
 func boolToInt(value bool) int {
 	if value {
 		return 1
