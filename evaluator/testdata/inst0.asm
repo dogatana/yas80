@@ -2,6 +2,7 @@
 exx
 ldi
 ldir
+ldd
 lddr
 cpi
 cpir
