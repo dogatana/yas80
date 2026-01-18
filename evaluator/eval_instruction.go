@@ -24,10 +24,9 @@ func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) ob
 
 	// オペランドなし
 	if stmt.NodeType() == parser.Z80_INST0 {
-		info := Z80CodeTable0[stmt.Opcode]
-		obj := &object.CodeObject{Code: make([]byte, len(info.Bytes)), Context: stmt.Context}
-		copy(obj.Code, info.Bytes)
-		return obj
+		code := Z80CodeTable0[stmt.Opcode]
+		code.Context = stmt.Context
+		return &code
 	}
 
 	// 1 or 2 オペランド
