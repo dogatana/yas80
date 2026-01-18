@@ -105,7 +105,7 @@ func (e *Evaluator) evalZ80_RST(stmt *parser.Z80Instruction, op1, op2 object.Obj
 	}
 
 	// addr set
-	code.Code[0] |= byte(addr << 3)
+	code.Code[0] |= byte(addr)
 
 	return code
 }
