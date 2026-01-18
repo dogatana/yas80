@@ -5,12 +5,15 @@ SRC = main.go \
 	parser/preprocess.go \
 	object/object.go  object/symbol.go object/z80register_flag.go object/environment.go \
 	evaluator/evaluator.go \
-	evaluator/eval_statement.go evaluator/eval_instruction.go \
+	evaluator/eval_statement.go \
+	evaluator/eval_instruction.go \
+	evaluator/eval_z80_ld.go \
+	evaluator/eval_z80_call_ret.go \
+	evaluator/z80code.go evaluator/helper.go \
 	evaluator/eval_data_statement.go \
 	evaluator/expand_macro.go evaluator/eval_macro.go \
 	evaluator/eval_expression.go \
 	evaluator/eval_env.go evaluator/check_symbol.go \
-	evaluator/z80code.go evaluator/helper.go \
 	evaluator/eval_builtin_func.go \
 	logging/logging.go \
 	errcode/errcode.go \
