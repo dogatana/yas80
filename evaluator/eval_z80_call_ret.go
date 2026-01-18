@@ -24,14 +24,14 @@ func (e *Evaluator) evalZ80_RET(stmt *parser.Z80Instruction, op1, _ object.Objec
 	case *object.RefNotFoundObject:
 		return code
 	default:
-		e.logger.Error(errcode.EZ80_NOT_FLAG, stmt.Context)
+		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
 		return code
 	}
 
 	flag, ok := Z80FlagIndex[index]
 	if !ok {
-		e.logger.Error(fmt.Sprintf(errcode.EZ80_NOT_FLAG, stmt.Op1.String()), stmt.Context)
-		return object.ERROR
+		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
+		return code
 	}
 	b := byte(0xc0 | flag<<3)
 	return &object.CodeObject{Code: []byte{b}, CZ80: 11, Context: stmt.Context}
@@ -52,7 +52,7 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 		} else {
 			e.logger.Error(errcode.EZ80_OP2, stmt.Context)
 		}
-		return object.ERROR
+		return code
 	}
 
 	// addr set
@@ -73,14 +73,14 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 	case *object.RefNotFoundObject:
 		return code
 	default:
-		e.logger.Error(errcode.EZ80_NOT_FLAG, stmt.Context)
+		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
 		return code
 	}
 
 	flag, ok := Z80FlagIndex[index]
 	if !ok {
-		e.logger.Error(fmt.Sprintf(errcode.EZ80_NOT_FLAG, stmt.Op1.String()), stmt.Context)
-		return object.ERROR
+		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
+		return code
 	}
 	code.Code[0] = byte(0xc4 | flag<<3)
 	return code

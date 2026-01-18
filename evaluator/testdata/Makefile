@@ -3,7 +3,7 @@ ASMOPT = -lst -bin -f -i
 SRCS = inst0.asm ld_r8_r8.asm \
 		label-backward.asm equ-backward.asm \
 		label-forward.asm equ-forward.asm \
-		ret-cc.asm \
+		call-ret.asm \
 		forward.asm forward_symbol.asm forward_mix.asm
 BINS = $(SRCS:.asm=.bin)
 

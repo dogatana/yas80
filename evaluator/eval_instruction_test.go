@@ -12,7 +12,7 @@ func TestZ80Instruction(t *testing.T) {
 	tests := []string{
 		"inst0",
 		"ld_r8_r8",
-		"ret-cc",
+		"call-ret",
 	}
 
 	for tn, base := range tests {
@@ -50,21 +50,21 @@ func TestInstructionDefault(t *testing.T) {
 		if tt.input == "" {
 			continue
 		}
-		logger := logging.New("<eval test>")
-		pnode := parseTextForTest(tt.input, logger)
 
-		e := New(logger)
 		env := object.NewEnvironment(nil)
-		pobj := e.EvalProgram(pnode, env).(*object.ProgramObject)
+		logger := logging.New("<eval test>")
+		prog, _ := evalInput(tt.input, logger, env)
 
-		// error, warning, information
-		if tt.err != "" {
-			testutil.TestLogMessage(t, tn, tt.err, e.logger)
-			continue
-		}
+		// エラー発生時のデフォルトコードのチェックのため、発生エラーは無視する
+		// testEvalResult(t, tn, tt.err, e)
+		// // error, warning, information
+		// if tt.err != "" {
+		// 	testutil.TestLogMessage(t, tn, tt.err, e.logger)
+		// 	continue
+		// }
 
 		// code
-		testCodeResult(t, tn, tt.code, pobj)
+		testCodeResult(t, tn, tt.code, prog)
 
 		// sym
 		obj, ok := env.Get("VAL")
@@ -98,19 +98,27 @@ func TestInstructionError(t *testing.T) {
 		{input: `ld hl, a`, err: errcode.EZ80_OP2},
 		{input: `ld hl, hl`, err: errcode.EZ80_OP1_SP},
 		{input: `ld sp, de`, err: errcode.EZ80_OP2_HL_IXY},
-		{input: `ret VAL`, err: errcode.EZ80_FLAG},
+		{input: `ret VAL`, err: errcode.ESYM_UNDEF},
 	}
 
 	for tn, tt := range tests {
 		if tt.input == "" {
 			continue
 		}
-		logger := logging.New("<eval test>")
-		pnode := parseTextForTest(tt.input, logger)
+		// logger := logging.New("<eval test>")
+		// pnode := parseTextForTest(tt.input, logger)
 
-		e := New(logger)
+		// e := New(logger)
+		// env := object.NewEnvironment(nil)
+		// pobj := e.EvalProgram(pnode, env).(*object.ProgramObject)
+
+		// logger.Print()
+		// object.PrintEnv(env)
+
 		env := object.NewEnvironment(nil)
-		pobj := e.EvalProgram(pnode, env).(*object.ProgramObject)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
 
 		// error, warning, information
 		if tt.err != "" {
@@ -119,7 +127,7 @@ func TestInstructionError(t *testing.T) {
 		}
 
 		// code
-		testCodeResult(t, tn, tt.code, pobj)
+		testCodeResult(t, tn, tt.code, prog)
 
 		// sym
 		obj, ok := env.Get("VAL")
