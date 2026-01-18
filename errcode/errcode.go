@@ -42,6 +42,8 @@ const (
 	EZ80_OP1_SP     = "第1オペランドは SP 以外指定不可"
 	EZ80_OP2_HL_IXY = "第2オペランドは HL, IX, IY 以外指定不可"
 	EZ80_RST        = "RST のアドレスは 0, 8, 10H, 18H, 20H, 28H, 30H, 38H のいずれかでなければならない (指定値: %d(0x%x))"
+	EZ80_JR_RANGE   = "相対ジャンプ先が範囲 %d(0x%x)"
+	EZ80_JR_FLAG    = "JR に '%s' フラグは使用不可"
 
 	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"

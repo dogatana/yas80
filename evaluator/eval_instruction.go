@@ -14,6 +14,9 @@ var evalZ80InstructionFuncs = map[int]evalZ80InstructionFunc{
 	parser.Z80_INST_RET:  (*Evaluator).evalZ80_RET,
 	parser.Z80_INST_CALL: (*Evaluator).evalZ80_CALL,
 	parser.Z80_INST_RST:  (*Evaluator).evalZ80_RST,
+	parser.Z80_INST_JP:   (*Evaluator).evalZ80_JP,
+	parser.Z80_INST_JR:   (*Evaluator).evalZ80_JR,
+	parser.Z80_INST_DJNZ: (*Evaluator).evalZ80_DJNZ,
 }
 
 func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) object.Object {

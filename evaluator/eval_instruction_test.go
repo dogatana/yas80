@@ -99,6 +99,26 @@ func TestInstructionError(t *testing.T) {
 		{input: `ld hl, hl`, err: errcode.EZ80_OP1_SP},
 		{input: `ld sp, de`, err: errcode.EZ80_OP2_HL_IXY},
 		{input: `ret VAL`, err: errcode.ESYM_UNDEF},
+		{input: `ret hl`, err: errcode.EZ80_FLAG},
+		{input: `ret 123`, err: errcode.EZ80_FLAG},
+		// 10-
+		{input: `call hl`, err: errcode.EZ80_OP},
+		{input: `call hl,1234`, err: errcode.EZ80_FLAG},
+		{input: `call 123,1234`, err: errcode.EZ80_FLAG},
+		{input: `rst`, err: errcode.EZ80_OP},
+		{input: `rst 1`, err: errcode.EZ80_RST},
+		{input: `rst 40h`, err: errcode.EZ80_RST},
+		{input: `rst hl`, err: errcode.EZ80_OP},
+		{input: `jp hl`, err: errcode.EZ80_OP},
+		{input: `jp c,hl`, err: errcode.EZ80_OP2},
+		{input: `jp a,$1234`, err: errcode.EZ80_FLAG},
+		{input: `jr c,hl`, err: errcode.EZ80_OP2},
+		{input: `jr a,$12`, err: errcode.EZ80_FLAG},
+		{input: `jr $1000`, err: errcode.EZ80_JR_RANGE},
+		{input: `jr c,hl`, err: errcode.EZ80_OP2},
+		{input: `jr a,$12`, err: errcode.EZ80_FLAG},
+		{input: `djnz hl`, err: errcode.EZ80_OP},
+		{input: `djnz $1000`, err: errcode.EZ80_JR_RANGE},
 	}
 
 	for tn, tt := range tests {
