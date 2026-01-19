@@ -771,7 +771,7 @@ func (e *DotIdent) String() string     { return e.Name }
 
 // レジスタ間接指定
 type RegIndirectExpression struct {
-	Register     int
+	Register     *RegisterLiteral
 	Displacement Expression
 	Context      *fileblock.Context
 }
@@ -780,13 +780,13 @@ func (e *RegIndirectExpression) expressionNode()    {}
 func (e *RegIndirectExpression) NodeType() NodeType { return NODE_REG_INDIRECT }
 func (e *RegIndirectExpression) String() string {
 	if e.Displacement == nil {
-		return "(" + TokenLiteral(e.Register) + ")"
+		return "(" + e.Register.String() + ")"
 	} else {
 		expr := trimParen(e.Displacement.String())
 		if expr[0] != '-' {
 			expr = "+" + expr
 		}
-		return "(" + TokenLiteral(e.Register) + expr + ")"
+		return "(" + e.Register.String() + expr + ")"
 	}
 }
 

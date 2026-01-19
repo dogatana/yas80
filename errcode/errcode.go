@@ -37,7 +37,8 @@ const (
 	EINDIRECT_VALUE      = "レジスタ間接に使用できない値"
 	EINDIRECT_OP         = "レジスタ間接に使用できない演算子"
 	EINDIRECT_REG        = "(%s) は使用できない"
-	EINDIRECT_DISP       = "IX/IY のオフセットは数値のみ指定可能"
+	EINDIRECT_DISP_REG   = "オフセットは IX/IY のみ指定可能"
+	EINDIRECT_DISP       = "IX/IY のオフセットが数値でない"
 	EINDIRECT_DISP_RANGE = "IX/IY のオフセットが範囲外 %d(0x%x)"
 	EINDIRECT_DISP_NULL  = "IX/IY のオフセットが未確定"
 

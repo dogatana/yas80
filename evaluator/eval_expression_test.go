@@ -263,15 +263,24 @@ func TestIndexExpression(t *testing.T) {
 
 }
 
-func TestIndirectExpression(t *testing.T) {
+func TestRegIndirectExpression(t *testing.T) {
 	tests := []struct {
 		input string
 		syms  []symValue
 		err   string
 	}{
 		// 0-
-		{input: `jp (de)`, err: errcode.EINDIRECT_REG},
+		{input: `jp (de)`, err: errcode.EZ80_JP_INDIRECT_REG},
+		{input: `jp (de+1)`, err: errcode.EINDIRECT_DISP_REG},
+		{input: `jp (ix+1)`, err: errcode.EZ80_JP_INDIRECT_DISP},
+		{input: `jp (iy-1)`, err: errcode.EZ80_JP_INDIRECT_DISP},
+		{input: `jp (ix+128)`, err: errcode.EINDIRECT_DISP_RANGE},
+		// 5-
+		{input: `jp (sp)`, err: errcode.EINDIRECT_REG},
+		{input: `jp (sp)`, err: errcode.EINDIRECT_REG},
 		{input: `jp (a)`, err: errcode.EINDIRECT_REG},
+		{input: `jp ('a')`, err: errcode.EINDIRECT_REG},
+		{input: `jp (123)`, err: errcode.EINDIRECT_REG},
 	}
 
 	for tn, tt := range tests {

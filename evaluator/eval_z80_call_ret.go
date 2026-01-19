@@ -125,9 +125,9 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		value = op2.Value
 	case *object.RefNotFoundObject:
 		return code
-	case *object.IndirectObject:
+	case *object.RegIndirectObject:
 		// レジスタ間接
-		switch op2.Register.Register {
+		switch op2.Register {
 		case parser.Z80_REG_HL:
 			code = &object.CodeObject{Code: []byte{0xe9}, CZ80: 4, Context: stmt.Context}
 		case parser.Z80_REG_IX:
