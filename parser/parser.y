@@ -515,24 +515,27 @@ instruction	: Z80_INST0
 
 operand		: '(' Z80_REG16 ')'
 			{ 
-				$$ = &IndirectExpression{Expression: 
-					&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType), Context: $2.Context}}
+				$$ = &RegIndirectExpression{
+						Register: int($2.TokenSubType),
+						Context: $1.Context}
 			}
 			| '(' Z80_REG16 ADDSUB expr ')' 
 			{
-				$$ = &IndirectExpression{Expression: 
-						buildInfixExpression(
-							int($3.TokenSubType), 
-							&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType), Context: $2.Context},
-							$4,
-							$2.Context)}
+				$$ = &RegIndirectExpression{
+						Register: int($2.TokenSubType),
+						Displacement: buildPrefixExpression(int($3.TokenSubType), $4, $1.Context),
+						Context: $1.Context}
 			}
 			| '(' Z80_REG8 ')'
 			{ 
-				$$ = &IndirectExpression{Expression: 
-					&RegisterLiteral{RegisterType: int($2.TokenType), Register: int($2.TokenSubType), Context: $2.Context}}
+				$$ = &RegIndirectExpression{
+						Register: int($2.TokenSubType),
+						Context: $1.Context}
 			}
-			| '(' expr ')'		{ $$ = &IndirectExpression{Expression: $2} }
+			| '(' expr ')'		
+			{ 
+				$$ = &AddrIndirectExpression{Expression: $2, Context: $1.Context} 
+			}
 			| expr 				{ $$ = $1 }
 			;
 			

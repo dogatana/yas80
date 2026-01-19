@@ -61,7 +61,8 @@ const (
 	NODE_LABEL
 	NODE_LOCAL_LABEL
 	NODE_AT_LABEL
-	NODE_INDIRECT // for Z80
+	NODE_ADDR_INDIRECT
+	NODE_REG_INDIRECT
 )
 
 type NodeType int
@@ -768,14 +769,36 @@ func (e *DotIdent) expressionNode()    {}
 func (e *DotIdent) NodeType() NodeType { return NODE_DOT_IDENT }
 func (e *DotIdent) String() string     { return e.Name }
 
-// 間接指定
-type IndirectExpression struct {
-	Expression Expression
+// レジスタ間接指定
+type RegIndirectExpression struct {
+	Register     int
+	Displacement Expression
+	Context      *fileblock.Context
 }
 
-func (e *IndirectExpression) expressionNode()    {}
-func (e *IndirectExpression) NodeType() NodeType { return NODE_INDIRECT }
-func (e *IndirectExpression) String() string {
+func (e *RegIndirectExpression) expressionNode()    {}
+func (e *RegIndirectExpression) NodeType() NodeType { return NODE_REG_INDIRECT }
+func (e *RegIndirectExpression) String() string {
+	if e.Displacement == nil {
+		return "(" + TokenLiteral(e.Register) + ")"
+	} else {
+		expr := trimParen(e.Displacement.String())
+		if expr[0] != '-' {
+			expr = "+" + expr
+		}
+		return "(" + TokenLiteral(e.Register) + expr + ")"
+	}
+}
+
+// アドレス間接指定
+type AddrIndirectExpression struct {
+	Expression Expression
+	Context    *fileblock.Context
+}
+
+func (e *AddrIndirectExpression) expressionNode()    {}
+func (e *AddrIndirectExpression) NodeType() NodeType { return NODE_ADDR_INDIRECT }
+func (e *AddrIndirectExpression) String() string {
 	expr := trimParen(e.Expression.String())
 	return "(" + expr + ")"
 }

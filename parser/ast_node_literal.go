@@ -38,7 +38,8 @@ var nodeLiteralTable map[int]string = map[int]string{
 	NODE_LABEL:              "NODE_LABEL",
 	NODE_LOCAL_LABEL:        "NODE_LOCAL_LABEL",
 	NODE_AT_LABEL:           "NODE_AT_LABEL",
-	NODE_INDIRECT:           "NODE_INDIRECT",
+	NODE_ADDR_INDIRECT:      "NODE_ADDR_INDIRECT",
+	NODE_REG_INDIRECT:       "NODE_REG_INDIRECT",
 }
 
 func nodeLiteral(id int) string {

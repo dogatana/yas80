@@ -30,7 +30,7 @@ func parseInt(s string) (int64, error) {
 }
 
 func opString(e Node) string {
-	indirect, ok := e.(*IndirectExpression)
+	indirect, ok := e.(*RegIndirectExpression)
 	if ok {
 		return indirect.String()
 	}

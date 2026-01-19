@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -149,8 +150,10 @@ func TestParseIndirect(t *testing.T) {
 	input := `
 LD A, (HL)
 LD (HL), A
-LD A, (IX + 1)
-LD (IX + 1), A
+LD A, (IX-1)
+LD (IX+1), A
+LD A,(100)
+LD (100),A
 `
 	l := newLexerForTest(input)
 	prog := ParseForTest(t, l, -1)
@@ -158,6 +161,7 @@ LD (IX + 1), A
 	expected := strings.Trim(input, " \n\t")
 	text := strings.ReplaceAll(prog.String(), "\t", " ")
 	if text != expected {
+		fmt.Println(text)
 		t.Errorf("program differs. exptected %d chars. got %d chars",
 			len(expected), len(text))
 	}
