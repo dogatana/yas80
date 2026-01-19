@@ -799,8 +799,7 @@ type AddrIndirectExpression struct {
 func (e *AddrIndirectExpression) expressionNode()    {}
 func (e *AddrIndirectExpression) NodeType() NodeType { return NODE_ADDR_INDIRECT }
 func (e *AddrIndirectExpression) String() string {
-	expr := trimParen(e.Expression.String())
-	return "(" + expr + ")"
+	return "((" + e.Expression.String() + "))"
 }
 
 // 中置演算子式
