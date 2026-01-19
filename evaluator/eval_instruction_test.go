@@ -119,6 +119,7 @@ func TestInstructionError(t *testing.T) {
 		{input: `jr $1000`, err: errcode.EZ80_JR_RANGE},
 		{input: `jr c,hl`, err: errcode.EZ80_OP2},
 		{input: `jr a,$12`, err: errcode.EZ80_FLAG},
+		{input: `jr po,$12`, err: errcode.EZ80_JR_FLAG},
 		{input: `djnz hl`, err: errcode.EZ80_OP},
 		{input: `djnz $1000`, err: errcode.EZ80_JR_RANGE},
 	}
