@@ -262,3 +262,33 @@ func TestIndexExpression(t *testing.T) {
 	}
 
 }
+
+func TestIndirectExpression(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `jp (de)`, err: errcode.EINDIRECT_REG},
+		{input: `jp (a)`, err: errcode.EINDIRECT_REG},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+
+}

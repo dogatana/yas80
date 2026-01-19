@@ -28,3 +28,16 @@ rst $20
 rst $28
 rst $30
 rst $38
+; JP
+jp $1234
+jp nz, $1234
+jp z, $1234
+jp nc, $1234
+jp c, $1234
+jp po, $1234
+jp pe, $1234
+jp p, $1234
+jp m, $1234
+jp (hl)
+jp (ix)
+jp (iy)

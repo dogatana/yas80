@@ -22,6 +22,10 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	case *parser.FlagLiteral:
 		return object.Z80RegisterFlagObjects[node.Flag]
 
+	// レジスタ間接 (HL),(IX+d),(IY+d),(C)
+	case *parser.IndirectExpression:
+		return e.evalIndirectExpression(node, env, ctx)
+
 	// 識別子
 	case *parser.Ident:
 		name := node.Name
@@ -383,4 +387,75 @@ func (e *Evaluator) evalIndexedExpression(expr *parser.IndexedExpression, env TE
 	}
 
 	return array.Values[index]
+}
+
+// レジスタ間接 (HL),(IX+d),(IY+d),(C)
+func (e *Evaluator) evalIndirectExpression(expr *parser.IndirectExpression, env TEnv, ctx TContext) object.Object {
+	e.concatenateSymbol(&expr.Expression, env, ctx)
+
+	switch node := expr.Expression.(type) {
+	case *parser.RegisterLiteral:
+		// (HL), (IX), (IY), (C)
+		switch node.Register {
+		case parser.Z80_REG_HL, parser.Z80_REG_IX, parser.Z80_REG_IY, parser.Z80_REG_C:
+			reg := object.Z80RegisterFlagObjects[node.Register].(*object.RegisterObject)
+			return &object.IndirectObject{Register: reg}
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(node.Register)), ctx)
+			return object.ERROR
+		}
+	case *parser.InfixExpression:
+		return e.evalIndexRegisterIndirect(node, env, ctx)
+	default:
+		e.logger.Error(errcode.EINDIRECT_VALUE, ctx)
+		return object.ERROR
+	}
+}
+
+// IX +/- d, IY +/- d の処理
+func (e *Evaluator) evalIndexRegisterIndirect(infix *parser.InfixExpression, env TEnv, ctx TContext) object.Object {
+	// 演算子チェック
+	if infix.Operator != '+' && infix.Operator != '-' {
+		e.logger.Error(errcode.EINDIRECT_OP, ctx)
+		return object.ERROR
+	}
+	// レジスタチェック
+	reg, ok := infix.Op1.(*parser.RegisterLiteral)
+	if !ok {
+		e.logger.Error(errcode.EINDIRECT_VALUE, ctx)
+		return object.ERROR
+	}
+	if reg.Register != parser.Z80_REG_IX && reg.Register != parser.Z80_REG_IY {
+		e.logger.Error(errcode.EINDIRECT_REG, ctx)
+		return object.ERROR
+	}
+	// オフセットチェック
+	obj := e.evalExpression(infix.Op2, env, ctx)
+
+	var num *object.NumberObject
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		return obj
+	case *object.NullObject:
+		e.logger.Error(errcode.EINDIRECT_DISP_NULL, ctx)
+		return object.ERROR
+	case *object.NumberObject:
+		num = obj
+	default:
+		e.logger.Error(errcode.EINDIRECT_DISP, ctx)
+		return object.ERROR
+	}
+
+	if infix.Operator == '-' {
+		num.Value = -num.Value
+	}
+	if num.Value < -128 || num.Value > 127 {
+		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_DISP_RANGE, num.Value, num.Value), ctx)
+		return object.ERROR
+	}
+
+	regObj := object.Z80RegisterFlagObjects[reg.Register].(*object.RegisterObject)
+	return &object.IndirectObject{Register: regObj, Displacement: num.Value}
 }

@@ -33,17 +33,27 @@ const (
 	EDS_COUNT = "DS/DSB/DSW のデータ数が確定できない"
 	EDS_FILL  = "DS/DSB/DSW の埋め込みデータが確定できない"
 
+	// レジスタ間接
+	EINDIRECT_VALUE      = "レジスタ間接に使用できない値"
+	EINDIRECT_OP         = "レジスタ間接に使用できない演算子"
+	EINDIRECT_REG        = "(%s) は使用できない"
+	EINDIRECT_DISP       = "IX/IY のオフセットは数値のみ指定可能"
+	EINDIRECT_DISP_RANGE = "IX/IY のオフセットが範囲外 %d(0x%x)"
+	EINDIRECT_DISP_NULL  = "IX/IY のオフセットが未確定"
+
 	// Z80
-	EZ80_NOT_IMPL   = "評価未実装 %s"
-	EZ80_FLAG       = "フラグが指定されていない"
-	EZ80_OP         = "オペランドエラー"
-	EZ80_OP1        = "第1オペランドエラー"
-	EZ80_OP2        = "第2オペランドエラー"
-	EZ80_OP1_SP     = "第1オペランドは SP 以外指定不可"
-	EZ80_OP2_HL_IXY = "第2オペランドは HL, IX, IY 以外指定不可"
-	EZ80_RST        = "RST のアドレスは 0, 8, 10H, 18H, 20H, 28H, 30H, 38H のいずれかでなければならない (指定値: %d(0x%x))"
-	EZ80_JR_RANGE   = "相対ジャンプ先が範囲 %d(0x%x)"
-	EZ80_JR_FLAG    = "JR に '%s' フラグは使用不可"
+	EZ80_NOT_IMPL         = "評価未実装 %s"
+	EZ80_FLAG             = "フラグが指定されていない"
+	EZ80_OP               = "オペランドエラー"
+	EZ80_OP1              = "第1オペランドエラー"
+	EZ80_OP2              = "第2オペランドエラー"
+	EZ80_OP1_SP           = "第1オペランドは SP 以外指定不可"
+	EZ80_OP2_HL_IXY       = "第2オペランドは HL, IX, IY 以外指定不可"
+	EZ80_RST              = "RST のアドレスは 0, 8, 10H, 18H, 20H, 28H, 30H, 38H のいずれかでなければならない (指定値: %d(0x%x))"
+	EZ80_JR_RANGE         = "相対ジャンプ先が範囲外 %d(0x%x)"
+	EZ80_JR_FLAG          = "JR に '%s' フラグは使用不可"
+	EZ80_JP_INDIRECT_DISP = "間接 JP にオフセット指定は不可"
+	EZ80_JP_INDIRECT_REG  = "(HL), (IX), (IY) のみ指定可能"
 
 	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"

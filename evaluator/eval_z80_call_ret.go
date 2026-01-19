@@ -125,6 +125,23 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		value = op2.Value
 	case *object.RefNotFoundObject:
 		return code
+	case *object.IndirectObject:
+		// レジスタ間接
+		switch op2.Register.Register {
+		case parser.Z80_REG_HL:
+			code = &object.CodeObject{Code: []byte{0xe9}, CZ80: 4, Context: stmt.Context}
+		case parser.Z80_REG_IX:
+			code = &object.CodeObject{Code: []byte{0xdd, 0xe9}, CZ80: 4, Context: stmt.Context}
+		case parser.Z80_REG_IY:
+			code = &object.CodeObject{Code: []byte{0xfd, 0xe9}, CZ80: 4, Context: stmt.Context}
+		default:
+			e.logger.Error(errcode.EZ80_JP_INDIRECT_REG, stmt.Context)
+			return &object.CodeObject{Code: []byte{0xe9}, CZ80: 4, Context: stmt.Context}
+		}
+		if op2.Displacement != 0 {
+			e.logger.Error(errcode.EZ80_JP_INDIRECT_DISP, stmt.Context)
+		}
+		return code
 	default:
 		if op1 == nil {
 			e.logger.Error(errcode.EZ80_OP, stmt.Context)
@@ -167,7 +184,7 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
 		return code
 	}
-	code.Code[0] = 0xc4 | index<<3
+	code.Code[0] = 0xc2 | index<<3
 	return code
 }
 

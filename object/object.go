@@ -15,6 +15,7 @@ const (
 	STRING_OBJ
 	ENUM_OBJ
 	REGISTER_OBJ
+	INDIRECT_OBJ
 	CODE_OBJ
 	PROGRAM_OBJ
 	NODE_OBJ
@@ -258,6 +259,20 @@ type StringObject struct {
 
 func (s *StringObject) Type() ObjectType { return STRING_OBJ }
 func (s *StringObject) String() string   { return fmt.Sprintf("%q", s.Value) }
+
+// レジスタ間接
+type IndirectObject struct {
+	Register     *RegisterObject
+	Displacement int
+}
+
+func (o *IndirectObject) Type() ObjectType { return INDIRECT_OBJ }
+func (o *IndirectObject) String() string {
+	if o.Displacement != 0 {
+		return fmt.Sprintf("(%s%+d)", o.Register.String(), o.Displacement)
+	}
+	return fmt.Sprintf("(%s)", o.Register.String())
+}
 
 // Node
 type NodeObject struct {
