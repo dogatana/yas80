@@ -11,12 +11,15 @@ type evalZ80InstructionFunc func(e *Evaluator, stmt *parser.Z80Instruction, op1,
 
 var evalZ80InstructionFuncs = map[int]evalZ80InstructionFunc{
 	parser.Z80_INST_LD:   (*Evaluator).evalZ80LD,
-	parser.Z80_INST_RET:  (*Evaluator).evalZ80_RET,
-	parser.Z80_INST_CALL: (*Evaluator).evalZ80_CALL,
-	parser.Z80_INST_RST:  (*Evaluator).evalZ80_RST,
+	parser.Z80_INST_BIT:  (*Evaluator).evalZ80_BIT,
+	parser.Z80_INST_SET:  (*Evaluator).evalZ80_BIT,
+	parser.Z80_INST_RES:  (*Evaluator).evalZ80_BIT,
 	parser.Z80_INST_JP:   (*Evaluator).evalZ80_JP,
 	parser.Z80_INST_JR:   (*Evaluator).evalZ80_JR,
 	parser.Z80_INST_DJNZ: (*Evaluator).evalZ80_DJNZ,
+	parser.Z80_INST_CALL: (*Evaluator).evalZ80_CALL,
+	parser.Z80_INST_RET:  (*Evaluator).evalZ80_RET,
+	parser.Z80_INST_RST:  (*Evaluator).evalZ80_RST,
 	parser.Z80_INST_IN:   (*Evaluator).evalZ80_IN,
 	parser.Z80_INST_OUT:  (*Evaluator).evalZ80_OUT,
 }

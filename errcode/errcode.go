@@ -59,6 +59,9 @@ const (
 	EZ80_JR_FLAG          = "JR に '%s' フラグは使用不可"
 	EZ80_JP_INDIRECT_DISP = "間接 JP にオフセット指定は不可"
 	EZ80_JP_INDIRECT_REG  = "(HL), (IX), (IY) のみ指定可能"
+	EZ80_BIT_NULL         = "BIT番号(0-7)が未確定"
+	EZ80_BIT_NUM_RANGE    = "BIT番号(0-7)が範囲外"
+	EZ80_BIT_NUM          = "BIT番号(0-7)が不正"
 
 	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"
