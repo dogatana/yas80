@@ -64,7 +64,7 @@ func (e *Evaluator) evalZ80_RLC(stmt *parser.Z80Instruction, op1, op2 object.Obj
 			return code
 		}
 	default:
-		e.logger.Error(errcode.EZ80_OP1, stmt.Context)
+		e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		return code
 	}
 }
