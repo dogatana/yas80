@@ -34,7 +34,8 @@ const (
 	EDS_FILL  = "DS/DSB/DSW の埋め込みデータが確定できない"
 
 	// レジスタ間接
-	EINDIRECT_VALUE      = "レジスタ間接に使用できない値"
+	EINDIRECT_VALUE      = "(数値) が必要"
+	EINDIRECT_NULL       = "(数値) が未確定"
 	EINDIRECT_OP         = "レジスタ間接に使用できない演算子"
 	EINDIRECT_REG        = "(%s) は使用できない"
 	EINDIRECT_DISP_REG   = "オフセットは IX/IY のみ指定可能"
@@ -140,6 +141,7 @@ const (
 	WROUND_BYTE = "数値 '%d(0x%x)' をバイト範囲(-128-255)に丸めました"
 	WROUND_WORD = "数値 '%d(0x%x)' をワード範囲(-32768-65535)に丸めました"
 	WROUND_ADDR = "数値 '%d(0x%x)' をアドレス範囲(0-65535)に丸めました"
+	WROUND_PORT = "数値 '%d(0x%x)' をポート範囲(0-255)に丸めました"
 
 	WSCOPE_MACRO = "MACRO 内では無効"
 	WSCOPE_FUNC  = "FUNC 内では無効 %T"

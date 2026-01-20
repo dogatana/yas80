@@ -537,7 +537,7 @@ operand		: '(' Z80_REG16 ')'
 			}
 			| '(' expr ')'		
 			{ 
-				$$ = &AddrIndirectExpression{Expression: $2, Context: $1.Context} 
+				$$ = &AddrIndirectExpression{Address: $2, Context: $1.Context} 
 			}
 			| expr 				{ $$ = $1 }
 			;

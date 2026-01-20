@@ -22,9 +22,13 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	case *parser.FlagLiteral:
 		return object.Z80RegisterFlagObjects[node.Flag]
 
-	// レジスタ間接 (HL),(IX+d),(IY+d),(C)
+	// レジスタ間接 (HL),(BC),(DE),(IX+d),(IY+d),(C)
 	case *parser.RegIndirectExpression:
 		return e.evalRegIndirectExpression(node, env, ctx)
+
+	// アドレス間接 (nn),(n)
+	case *parser.AddrIndirectExpression:
+		return e.evalAddrIndirectExpression(node, env, ctx)
 
 	// 識別子
 	case *parser.Ident:
@@ -433,4 +437,27 @@ func (e *Evaluator) evalRegIndirectExpression(expr *parser.RegIndirectExpression
 	}
 
 	return &object.RegIndirectObject{Register: reg.Register, Displacement: num.Value}
+}
+
+// アドレス間接 (nn), (n)
+func (e *Evaluator) evalAddrIndirectExpression(expr *parser.AddrIndirectExpression, env TEnv, ctx TContext) object.Object {
+	e.concatenateSymbol(&expr.Address, env, ctx)
+
+	obj := e.evalExpression(expr.Address, env, ctx)
+
+	switch addr := obj.(type) {
+	case *object.ErrorObject:
+		return addr
+	case *object.RefNotFoundObject:
+		e.Resolved = false
+		return addr
+	case *object.NumberObject:
+		return &object.AddrIndirectObject{Address: addr.Value}
+	case *object.NullObject:
+		e.logger.Error(errcode.EINDIRECT_NULL, ctx)
+		return object.ERROR
+	default:
+		e.logger.Error(errcode.EINDIRECT_VALUE, ctx)
+		return object.ERROR
+	}
 }

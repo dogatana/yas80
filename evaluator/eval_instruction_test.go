@@ -184,6 +184,11 @@ func TestInstructionError_IO(t *testing.T) {
 		{input: `in 123, (c)`, err: errcode.EZ80_OP1},
 		{input: `in a, (hl)`, err: errcode.EINDIRECT_REG},
 		{input: `fn func \ return \ endf \ in fn(), (hl)`, err: errcode.EZ80_OP1_NULL},
+		{input: `in a, (-1)`, err: errcode.WROUND_PORT},
+		{input: `in a, (256)`, err: errcode.WROUND_PORT},
+		{input: `fn func \ return \ endf \ in a, (fn())`, err: errcode.EINDIRECT_NULL},
+		{input: `in i, (0)`, err: errcode.EZ80_OP_REG},
+		{input: `in r, (0)`, err: errcode.EZ80_OP_REG},
 	}
 
 	for tn, tt := range tests {

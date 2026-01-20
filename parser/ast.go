@@ -792,14 +792,14 @@ func (e *RegIndirectExpression) String() string {
 
 // アドレス間接指定
 type AddrIndirectExpression struct {
-	Expression Expression
-	Context    *fileblock.Context
+	Address Expression
+	Context *fileblock.Context
 }
 
 func (e *AddrIndirectExpression) expressionNode()    {}
 func (e *AddrIndirectExpression) NodeType() NodeType { return NODE_ADDR_INDIRECT }
 func (e *AddrIndirectExpression) String() string {
-	return "((" + e.Expression.String() + "))"
+	return "((" + e.Address.String() + "))"
 }
 
 // 中置演算子式

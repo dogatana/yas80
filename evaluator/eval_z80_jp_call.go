@@ -142,6 +142,9 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 			e.logger.Error(errcode.EZ80_JP_INDIRECT_DISP, stmt.Context)
 		}
 		return code
+	case *object.AddrIndirectObject:
+		e.logger.Error(errcode.EZ80_JP_INDIRECT_REG, stmt.Context)
+		return code
 	default:
 		if op1 == nil {
 			e.logger.Error(errcode.EZ80_OP, stmt.Context)

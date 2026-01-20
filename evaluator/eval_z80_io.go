@@ -44,6 +44,18 @@ func (e *Evaluator) evalZ80_IN(stmt *parser.Z80Instruction, op1, op2 object.Obje
 			code.Code[1] = 0x40 | index<<3
 			return code
 		}
+	case *object.AddrIndirectObject:
+		if reg.Register != parser.Z80_REG_A {
+			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(reg.Register)), stmt.Context)
+			return code
+		}
+		addr, ok := e.intToPort(port.Address)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_PORT, port.Address, port.Address), stmt.Context)
+		}
+		code.Code[1] = addr
+		return code
+
 	default:
 		e.logger.Error(errcode.ENOT_IMPL_STMT, stmt.Context)
 		return code

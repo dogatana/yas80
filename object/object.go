@@ -277,6 +277,16 @@ func (o *RegIndirectObject) String() string {
 	}
 }
 
+// アドレス間接
+type AddrIndirectObject struct {
+	Address int
+}
+
+func (o *AddrIndirectObject) Type() ObjectType { return ADDR_INDIRECT_OBJ }
+func (o *AddrIndirectObject) String() string {
+	return fmt.Sprintf("($%x)", o.Address)
+}
+
 // Node
 type NodeObject struct {
 	Node parser.Node

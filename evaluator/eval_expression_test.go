@@ -279,8 +279,8 @@ func TestRegIndirectExpression(t *testing.T) {
 		{input: `jp (sp)`, err: errcode.EINDIRECT_REG},
 		{input: `jp (sp)`, err: errcode.EINDIRECT_REG},
 		{input: `jp (a)`, err: errcode.EINDIRECT_REG},
-		{input: `jp ('a')`, err: errcode.EINDIRECT_REG},
-		{input: `jp (123)`, err: errcode.EINDIRECT_REG},
+		{input: `jp ('a')`, err: errcode.EINDIRECT_VALUE},
+		{input: `jp (123)`, err: errcode.EZ80_JP_INDIRECT_REG},
 		// 10-
 		{input: `in 1, (c)`, err: errcode.EZ80_OP1},
 		{input: `in hl, (c)`, err: errcode.EZ80_OP_REG},

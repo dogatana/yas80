@@ -96,6 +96,11 @@ func (e *Evaluator) intToAddr(n int) (int, bool) {
 	return (n & 0xffff), 0 <= n && n <= 65535
 }
 
+// int ->  byte へ。丸めが発生した場合は false
+func (e *Evaluator) intToPort(n int) (byte, bool) {
+	return byte(n & 0xff), 0 <= n && n <= 255
+}
+
 func boolToInt(value bool) int {
 	if value {
 		return 1
