@@ -12,6 +12,7 @@ func TestZ80Instruction(t *testing.T) {
 	tests := []string{
 		"inst0",
 		"ld_r8_r8",
+		"bit",
 		"call-ret",
 		"io",
 	}
