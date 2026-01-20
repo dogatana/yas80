@@ -17,7 +17,7 @@ func (e *Evaluator) evalZ80_RLC(stmt *parser.Z80Instruction, op1, op2 object.Obj
 		parser.Z80_INST_SRA: 0x28,
 		parser.Z80_INST_SRL: 0x38,
 	}
-	code := &object.CodeObject{Code: []byte{0xcb, 0x00}, Context: stmt.Context}
+	code := &object.CodeObject{Code: []byte{0xcb, 0x00}, CZ80: 8, Context: stmt.Context}
 	if b, ok := codeTable[stmt.Opcode]; ok {
 		code.Code[1] = b
 	} else {
@@ -45,16 +45,19 @@ func (e *Evaluator) evalZ80_RLC(stmt *parser.Z80Instruction, op1, op2 object.Obj
 		}
 	case *object.RegIndirectObject:
 		code.Code[1] |= 0x06
+		code.CZ80 = 15
 		switch op1.Register {
 		case parser.Z80_REG_HL:
 			return code
 		case parser.Z80_REG_IX:
 			code.Code[1] |= 0x06
 			code.Code = []byte{0xdd, 0xcb, byte(op1.Displacement), code.Code[1]}
+			code.CZ80 = 23
 			return code
 		case parser.Z80_REG_IY:
 			code.Code[1] |= 0x06
 			code.Code = []byte{0xfd, 0xcb, byte(op1.Displacement), code.Code[1]}
+			code.CZ80 = 23
 			return code
 		default:
 			e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(op1.Register)), stmt.Context)

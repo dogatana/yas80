@@ -32,6 +32,7 @@ func (e *Evaluator) evalZ80_IN(stmt *parser.Z80Instruction, op1, op2 object.Obje
 			return code
 		}
 		code.Code[0] = 0xed
+		code.CZ80 = 12
 		if index, ok := Z80Reg8Index[reg.Register]; !ok {
 			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(reg.Register)), stmt.Context)
 			return code
@@ -82,6 +83,7 @@ func (e *Evaluator) evalZ80_OUT(stmt *parser.Z80Instruction, op1, op2 object.Obj
 			return code
 		}
 		code.Code[0] = 0xed
+		code.CZ80 = 12
 		if index, ok := Z80Reg8Index[reg.Register]; !ok {
 			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(reg.Register)), stmt.Context)
 			return code

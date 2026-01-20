@@ -9,7 +9,7 @@ import (
 
 // BIT, SET RES
 func (e *Evaluator) evalZ80_BIT(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
-	code := &object.CodeObject{Code: []byte{0xcb, 0x00}, Context: stmt.Context}
+	code := &object.CodeObject{Code: []byte{0xcb, 0x00}, CZ80: 8, Context: stmt.Context}
 	switch stmt.Opcode {
 	case parser.Z80_INST_BIT:
 		code.Code[1] = 0x40
@@ -64,13 +64,14 @@ func (e *Evaluator) evalZ80_BIT(stmt *parser.Z80Instruction, op1, op2 object.Obj
 		code.Code[1] |= 0x06
 		switch op2.Register {
 		case parser.Z80_REG_HL:
+			code.CZ80 = 12
 			return code
 		case parser.Z80_REG_IX:
-			code.Code[1] |= 0x06
 			code.Code = []byte{0xdd, 0xcb, byte(op2.Displacement), code.Code[1]}
+			code.CZ80 = 20
 			return code
 		case parser.Z80_REG_IY:
-			code.Code[1] |= 0x06
+			code.CZ80 = 20
 			code.Code = []byte{0xfd, 0xcb, byte(op2.Displacement), code.Code[1]}
 			return code
 		default:
