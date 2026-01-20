@@ -67,8 +67,8 @@ var Z80RegisterFlagObjects map[int]Object = map[int]Object{
 	parser.Z80_REG_IXL: Z80_REG_IXL,
 	parser.Z80_REG_IYH: Z80_REG_IYH,
 	parser.Z80_REG_IYL: Z80_REG_IYL,
-	parser.Z80_REG_I:   Z80_REG_IYL,
-	parser.Z80_REG_R:   Z80_REG_IYL,
+	parser.Z80_REG_I:   Z80_REG_I,
+	parser.Z80_REG_R:   Z80_REG_R,
 
 	parser.Z80_REG_SP:   Z80_REG_SP,
 	parser.Z80_REG_IX:   Z80_REG_IX,
