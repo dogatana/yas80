@@ -205,7 +205,7 @@ func bytesEqual(v1, v2 []byte) error {
 	}
 	for i, v := range v1 {
 		if v != v2[i] {
-			return fmt.Errorf("contentis diff [%d] %02x %02x\n", i, v, v2[i])
+			return fmt.Errorf("contentis diff [0x%x] 0x%02x 0x%02x\n", i, v, v2[i])
 		}
 	}
 	return nil
