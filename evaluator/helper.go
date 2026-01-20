@@ -101,6 +101,11 @@ func (e *Evaluator) intToPort(n int) (byte, bool) {
 	return byte(n & 0xff), 0 <= n && n <= 255
 }
 
+// int ->  byte(0-7) へ。丸めが発生した場合は false
+func (e *Evaluator) intToBit(n int) (byte, bool) {
+	return byte(n & 0x7), 0 <= n && n <= 7
+}
+
 func boolToInt(value bool) int {
 	if value {
 		return 1

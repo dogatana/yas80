@@ -20,7 +20,7 @@ func (e *Evaluator) evalZ80_BIT(stmt *parser.Z80Instruction, op1, op2 object.Obj
 	}
 
 	// bit 番号
-	bn := 0
+	bn := byte(0)
 	switch op1 := op1.(type) {
 	case *object.RefNotFoundObject:
 		e.Resolved = false
@@ -29,11 +29,12 @@ func (e *Evaluator) evalZ80_BIT(stmt *parser.Z80Instruction, op1, op2 object.Obj
 		e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
 		return object.ERROR
 	case *object.NumberObject:
-		bn = op1.Value
-		if bn < 0 || bn > 7 {
+		b, ok := e.intToBit(op1.Value)
+		if !ok {
 			e.logger.Error(errcode.EZ80_BIT_NUM_RANGE, stmt.Context)
 			return code
 		}
+		bn = b
 	default:
 		e.logger.Error(errcode.EZ80_OP1, stmt.Context)
 		return code

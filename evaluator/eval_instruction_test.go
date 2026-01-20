@@ -237,29 +237,15 @@ func TestInstructionError_BIT(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `in hl, (c)`, err: errcode.EZ80_OP_REG},
-		{input: `in i, (c)`, err: errcode.EZ80_OP_REG},
-		{input: `in r, (c)`, err: errcode.EZ80_OP_REG},
-		{input: `in 123, (c)`, err: errcode.EZ80_OP1},
-		{input: `in a, (hl)`, err: errcode.EINDIRECT_REG},
-		{input: `fn func \ return \ endf \ in fn(), (hl)`, err: errcode.EZ80_OP1_NULL},
-		{input: `in a, (-1)`, err: errcode.WROUND_PORT},
-		{input: `in a, (256)`, err: errcode.WROUND_PORT},
-		{input: `fn func \ return \ endf \ in a, (fn())`, err: errcode.EINDIRECT_NULL},
-		{input: `in i, (0)`, err: errcode.EZ80_OP_REG},
-		{input: `in r, (0)`, err: errcode.EZ80_OP_REG},
-
-		{input: `out (c), hl`, err: errcode.EZ80_OP_REG},
-		{input: `out (c), i`, err: errcode.EZ80_OP_REG},
-		{input: `out (c), r`, err: errcode.EZ80_OP_REG},
-		{input: `out (c), 123`, err: errcode.EZ80_OP1},
-		{input: `out (hl), a`, err: errcode.EINDIRECT_REG},
-		{input: `fn func \ return \ endf \ out (hl), fn()`, err: errcode.EZ80_OP2_NULL},
-		{input: `out (-1), a`, err: errcode.WROUND_PORT},
-		{input: `out (256), a`, err: errcode.WROUND_PORT},
-		{input: `fn func \ return \ endf \ out (fn()), a`, err: errcode.EINDIRECT_NULL},
-		{input: `out (0), i`, err: errcode.EZ80_OP_REG},
-		{input: `out (0), r`, err: errcode.EZ80_OP_REG},
+		{input: `bit 10, a`, err: errcode.EZ80_BIT_NUM_RANGE},
+		{input: `set hl, a`, err: errcode.EZ80_OP1},
+		{input: `fn func \ return \ endf \ res fn(), a`, err: errcode.EZ80_OP1_NULL},
+		{input: `fn func \ return \ endf \ set 0, fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `bit 0, i`, err: errcode.EZ80_OP_REG},
+		{input: `bit 0, r`, err: errcode.EZ80_OP_REG},
+		{input: `bit 0, (de)`, err: errcode.EINDIRECT_REG},
+		{input: `bit 0, (c)`, err: errcode.EINDIRECT_REG},
+		{input: `set 0, hl`, err: errcode.EZ80_OP_REG},
 	}
 
 	for tn, tt := range tests {

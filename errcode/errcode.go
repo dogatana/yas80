@@ -46,7 +46,7 @@ const (
 	// Z80
 	EZ80_NOT_IMPL         = "評価未実装 %s"
 	EZ80_FLAG             = "フラグが指定されていない"
-	EZ80_OP               = "オペランドエラー"
+	EZ80_OP               = "命令オペランドエラー"
 	EZ80_OP_REG           = "レジスタ %s は指定不可"
 	EZ80_OP1              = "第1オペランドエラー"
 	EZ80_OP1_NULL         = "第1オペランドが未確定"
@@ -59,9 +59,7 @@ const (
 	EZ80_JR_FLAG          = "JR に '%s' フラグは使用不可"
 	EZ80_JP_INDIRECT_DISP = "間接 JP にオフセット指定は不可"
 	EZ80_JP_INDIRECT_REG  = "(HL), (IX), (IY) のみ指定可能"
-	EZ80_BIT_NULL         = "BIT番号(0-7)が未確定"
 	EZ80_BIT_NUM_RANGE    = "BIT番号(0-7)が範囲外"
-	EZ80_BIT_NUM          = "BIT番号(0-7)が不正"
 
 	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"
