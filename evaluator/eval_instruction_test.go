@@ -13,6 +13,7 @@ func TestZ80Instruction(t *testing.T) {
 		"inst0",
 		"ld_r8_r8",
 		"call-ret",
+		"io",
 	}
 
 	for tn, base := range tests {
@@ -83,7 +84,7 @@ func TestInstructionDefault(t *testing.T) {
 	}
 }
 
-func TestInstructionError(t *testing.T) {
+func TestInstructionError_JP_CALL(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -122,6 +123,67 @@ func TestInstructionError(t *testing.T) {
 		{input: `jr po,$12`, err: errcode.EZ80_JR_FLAG},
 		{input: `djnz hl`, err: errcode.EZ80_OP},
 		{input: `djnz $1000`, err: errcode.EZ80_JR_RANGE},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		// logger := logging.New("<eval test>")
+		// pnode := parseTextForTest(tt.input, logger)
+
+		// e := New(logger)
+		// env := object.NewEnvironment(nil)
+		// pobj := e.EvalProgram(pnode, env).(*object.ProgramObject)
+
+		// logger.Print()
+		// object.PrintEnv(env)
+
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// sym
+		obj, ok := env.Get("VAL")
+		if !ok {
+			t.Errorf("[%d] VAL not in env", tn)
+			continue
+		}
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok {
+			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
+			continue
+		}
+		if sym.SymType != object.SYM_UNKNOWN {
+			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
+		}
+	}
+}
+
+func TestInstructionError_IO(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `in hl, (c)`, err: errcode.EZ80_OP_REG},
+		{input: `in i, (c)`, err: errcode.EZ80_OP_REG},
+		{input: `in r, (c)`, err: errcode.EZ80_OP_REG},
+		{input: `in 123, (c)`, err: errcode.EZ80_OP1},
+		{input: `in a, (hl)`, err: errcode.EINDIRECT_REG},
+		{input: `fn func \ return \ endf \ in fn(), (hl)`, err: errcode.EZ80_OP1_NULL},
 	}
 
 	for tn, tt := range tests {

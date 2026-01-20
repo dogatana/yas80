@@ -281,6 +281,11 @@ func TestRegIndirectExpression(t *testing.T) {
 		{input: `jp (a)`, err: errcode.EINDIRECT_REG},
 		{input: `jp ('a')`, err: errcode.EINDIRECT_REG},
 		{input: `jp (123)`, err: errcode.EINDIRECT_REG},
+		// 10-
+		{input: `in 1, (c)`, err: errcode.EZ80_OP1},
+		{input: `in hl, (c)`, err: errcode.EZ80_OP_REG},
+		{input: `in ixl, (c)`, err: errcode.EZ80_OP_REG},
+		{input: `in a, (hl)`, err: errcode.EINDIRECT_REG},
 	}
 
 	for tn, tt := range tests {
