@@ -129,16 +129,6 @@ func TestInstructionError_JP_CALL(t *testing.T) {
 		if tt.input == "" {
 			continue
 		}
-		// logger := logging.New("<eval test>")
-		// pnode := parseTextForTest(tt.input, logger)
-
-		// e := New(logger)
-		// env := object.NewEnvironment(nil)
-		// pobj := e.EvalProgram(pnode, env).(*object.ProgramObject)
-
-		// logger.Print()
-		// object.PrintEnv(env)
-
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		prog, e := evalInput(tt.input, logger, env)
@@ -207,16 +197,74 @@ func TestInstructionError_IO(t *testing.T) {
 		if tt.input == "" {
 			continue
 		}
-		// logger := logging.New("<eval test>")
-		// pnode := parseTextForTest(tt.input, logger)
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
 
-		// e := New(logger)
-		// env := object.NewEnvironment(nil)
-		// pobj := e.EvalProgram(pnode, env).(*object.ProgramObject)
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
 
-		// logger.Print()
-		// object.PrintEnv(env)
+		// code
+		testCodeResult(t, tn, tt.code, prog)
 
+		// sym
+		obj, ok := env.Get("VAL")
+		if !ok {
+			t.Errorf("[%d] VAL not in env", tn)
+			continue
+		}
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok {
+			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
+			continue
+		}
+		if sym.SymType != object.SYM_UNKNOWN {
+			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
+		}
+	}
+}
+
+func TestInstructionError_BIT(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `in hl, (c)`, err: errcode.EZ80_OP_REG},
+		{input: `in i, (c)`, err: errcode.EZ80_OP_REG},
+		{input: `in r, (c)`, err: errcode.EZ80_OP_REG},
+		{input: `in 123, (c)`, err: errcode.EZ80_OP1},
+		{input: `in a, (hl)`, err: errcode.EINDIRECT_REG},
+		{input: `fn func \ return \ endf \ in fn(), (hl)`, err: errcode.EZ80_OP1_NULL},
+		{input: `in a, (-1)`, err: errcode.WROUND_PORT},
+		{input: `in a, (256)`, err: errcode.WROUND_PORT},
+		{input: `fn func \ return \ endf \ in a, (fn())`, err: errcode.EINDIRECT_NULL},
+		{input: `in i, (0)`, err: errcode.EZ80_OP_REG},
+		{input: `in r, (0)`, err: errcode.EZ80_OP_REG},
+
+		{input: `out (c), hl`, err: errcode.EZ80_OP_REG},
+		{input: `out (c), i`, err: errcode.EZ80_OP_REG},
+		{input: `out (c), r`, err: errcode.EZ80_OP_REG},
+		{input: `out (c), 123`, err: errcode.EZ80_OP1},
+		{input: `out (hl), a`, err: errcode.EINDIRECT_REG},
+		{input: `fn func \ return \ endf \ out (hl), fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `out (-1), a`, err: errcode.WROUND_PORT},
+		{input: `out (256), a`, err: errcode.WROUND_PORT},
+		{input: `fn func \ return \ endf \ out (fn()), a`, err: errcode.EINDIRECT_NULL},
+		{input: `out (0), i`, err: errcode.EZ80_OP_REG},
+		{input: `out (0), r`, err: errcode.EZ80_OP_REG},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<eval test>")
 		prog, e := evalInput(tt.input, logger, env)
