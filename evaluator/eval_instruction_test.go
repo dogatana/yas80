@@ -528,7 +528,7 @@ func TestInstructionError_PUSH_POP(t *testing.T) {
 	}
 }
 
-func TestInstructionError_AND(t *testing.T) {
+func TestInstructionError_ADD8(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -550,6 +550,45 @@ func TestInstructionError_AND(t *testing.T) {
 		{input: `and (IX+128)`, err: errcode.EINDIRECT_DISP_RANGE},
 		{input: `and (IY-129)`, err: errcode.EINDIRECT_DISP_RANGE},
 		{input: `and 'abc'`, err: errcode.EZ80_OP},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
+func TestInstructionError_ADD16(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `add`, err: errcode.ESYNTAX},
+		{input: `fn func\endf\ add fn(), a`, err: errcode.EZ80_OP1_NULL},
+		{input: `add 'a', a`, err: errcode.EZ80_OP1},
+		{input: `add bc, hl`, err: errcode.EZ80_OP1_REG_HL_IXY},
+		{input: `adc bc, hl`, err: errcode.EZ80_OP1_REG_HL},
+		{input: `sbc bc, hl`, err: errcode.EZ80_OP1_REG_HL},
+		{input: `fn func\endf\ add hl,fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `add hl, af`, err: errcode.EZ80_OP_REG},
+		{input: `adc hl, 1`, err: errcode.EZ80_OP2},
+		{input: `adc hl, 'a'`, err: errcode.EZ80_OP2},
 	}
 
 	for tn, tt := range tests {
