@@ -6,6 +6,7 @@ sub d
 sub e
 sub h
 sub l
+sub $12
 sub (hl)
 sub (ix + $12)
 sub (iy - $34)
@@ -18,6 +19,7 @@ and d
 and e
 and h
 and l
+and $12
 and (hl)
 and (ix + $12)
 and (iy - $34)
@@ -30,6 +32,7 @@ or d
 or e
 or h
 or l
+or $12
 or (hl)
 or (ix + $12)
 or (iy - $34)
@@ -42,6 +45,7 @@ xor d
 xor e
 xor h
 xor l
+xor $12
 xor (hl)
 xor (ix + $12)
 xor (iy - $34)
@@ -54,6 +58,7 @@ cp d
 cp e
 cp h
 cp l
+cp $12
 cp (hl)
 cp (ix + $12)
 cp (iy - $34)

@@ -6,6 +6,7 @@ sub a, d
 sub a, e
 sub a, h
 sub a, l
+sub a, $12
 sub a, (hl)
 sub a, (ix + $12)
 sub a, (iy - $34)
@@ -18,6 +19,7 @@ and a, d
 and a, e
 and a, h
 and a, l
+and a, $12
 and a, (hl)
 and a, (ix + $12)
 and a, (iy - $34)
@@ -30,6 +32,7 @@ or a, d
 or a, e
 or a, h
 or a, l
+or a, $12
 or a, (hl)
 or a, (ix + $12)
 or a, (iy - $34)
@@ -42,6 +45,7 @@ xor a, d
 xor a, e
 xor a, h
 xor a, l
+xor a, $12
 xor a, (hl)
 xor a, (ix + $12)
 xor a, (iy - $34)
@@ -54,6 +58,7 @@ cp a, d
 cp a, e
 cp a, h
 cp a, l
+cp a, $12
 cp a, (hl)
 cp a, (ix + $12)
 cp a, (iy - $34)
