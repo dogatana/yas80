@@ -393,7 +393,7 @@ func (e *Evaluator) evalIndexedExpression(expr *parser.IndexedExpression, env TE
 	return array.Values[index]
 }
 
-// レジスタ間接 (HL),(IX+d),(IY+d),(C)
+// レジスタ間接 (SP),(HL),(IX+d),(IY+d),(C)
 func (e *Evaluator) evalRegIndirectExpression(expr *parser.RegIndirectExpression, env TEnv, ctx TContext) object.Object {
 	e.concatenateSymbol(&expr.Displacement, env, ctx)
 
@@ -402,7 +402,7 @@ func (e *Evaluator) evalRegIndirectExpression(expr *parser.RegIndirectExpression
 		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(reg.Register)), ctx)
 		return object.ERROR
 	}
-	if reg.Register == parser.Z80_REG_SP || reg.Register == parser.Z80_REG_AF || reg.Register == parser.Z80_REG_AFEX {
+	if reg.Register == parser.Z80_REG_AF || reg.Register == parser.Z80_REG_AFEX {
 		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(reg.Register)), ctx)
 		return object.ERROR
 	}
