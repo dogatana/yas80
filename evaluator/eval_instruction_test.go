@@ -12,6 +12,7 @@ func TestZ80Instruction(t *testing.T) {
 	tests := []string{
 		"inst0",
 		"ld_r8_r8",
+		"inst-ex-im",
 		"inst-rlc",
 		"inst-bit",
 		"inst-call-ret",
@@ -384,6 +385,57 @@ func TestInstructionError_RLC(t *testing.T) {
 		{input: `rlc (de)`, err: errcode.EINDIRECT_REG},
 		{input: `rlc 1`, err: errcode.EZ80_OP},
 		{input: `rlc 'a'`, err: errcode.EZ80_OP},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// sym
+		obj, ok := env.Get("VAL")
+		if !ok {
+			t.Errorf("[%d] VAL not in env", tn)
+			continue
+		}
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok {
+			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
+			continue
+		}
+		if sym.SymType != object.SYM_UNKNOWN {
+			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
+		}
+	}
+}
+
+func TestInstructionError_IM(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `im`, err: errcode.EZ80_OP},
+		{input: `im hl`, err: errcode.EZ80_OP},
+		{input: `im 'a'`, err: errcode.EZ80_OP},
+		{input: `im -1`, err: errcode.EZ80_IM_RANGE},
+		{input: `im 3`, err: errcode.EZ80_IM_RANGE},
+		{input: `fn func\endf\ im fn()`, err: errcode.EZ80_OP_NULL},
 	}
 
 	for tn, tt := range tests {

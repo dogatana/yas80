@@ -11,6 +11,7 @@ type evalZ80InstructionFunc func(e *Evaluator, stmt *parser.Z80Instruction, op1,
 
 var evalZ80InstructionFuncs = map[int]evalZ80InstructionFunc{
 	parser.Z80_INST_LD:   (*Evaluator).evalZ80LD,
+	parser.Z80_INST_IM:   (*Evaluator).evalZ80_IM,
 	parser.Z80_INST_RLC:  (*Evaluator).evalZ80_RLC,
 	parser.Z80_INST_RL:   (*Evaluator).evalZ80_RLC,
 	parser.Z80_INST_RRC:  (*Evaluator).evalZ80_RLC,
