@@ -56,9 +56,9 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 	}
 
 	// addr check
-	addr, ok := e.intToAddr(value)
+	addr, ok := e.intToWord(value)
 	if !ok {
-		e.logger.Warning(fmt.Sprintf(errcode.WROUND_ADDR, value, value), stmt.Context)
+		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
 	}
 
 	// addr set
@@ -155,9 +155,9 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 	}
 
 	// addr check
-	addr, ok := e.intToAddr(value)
+	addr, ok := e.intToWord(value)
 	if !ok {
-		e.logger.Warning(fmt.Sprintf(errcode.WROUND_ADDR, value, value), stmt.Context)
+		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
 	}
 
 	// addr set
