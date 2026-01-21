@@ -86,7 +86,7 @@ func TestInstructionDefault(t *testing.T) {
 	}
 }
 
-func TestInstructionError_JP_CALL(t *testing.T) {
+func TestInstructionError_LD(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -101,19 +101,51 @@ func TestInstructionError_JP_CALL(t *testing.T) {
 		{input: `ld hl, a`, err: errcode.EZ80_OP2},
 		{input: `ld hl, hl`, err: errcode.EZ80_OP1_SP},
 		{input: `ld sp, de`, err: errcode.EZ80_OP2_HL_IXY},
-		{input: `ret VAL`, err: errcode.ESYM_UNDEF},
-		{input: `ret hl`, err: errcode.EZ80_FLAG},
-		{input: `ret 123`, err: errcode.EZ80_FLAG},
-		// 10-
-		{input: `call -1`, err: errcode.WROUND_ADDR},
-		{input: `call hl`, err: errcode.EZ80_OP},
-		{input: `call hl,1234`, err: errcode.EZ80_FLAG},
-		{input: `call 123,1234`, err: errcode.EZ80_FLAG},
-		{input: `rst`, err: errcode.EZ80_OP},
-		{input: `rst 1`, err: errcode.EZ80_RST},
-		{input: `rst 40h`, err: errcode.EZ80_RST},
-		{input: `rst hl`, err: errcode.EZ80_OP},
-		{input: `jp -1`, err: errcode.WROUND_ADDR},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// sym
+		obj, ok := env.Get("VAL")
+		if !ok {
+			t.Errorf("[%d] VAL not in env", tn)
+			continue
+		}
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok {
+			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
+			continue
+		}
+		if sym.SymType != object.SYM_UNKNOWN {
+			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
+		}
+	}
+}
+
+func TestInstructionError_JP_JR_DJNZ(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// {input: `jp -1`, err: errcode.WROUND_ADDR},
 		{input: `jp hl`, err: errcode.EZ80_OP},
 		{input: `jp c,hl`, err: errcode.EZ80_OP2},
 		{input: `jp a,$1234`, err: errcode.EZ80_FLAG},
@@ -161,8 +193,62 @@ func TestInstructionError_JP_CALL(t *testing.T) {
 		}
 	}
 }
+func TestInstructionError_CALL_RET_RST(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// {input: `call -1`, err: errcode.WROUND_ADDR}, // intToAddr から intToWord に変更のため
+		{input: `call hl`, err: errcode.EZ80_OP},
+		{input: `call hl,1234`, err: errcode.EZ80_FLAG},
+		{input: `call 123,1234`, err: errcode.EZ80_FLAG},
+		{input: `ret VAL`, err: errcode.ESYM_UNDEF},
+		{input: `ret hl`, err: errcode.EZ80_FLAG},
+		{input: `ret 123`, err: errcode.EZ80_FLAG},
+		{input: `rst`, err: errcode.EZ80_OP},
+		{input: `rst 1`, err: errcode.EZ80_RST},
+		{input: `rst 40h`, err: errcode.EZ80_RST},
+		{input: `rst hl`, err: errcode.EZ80_OP},
+	}
 
-func TestInstructionError_IO(t *testing.T) {
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// sym
+		obj, ok := env.Get("VAL")
+		if !ok {
+			t.Errorf("[%d] VAL not in env", tn)
+			continue
+		}
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok {
+			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
+			continue
+		}
+		if sym.SymType != object.SYM_UNKNOWN {
+			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
+		}
+	}
+}
+
+func TestInstructionError_IN_OUT(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -230,7 +316,7 @@ func TestInstructionError_IO(t *testing.T) {
 	}
 }
 
-func TestInstructionError_BIT(t *testing.T) {
+func TestInstructionError_BIT_SET_RES(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
