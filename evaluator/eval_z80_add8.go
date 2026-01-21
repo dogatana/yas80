@@ -12,6 +12,9 @@ import (
 // ADD, ADC, SBC は evalZ80_ADD16 から呼び出される
 func (e *Evaluator) evalZ80_ADD8(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
 	var opcodes = map[int]byte{
+		parser.Z80_INST_ADD: 0x80,
+		parser.Z80_INST_ADC: 0x88,
+		parser.Z80_INST_SBC: 0x98,
 		parser.Z80_INST_SUB: 0x90,
 		parser.Z80_INST_AND: 0xa0,
 		parser.Z80_INST_OR:  0xb0,

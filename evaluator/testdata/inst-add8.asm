@@ -1,3 +1,42 @@
+; ADD
+add a, a
+add a, b
+add a, c
+add a, d
+add a, e
+add a, h
+add a, l
+add a, $12
+add a, (hl)
+add a, (ix + $12)
+add a, (iy - $34)
+
+; ADC
+adc a, a
+adc a, b
+adc a, c
+adc a, d
+adc a, e
+adc a, h
+adc a, l
+adc a, $12
+adc a, (hl)
+adc a, (ix + $12)
+adc a, (iy - $34)
+
+; SBC
+sbc a, a
+sbc a, b
+sbc a, c
+sbc a, d
+sbc a, e
+sbc a, h
+sbc a, l
+sbc a, $12
+sbc a, (hl)
+sbc a, (ix + $12)
+sbc a, (iy - $34)
+
 ; SUB
 sub a
 sub b
