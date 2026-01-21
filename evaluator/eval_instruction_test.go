@@ -12,6 +12,7 @@ func TestZ80Instruction(t *testing.T) {
 	tests := []string{
 		"inst0",
 		"ld_r8_r8",
+		"inst-inc-push",
 		"inst-ex-im",
 		"inst-rlc",
 		"inst-bit",
@@ -427,6 +428,46 @@ func TestInstructionError_EX(t *testing.T) {
 		{input: `ex (hl), iy`, err: errcode.EINDIRECT_REG},
 		{input: `ex af, (sp), `, err: errcode.EZ80_OP_REG},
 		{input: `ex (sp), (hl), `, err: errcode.EZ80_OP},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
+func TestInstructionError_INC_DEC(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `inc`, err: errcode.EZ80_OP},
+		{input: `inc 1`, err: errcode.EZ80_OP},
+		{input: `inc 'a'`, err: errcode.EZ80_OP},
+		{input: `fn func\endf \ inc fn()`, err: errcode.EZ80_OP_NULL},
+		{input: `inc i`, err: errcode.EZ80_OP_REG},
+		{input: `dec r`, err: errcode.EZ80_OP_REG},
+		{input: `inc (hl + 1)`, err: errcode.EINDIRECT_DISP_REG},
+		{input: `inc (ix + 128)`, err: errcode.EINDIRECT_DISP_RANGE},
+		{input: `dec (iy - 129)`, err: errcode.EINDIRECT_DISP_RANGE},
+		{input: `dec (af)`, err: errcode.EINDIRECT_REG},
+		{input: `dec (a)`, err: errcode.EINDIRECT_REG},
 	}
 
 	for tn, tt := range tests {
