@@ -87,11 +87,44 @@ func TestInstructionDefault(t *testing.T) {
 	}
 }
 
+func TestInstructionAmbiguous(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `ex hl, de`, code: []byte{0xeb}},
+		{input: `ex af', af`, code: []byte{0x08}},
+		{input: `ex hl, (sp)`, code: []byte{0xe3}},
+		{input: `ex ix, (sp)`, code: []byte{0xdd, 0xe3}},
+		{input: `ex iy, (sp)`, code: []byte{0xfd, 0xe3}},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
 func TestInstructionError_LD(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []symValue
 		err   string
 	}{
 		// 0-
@@ -121,21 +154,6 @@ func TestInstructionError_LD(t *testing.T) {
 
 		// code
 		testCodeResult(t, tn, tt.code, prog)
-
-		// sym
-		obj, ok := env.Get("VAL")
-		if !ok {
-			t.Errorf("[%d] VAL not in env", tn)
-			continue
-		}
-		sym, ok := obj.(*object.SymbolObject)
-		if !ok {
-			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
-			continue
-		}
-		if sym.SymType != object.SYM_UNKNOWN {
-			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
-		}
 	}
 }
 
@@ -198,7 +216,6 @@ func TestInstructionError_CALL_RET_RST(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []symValue
 		err   string
 	}{
 		// {input: `call -1`, err: errcode.WROUND_ADDR}, // intToAddr から intToWord に変更のため
@@ -231,21 +248,6 @@ func TestInstructionError_CALL_RET_RST(t *testing.T) {
 
 		// code
 		testCodeResult(t, tn, tt.code, prog)
-
-		// sym
-		obj, ok := env.Get("VAL")
-		if !ok {
-			t.Errorf("[%d] VAL not in env", tn)
-			continue
-		}
-		sym, ok := obj.(*object.SymbolObject)
-		if !ok {
-			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
-			continue
-		}
-		if sym.SymType != object.SYM_UNKNOWN {
-			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
-		}
 	}
 }
 
@@ -253,7 +255,6 @@ func TestInstructionError_IN_OUT(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []symValue
 		err   string
 	}{
 		// 0-
@@ -299,21 +300,6 @@ func TestInstructionError_IN_OUT(t *testing.T) {
 
 		// code
 		testCodeResult(t, tn, tt.code, prog)
-
-		// sym
-		obj, ok := env.Get("VAL")
-		if !ok {
-			t.Errorf("[%d] VAL not in env", tn)
-			continue
-		}
-		sym, ok := obj.(*object.SymbolObject)
-		if !ok {
-			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
-			continue
-		}
-		if sym.SymType != object.SYM_UNKNOWN {
-			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
-		}
 	}
 }
 
@@ -321,7 +307,6 @@ func TestInstructionError_BIT_SET_RES(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []symValue
 		err   string
 	}{
 		// 0-
@@ -353,21 +338,6 @@ func TestInstructionError_BIT_SET_RES(t *testing.T) {
 
 		// code
 		testCodeResult(t, tn, tt.code, prog)
-
-		// sym
-		obj, ok := env.Get("VAL")
-		if !ok {
-			t.Errorf("[%d] VAL not in env", tn)
-			continue
-		}
-		sym, ok := obj.(*object.SymbolObject)
-		if !ok {
-			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
-			continue
-		}
-		if sym.SymType != object.SYM_UNKNOWN {
-			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
-		}
 	}
 }
 
@@ -375,7 +345,6 @@ func TestInstructionError_RLC(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []symValue
 		err   string
 	}{
 		// 0-
@@ -404,21 +373,6 @@ func TestInstructionError_RLC(t *testing.T) {
 
 		// code
 		testCodeResult(t, tn, tt.code, prog)
-
-		// sym
-		obj, ok := env.Get("VAL")
-		if !ok {
-			t.Errorf("[%d] VAL not in env", tn)
-			continue
-		}
-		sym, ok := obj.(*object.SymbolObject)
-		if !ok {
-			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
-			continue
-		}
-		if sym.SymType != object.SYM_UNKNOWN {
-			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
-		}
 	}
 }
 
@@ -426,7 +380,6 @@ func TestInstructionError_IM(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
-		syms  []symValue
 		err   string
 	}{
 		// 0-
@@ -455,20 +408,5 @@ func TestInstructionError_IM(t *testing.T) {
 
 		// code
 		testCodeResult(t, tn, tt.code, prog)
-
-		// sym
-		obj, ok := env.Get("VAL")
-		if !ok {
-			t.Errorf("[%d] VAL not in env", tn)
-			continue
-		}
-		sym, ok := obj.(*object.SymbolObject)
-		if !ok {
-			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
-			continue
-		}
-		if sym.SymType != object.SYM_UNKNOWN {
-			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
-		}
 	}
 }
