@@ -534,12 +534,21 @@ func TestInstructionError_AND(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `push`, err: errcode.EZ80_OP},
-		{input: `push 1`, err: errcode.EZ80_OP},
-		{input: `push 'a'`, err: errcode.EZ80_OP},
-		{input: `push a`, err: errcode.EZ80_OP_REG},
-		{input: `fn func\endf\ push fn()`, err: errcode.EZ80_OP_NULL},
-		{input: `push sp`, err: errcode.EZ80_OP_REG},
+		{input: `and`, err: errcode.ESYNTAX},
+		{input: `fn func\endf\ or fn(), a`, err: errcode.EZ80_OP1_NULL},
+		{input: `xor 'a', a`, err: errcode.EZ80_OP1},
+		{input: `sub i, a`, err: errcode.EZ80_OP1_REG_A},
+		{input: `sub r, a`, err: errcode.EZ80_OP1_REG_A},
+		{input: `sub 1, a`, err: errcode.EZ80_OP1},
+		{input: `fn func\endf\ or a, fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `fn func\endf\ or fn()`, err: errcode.EZ80_OP_NULL},
+		{input: `cp i`, err: errcode.EZ80_OP_REG},
+		{input: `and -129`, err: errcode.WROUND_BYTE},
+		{input: `and 256`, err: errcode.WROUND_BYTE},
+		{input: `and (DE)`, err: errcode.EINDIRECT_REG},
+		{input: `and (IX+128)`, err: errcode.EINDIRECT_DISP_RANGE},
+		{input: `and (IY-129)`, err: errcode.EINDIRECT_DISP_RANGE},
+		{input: `and 'abc'`, err: errcode.EZ80_OP},
 	}
 
 	for tn, tt := range tests {
