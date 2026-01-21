@@ -13,6 +13,7 @@ func TestZ80Instruction(t *testing.T) {
 		"inst0",
 		"ld_r8_r8",
 		"inst-and",
+		"inst-and-alt", // or a,a のように A レジスタを指定したもの
 		"inst-inc-push",
 		"inst-ex-im",
 		"inst-rlc",
@@ -492,6 +493,41 @@ func TestInstructionError_INC_DEC(t *testing.T) {
 }
 
 func TestInstructionError_PUSH_POP(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `push`, err: errcode.EZ80_OP},
+		{input: `push 1`, err: errcode.EZ80_OP},
+		{input: `push 'a'`, err: errcode.EZ80_OP},
+		{input: `push a`, err: errcode.EZ80_OP_REG},
+		{input: `fn func\endf\ push fn()`, err: errcode.EZ80_OP_NULL},
+		{input: `push sp`, err: errcode.EZ80_OP_REG},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
+func TestInstructionError_AND(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
