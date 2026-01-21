@@ -53,6 +53,8 @@ const (
 	EZ80_OP1_NULL         = "第1オペランドが未確定"
 	EZ80_OP1_SP           = "第1オペランドは SP 以外指定不可"
 	EZ80_OP1_REG_A        = "第1オペランドは A 以外指定不可（省略可能）"
+	EZ80_OP1_REG_HL       = "第1オペランドは HL 以外指定不可"
+	EZ80_OP1_REG_HL_IXY   = "第2オペランドは HL/IX/IY 以外指定不可"
 	EZ80_OP2              = "第2オペランドエラー"
 	EZ80_OP2_NULL         = "第2オペランドが未確定"
 	EZ80_OP2_HL_IXY       = "第2オペランドは HL, IX, IY 以外指定不可"

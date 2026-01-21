@@ -3,7 +3,8 @@ ASMOPT = -lst -bin -f -i
 SRCS = inst0.asm ld_r8_r8.asm \
 		label-backward.asm equ-backward.asm \
 		label-forward.asm equ-forward.asm \
-		inst-and.asm \
+		inst-add8.asm \
+		inst-add16.asm \
 		inst-inc-push.asm \
 		inst-ex-im.asm \
 		inst-rlc.asm \

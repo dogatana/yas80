@@ -12,8 +12,9 @@ func TestZ80Instruction(t *testing.T) {
 	tests := []string{
 		"inst0",
 		"ld_r8_r8",
-		"inst-and",
-		"inst-and-alt", // or a,a のように A レジスタを指定したもの
+		"inst-add8",
+		"inst-add8-alt", // or a,a のように A レジスタを指定したもの
+		"inst-add16",
 		"inst-inc-push",
 		"inst-ex-im",
 		"inst-rlc",

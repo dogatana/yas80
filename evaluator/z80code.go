@@ -59,6 +59,15 @@ var Z80Reg16IndexSP map[int]byte = map[int]byte{
 	parser.Z80_REG_SP: 3,
 }
 
+var Z80Reg16IndexSPIXY map[int]byte = map[int]byte{
+	parser.Z80_REG_BC: 0,
+	parser.Z80_REG_DE: 1,
+	parser.Z80_REG_HL: 2,
+	parser.Z80_REG_IX: 2,
+	parser.Z80_REG_IY: 2,
+	parser.Z80_REG_SP: 3,
+}
+
 var Z80Reg16IndexAF map[int]byte = map[int]byte{
 	parser.Z80_REG_BC: 0,
 	parser.Z80_REG_DE: 1,

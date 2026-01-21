@@ -201,7 +201,7 @@ func collectValue(prog *object.ProgramObject) []*object.ValueObject {
 
 func bytesEqual(v1, v2 []byte) error {
 	if len(v1) != len(v2) {
-		return fmt.Errorf("size diff %d %d\n", len(v1), len(v2))
+		return fmt.Errorf("size diff 0x%x 0x%x\n", len(v1), len(v2))
 	}
 	for i, v := range v1 {
 		if v != v2[i] {
