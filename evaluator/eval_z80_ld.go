@@ -104,7 +104,7 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		if !ok {
 			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, op2.Value, op2.Value), node.Context)
 		}
-		r1 := Z80Reg16Index[int(op1.Register)]
+		r1 := Z80Reg16IndexSP[int(op1.Register)]
 		b := byte(0x01 | (r1 << 4))
 		return &object.CodeObject{Code: []byte{b, byte(v & 0xff), byte((v >> 8) & 0xff)}, Context: node.Context}
 	// case *object.IndirectExpression:

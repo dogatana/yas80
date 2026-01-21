@@ -52,11 +52,18 @@ var Z80Reg8Index map[int]byte = map[int]byte{
 	parser.Z80_REG_A: 7,
 }
 
-var Z80Reg16Index map[int]byte = map[int]byte{
+var Z80Reg16IndexSP map[int]byte = map[int]byte{
 	parser.Z80_REG_BC: 0,
 	parser.Z80_REG_DE: 1,
 	parser.Z80_REG_HL: 2,
 	parser.Z80_REG_SP: 3,
+}
+
+var Z80Reg16IndexAF map[int]byte = map[int]byte{
+	parser.Z80_REG_BC: 0,
+	parser.Z80_REG_DE: 1,
+	parser.Z80_REG_HL: 2,
+	parser.Z80_REG_AF: 3,
 }
 
 var Z80FlagIndex map[int]byte = map[int]byte{

@@ -489,3 +489,38 @@ func TestInstructionError_INC_DEC(t *testing.T) {
 		testCodeResult(t, tn, tt.code, prog)
 	}
 }
+
+func TestInstructionError_PUSH_POP(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `push`, err: errcode.EZ80_OP},
+		{input: `push 1`, err: errcode.EZ80_OP},
+		{input: `push 'a'`, err: errcode.EZ80_OP},
+		{input: `push a`, err: errcode.EZ80_OP_REG},
+		{input: `fn func\endf\ push fn()`, err: errcode.EZ80_OP_NULL},
+		{input: `push sp`, err: errcode.EZ80_OP_REG},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}

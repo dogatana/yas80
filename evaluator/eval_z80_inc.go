@@ -43,7 +43,7 @@ func (e *Evaluator) evalZ80_INC_DEC(stmt *parser.Z80Instruction, op, _ object.Ob
 		} else {
 			code.Code[0] = 0x0b
 		}
-		if index, ok := Z80Reg16Index[op.Register]; ok {
+		if index, ok := Z80Reg16IndexSP[op.Register]; ok {
 			code.Code[0] |= index << 4
 			code.CZ80 = 6
 			return code
@@ -95,4 +95,49 @@ func (e *Evaluator) evalZ80_INC_DEC(stmt *parser.Z80Instruction, op, _ object.Ob
 	}
 	e.logger.Error(errcode.EZ80_OP, stmt.Context)
 	return code
+}
+
+func (e *Evaluator) evalZ80_PUSH_POP(stmt *parser.Z80Instruction, op, _ object.Object, env TEnv) object.Object {
+	code := &object.CodeObject{Code: []byte{0xc5}, CZ80: 11, Context: stmt.Context} // PUSH BC
+	if stmt.Opcode == parser.Z80_INST_POP {
+		code.Code[0] = 0xc1 // POP BC
+		code.CZ80 = 10
+	}
+
+	if op == nil {
+		e.logger.Error(errcode.EZ80_OP, stmt.Context)
+		return code
+	}
+
+	switch op := op.(type) {
+	case *object.RefNotFoundObject:
+		e.Resolved = false
+		return code
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
+		return code
+
+	case *object.RegisterObject:
+		index, ok := Z80Reg16IndexAF[op.Register]
+		if ok {
+			code.Code[0] |= index << 4
+			return code
+		}
+
+		code.Code[0] |= 0x20 // HL
+		code.CZ80 += 4
+		switch op.Register {
+		case parser.Z80_REG_IX:
+			code.Code = []byte{0xDD, code.Code[0]}
+			return code
+		case parser.Z80_REG_IY:
+			code.Code = []byte{0xFD, code.Code[0]}
+			return code
+		}
+		e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op.Register)), stmt.Context)
+		return code
+	default:
+		e.logger.Error(errcode.EZ80_OP, stmt.Context)
+		return code
+	}
 }

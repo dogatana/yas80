@@ -33,3 +33,19 @@ dec hl
 dec sp
 dec ix
 dec iy
+
+; PUSH
+push bc
+push de
+push hl
+push af
+push ix
+push iy
+
+; POP
+pop bc
+pop de
+pop hl
+pop af
+pop ix
+pop iy
