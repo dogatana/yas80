@@ -10,6 +10,10 @@ import (
 // EX
 func (e *Evaluator) evalZ80_EX(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
 	code := &object.CodeObject{Code: []byte{0xeb}, CZ80: 4, Context: stmt.Context} // EX DE, HL
+	if op1 == nil || op2 == nil {
+		e.logger.Error(errcode.EZ80_OP, stmt.Context)
+		return code
+	}
 	if isRefNotFound(op1) || isRefNotFound(op2) {
 		e.Resolved = false
 		return code
