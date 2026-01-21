@@ -8,6 +8,7 @@ SRC = main.go \
 	evaluator/eval_statement.go \
 	evaluator/eval_instruction.go \
 	evaluator/eval_z80_ld.go \
+	evaluator/eval_z80_and.go \
 	evaluator/eval_z80_inc.go \
 	evaluator/eval_z80_ex_im.go \
 	evaluator/eval_z80_bit.go \

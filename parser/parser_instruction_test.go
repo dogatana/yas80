@@ -62,10 +62,6 @@ func TestParseINST1(t *testing.T) {
 	input := `
 PUSH 1
 POP 2
-SUB 3
-AND 4
-OR 5
-CP 6
 INC 7
 DEC 8
 IM 9
@@ -105,6 +101,11 @@ RET 18
 
 func TestParseINST2(t *testing.T) {
 	input := `
+SUB a, 1
+AND a, 4
+OR a, 5
+XOR a, 5
+CP a, 6
 EX AF, AF'
 ADD A, 1
 ADC A, 2
