@@ -30,8 +30,8 @@ const (
 	EDATA_DW_STR = "DW では文字列は指定できない"
 	EDATA_ENCODE = "文字列 %q を SHIFT-JIS へ変換できない"
 
-	EDS_COUNT = "DS/DSB/DSW のデータ数が確定できない"
-	EDS_FILL  = "DS/DSB/DSW の埋め込みデータが確定できない"
+	EDS_COUNT = "DS/DSB/DSW のデータ数が未確定"
+	EDS_FILL  = "DS/DSB/DSW の埋め込みデータが未確定"
 
 	// レジスタ間接
 	EINDIRECT_VALUE      = "(数値) が必要"
@@ -39,13 +39,13 @@ const (
 	EINDIRECT_OP         = "レジスタ間接に使用できない演算子"
 	EINDIRECT_REG        = "(%s) は使用できない"
 	EINDIRECT_DISP_REG   = "オフセットは IX/IY のみ指定可能"
-	EINDIRECT_DISP       = "IX/IY のオフセットが数値でない"
+	EINDIRECT_DISP       = "IX/IY のオフセットが非数値"
 	EINDIRECT_DISP_RANGE = "IX/IY のオフセットが範囲外 %d(0x%x)"
 	EINDIRECT_DISP_NULL  = "IX/IY のオフセットが未確定"
 
 	// Z80
 	EZ80_NOT_IMPL         = "評価未実装 %s"
-	EZ80_FLAG             = "フラグが指定されていない"
+	EZ80_FLAG             = "フラグ未指定"
 	EZ80_OP               = "命令オペランドエラー"
 	EZ80_OP_NULL          = "命令オペランドが未確定"
 	EZ80_OP_REG           = "レジスタ %s は指定不可"
@@ -68,7 +68,7 @@ const (
 	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"
 	ESYM_CYCLIC = "シンボル %s の定義が循環参照を含む"
-	ESYM_NULL   = "シンボル %s の値を確定できない"
+	ESYM_NULL   = "シンボル %s の値が未確定"
 
 	// CONST/EQU
 	ECONST_DUP  = "CONST/EQU '%s' は定義済み"
