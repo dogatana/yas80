@@ -15,7 +15,6 @@ const (
 	STRING_OBJ
 	ENUM_OBJ
 	REGISTER_OBJ
-	INDIRECT_OBJ
 	REG_INDIRECT_OBJ
 	ADDR_INDIRECT_OBJ
 	CODE_OBJ
@@ -268,7 +267,7 @@ type RegIndirectObject struct {
 	Displacement int
 }
 
-func (o *RegIndirectObject) Type() ObjectType { return INDIRECT_OBJ }
+func (o *RegIndirectObject) Type() ObjectType { return REG_INDIRECT_OBJ }
 func (o *RegIndirectObject) String() string {
 	if o.Displacement != 0 {
 		return fmt.Sprintf("(%s%+d)", parser.TokenLiteral(o.Register), o.Displacement)
