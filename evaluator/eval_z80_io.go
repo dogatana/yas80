@@ -47,7 +47,7 @@ func (e *Evaluator) evalZ80_IN(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		}
 		addr, ok := e.intToPort(port.Address)
 		if !ok {
-			e.logger.Warning(fmt.Sprintf(errcode.WROUND_PORT, port.Address, port.Address), stmt.Context)
+			e.logger.Error(fmt.Sprintf(errcode.EZ80_PORT_RANGE, port.Address, port.Address), stmt.Context)
 		}
 		code.Code[1] = addr
 		return code
@@ -98,7 +98,7 @@ func (e *Evaluator) evalZ80_OUT(stmt *parser.Z80Instruction, op1, op2 object.Obj
 		}
 		addr, ok := e.intToPort(port.Address)
 		if !ok {
-			e.logger.Warning(fmt.Sprintf(errcode.WROUND_PORT, port.Address, port.Address), stmt.Context)
+			e.logger.Error(fmt.Sprintf(errcode.EZ80_PORT_RANGE, port.Address, port.Address), stmt.Context)
 		}
 		code.Code[1] = addr
 		return code

@@ -61,6 +61,7 @@ const (
 	EZ80_JP_INDIRECT_DISP = "間接 JP にオフセット指定は不可"
 	EZ80_JP_INDIRECT_REG  = "(HL), (IX), (IY) のみ指定可能"
 	EZ80_BIT_NUM_RANGE    = "BIT番号(0-7)が範囲外"
+	EZ80_PORT_RANGE       = "ポート番号(0-255)が範囲外 %d(0x%x)"
 
 	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"
@@ -141,10 +142,9 @@ const (
 	ENOT_IMPL_STMT = "未実装エラー: eval(%T')"
 
 	// warning
-	WROUND_BYTE = "数値 '%d(0x%x)' をバイト範囲(-128-255)に丸めました"
-	WROUND_WORD = "数値 '%d(0x%x)' をワード範囲(-32768-65535)に丸めました"
-	WROUND_ADDR = "数値 '%d(0x%x)' をアドレス範囲(0-65535)に丸めました"
-	WROUND_PORT = "数値 '%d(0x%x)' をポート範囲(0-255)に丸めました"
+	WROUND_BYTE = "数値 '%d(0x%x)' をバイト範囲(-128 - 255)に丸めました"
+	WROUND_WORD = "数値 '%d(0x%x)' をワード範囲(-32768 - 65535)に丸めました"
+	WROUND_ADDR = "数値 '%d(0x%x)' をアドレス範囲(0 - 5535)に丸めました"
 
 	WSCOPE_MACRO = "MACRO 内では無効"
 	WSCOPE_FUNC  = "FUNC 内では無効 %T"
