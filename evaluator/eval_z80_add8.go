@@ -9,7 +9,7 @@ import (
 
 // 8 ビット演算命令
 // 本来 1 オペランド命令だが、演算対象が A レジスタなので、A を含む 2 オペランドの形式も許容する
-func (e *Evaluator) evalZ80_AND(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
+func (e *Evaluator) evalZ80_ADD8(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
 	var opcodes = map[int]byte{
 		parser.Z80_INST_SUB: 0x90,
 		parser.Z80_INST_AND: 0xa0,
