@@ -13,6 +13,7 @@ func TestZ80Instruction(t *testing.T) {
 		"inst0",
 		"ld_r8_r8",
 		"inst-ld8",
+		"inst-ld16",
 		"inst-add8",
 		"inst-add8-alt", // or a,a のように A レジスタを指定したもの
 		"inst-add16",
@@ -105,6 +106,47 @@ func TestInstructionAmbiguous(t *testing.T) {
 		{input: `ex hl, (sp)`, code: []byte{0xe3}},
 		{input: `ex ix, (sp)`, code: []byte{0xdd, 0xe3}},
 		{input: `ex iy, (sp)`, code: []byte{0xfd, 0xe3}},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
+func TestInstructionError_LD16(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `ld`, err: errcode.ESYNTAX},
+		{input: `ld hl, 'a'`, err: errcode.EZ80_OP2},
+		{input: `ld hl, cy`, err: errcode.EZ80_OP2},
+		{input: `fn func\endf\ld hl, fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `ld hl, sp`, err: errcode.EZ80_OP_REG},
+		{input: `ld ix, sp`, err: errcode.EZ80_OP_REG},
+		{input: `ld sp, de`, err: errcode.EZ80_OP_REG},
+		{input: `ld sp, bc`, err: errcode.EZ80_OP_REG},
+		{input: `ld hl, 65536`, err: errcode.WROUND_WORD},
+		{input: `ld hl, -32769`, err: errcode.WROUND_WORD},
+		{input: `ld hl, (65536)`, err: errcode.WROUND_WORD},
+		{input: `ld hl, (-32769)`, err: errcode.WROUND_WORD},
 	}
 
 	for tn, tt := range tests {

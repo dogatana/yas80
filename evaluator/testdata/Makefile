@@ -4,6 +4,7 @@ SRCS = inst0.asm ld_r8_r8.asm \
 		label-backward.asm equ-backward.asm \
 		label-forward.asm equ-forward.asm \
 		inst-ld8.asm \
+		inst-ld16.asm \
 		inst-add8.asm \
 		inst-add16.asm \
 		inst-inc-push.asm \
