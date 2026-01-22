@@ -27,3 +27,14 @@ ld (iy - $34), l
 
 ld (bc), a
 ld (de), a
+
+; LD (nn), A
+ld ($1234), a
+
+ld ($1234), hl
+ld ($1234), ix
+ld ($1234), iy
+
+ld ($1234), bc
+ld ($1234), de
+ld ($1234), sp

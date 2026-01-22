@@ -42,7 +42,11 @@ func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, op1, op2 object.Objec
 		}
 	case *object.RegIndirectObject:
 		// LD (expr), expr
-		return e.evalZ80LD_Indirect(stmt, op1, op2, env)
+		return e.evalZ80LD_RegIndirect(stmt, op1, op2, env)
+
+	case *object.AddrIndirectObject:
+		// LD (nn), A  LD (nn), rr
+		return e.evalZ80LD_AddrIndirect(stmt, op1, op2, env)
 	}
 	e.logger.Error(errcode.EZ80_OP1, stmt.Context)
 	return code
@@ -250,7 +254,7 @@ func (e *Evaluator) evalZ80LD_REG16(stmt *parser.Z80Instruction, op1 *object.Reg
 }
 
 // レジスタ間接
-func (e *Evaluator) evalZ80LD_Indirect(stmt *parser.Z80Instruction, op1 *object.RegIndirectObject, op2 object.Object, env TEnv) object.Object {
+func (e *Evaluator) evalZ80LD_RegIndirect(stmt *parser.Z80Instruction, op1 *object.RegIndirectObject, op2 object.Object, env TEnv) object.Object {
 	code := &object.CodeObject{Code: []byte{0x70}, CZ80: 7, Context: stmt.Context} // LD (HL),B
 
 	switch op2.(type) {
@@ -316,4 +320,51 @@ func (e *Evaluator) evalZ80LD_Indirect(stmt *parser.Z80Instruction, op1 *object.
 
 	e.logger.Error(errcode.EZ80_OP2, stmt.Context)
 	return code
+}
+
+// アドレ間接（メモリ）
+func (e *Evaluator) evalZ80LD_AddrIndirect(stmt *parser.Z80Instruction, op1 *object.AddrIndirectObject, op2 object.Object, env TEnv) object.Object {
+	code := &object.CodeObject{Code: []byte{0}, CZ80: 4, Context: stmt.Context}
+
+	switch op2.(type) {
+	case *object.RefNotFoundObject:
+		return code
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
+		return code
+	}
+
+	r2, ok := op2.(*object.RegisterObject)
+	if !ok {
+		e.logger.Error(errcode.EZ80_OP2, stmt.Context)
+		return code
+	}
+
+	addr, ok := e.intToWord(op1.Address)
+	if !ok {
+		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, op1.Address, op1.Address), stmt.Context)
+	}
+
+	switch r2.Register {
+	case parser.Z80_REG_A:
+		// LD (nn), A
+		return &object.CodeObject{Code: []byte{0x32, byte(addr & 0xff), byte((addr >> 8) & 0xff)}, CZ80: 13, Context: stmt.Context}
+
+	case parser.Z80_REG_HL:
+		// LD (nn), HL
+		return &object.CodeObject{Code: []byte{0x22, byte(addr & 0xff), byte((addr >> 8) & 0xff)}, CZ80: 16, Context: stmt.Context}
+	case parser.Z80_REG_IX:
+		// LD (nn), IX
+		return &object.CodeObject{Code: []byte{0xdd, 0x22, byte(addr & 0xff), byte((addr >> 8) & 0xff)}, CZ80: 20, Context: stmt.Context}
+	case parser.Z80_REG_IY:
+		// LD (nn), IY
+		return &object.CodeObject{Code: []byte{0xfd, 0x22, byte(addr & 0xff), byte((addr >> 8) & 0xff)}, CZ80: 20, Context: stmt.Context}
+
+	default:
+		if index, ok := Z80Reg16IndexSP[r2.Register]; ok {
+			return &object.CodeObject{Code: []byte{0xed, 0x43 | (index << 4), byte(addr & 0xff), byte((addr >> 8) & 0xff)}, CZ80: 20, Context: stmt.Context}
+		}
+		e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(r2.Register)), stmt.Context)
+		return code
+	}
 }

@@ -250,6 +250,42 @@ func TestInstructionError_LDRegIndirect(t *testing.T) {
 	}
 }
 
+func TestInstructionError_LDAddrIndirect(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `ld (0)`, err: errcode.EZ80_OP},
+		{input: `fn func\endf\ld (0), fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `ld (0), i`, err: errcode.EZ80_OP_REG},
+		{input: `ld (0), r`, err: errcode.EZ80_OP_REG},
+		{input: `ld (0), 1`, err: errcode.EZ80_OP2},
+		{input: `ld (0), 'a'`, err: errcode.EZ80_OP2},
+		{input: `ld (0), cy`, err: errcode.EZ80_OP2},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
 func TestInstructionError_JP_JR_DJNZ(t *testing.T) {
 	tests := []struct {
 		input string
