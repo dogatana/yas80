@@ -14,6 +14,7 @@ func TestZ80Instruction(t *testing.T) {
 		"ld_r8_r8",
 		"inst-ld8",
 		"inst-ld16",
+		"inst-ldind",
 		"inst-add8",
 		"inst-add8-alt", // or a,a のように A レジスタを指定したもの
 		"inst-add16",
@@ -190,6 +191,43 @@ func TestInstructionError_LD8(t *testing.T) {
 		{input: `ld r, 1`, err: errcode.EZ80_OP_REG},
 		{input: `ld a, -129`, err: errcode.WROUND_BYTE},
 		{input: `ld a, 256`, err: errcode.WROUND_BYTE},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
+func TestInstructionError_LDRegIndirect(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `ld (hl)`, err: errcode.EZ80_OP},
+		{input: `fn func\endf\ld (hl), fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `ld (hl), i`, err: errcode.EZ80_OP_REG},
+		{input: `ld (hl), r`, err: errcode.EZ80_OP_REG},
+		{input: `ld (sp), a`, err: errcode.EZ80_OP_REG},
+		{input: `ld (sp), 1`, err: errcode.EZ80_OP},
+		{input: `ld (hl), 'a'`, err: errcode.EZ80_OP2},
+		{input: `ld (hl), cy`, err: errcode.EZ80_OP2},
 	}
 
 	for tn, tt := range tests {

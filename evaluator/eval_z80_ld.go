@@ -249,6 +249,71 @@ func (e *Evaluator) evalZ80LD_REG16(stmt *parser.Z80Instruction, op1 *object.Reg
 	}
 }
 
-func (e *Evaluator) evalZ80LD_Indirect(node *parser.Z80Instruction, op1 *object.RegIndirectObject, op2 object.Object, env TEnv) object.Object {
-	return object.ERROR
+// レジスタ間接
+func (e *Evaluator) evalZ80LD_Indirect(stmt *parser.Z80Instruction, op1 *object.RegIndirectObject, op2 object.Object, env TEnv) object.Object {
+	code := &object.CodeObject{Code: []byte{0x70}, CZ80: 7, Context: stmt.Context} // LD (HL),B
+
+	switch op2.(type) {
+	case *object.RefNotFoundObject:
+		return code
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
+		return code
+	}
+
+	r2, ok := op2.(*object.RegisterObject)
+	if ok {
+		index, ok := Z80Reg8Index[r2.Register]
+		if !ok {
+			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(r2.Register)), stmt.Context)
+			return code
+		}
+		switch {
+		case op1.Register == parser.Z80_REG_HL:
+			// LD (HL), r
+			code.Code[0] |= index
+			return code
+		case op1.Register == parser.Z80_REG_IX:
+			// LD (IX + d)
+			code.Code = []byte{0xdd, code.Code[0] | index, byte(op1.Displacement)}
+			code.CZ80 = 19
+			return code
+		case op1.Register == parser.Z80_REG_IY:
+			// LD (IY + d)
+			code.Code = []byte{0xfd, code.Code[0] | index, byte(op1.Displacement)}
+			code.CZ80 = 19
+			return code
+		case op1.Register == parser.Z80_REG_BC && r2.Register == parser.Z80_REG_A:
+			// LD (BC), A
+			code.Code[0] = 0x02
+			return code
+		case op1.Register == parser.Z80_REG_DE && r2.Register == parser.Z80_REG_A:
+			// LD (DE), A
+			code.Code[0] = 0x12
+			return code
+		}
+		e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op1.Register)), stmt.Context)
+		return code
+	}
+
+	num, ok := op2.(*object.NumberObject)
+	if ok {
+		b, ok := e.intToByte(num.Value)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, num.Value, num.Value), stmt.Context)
+		}
+		switch op1.Register {
+		case parser.Z80_REG_HL:
+			return &object.CodeObject{Code: []byte{0x36, b}, CZ80: 10, Context: stmt.Context}
+		case parser.Z80_REG_IX:
+			return &object.CodeObject{Code: []byte{0xdd, 0x36, b}, CZ80: 19, Context: stmt.Context}
+		case parser.Z80_REG_IY:
+			return &object.CodeObject{Code: []byte{0xfd, 0x36, b}, CZ80: 19, Context: stmt.Context}
+		}
+		e.logger.Error(errcode.EZ80_OP, stmt.Context)
+		return code
+	}
+
+	e.logger.Error(errcode.EZ80_OP2, stmt.Context)
+	return code
 }
