@@ -12,6 +12,7 @@ func TestZ80Instruction(t *testing.T) {
 	tests := []string{
 		"inst0",
 		"ld_r8_r8",
+		"inst-ld8",
 		"inst-add8",
 		"inst-add8-alt", // or a,a のように A レジスタを指定したもの
 		"inst-add16",
@@ -135,7 +136,7 @@ func TestInstructionError_LD(t *testing.T) {
 		// 0-
 		{input: `ld 123, 456`, err: errcode.EZ80_OP1},
 		{input: `ld a, nc`, err: errcode.EZ80_OP2},
-		{input: `ld a, hl`, err: errcode.EZ80_OP2},
+		{input: `ld a, hl`, err: errcode.EZ80_OP_REG},
 		{input: `ld hl, nc`, err: errcode.EZ80_OP2},
 		{input: `ld hl, a`, err: errcode.EZ80_OP2},
 		{input: `ld hl, hl`, err: errcode.EZ80_OP1_SP},

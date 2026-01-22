@@ -7,74 +7,147 @@ import (
 	"yas80/parser"
 )
 
+// LD - デスティネーションによって処理を分割
+// r evalZ80_LD_REG8
+// rr evalZ80_LD_REG16
+// () evalZ80_LD_Indirect
 func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
+	code := &object.CodeObject{Code: []byte{0x3e, 0}, CZ80: 4, Context: stmt.Context} // LD A, 0
+	if op2, ok := op2.(*object.RegisterObject); ok && op2.RegisterType == parser.Z80_REG16 {
+		code.Code = []byte{0x21, 0x00, 0x00} // LD HL, 0
+		code.CZ80 = 10
+	}
+
+	// op1 の型によって処理を分類
 	switch op1 := op1.(type) {
-	case *object.RegisterObject:
-		switch op1.RegisterType {
-		case parser.Z80_REG8:
-			// LD r, x
-			return e.evalZ80LD_reg8(stmt, op1, op2, env)
-		case parser.Z80_REG16:
-			// LD rr, x
-			return e.evalZ80LD_reg16(stmt, op1, op2, env)
-		}
-	// case *object.IndirectExpression:
-	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
-	// 	return object.ERROR
 	case *object.RefNotFoundObject:
-		// 仮として LD A,0 を返す
-		return &object.CodeObject{Code: []byte{0x3e, 0}, Context: stmt.Context}
+		return code
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
+		return code
+
+	case *object.RegisterObject:
+		if op1.RegisterType == parser.Z80_REG8 {
+			// LD r, expr
+			return e.evalZ80LD_REG8(stmt, op1, op2, env)
+		} else {
+			// LD rr, expr
+			return e.evalZ80LD_REG16(stmt, op1, op2, env)
+		}
+	case *object.RegIndirectObject:
+		// LD (expr), expr
+		return e.evalZ80LD_Indirect(stmt, op1, op2, env)
 	}
 	e.logger.Error(errcode.EZ80_OP1, stmt.Context)
-	return object.ERROR
+	return code
 }
 
-func (e *Evaluator) evalZ80LD_reg8(node *parser.Z80Instruction, op1 *object.RegisterObject, op2 object.Object, env TEnv) object.Object {
+// LD r, expr|n|(expr)
+func (e *Evaluator) evalZ80LD_REG8(stmt *parser.Z80Instruction, op1 *object.RegisterObject, op2 object.Object, _ TEnv) object.Object {
+	code := &object.CodeObject{Code: []byte{0x7f}, CZ80: 4, Context: stmt.Context} // LD A, A
+
+	// r1 が A-L の場合
+	r1, ok1 := Z80Reg8Index[op1.Register]
 
 	switch op2 := op2.(type) {
-	case *object.RegisterObject:
-		// LD r, r'
-		if op2.RegisterType != parser.Z80_REG8 {
-			e.logger.Error(errcode.EZ80_OP2, node.Context)
-			return object.ERROR
-		}
-		r1, ok := Z80Reg8Index[int(op1.Register)]
-		if !ok {
-			e.logger.Error(errcode.EZ80_OP1, node.Context)
-			return object.ERROR
-		}
-		r2, ok := Z80Reg8Index[int(op2.Register)]
-		if !ok {
-			e.logger.Error(errcode.EZ80_OP2, node.Context)
-			return object.ERROR
-		}
-
-		b := 0x40 | r1<<3 | r2
-		return &object.CodeObject{Code: []byte{byte(b)}, Context: node.Context}
-	case *object.NumberObject:
-		// LD r, n
-		v, ok := e.intToByte(op2.Value)
-		if !ok {
-			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, op2.Value, op2.Value), node.Context)
-		}
-		r1 := Z80Reg8Index[int(op1.Register)]
-		b := byte(0x06 | (r1 << 3))
-		return &object.CodeObject{Code: []byte{b, v}, Context: node.Context}
-	// case *object.IndirectExpression:
-	// 	e.logger.Error(fmt.Sprintf(errcode.E999, node), node.Context.LineNumber)
-	// 	return object.ERROR
 	case *object.RefNotFoundObject:
 		// 未確定の場合として LD A,0 を返す
 		e.Resolved = false
-		return &object.CodeObject{Code: []byte{0x3e, 00}, Context: node.Context}
+		return code
+	case *object.NullObject:
+		return code
+
+	case *object.RegisterObject:
+		// LD r, r
+		r2, ok2 := Z80Reg8Index[op2.Register]
+		if ok1 && ok2 {
+			code.Code[0] = 0x40 | r1<<3 | r2
+			return code
+		}
+		code.CZ80 = 9
+		switch {
+		case op1.Register == parser.Z80_REG_A && op2.Register == parser.Z80_REG_I:
+			code.Code = []byte{0xed, 0x57}
+			return code
+		case op1.Register == parser.Z80_REG_A && op2.Register == parser.Z80_REG_R:
+			code.Code = []byte{0xed, 0x5f}
+			return code
+		case op1.Register == parser.Z80_REG_I && op2.Register == parser.Z80_REG_A:
+			code.Code = []byte{0xed, 0x47}
+			return code
+		case op1.Register == parser.Z80_REG_R && op2.Register == parser.Z80_REG_A:
+			code.Code = []byte{0xed, 0x4f}
+			return code
+		}
+
+		e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op2.Register)), stmt.Context)
+		return code
+
+	case *object.NumberObject:
+		code.Code = []byte{0x3e, 0x00} // LD A, 0
+		code.CZ80 = 7
+		if !ok1 {
+			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op1.Register)), stmt.Context)
+			return code
+		}
+		// LD r, n
+		v, ok := e.intToByte(op2.Value)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, op2.Value, op2.Value), stmt.Context)
+		}
+		code.Code = []byte{0x06 | (r1 << 3), v}
+		return code
+
+	case *object.RegIndirectObject:
+		// LD r, (rr)
+		code.Code[0] = 0x46 | r1<<3 // LD r, (HL)
+		code.CZ80 = 7
+		switch op2.Register {
+		case parser.Z80_REG_HL:
+			return code
+		case parser.Z80_REG_IX:
+			code.Code = []byte{0xdd, code.Code[0], byte(op2.Displacement)}
+			code.CZ80 = 19
+			return code
+		case parser.Z80_REG_IY:
+			code.Code[0] = 0x46 | r1<<3
+			code.Code = []byte{0xfd, code.Code[0], byte(op2.Displacement)}
+			code.CZ80 = 19
+			return code
+		case parser.Z80_REG_BC, parser.Z80_REG_DE:
+			if op1.Register != parser.Z80_REG_A {
+				e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op1.Register)), stmt.Context)
+				return code
+			}
+			if op2.Register == parser.Z80_REG_BC {
+				code.Code[0] = 0x0a
+			} else {
+				code.Code[0] = 0x1a
+			}
+			return code
+
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(op2.Register)), stmt.Context)
+			return code
+		}
+
+	case *object.AddrIndirectObject:
+		// LD r, (nn)
+		addr, ok := e.intToWord(op2.Address)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, op2.Address, op2.Address), stmt.Context)
+		}
+		code.Code = []byte{0x3a, byte(addr & 0xff), byte(addr >> 8)}
+		code.CZ80 = 13
+		return code
 
 	default:
-		e.logger.Error(errcode.EZ80_OP2, node.Context)
+		e.logger.Error(errcode.EZ80_OP2, stmt.Context)
 		return object.ERROR
 	}
 }
 
-func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.RegisterObject, op2 object.Object, env TEnv) object.Object {
+func (e *Evaluator) evalZ80LD_REG16(node *parser.Z80Instruction, op1 *object.RegisterObject, op2 object.Object, env TEnv) object.Object {
 
 	switch op2 := op2.(type) {
 	case *object.RegisterObject:
@@ -119,4 +192,8 @@ func (e *Evaluator) evalZ80LD_reg16(node *parser.Z80Instruction, op1 *object.Reg
 		e.logger.Error(errcode.EZ80_OP2, node.Context)
 		return object.ERROR
 	}
+}
+
+func (e *Evaluator) evalZ80LD_Indirect(node *parser.Z80Instruction, op1 *object.RegIndirectObject, op2 object.Object, env TEnv) object.Object {
+	return object.ERROR
 }
