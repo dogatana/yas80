@@ -42,7 +42,7 @@ func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, op1, op2 object.Objec
 	return code
 }
 
-// LD r, expr|n|(expr)
+// 8 ビットレジスタへの LD
 func (e *Evaluator) evalZ80LD_REG8(stmt *parser.Z80Instruction, op1 *object.RegisterObject, op2 object.Object, _ TEnv) object.Object {
 	code := &object.CodeObject{Code: []byte{0x7f}, CZ80: 4, Context: stmt.Context} // LD A, A
 
@@ -55,6 +55,7 @@ func (e *Evaluator) evalZ80LD_REG8(stmt *parser.Z80Instruction, op1 *object.Regi
 		e.Resolved = false
 		return code
 	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
 		return code
 
 	case *object.RegisterObject:

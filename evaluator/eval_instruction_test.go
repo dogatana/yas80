@@ -127,20 +127,27 @@ func TestInstructionAmbiguous(t *testing.T) {
 	}
 }
 
-func TestInstructionError_LD(t *testing.T) {
+func TestInstructionError_LD8(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
 		err   string
 	}{
 		// 0-
-		{input: `ld 123, 456`, err: errcode.EZ80_OP1},
-		{input: `ld a, nc`, err: errcode.EZ80_OP2},
-		{input: `ld a, hl`, err: errcode.EZ80_OP_REG},
-		{input: `ld hl, nc`, err: errcode.EZ80_OP2},
-		{input: `ld hl, a`, err: errcode.EZ80_OP2},
-		{input: `ld hl, hl`, err: errcode.EZ80_OP1_SP},
-		{input: `ld sp, de`, err: errcode.EZ80_OP2_HL_IXY},
+		{input: `ld`, err: errcode.ESYNTAX},
+		{input: `ld a, 'a'`, err: errcode.EZ80_OP2},
+		{input: `ld a, cy`, err: errcode.EZ80_OP2},
+		{input: `fn func\endf\ld a, fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `ld i, i`, err: errcode.EZ80_OP_REG},
+		{input: `ld r, r`, err: errcode.EZ80_OP_REG},
+		{input: `ld i, b`, err: errcode.EZ80_OP_REG},
+		{input: `ld r, b`, err: errcode.EZ80_OP_REG},
+		{input: `ld c, i`, err: errcode.EZ80_OP_REG},
+		{input: `ld c, r`, err: errcode.EZ80_OP_REG},
+		{input: `ld i, 1`, err: errcode.EZ80_OP_REG},
+		{input: `ld r, 1`, err: errcode.EZ80_OP_REG},
+		{input: `ld a, -129`, err: errcode.WROUND_BYTE},
+		{input: `ld a, 256`, err: errcode.WROUND_BYTE},
 	}
 
 	for tn, tt := range tests {
