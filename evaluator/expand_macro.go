@@ -41,6 +41,9 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 
 		case *parser.ReptStatement:
 			obj := e.evalReptStatement(news, env)
+			if isError(obj) {
+				continue
+			}
 			nodes = append(nodes, obj.(*object.NodeObject).Node)
 
 		default:
@@ -222,6 +225,13 @@ func buildMangleNamesFunc(args map[string]parser.Expression, seq int, macroName 
 		case *parser.PrefixExpression:
 			newe := *expr
 			fn(&newe.Op)
+			*ptr = &newe
+
+		case *parser.FuncCallExpression:
+			newe := *expr
+			for i := range len(newe.Arguments.Expressions) {
+				fn(&newe.Arguments.Expressions[i])
+			}
 			*ptr = &newe
 
 		default:
