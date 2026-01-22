@@ -310,9 +310,9 @@ func (e *Evaluator) evalZ80LD_RegIndirect(stmt *parser.Z80Instruction, op1 *obje
 		case parser.Z80_REG_HL:
 			return &object.CodeObject{Code: []byte{0x36, b}, CZ80: 10, Context: stmt.Context}
 		case parser.Z80_REG_IX:
-			return &object.CodeObject{Code: []byte{0xdd, 0x36, b}, CZ80: 19, Context: stmt.Context}
+			return &object.CodeObject{Code: []byte{0xdd, 0x36, byte(op1.Displacement), b}, CZ80: 19, Context: stmt.Context}
 		case parser.Z80_REG_IY:
-			return &object.CodeObject{Code: []byte{0xfd, 0x36, b}, CZ80: 19, Context: stmt.Context}
+			return &object.CodeObject{Code: []byte{0xfd, 0x36, byte(op1.Displacement), b}, CZ80: 19, Context: stmt.Context}
 		}
 		e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		return code

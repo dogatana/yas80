@@ -28,6 +28,11 @@ ld (iy - $34), l
 ld (bc), a
 ld (de), a
 
+; LD (rr) n
+ld (hl), $12
+ld (ix + $12), $34
+ld (iy - $12), $34
+ 
 ; LD (nn), A
 ld ($1234), a
 

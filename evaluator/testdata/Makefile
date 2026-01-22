@@ -1,8 +1,9 @@
 ASM = ailz80asm
 ASMOPT = -lst -bin -f -i
-SRCS = inst0.asm ld_r8_r8.asm \
+SRCS = inst0.asm \
 		label-backward.asm equ-backward.asm \
 		label-forward.asm equ-forward.asm \
+		zilog.asm \
 		inst-ld8.asm \
 		inst-ld16.asm \
 		inst-ldind.asm \
@@ -30,4 +31,7 @@ macro.bin : macro-nomacro.asm
 	$(ASM) -bin $@ -lst -f -i $<
 
 inst-add16.bin: inst-add16.asm
+	z80asm -l -b $<
+
+zilog.bin: zilog.asm
 	z80asm -l -b $<
