@@ -175,6 +175,7 @@ func (e *Evaluator) mangleNamesInStatement(stmt parser.Statement, replace func(p
 	case *parser.ReptStatement:
 		news := *stmt
 		replace(&news.MaxCount)
+		news.Block = e.mangleNamesInStatement(news.Block, replace, ectx).(*parser.BlockStatement)
 		return &news
 
 	default:
@@ -232,6 +233,16 @@ func buildMangleNamesFunc(args map[string]parser.Expression, seq int, macroName 
 			for i := range len(newe.Arguments.Expressions) {
 				fn(&newe.Arguments.Expressions[i])
 			}
+			*ptr = &newe
+
+		case *parser.RegIndirectExpression:
+			newe := *expr
+			fn(&newe.Displacement)
+			*ptr = &newe
+
+		case *parser.AddrIndirectExpression:
+			newe := *expr
+			fn(&newe.Address)
 			*ptr = &newe
 
 		default:
