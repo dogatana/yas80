@@ -92,6 +92,10 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 	case *parser.MacroCallStatement:
 		return e.evalMacroCallStatement(node, env)
 
+	// マクロ呼出し
+	case *parser.MacroBlockStatement:
+		return e.evalMacroBlockStatement(node, env)
+
 	// rept
 	case *parser.ReptStatement:
 		return e.evalReptStatement(node, env)

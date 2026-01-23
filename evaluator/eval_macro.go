@@ -132,7 +132,7 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.O
 		block = node.Block
 		comment := node.Name
 		if comment == "REPT" {
-			comment = fmt.Sprintf("REPT %d", node.Count)
+			comment = fmt.Sprintf("REPT %d/%d", node.Index, node.Count)
 		}
 		co := &object.CommentObject{Comments: []string{comment}, Context: node.Context}
 		objects = append(objects, co)
@@ -226,20 +226,21 @@ BREAK:
 	return &object.BlockObject{Block: objects}
 }
 
+// REPT 展開
 func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) object.Object {
 	obj := e.evalExpression(stmt.MaxCount, env, stmt.Context)
 	if isError(obj) || isRefNotFound(obj) {
 		return obj
 	}
 
-	var num *object.NumberObject
+	var num int
 	var values []any
 
 	switch obj := obj.(type) {
 	case *object.NumberObject:
-		num = obj
+		num = obj.Value
 	case *object.ArrayObject:
-		num = &object.NumberObject{Value: len(obj.Values), Context: stmt.Context}
+		num = len(obj.Values)
 		values = make([]any, len(obj.Values))
 		for i, o := range obj.Values {
 			values[i] = o
@@ -260,47 +261,54 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 	}
 	ectx.Offset++
 
-	// 環境に $COUNT を設定
-	s := &parser.SetSysVarStatement{
-		Name:    "$COUNT",
-		Value:   &parser.NumberLiteral{Value: num.Value, Context: stmt.Context},
-		Context: stmt.Context}
-	s.ReplaceContext(*ectx)
+	nodes := []parser.Node{}
+	for i := 0; i < num; i++ {
+		mb := &parser.MacroBlockStatement{
+			Name:  "REPT",
+			Count: num,
+			Index: i,
+		}
 
-	nodes := []parser.Node{s}
-	for i := 0; i < num.Value; i++ {
+		var s parser.Statement
 		ectx.Offset++
-		rs := &parser.SetSysVarStatement{
-			Name:    "$I",
-			Value:   &parser.NumberLiteral{Value: i, Context: stmt.Context},
+		s = &parser.SetSysVarStatement{
+			Name:    "$COUNT",
+			Value:   &object.NumberObject{Value: num},
 			Context: stmt.Context}
-		rs.ReplaceContext(*ectx)
-		nodes = append(nodes, rs)
+		s.ReplaceContext(*ectx)
+		mb.Block = append(mb.Block, s)
+
+		ectx.Offset++
+		s = &parser.SetSysVarStatement{
+			Name:    "$I",
+			Value:   &object.NumberObject{Value: i},
+			Context: stmt.Context}
+		s.ReplaceContext(*ectx)
+		mb.Block = append(mb.Block, s)
 
 		if values != nil {
 			ectx.Offset++
-			rs = &parser.SetSysVarStatement{
+			s = &parser.SetSysVarStatement{
 				Name:    "$V",
 				Value:   values[i],
 				Context: stmt.Context}
-			rs.ReplaceContext(*ectx)
-			nodes = append(nodes, rs)
+			s.ReplaceContext(*ectx)
+			mb.Block = append(mb.Block, s)
 		}
 
+		ectx.Offset++
 		objs := e.expandReptBlock(stmt, env, ectx)
 		if isError(objs) {
 			continue
 		}
-		nodes = append(nodes, objs.(*object.NodesObject).Nodes...)
+		mb.Block = append(mb.Block, objs.(*object.NodesObject).Nodes...)
+		nodes = append(nodes, mb)
 	}
 
 	ectx.Offset++
 	c := *ectx
 	nodes = append(nodes, &parser.CommentStatement{Text: "ENDR", Context: &c})
-	mb := &parser.MacroBlockStatement{
-		Name:    "REPT",
-		Count:   num.Value,
-		Block:   nodes,
-		Context: stmt.Context}
-	return &object.NodeObject{Node: mb}
+
+	bs := &parser.BlockStatement{Block: nodes}
+	return &object.NodeObject{Node: bs}
 }

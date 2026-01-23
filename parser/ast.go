@@ -401,7 +401,7 @@ type BlockStatement struct {
 	Block []Node
 }
 
-func (s *BlockStatement) GetContext() *fileblock.Context       { return nil }
+func (s *BlockStatement) GetContext() *fileblock.Context       { return &fileblock.Context{} }
 func (s *BlockStatement) NodeType() NodeType                   { return NODE_BLOCK_STMT }
 func (s *BlockStatement) ReplaceContext(ctx fileblock.Context) {}
 func (s *BlockStatement) String() string {
@@ -415,9 +415,10 @@ func (s *BlockStatement) String() string {
 
 // macro block statement
 type MacroBlockStatement struct {
-	Name    string
-	Index   int // REPT 用
-	Count   int // REPT 用
+	Name    string // マクロ名 もしくは "REPT"
+	Index   int    // REPT 用
+	Count   int    // REPT 用
+	Value   any    // REPT 用 Expression/Object
 	Block   []Node
 	Context *fileblock.Context
 }

@@ -97,11 +97,16 @@ func (o *CommentObject) Type() ObjectType { return COMMENT_OBJ }
 func (o *CommentObject) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(fmt.Sprintf("comt %2d:%2d", o.Context.Line, o.Context.Offset))
-	if o.Context.Source == nil {
-		out.WriteString("(  ) ")
+	out.WriteString("comt ")
+	if o.Context == nil {
+		out.WriteString("--:--(  ) ")
 	} else {
-		out.WriteString(fmt.Sprintf("(%2d) ", o.Context.Source.Line))
+		out.WriteString(fmt.Sprintf("%2d:%2d", o.Context.Line, o.Context.Offset))
+		if o.Context.Source == nil {
+			out.WriteString("(  ) ")
+		} else {
+			out.WriteString(fmt.Sprintf("(%2d) ", o.Context.Source.Line))
+		}
 	}
 	out.WriteString(strings.Join(o.Comments, "\n"))
 	return out.String()

@@ -262,6 +262,10 @@ func printStatement(stmt parser.Statement) {
 	}
 }
 func printContext(ctx *fileblock.Context) {
+	if ctx == nil {
+		fmt.Println("--:--")
+		return
+	}
 	fmt.Printf("%2d:%2d ", ctx.Line, ctx.Offset)
 	if ctx.Source == nil {
 		fmt.Print("(  ) ")
