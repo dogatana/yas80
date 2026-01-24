@@ -126,8 +126,10 @@ func isTruthy(obj object.Object) bool {
 }
 
 func CollectCode(prog *object.ProgramObject) []byte {
+	objs := collectObjects(prog.Objects)
+
 	var result []byte
-	for _, obj := range prog.Objects {
+	for _, obj := range objs {
 		code, ok := obj.(*object.CodeObject)
 		if !ok {
 			continue
@@ -135,6 +137,18 @@ func CollectCode(prog *object.ProgramObject) []byte {
 		result = append(result, code.Code...)
 	}
 	return result
+}
+
+func collectObjects(os []object.Object) []object.Object {
+	ret := []object.Object{}
+	for _, o := range os {
+		if bo, ok := o.(*object.BlockObject); ok {
+			ret = append(ret, bo.Block...)
+			continue
+		}
+		ret = append(ret, o)
+	}
+	return ret
 }
 
 // シンボル結合処理

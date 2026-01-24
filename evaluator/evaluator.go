@@ -181,7 +181,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env TEnv) object.Object {
 				objects = append(objects, objs...)
 			}
 
-		// rept
+		// REPT
 		case *parser.ReptStatement:
 			obj := e.evalStatement(node, env)
 			if isError(obj) {
@@ -196,8 +196,19 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env TEnv) object.Object {
 			if !ok {
 				panic("not NodesObject")
 			}
-			stmts = append(stmts, nodeObj.Node)
-			e.Resolved = false
+			// stmts = append(stmts, nodeObj.Node)
+			// e.Resolved = false
+			node = nodeObj.Node
+			goto EVAL_AGAIN
+
+		// REPT 展開結果
+		case *parser.BlockStatement:
+			obj := e.evalStatement(stmt, env)
+			if isError(obj) {
+				continue
+			}
+			objects = append(objects, obj.(*object.BlockObject).Block...)
+			stmts = append(stmts, node)
 
 		// func
 		case *parser.FuncStatement:

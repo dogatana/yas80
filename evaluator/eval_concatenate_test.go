@@ -28,6 +28,7 @@ func TestConcatenateSymbol(t *testing.T) {
 		{input: `rept 3\ abc ## $i: ld a, $i\ endr`,
 			syms: []symValue{{"ABC0", 0}, {"ABC1", 2}, {"ABC2", 4}},
 			code: []byte{0x3e, 0, 0x3e, 1, 0x3e, 2}},
+		// 10
 		{input: `const abc ## 123 = 1 \ ds abc ## 123, abc ## 123`, syms: []symValue{{"ABC123", 1}}, code: []byte{1}},
 		{input: `nop \ abc ## 123 proc \ ret \ endp`, syms: []symValue{{"ABC123", 1}}, code: []byte{0, 0xc9}},
 	}

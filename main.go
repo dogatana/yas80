@@ -57,6 +57,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	input = strings.NewReader(`
+tm macro
+  if 1
+    rept 2
+      ld a, $i
+    endr
+  endif
+endm
+tm
+	`)
 	// logger 作成
 	logger := logging.New(file)
 
@@ -203,6 +213,22 @@ func main() {
 
 	lister := lister.New(prog, obj.(*object.ProgramObject))
 	lister.ProgramList(os.Stdout)
+
+	printObjects(obj.(*object.ProgramObject).Objects)
+}
+
+func printObjects(objs []object.Object) {
+	for _, o := range objs {
+		if o == nil {
+			fmt.Println("<nil>")
+			continue
+		}
+		if bo, ok := o.(*object.BlockObject); ok {
+			printObjects(bo.Block)
+			continue
+		}
+		fmt.Println(o.String())
+	}
 }
 
 func showResult(count int, prog *parser.Program, obj object.Object, env object.Environment) {
@@ -212,13 +238,8 @@ func showResult(count int, prog *parser.Program, obj object.Object, env object.E
 	}
 	progObj := obj.(*object.ProgramObject)
 	fmt.Printf("\n# %s%d objects\n", path, len(progObj.Objects))
-	for _, o := range progObj.Objects {
-		if o == nil {
-			fmt.Println("<nil>")
-		} else {
-			fmt.Println(o.String())
-		}
-	}
+	printObjects(progObj.Objects)
+
 	fmt.Printf("\n# %sast\n", path)
 	for _, node := range prog.Statements {
 		switch stmt := node.(type) {

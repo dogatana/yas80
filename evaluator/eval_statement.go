@@ -163,7 +163,10 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env TEnv) object.Object {
 	block := &object.BlockObject{Block: []object.Object{}}
 
-	for i, node := range stmt.Block {
+	var node parser.Node
+	for i := range len(stmt.Block) {
+	EVAL_AGAIN:
+		node = stmt.Block[i]
 		obj := e.evalStatement(node, env)
 		switch obj := obj.(type) {
 		case *object.ReturnObject:
@@ -180,6 +183,7 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env TEnv) ob
 			}
 		case *object.NodeObject:
 			stmt.Block[i] = obj.Node
+			goto EVAL_AGAIN
 		default:
 			block.Block = append(block.Block, obj)
 		}
