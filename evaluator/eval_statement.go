@@ -371,6 +371,7 @@ func (e *Evaluator) evalProcStatement(node *parser.ProcStatement, env TEnv) obje
 	return &object.StatementObject{Statement: pbs}
 }
 
+// PROC 内で有効な文をフィルタ
 func (e *Evaluator) filterValidStatementForProc(bs *parser.BlockStatement) {
 	stmts := make([]parser.Statement, 0, len(bs.Block))
 
@@ -387,14 +388,14 @@ func (e *Evaluator) filterValidStatementForProc(bs *parser.BlockStatement) {
 		// 要再帰チェック
 		case *parser.IfStatement:
 			if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
-				e.filterValidStatementForMacro(bs)
+				e.filterValidStatementForProc(bs)
 			}
 			if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
-				e.filterValidStatementForMacro(bs)
+				e.filterValidStatementForProc(bs)
 			}
 			stmts = append(stmts, stmt)
 		case *parser.BlockStatement:
-			e.filterValidStatementForMacro(stmt)
+			e.filterValidStatementForProc(stmt)
 			stmts = append(stmts, stmt)
 
 		default:
