@@ -32,7 +32,7 @@ func (e *Evaluator) evalMacroStatement(stmt *parser.MacroStatement, env TEnv) ob
 
 // macro 内で利用可能な文を抽出するフィルタ
 func (e *Evaluator) filterValidStatementForMacro(bs *parser.BlockStatement) {
-	stmts := make([]parser.Node, 0, len(bs.Block))
+	stmts := make([]parser.Statement, 0, len(bs.Block))
 
 	for _, stmt := range bs.Block {
 		switch stmt := stmt.(type) {
@@ -119,9 +119,9 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 // macro 用 BlockStatement 評価
 func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.Object {
 	objects := []object.Object{}
-	stmts := []parser.Node{}
+	stmts := []parser.Statement{}
 
-	var block []parser.Node
+	var block []parser.Statement
 
 	switch node := node.(type) {
 	case *parser.MacroBlockStatement:
@@ -182,7 +182,7 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Node, env TEnv) object.O
 			if obj.Type() != object.NODES_OBJ {
 				panic("not nodes object")
 			}
-			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.NodesObject).Nodes, Context: stmt.Context}
+			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: stmt.Context}
 			// fmt.Println("-- expanded")
 			// for _, n := range bs.Block {
 			// 	fmt.Println(n.String())
@@ -261,7 +261,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 	}
 	ectx.Offset++
 
-	nodes := []parser.Node{}
+	nodes := []parser.Statement{}
 	for i := 0; i < num; i++ {
 		mb := &parser.MacroBlockStatement{
 			Name:  "REPT",
@@ -301,7 +301,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		if isError(objs) {
 			continue
 		}
-		mb.Block = append(mb.Block, objs.(*object.NodesObject).Nodes...)
+		mb.Block = append(mb.Block, objs.(*object.StatemetnsObject).Statements...)
 		nodes = append(nodes, mb)
 	}
 
@@ -310,5 +310,5 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 	nodes = append(nodes, &parser.CommentStatement{Text: "ENDR", Context: &c})
 
 	bs := &parser.BlockStatement{Block: nodes}
-	return &object.NodeObject{Node: bs}
+	return &object.StatementObject{Statement: bs}
 }

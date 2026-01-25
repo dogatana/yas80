@@ -292,20 +292,20 @@ func (o *AddrIndirectObject) String() string {
 }
 
 // Node
-type NodeObject struct {
-	Node parser.Node
+type StatementObject struct {
+	Statement parser.Statement
 }
 
-func (n *NodeObject) Type() ObjectType { return NODE_OBJ }
-func (n *NodeObject) String() string   { return n.Node.String() }
+func (n *StatementObject) Type() ObjectType { return NODE_OBJ }
+func (n *StatementObject) String() string   { return n.Statement.String() }
 
 // Nodes
-type NodesObject struct {
-	Nodes []parser.Node
+type StatemetnsObject struct {
+	Statements []parser.Statement
 }
 
-func (n *NodesObject) Type() ObjectType { return NODES_OBJ }
-func (n *NodesObject) String() string   { return fmt.Sprintf("NODES(%v)", n.Nodes) }
+func (n *StatemetnsObject) Type() ObjectType { return NODES_OBJ }
+func (n *StatemetnsObject) String() string   { return fmt.Sprintf("NODES(%v)", n.Statements) }
 
 // // ENUM
 // type EnumObject struct {

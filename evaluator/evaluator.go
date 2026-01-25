@@ -35,10 +35,10 @@ func (e *Evaluator) EvalProgram(prog *parser.Program, env TEnv) object.Object {
 }
 
 // Program.Statements, ProcBlockStatement.Block 評価
-func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env TEnv) object.Object {
+func (e *Evaluator) evalBlockPtr(ptr *[]parser.Statement, env TEnv) object.Object {
 	statements := *ptr
 	objects := []object.Object{}
-	stmts := []parser.Node{}
+	stmts := []parser.Statement{}
 
 	var obj object.Object
 
@@ -58,11 +58,11 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env TEnv) object.Object {
 			if isError(obj) {
 				continue
 			}
-			nobj, ok := obj.(*object.NodeObject)
+			nobj, ok := obj.(*object.StatementObject)
 			if !ok {
 				panic("not NodeObject")
 			}
-			node = nobj.Node // ProcBlockStatement
+			node = nobj.Statement // ProcBlockStatement
 			goto EVAL_AGAIN
 
 		// PROC BLOCK
@@ -146,7 +146,7 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env TEnv) object.Object {
 			}
 			bs := &parser.MacroBlockStatement{
 				Name:    stmt.Name,
-				Block:   obj.(*object.NodesObject).Nodes,
+				Block:   obj.(*object.StatemetnsObject).Statements,
 				Context: stmt.Context}
 			// fmt.Println("-- expanded")
 			// for _, n := range bs.Block {
@@ -192,13 +192,13 @@ func (e *Evaluator) evalBlockPtr(ptr *[]parser.Node, env TEnv) object.Object {
 				e.Resolved = false
 				continue
 			}
-			nodeObj, ok := obj.(*object.NodeObject)
+			nodeObj, ok := obj.(*object.StatementObject)
 			if !ok {
 				panic("not NodesObject")
 			}
 			// stmts = append(stmts, nodeObj.Node)
 			// e.Resolved = false
-			node = nodeObj.Node
+			node = nodeObj.Statement
 			goto EVAL_AGAIN
 
 		// REPT 展開結果

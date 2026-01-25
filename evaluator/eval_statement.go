@@ -60,7 +60,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 		env.Set(name, &object.ProcObject{Name: name, Addr: getLocationCounter(env), Env: penv})
 
 		pbs := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
-		return &object.NodeObject{Node: pbs}
+		return &object.StatementObject{Statement: pbs}
 
 	// DS/DSB/DSW
 	case *parser.DataStoreStatement:
@@ -181,8 +181,8 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env TEnv) ob
 			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ {
 				return block
 			}
-		case *object.NodeObject:
-			stmt.Block[i] = obj.Node
+		case *object.StatementObject:
+			stmt.Block[i] = obj.Statement
 			goto EVAL_AGAIN
 		default:
 			block.Block = append(block.Block, obj)
@@ -455,7 +455,7 @@ func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env TEnv) o
 func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env TEnv) object.Object {
 	cond, ok := e.evalExpression(stmt.Condition, env, stmt.Context).(*object.NumberObject)
 	if !ok {
-		return &object.NodeObject{Node: stmt}
+		return &object.StatementObject{Statement: stmt}
 	}
 	if cond.Value != 0 {
 		if stmt.Consequence == nil {
@@ -516,7 +516,7 @@ func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env TEnv) obje
 
 // func 内で利用可能な文を抽出するフィルタ
 func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
-	stmts := make([]parser.Node, 0, len(bs.Block))
+	stmts := make([]parser.Statement, 0, len(bs.Block))
 
 	for _, stmt := range bs.Block {
 		switch stmt := stmt.(type) {

@@ -14,7 +14,7 @@ var _ = __yyfmt__.Sprintf
 %union {
 	token Token
 	num Node
-	node Node
+	statement Statement
 	err any
 	ident *Ident
 	enum_element *EnumElement
@@ -27,7 +27,7 @@ var _ = __yyfmt__.Sprintf
 
 
 // 非終端記号
-%type<node> statement instruction directive elseifs enum_element datadef datastore
+%type<statement> statement instruction directive elseifs enum_element datadef datastore
 %type<block> block_statement
 %type<enum_elements> enum_elements
 %type<params> param_list
@@ -101,7 +101,7 @@ statement   : EOL { $$ = nil }
 			| ident_expr ':'  EOL 
 			{
 				if $1.NodeType() == NODE_ERROR {
-					$$ =  $1
+					$$ =  $1.(*ParseError)
 				} else {
 					$$ = &LabelStatement{Name: $1, Context: $2.Context}
 				}
@@ -109,7 +109,7 @@ statement   : EOL { $$ = nil }
 			| ident_expr ':' instruction EOL
 			{ 
 				if $1.NodeType() == NODE_ERROR {
-					$$ =  $1
+					$$ =  $1.(*ParseError)
 				} else {
 					$3.(*Z80Instruction).Label = $1
 					$$ = $3 
@@ -127,9 +127,9 @@ statement   : EOL { $$ = nil }
 directive	: CONST ident_expr '=' expr
 			{ 
 				if $2.NodeType() == NODE_ERROR {
-					$$ =  $2
+					$$ =  $2.(*ParseError)
 				} else if $4.NodeType() == NODE_ERROR {
-					$$ =  $4
+					$$ =  $4.(*ParseError)
 				} else {
 					$$ = &ConstStatement{Name: $2, Value: $4, Context: $1.Context}
 				}
@@ -137,9 +137,9 @@ directive	: CONST ident_expr '=' expr
 			| ident_expr EQU expr		
 			{ 
 				if $1.NodeType() == NODE_ERROR {
-					$$ = $1
+					$$ = $1.(*ParseError)
 				} else if $3.NodeType() == NODE_ERROR {
-					$$ = $3
+					$$ = $3.(*ParseError)
 				} else {
 					$$ = &ConstStatement{Name: $1, Value: $3, Context: $2.Context}
 				}
@@ -147,7 +147,7 @@ directive	: CONST ident_expr '=' expr
 			| ident_expr PROC EOL block_statement ENDP
 			{
 				if $1.NodeType() == NODE_ERROR {
-					$$ = $1
+					$$ = $1.(*ParseError)
 				} else {
 					$$ = &ProcStatement{Name: $1, Block: $4, Context: $2.Context}
 				}
@@ -159,7 +159,7 @@ directive	: CONST ident_expr '=' expr
 			| VAR ident '=' expr
 			{
 				if $4.NodeType() == NODE_ERROR {
-					$$ = $4
+					$$ = $4.(*ParseError)
 				} else {
 					$$ = &VariableStatement{Name: &Ident{Name: $2.Name}, Value: $4, Context: $1.Context}
 				}
@@ -170,12 +170,12 @@ directive	: CONST ident_expr '=' expr
 					// 左辺のエラーを出力し、右辺のエラーを返す
 					err := $1.(*ParseError)
 					yylex.Error(err.Message, err.Context)
-					$$ = $3
+					$$ = $3.(*ParseError)
 
 				} else if $1.NodeType() == NODE_ERROR {
-					$$ = $1
+					$$ = $1.(*ParseError)
 				} else if $3.NodeType() == NODE_ERROR {
-					$$ = $3
+					$$ = $3.(*ParseError)
 				} else {
 					$$ = &AssignStatement{Left: $1, Value: $3, Context: $2.Context}
 				}
@@ -183,7 +183,7 @@ directive	: CONST ident_expr '=' expr
 			| REPT expr EOL block_statement ENDR
 			{
 				if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else {
 					$$ = &ReptStatement{MaxCount: $2, Block: $4, Context: $1.Context}
 				}
@@ -194,13 +194,13 @@ directive	: CONST ident_expr '=' expr
 					// 条件式のエラーを出力し、elseifs のエラーを返す
 					err := $2.(*ParseError)
 					yylex.Error(err.Message, err.Context)
-					$$ = $5
+					$$ = $5.(*ParseError)
 				} else if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else if $5 == nil {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Node{}}, Context: $1.Context}
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Statement{}}, Context: $1.Context}
 				} else if $5.NodeType() == NODE_ERROR {
-					$$ = $5
+					$$ = $5.(*ParseError)
 				} else if $5.NodeType() == NODE_BLOCK_STMT {
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, Context: $1.Context}
 				} else {
@@ -215,9 +215,9 @@ directive	: CONST ident_expr '=' expr
 					yylex.Error(err.Message, err.Context)
 					$$ = $5
 				} else if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else if $5 == nil  && $7 == nil {
-					$$ = &IfStatement{ Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Node{}}, Context: $1.Context}
+					$$ = &IfStatement{ Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Statement{}}, Context: $1.Context}
 				} else if $5 == nil {
 					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $7, Context: $1.Context}
 				} else if $5.NodeType() == NODE_ERROR {
@@ -228,7 +228,7 @@ directive	: CONST ident_expr '=' expr
 					} else {
 						last := getLastIfStatement(block.Block[0].(*IfStatement))
 						if last.NodeType() == NODE_ERROR {
-							$$ = last
+							$$ = last.(*ParseError)
 						} else {
 							last.(*IfStatement).Alternative = $7
 							$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, Context: $1.Context}
@@ -245,12 +245,12 @@ directive	: CONST ident_expr '=' expr
 			| FUNCTION ident '(' param_list ')' expr
 			{ 
 				if $6.NodeType() == NODE_ERROR {
-					$$ = $6
+					$$ = $6.(*ParseError)
 				} else {
 					$$ = &FuncStatement{
 						Name: $2.Name, 
 						Params: $4, 
-						Block: &BlockStatement{Block: []Node {&ReturnStatement{Value: $6, Context: $1.Context}}}, 
+						Block: &BlockStatement{Block: []Statement {&ReturnStatement{Value: $6, Context: $1.Context}}}, 
 						Context: $1.Context}
 				}
 			}
@@ -258,7 +258,7 @@ directive	: CONST ident_expr '=' expr
 			| RETURN expr	
 			{ 
 				if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else {
 					$$ = &ReturnStatement{Value: $2, Context: $1.Context} 
 				}
@@ -275,13 +275,13 @@ directive	: CONST ident_expr '=' expr
 			| EXITM IF expr
 			{
 				if $3.NodeType() == NODE_ERROR {
-					$$ = $3
+					$$ = $3.(*ParseError)
 				} else {
 					ctx := $1.Context
 					$$ = &IfStatement{
 						Condition: $3,
-						Consequence: &BlockStatement{Block: []Node{&ExitmStatement{Context: ctx}}},
-						Alternative:  &BlockStatement{Block: []Node{}}}
+						Consequence: &BlockStatement{Block: []Statement{&ExitmStatement{Context: ctx}}},
+						Alternative:  &BlockStatement{Block: []Statement{}}}
 				}
 			}
 			| datadef	{ $$ = $1 }
@@ -304,7 +304,7 @@ directive	: CONST ident_expr '=' expr
 datadef		: DATA expr
 			{
 				if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else {
 					size := 0
 					switch $1.TokenSubType {
@@ -321,7 +321,7 @@ datadef		: DATA expr
 			| datadef ',' expr
 			{
 				if $3.NodeType() == NODE_ERROR {
-					$$ = $3
+					$$ = $3.(*ParseError)
 				} else {
 					s := $1.(*DataStatement)
 					s.Values = append(s.Values, $3)
@@ -333,7 +333,7 @@ datadef		: DATA expr
 datastore	: DS expr
 			{
 				if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else {
 					var size int
 					switch $1.TokenSubType {
@@ -348,9 +348,9 @@ datastore	: DS expr
 			| DS expr ',' expr
 			{
 				if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else if $4.NodeType() == NODE_ERROR {
-					$$ = $4
+					$$ = $4.(*ParseError)
 				} else {
 					size := 0
 					switch $1.TokenSubType {
@@ -373,7 +373,7 @@ ident_expr	: ident			{ $$ = $1 }
 			| ident CONCAT expr	
 			{ 
 				if $3.NodeType() == NODE_ERROR {
-					$$ = $3
+					$$ = $3.(*ParseError)
 				} else {
 					$$ = buildInfixExpression(CONCAT, $1, $3, $2.Context) 
 				}
@@ -392,11 +392,11 @@ param_list	: 			{ $$ = []string{}}
 elseifs		: { $$ = nil }
 			| elseifs ELIF expr EOL block_statement 
 			{ 
-				ifst := &IfStatement{Condition: $3, Consequence: $5, Alternative: &BlockStatement{Block:[]Node{}}, Context: $2.Context}
+				ifst := &IfStatement{Condition: $3, Consequence: $5, Alternative: &BlockStatement{Block:[]Statement{}}, Context: $2.Context}
 				if $3.NodeType() == NODE_ERROR {
-					$$ = $3
+					$$ = $3.(*ParseError)
 				} else if $1 == nil {
-					$$ = &BlockStatement{Block: []Node{ifst}}
+					$$ = &BlockStatement{Block: []Statement{ifst}}
 				} else if block := $1.(*BlockStatement); len(block.Block) == 0 {
 					block.Block = append(block.Block, ifst)
 					$$ = $1
@@ -404,7 +404,7 @@ elseifs		: { $$ = nil }
 					stmt := block.Block[0].(*IfStatement)
 					for {
 						if stmt.Alternative == nil {
-							stmt.Alternative = &BlockStatement{Block:[]Node{ifst}}
+							stmt.Alternative = &BlockStatement{Block:[]Statement{ifst}}
 							$$ = $1
 							break
 						} else if block := stmt.Alternative.(*BlockStatement); len(block.Block) == 0 {
@@ -425,7 +425,7 @@ elseifs		: { $$ = nil }
 
 	
 // statement エラー検出時は yylex.Error() を呼んで伝播を止める
-block_statement	: 	 				{ $$ = &BlockStatement{Block: []Node{}} }
+block_statement	: 	 				{ $$ = &BlockStatement{Block: []Statement{}} }
 			| block_statement statement 
 			{ 
 				if $2 == nil { // error
@@ -458,7 +458,7 @@ enum_element : IDENT 			{ $$ = &EnumElement{Name: strings.ToUpper($1.Literal), V
 			| IDENT '=' expr	
 			{ 
 				if $3.NodeType() == NODE_ERROR {
-					$$ = $3
+					$$ = $3.(*ParseError)
 				} else {
 					$$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: $3, Context: $1.Context }
 				}
@@ -476,7 +476,7 @@ instruction	: Z80_INST0
 			| Z80_INST1 operand
 			{
 				if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else {
 					$$ = &Z80Instruction{InstType: Z80_INST1, Opcode: int($1.TokenSubType), 
 						Op1: $2, 
@@ -486,7 +486,7 @@ instruction	: Z80_INST0
 			| Z80_INST2 operand
 			{
 				if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else {
 					$$ = &Z80Instruction{InstType: Z80_INST2, Opcode: int($1.TokenSubType), 
 						Op2: $2,
@@ -498,11 +498,11 @@ instruction	: Z80_INST0
 				if $2.NodeType() == NODE_ERROR && $4.NodeType() == NODE_ERROR {
 					err := $2.(*ParseError)
 					yylex.Error(err.Message, err.Context)
-					$$ = $4
+					$$ = $4.(*ParseError)
 				} else if $2.NodeType() == NODE_ERROR {
-					$$ = $2
+					$$ = $2.(*ParseError)
 				} else if $4.NodeType() == NODE_ERROR {
-					$$ = $4
+					$$ = $4.(*ParseError)
 				} else {
 					$$ = &Z80Instruction{InstType: Z80_INST2, Opcode: int($1.TokenSubType), 
 							Op1: $2,

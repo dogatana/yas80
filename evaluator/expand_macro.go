@@ -8,7 +8,7 @@ import (
 )
 
 func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, env TEnv, ectx TContext) object.Object {
-	nodes := []parser.Node{}
+	stmts := []parser.Statement{}
 	seq := e.Counter()
 
 	// 仮引数と引数Node の紐づけ
@@ -32,9 +32,9 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 			if isError(obj) {
 				continue
 			}
-			bs := &parser.MacroBlockStatement{Name: news.Name, Block: obj.(*object.NodesObject).Nodes, Context: news.Context}
+			bs := &parser.MacroBlockStatement{Name: news.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: news.Context}
 			bs.ReplaceContext(*ectx) // struct(not *struct)
-			nodes = append(nodes, bs)
+			stmts = append(stmts, bs)
 			if len(bs.Block) > 0 {
 				ectx.Offset = bs.Block[len(bs.Block)-1].(parser.Statement).GetContext().Offset
 			}
@@ -44,13 +44,13 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 			if isError(obj) {
 				continue
 			}
-			nodes = append(nodes, obj.(*object.NodeObject).Node)
+			stmts = append(stmts, obj.(*object.StatementObject).Statement)
 
 		default:
-			nodes = append(nodes, news)
+			stmts = append(stmts, news)
 		}
 	}
-	return &object.NodesObject{Nodes: nodes}
+	return &object.StatemetnsObject{Statements: stmts}
 }
 
 func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx TContext) object.Object {
@@ -59,7 +59,7 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx T
 	args := map[string]parser.Expression{} // 空
 	mangleFn := buildMangleNamesFunc(args, seq, "REPT")
 
-	nodes := []parser.Node{}
+	stmts := []parser.Statement{}
 	for _, stmt := range rept.Block.Block {
 		ectx.Offset += 1
 		c := *ectx
@@ -70,28 +70,28 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx T
 			if isError(obj) {
 				return object.ERROR
 			}
-			bs := &parser.MacroBlockStatement{Name: news.Name, Block: obj.(*object.NodesObject).Nodes, Context: rept.Context}
+			bs := &parser.MacroBlockStatement{Name: news.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: rept.Context}
 			bs.ReplaceContext(*ectx)
-			nodes = append(nodes, bs)
+			stmts = append(stmts, bs)
 
 		case *parser.ReptStatement:
 			obj := e.evalReptStatement(news, env)
 			if isError(obj) {
 				return object.ERROR
 			}
-			rs, ok := obj.(*object.NodeObject)
+			rs, ok := obj.(*object.StatementObject)
 			if !ok {
 				panic("not *object.NodeObject")
 			}
-			rs.Node.(parser.Statement).ReplaceContext(*ectx)
-			nodes = append(nodes, rs.Node)
+			rs.Statement.(parser.Statement).ReplaceContext(*ectx)
+			stmts = append(stmts, rs.Statement)
 
 		default:
 			news.ReplaceContext(*ectx)
-			nodes = append(nodes, news)
+			stmts = append(stmts, news)
 		}
 	}
-	return &object.NodesObject{Nodes: nodes}
+	return &object.StatemetnsObject{Statements: stmts}
 }
 
 // 文の中のマクロローカル名をマングリングする

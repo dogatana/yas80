@@ -92,7 +92,7 @@ type Expression interface {
 
 // Program
 type Program struct {
-	Statements []Node
+	Statements []Statement
 }
 
 func (p *Program) NodeType() NodeType { return NODE_PROGRAM }
@@ -161,7 +161,7 @@ func (s *ProcStatement) String() string     { return fmt.Sprintf("PROC(%s)", s.N
 // Prock block statement
 type ProcBlockStatement struct {
 	Name    string
-	Block   []Node
+	Block   []Statement
 	Context *fileblock.Context
 }
 
@@ -398,7 +398,7 @@ func (s *MacroCallStatement) String() string {
 
 // block statement
 type BlockStatement struct {
-	Block []Node
+	Block []Statement
 }
 
 func (s *BlockStatement) GetContext() *fileblock.Context       { return &fileblock.Context{} }
@@ -419,7 +419,7 @@ type MacroBlockStatement struct {
 	Index   int    // REPT 用
 	Count   int    // REPT 用
 	Value   any    // REPT 用 Expression/Object
-	Block   []Node
+	Block   []Statement
 	Context *fileblock.Context
 }
 
