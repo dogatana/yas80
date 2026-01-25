@@ -263,6 +263,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 	case *parser.IfStatement:
 		return e.evalIfStatement(node, env)
 
+	// ブロック
 	case *parser.BlockStatement:
 		return e.evalBlockStatement(node, env)
 
@@ -304,6 +305,10 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 		}
 		return obj
 
+	// Null
+	case *parser.NullStatement:
+		return object.NULL
+
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil) // TODO
 		return object.ERROR
@@ -340,6 +345,7 @@ func (e *Evaluator) evalBlockStatementEx(bs *parser.BlockStatement, checkExitM b
 		case *object.StatementObject:
 			bs.Block[i] = obj.Statement
 			goto EVAL_AGAIN
+
 		default:
 			block.Block = append(block.Block, obj)
 		}
