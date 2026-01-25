@@ -182,36 +182,7 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 
 	// PROC
 	case *parser.ProcStatement:
-		e.concatenateSymbol(&node.Name, env, node.Context)
-
-		id, ok := node.Name.(*parser.Ident)
-		if !ok {
-			e.logger.Error(errcode.ECONCAT_TYPE, node.Context)
-			return object.ERROR
-		}
-		name := id.Name
-		obj, ok := env.Get(name)
-		if ok {
-			switch obj := obj.(type) {
-			case *object.ProcObject:
-				e.logger.Error(fmt.Sprintf(errcode.EPROC_DUP, name), node.Context)
-				return object.ERROR
-			case *object.SymbolObject:
-				if obj.SymType != object.SYM_UNKNOWN {
-					e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
-					return object.ERROR
-				}
-				// SYM_UNKNOWN（前方参照）なら proc として登録
-			default:
-				e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
-				return object.ERROR
-			}
-		}
-		penv := object.NewProcEnvironment(env)
-		env.Set(name, &object.ProcObject{Name: name, Addr: getLocationCounter(env), Env: penv})
-
-		pbs := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
-		return &object.StatementObject{Statement: pbs}
+		return e.evalProcStatement(node, env)
 
 	// DS/DSB/DSW
 	case *parser.DataStoreStatement:
@@ -381,6 +352,39 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env TEnv) ob
 		}
 	}
 	return block
+}
+
+func (e *Evaluator) evalProcStatement(node *parser.ProcStatement, env TEnv) object.Object {
+	e.concatenateSymbol(&node.Name, env, node.Context)
+
+	id, ok := node.Name.(*parser.Ident)
+	if !ok {
+		e.logger.Error(errcode.ECONCAT_TYPE, node.Context)
+		return object.ERROR
+	}
+	name := id.Name
+	obj, ok := env.Get(name)
+	if ok {
+		switch obj := obj.(type) {
+		case *object.ProcObject:
+			e.logger.Error(fmt.Sprintf(errcode.EPROC_DUP, name), node.Context)
+			return object.ERROR
+		case *object.SymbolObject:
+			if obj.SymType != object.SYM_UNKNOWN {
+				e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
+				return object.ERROR
+			}
+			// SYM_UNKNOWN（前方参照）なら proc として登録
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
+			return object.ERROR
+		}
+	}
+	penv := object.NewProcEnvironment(env)
+	env.Set(name, &object.ProcObject{Name: name, Addr: getLocationCounter(env), Env: penv})
+
+	pbs := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
+	return &object.StatementObject{Statement: pbs}
 }
 
 // ラベル定義文
