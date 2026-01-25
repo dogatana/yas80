@@ -99,6 +99,7 @@ const (
 	// PROC 定義
 	EPROC_DUP  = "PROC '%s' は定義済み"
 	EPROC_USED = "%s を PROC として再定義不可"
+	EPROC_NEST = "PROC 定義はネスト不可"
 
 	// ENUM 定義
 	EENUM_DUP       = "ENUM '%s' は定義済み"
@@ -152,6 +153,7 @@ const (
 
 	WSCOPE_MACRO = "MACRO 内では無効"
 	WSCOPE_FUNC  = "FUNC 内では無効 %T"
+	WSCOPE_PROC  = "PROC では無効"
 
 	// infromation
 	// ILABEL_LOCAL = "[I]ローカルラベルには ':' は不要"

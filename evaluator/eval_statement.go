@@ -31,36 +31,15 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 
 	// PROC
 	case *parser.ProcStatement:
-		e.concatenateSymbol(&stmt.Name, env, stmt.Context)
-
-		id, ok := stmt.Name.(*parser.Ident)
-		if !ok {
-			e.logger.Error(errcode.ECONCAT_TYPE, stmt.Context)
+		if object.InProcEnv(env) {
+			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, "PROC"), stmt.Context)
 			return object.ERROR
 		}
-		name := id.Name
-		obj, ok := env.Get(name)
-		if ok {
-			switch obj := obj.(type) {
-			case *object.ProcObject:
-				e.logger.Error(fmt.Sprintf(errcode.EPROC_DUP, name), stmt.Context)
-				return object.ERROR
-			case *object.SymbolObject:
-				if obj.SymType != object.SYM_UNKNOWN {
-					e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), stmt.Context)
-					return object.ERROR
-				}
-				// SYM_UNKNOWN（前方参照）なら proc として登録
-			default:
-				e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), stmt.Context)
-				return object.ERROR
-			}
-		}
-		penv := object.NewProcEnvironment(env)
-		env.Set(name, &object.ProcObject{Name: name, Addr: getLocationCounter(env), Env: penv})
+		return e.evalProcStatement(stmt, env)
 
-		pbs := &parser.ProcBlockStatement{Name: name, Block: stmt.Block.Block, Context: stmt.Context}
-		return &object.StatementObject{Statement: pbs}
+	// PROC BLOCK
+	case *parser.ProcBlockStatement:
+		return e.evalProcBlockStatement(stmt, checkExitM, ectx, env)
 
 	// DS/DSB/DSW
 	case *parser.DataStoreStatement:
@@ -313,6 +292,8 @@ func (e *Evaluator) evalBlockStatementEx(bs *parser.BlockStatement, checkExitM b
 			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ { // TODO: Return
 				return block
 			}
+
+		// ProcStatement => StatementObject(ProcBlockStatement)
 		case *object.StatementObject:
 			bs.Block[i] = obj.Statement
 			goto EVAL_AGAIN
@@ -354,6 +335,7 @@ func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env TEnv) ob
 	return block
 }
 
+// PROC
 func (e *Evaluator) evalProcStatement(node *parser.ProcStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&node.Name, env, node.Context)
 
@@ -383,8 +365,56 @@ func (e *Evaluator) evalProcStatement(node *parser.ProcStatement, env TEnv) obje
 	penv := object.NewProcEnvironment(env)
 	env.Set(name, &object.ProcObject{Name: name, Addr: getLocationCounter(env), Env: penv})
 
+	e.filterValidStatementForProc(node.Block)
+
 	pbs := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
 	return &object.StatementObject{Statement: pbs}
+}
+
+func (e *Evaluator) filterValidStatementForProc(bs *parser.BlockStatement) {
+	stmts := make([]parser.Statement, 0, len(bs.Block))
+
+	for _, stmt := range bs.Block {
+		switch stmt := stmt.(type) {
+		// error
+		case *parser.ProcStatement:
+			e.logger.Error(errcode.EPROC_NEST, stmt.GetContext())
+
+		// warning
+		case *parser.ReturnStatement:
+			e.logger.Warning(errcode.WSCOPE_PROC, stmt.Context)
+
+		// 要再帰チェック
+		case *parser.IfStatement:
+			if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
+				e.filterValidStatementForMacro(bs)
+			}
+			if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
+				e.filterValidStatementForMacro(bs)
+			}
+			stmts = append(stmts, stmt)
+		case *parser.BlockStatement:
+			e.filterValidStatementForMacro(stmt)
+			stmts = append(stmts, stmt)
+
+		default:
+			// 利用可能
+			stmts = append(stmts, stmt)
+		}
+	}
+	bs.Block = stmts
+
+}
+
+// PROC BLOCK
+func (e *Evaluator) evalProcBlockStatement(stmt *parser.ProcBlockStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+	pobj, ok := env.Get(stmt.Name)
+	if !ok {
+		panic(fmt.Sprintf("no ProcEnv(%s)", stmt.Name))
+	}
+	// ProcObject は Environment intterface を実装
+	bs := &parser.BlockStatement{Block: stmt.Block}
+	return e.evalStatementEx(bs, checkExitM, ectx, pobj.(object.Environment))
 }
 
 // ラベル定義文

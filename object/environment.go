@@ -55,6 +55,19 @@ func OuterEnvType(env Environment) int {
 	return env.EnvType()
 }
 
+// 引数の環境が ProcEnvironment に含まれるかどうか
+func InProcEnv(env Environment) bool {
+	for {
+		if env.EnvType() == ENV_PROC {
+			return true
+		}
+		env = env.Outer()
+		if env == nil {
+			return false
+		}
+	}
+}
+
 // グローバル環境
 type GlobalEnvironment struct {
 	store map[string]Object
