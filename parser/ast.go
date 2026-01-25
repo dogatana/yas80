@@ -18,6 +18,7 @@ const (
 	NODE_ERROR
 
 	// statement
+	NODE_NULL // eval用: エラーが発生した文を置き換える
 	NODE_STMT
 	NODE_DELETED_STMT
 	NODE_LABEL_STMT
@@ -89,6 +90,19 @@ type Expression interface {
 }
 
 // 実装 (struct)
+
+// Null
+type NullStatement struct {
+	Context *fileblock.Context
+}
+
+func (s *NullStatement) NodeType() NodeType             { return NODE_NULL }
+func (s *NullStatement) GetContext() *fileblock.Context { return s.Context }
+func (s *NullStatement) String() string                 { return "NullStatement" }
+func (s *NullStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
 
 // Program
 type Program struct {
