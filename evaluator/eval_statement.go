@@ -8,6 +8,157 @@ import (
 	"yas80/parser"
 )
 
+// evalStatement Ex
+func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+
+	switch stmt := stmt.(type) {
+
+	// Z80 命令
+	case *parser.Z80Instruction:
+		obj := e.evalZ80Instruction(stmt, env)
+		if obj.Type() == object.CODE_OBJ {
+			code := obj.(*object.CodeObject)
+			// アドレス設定はコード生成後
+			code.Addr = getLocationCounter(env)
+			// 生成コードのサイズ文ロケーションカウンタを進める
+			advanceLocationCounter(env, code.Size())
+		}
+		return obj
+
+	// // ラベル定義
+	// case *parser.LabelStatement:
+	// 	return e.evalLabelStatement(stmt, env)
+
+	// // PROC
+	// case *parser.ProcStatement:
+	// 	e.concatenateSymbol(&stmt.Name, env, stmt.Context)
+
+	// 	id, ok := stmt.Name.(*parser.Ident)
+	// 	if !ok {
+	// 		e.logger.Error(errcode.ECONCAT_TYPE, stmt.Context)
+	// 		return object.ERROR
+	// 	}
+	// 	name := id.Name
+	// 	obj, ok := env.Get(name)
+	// 	if ok {
+	// 		switch obj := obj.(type) {
+	// 		case *object.ProcObject:
+	// 			e.logger.Error(fmt.Sprintf(errcode.EPROC_DUP, name), stmt.Context)
+	// 			return object.ERROR
+	// 		case *object.SymbolObject:
+	// 			if obj.SymType != object.SYM_UNKNOWN {
+	// 				e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), stmt.Context)
+	// 				return object.ERROR
+	// 			}
+	// 			// SYM_UNKNOWN（前方参照）なら proc として登録
+	// 		default:
+	// 			e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), stmt.Context)
+	// 			return object.ERROR
+	// 		}
+	// 	}
+	// 	penv := object.NewProcEnvironment(env)
+	// 	env.Set(name, &object.ProcObject{Name: name, Addr: getLocationCounter(env), Env: penv})
+
+	// 	pbs := &parser.ProcBlockStatement{Name: name, Block: stmt.Block.Block, Context: stmt.Context}
+	// 	return &object.StatementObject{Statement: pbs}
+
+	// // DS/DSB/DSW
+	// case *parser.DataStoreStatement:
+	// 	obj := e.evalDataStoreStatement(stmt, env)
+	// 	if isError(obj) {
+	// 		return object.ERROR
+	// 	}
+	// 	advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
+	// 	return obj
+
+	// // DB/DW/DD
+	// case *parser.DataStatement:
+	// 	obj := e.evalDataStatement(stmt, env)
+	// 	if isError(obj) {
+	// 		return object.ERROR
+	// 	}
+	// 	advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
+	// 	return obj
+
+	// // 定数定義
+	// case *parser.ConstStatement:
+	// 	return e.evalConstStatement(stmt, env)
+
+	// // マクロ定義
+	// case *parser.MacroStatement:
+	// 	return e.evalMacroStatement(stmt, env)
+
+	// // マクロ呼出し
+	// case *parser.MacroCallStatement:
+	// 	return e.evalMacroCallStatement(stmt, env)
+
+	// // マクロ呼出し
+	// case *parser.MacroBlockStatement:
+	// 	return e.evalMacroBlockStatement(stmt, env)
+
+	// // rept
+	// case *parser.ReptStatement:
+	// 	return e.evalReptStatement(stmt, env)
+
+	// // var
+	// case *parser.VariableStatement:
+	// 	return e.evalVariableStatement(stmt, env)
+
+	// // 代入文
+	// case *parser.AssignStatement:
+	// 	return e.evalAsignStatement(stmt, env)
+
+	// // if
+	// case *parser.IfStatement:
+	// 	return e.evalIfStatement(stmt, env)
+
+	case *parser.BlockStatement:
+		return e.evalBlockStatementEx(stmt, checkExitM, ectx, env)
+
+	// // func
+	// case *parser.FuncStatement:
+	// 	return e.evalFuncStatement(stmt, env)
+
+	// // return
+	// case *parser.ReturnStatement:
+	// 	return e.evalReturnStatement(stmt, env)
+
+	// // comment
+	// case *parser.CommentStatement:
+	// 	return &object.CommentObject{Comments: []string{stmt.Text}, Context: stmt.Context}
+
+	// // システム変数設定
+	// case *parser.SetSysVarStatement:
+	// 	var v object.Object
+
+	// 	if obj, ok := stmt.Value.(object.Object); ok {
+	// 		v = obj
+	// 	} else {
+	// 		obj := e.evalExpression(stmt.Value.(parser.Expression), env, stmt.Context)
+	// 		if isError(obj) {
+	// 			return object.ERROR
+	// 		}
+	// 		v = obj
+	// 	}
+
+	// 	env.Set(stmt.Name, v)
+	// 	comment := fmt.Sprintf("%s = %s", stmt.Name, v.String())
+	// 	return &object.CommentObject{Comments: []string{comment}, Context: stmt.Context}
+
+	// // enum
+	// case *parser.EnumStatement:
+	// 	obj := e.evalEnumStatement(stmt, env)
+	// 	if isError(obj) {
+	// 		return object.ERROR
+	// 	}
+	// 	return obj
+
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, stmt), nil) // TODO
+		return object.ERROR
+	}
+}
+
 // evalStatement
 func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 
@@ -160,6 +311,37 @@ func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 }
 
 // 複合文 BlockStatement
+func (e *Evaluator) evalBlockStatementEx(bs *parser.BlockStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+	block := &object.BlockObject{Block: []object.Object{}}
+
+	// bs.Block の内容は書き換えるケースがあるので、インデックスでループする
+	for i := range len(bs.Block) {
+	EVAL_AGAIN:
+		stmt := bs.Block[i]
+		obj := e.evalStatementEx(stmt, checkExitM, ectx, env)
+
+		switch obj := obj.(type) {
+		case *object.ReturnObject: // TODO: Return
+			block.Block = append(block.Block, obj)
+			return block
+		case *object.BlockObject:
+			if len(obj.Block) == 0 {
+				block.Block = append(block.Block, object.NULL)
+				continue
+			}
+			block.Block = append(block.Block, obj.Block...)
+			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ { // TODO: Return
+				return block
+			}
+		case *object.StatementObject:
+			bs.Block[i] = obj.Statement
+			goto EVAL_AGAIN
+		default:
+			block.Block = append(block.Block, obj)
+		}
+	}
+	return block
+}
 func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env TEnv) object.Object {
 	block := &object.BlockObject{Block: []object.Object{}}
 

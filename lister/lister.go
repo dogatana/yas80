@@ -11,10 +11,10 @@ import (
 
 type Lister struct {
 	Nodes   *parser.Program
-	Objects *object.ProgramObject
+	Objects *object.BlockObject
 }
 
-func New(pnode *parser.Program, pobj *object.ProgramObject) *Lister {
+func New(pnode *parser.Program, pobj *object.BlockObject) *Lister {
 	return &Lister{Nodes: pnode, Objects: pobj}
 }
 

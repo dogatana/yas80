@@ -57,16 +57,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	input = strings.NewReader(`
-tm macro
-  if 1
-    rept 2
-      ld a, $i
-    endr
-  endif
-endm
-tm
-	`)
+	// 	input = strings.NewReader(`
+	// tm macro
+	//   if 1
+	//     rept 2
+	//       ld a, $i
+	//     endr
+	//   endif
+	// endm
+	// tm
+	// 	`)
 	// logger 作成
 	logger := logging.New(file)
 
@@ -190,7 +190,7 @@ tm
 	// コードが安定するまで規定回数、評価を繰り返す
 	// 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
 	fmt.Println("\n# finalize")
-	code := evaluator.CollectCode(obj.(*object.ProgramObject))
+	code := evaluator.CollectCode(obj.(*object.BlockObject).Block)
 
 	eval.CodeStable = false
 	for i = 0; i < 256 && !eval.CodeStable; i++ {
@@ -198,7 +198,7 @@ tm
 		if len(logger.Errors) > 0 {
 			break
 		}
-		newCode := evaluator.CollectCode(obj.(*object.ProgramObject))
+		newCode := evaluator.CollectCode(obj.(*object.BlockObject).Block)
 		eval.CodeStable = bytes.Equal(code, newCode)
 		if !eval.CodeStable {
 			code = newCode
@@ -211,10 +211,10 @@ tm
 		os.Exit(1)
 	}
 
-	lister := lister.New(prog, obj.(*object.ProgramObject))
+	lister := lister.New(prog, obj.(*object.BlockObject))
 	lister.ProgramList(os.Stdout)
 
-	printObjects(obj.(*object.ProgramObject).Objects)
+	printObjects(obj.(*object.BlockObject).Block)
 }
 
 func printObjects(objs []object.Object) {
@@ -236,9 +236,10 @@ func showResult(count int, prog *parser.Program, obj object.Object, env object.E
 	if count >= 0 {
 		path = fmt.Sprintf("[%d] ", count)
 	}
-	progObj := obj.(*object.ProgramObject)
-	fmt.Printf("\n# %s%d objects\n", path, len(progObj.Objects))
-	printObjects(progObj.Objects)
+
+	bo := obj.(*object.BlockObject)
+	fmt.Printf("\n# %s%d objects\n", path, len(bo.Block))
+	printObjects(bo.Block)
 
 	fmt.Printf("\n# %sast\n", path)
 	for _, node := range prog.Statements {

@@ -125,11 +125,11 @@ func isTruthy(obj object.Object) bool {
 	}
 }
 
-func CollectCode(prog *object.ProgramObject) []byte {
-	objs := collectObjects(prog.Objects)
+func CollectCode(objects []object.Object) []byte {
 
 	var result []byte
-	for _, obj := range objs {
+
+	for _, obj := range objects {
 		code, ok := obj.(*object.CodeObject)
 		if !ok {
 			continue
