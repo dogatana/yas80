@@ -107,11 +107,11 @@ func parseTextForTest(input string, logger *logging.Logger) *parser.Program {
 	return prog
 }
 
-func testCodeResult(t *testing.T, tn int, expected []byte, prog *object.ProgramObject) {
+func testCodeResult(t *testing.T, tn int, expected []byte, prog *object.BlockObject) {
 	if len(expected) == 0 {
 		return
 	}
-	code := CollectCode(prog)
+	code := CollectCode(prog.Block)
 	if err := bytesEqual(code, expected); err != nil {
 		t.Errorf("[%d] generated code diff %s", tn, err.Error())
 	}

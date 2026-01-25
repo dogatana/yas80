@@ -49,11 +49,11 @@ func evaluateInput(testType int, input string, logger *logging.Logger, env objec
 		return
 	}
 	// finalize
-	code := evaluator.CollectCode(obj.(*object.ProgramObject))
+	code := evaluator.CollectCode(obj.(*object.BlockObject).Block)
 	codeStable := false
 	for i = 0; i < 256 && !codeStable; i++ {
 		obj = e.EvalProgram(prog, env)
-		newCode := evaluator.CollectCode(obj.(*object.ProgramObject))
+		newCode := evaluator.CollectCode(obj.(*object.BlockObject).Block)
 		codeStable = bytes.Equal(code, newCode)
 		if !codeStable {
 			code = newCode
