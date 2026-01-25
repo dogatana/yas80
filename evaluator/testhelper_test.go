@@ -15,7 +15,7 @@ type symValue struct {
 	expected any
 }
 
-func evalInput(input string, logger *logging.Logger, env TEnv) (*object.ProgramObject, *Evaluator) {
+func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObject, *Evaluator) {
 	progNode := parseTextForTest(input, logger)
 
 	eval := New(logger)
@@ -30,7 +30,7 @@ func evalInput(input string, logger *logging.Logger, env TEnv) (*object.ProgramO
 		// eval.EvalEnv(env)
 		eval.CheckCyclicError(env)
 		if len(logger.Errors) > 0 {
-			return &object.ProgramObject{}, eval
+			return &object.BlockObject{}, eval
 		}
 		if eval.Resolved {
 			break
@@ -38,31 +38,31 @@ func evalInput(input string, logger *logging.Logger, env TEnv) (*object.ProgramO
 	}
 	eval.CheckSymbolError(env)
 	if len(logger.Errors) > 0 || !eval.Resolved {
-		return obj.(*object.ProgramObject), eval
+		return obj.(*object.BlockObject), eval
 		// return &object.ProgramObject{}, eval
 	}
 
 	// finalize
-	code := CollectCode(obj.(*object.ProgramObject))
+	code := CollectCode(obj.(*object.BlockObject).Block)
 	eval.CodeStable = false
 	for i = 0; i < 256 && !eval.CodeStable; i++ {
 		obj = eval.EvalProgram(progNode, env)
 		if len(logger.Errors) > 0 {
-			return obj.(*object.ProgramObject), eval
+			return obj.(*object.BlockObject), eval
 			// return &object.ProgramObject{}, eval
 
 		}
-		newCode := CollectCode(obj.(*object.ProgramObject))
+		newCode := CollectCode(obj.(*object.BlockObject).Block)
 		eval.CodeStable = bytes.Equal(code, newCode)
 		if !eval.CodeStable {
 			code = newCode
 		}
 	}
 	if !eval.CodeStable {
-		return obj.(*object.ProgramObject), eval
+		return obj.(*object.BlockObject), eval
 		// return &object.ProgramObject{}, eval
 	}
-	if prog, ok := obj.(*object.ProgramObject); !ok {
+	if prog, ok := obj.(*object.BlockObject); !ok {
 		return prog, eval
 		// return &object.ProgramObject{}, eval
 	} else {
