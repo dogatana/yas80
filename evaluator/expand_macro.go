@@ -112,18 +112,22 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx T
 
 	stmts := []parser.Statement{}
 	for _, stmt := range rept.Block.Block {
-		ectx.Offset += 1
-		c := *ectx
-		news := e.mangleNamesInStatement(stmt.(parser.Statement), mangleFn, &c)
+		news := e.mangleNamesInStatement(stmt, mangleFn, ectx)
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
-			obj := e.evalMacroCallStatement(news, env)
+			obj := e.evalMacroCallStatementEx(news, true, ectx, env)
 			if isError(obj) {
 				return object.ERROR
 			}
-			bs := &parser.MacroBlockStatement{Name: news.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: rept.Context}
-			bs.ReplaceContext(*ectx)
-			stmts = append(stmts, bs)
+			// bs := &parser.MacroBlockStatement{Name: news.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: rept.Context}
+			sobj, ok := obj.(*object.StatementObject)
+			if !ok {
+				panic("not *object.StatementObject")
+			}
+
+			s := sobj.Statement
+			s.ReplaceContext(*ectx)
+			stmts = append(stmts, s)
 
 		case *parser.ReptStatement:
 			obj := e.evalReptStatement(news, env)
@@ -134,7 +138,7 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx T
 			if !ok {
 				panic("not *object.NodeObject")
 			}
-			rs.Statement.(parser.Statement).ReplaceContext(*ectx)
+			rs.Statement.ReplaceContext(*ectx)
 			stmts = append(stmts, rs.Statement)
 
 		default:

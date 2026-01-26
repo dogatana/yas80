@@ -130,11 +130,12 @@ func CollectCode(objects []object.Object) []byte {
 	var result []byte
 
 	for _, obj := range objects {
-		code, ok := obj.(*object.CodeObject)
-		if !ok {
-			continue
+		switch obj := obj.(type) {
+		case *object.CodeObject:
+			result = append(result, obj.Code...)
+		case *object.BlockObject:
+			result = append(result, CollectCode(obj.Block)...)
 		}
-		result = append(result, code.Code...)
 	}
 	return result
 }

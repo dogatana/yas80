@@ -223,6 +223,10 @@ func printObjects(objs []object.Object) {
 			fmt.Println("<nil>")
 			continue
 		}
+		if o == object.NULL {
+			fmt.Println("NULL")
+			continue
+		}
 		if bo, ok := o.(*object.BlockObject); ok {
 			printObjects(bo.Block)
 			continue
@@ -252,10 +256,10 @@ func showResult(count int, prog *parser.Program, obj object.Object, env object.E
 				fmt.Println("MACRO", stmt.Name)
 			}
 			for _, s := range stmt.Block {
-				printStatement(s.(parser.Statement))
+				printStatement(s)
 			}
 		default:
-			printStatement(node.(parser.Statement))
+			printStatement(node)
 		}
 	}
 	// fmt.Println(prog.String())

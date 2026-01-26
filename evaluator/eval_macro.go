@@ -372,6 +372,80 @@ BREAK:
 }
 
 // REPT 展開
+func (e *Evaluator) evalReptStatementEx(stmt *parser.ReptStatement, _ bool, ectx TContext, env TEnv) object.Object {
+	obj := e.evalExpression(stmt.MaxCount, env, stmt.Context)
+	if isError(obj) || isRefNotFound(obj) {
+		return obj
+	}
+
+	var num int
+	var values []any
+
+	switch obj := obj.(type) {
+	case *object.NumberObject:
+		num = obj.Value
+	case *object.ArrayObject:
+		num = len(obj.Values)
+		values = make([]any, len(obj.Values))
+		for i, o := range obj.Values {
+			values[i] = o
+		}
+	default:
+		e.logger.Error(errcode.EREPT_COUNT, stmt.Context)
+		return object.ERROR
+	}
+
+	if ectx == nil {
+		// トップレベルからのマクロ展開の場合 Offset は 1 から
+		tmp := *stmt.Context
+		ectx = &tmp
+	}
+	ectx.Offset++
+
+	mb := &parser.MacroBlockStatement{
+		Name:  "REPT",
+		Count: num,
+	}
+
+	for i := 0; i < num; i++ {
+		bs := &parser.BlockStatement{}
+
+		var s parser.Statement
+		s = &parser.SetSysVarStatement{
+			Name:    "$COUNT",
+			Value:   &object.NumberObject{Value: num},
+			Context: stmt.Context}
+		s.ReplaceContext(*ectx)
+		bs.Block = append(bs.Block, s)
+
+		s = &parser.SetSysVarStatement{
+			Name:    "$I",
+			Value:   &object.NumberObject{Value: i},
+			Context: stmt.Context}
+		s.ReplaceContext(*ectx)
+		bs.Block = append(bs.Block, s)
+
+		if values != nil {
+			s = &parser.SetSysVarStatement{
+				Name:    "$V",
+				Value:   values[i],
+				Context: stmt.Context}
+			s.ReplaceContext(*ectx)
+			bs.Block = append(bs.Block, s)
+		}
+
+		objs := e.expandReptBlock(stmt, env, ectx)
+		if isError(objs) {
+			continue
+		}
+		bs.Block = append(bs.Block, objs.(*object.StatemetnsObject).Statements...)
+		mb.Block = append(mb.Block, bs)
+	}
+
+	mb.Block = append(mb.Block, &parser.CommentStatement{Text: "ENDR", Context: ectx})
+
+	return &object.StatementObject{Statement: mb}
+}
 func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) object.Object {
 	obj := e.evalExpression(stmt.MaxCount, env, stmt.Context)
 	if isError(obj) || isRefNotFound(obj) {

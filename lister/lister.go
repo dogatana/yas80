@@ -21,13 +21,17 @@ func New(pnode *parser.Program, pobj *object.BlockObject) *Lister {
 func (l *Lister) ProgramList(out io.Writer) {
 	w := bufio.NewWriter(out)
 	for _, s := range l.Nodes.Statements {
-		printStatement(w, s.(parser.Statement))
+		printStatement(w, s)
 	}
 	w.Flush()
 }
 
 func printStatement(w io.Writer, stmt parser.Statement) {
+	fmt.Printf("%+v\n", stmt)
 	ctx := stmt.GetContext()
+	if ctx == nil {
+		return
+	}
 	if ctx.Offset == 0 {
 		fmt.Fprint(w, "  ")
 	} else {
@@ -48,6 +52,7 @@ func printStatement(w io.Writer, stmt parser.Statement) {
 		fmt.Fprintln(w, stmt.String())
 	}
 }
+
 func printContext(w io.Writer, ctx *fileblock.Context) {
 	fmt.Fprintf(w, "%2d:%2d ", ctx.Line, ctx.Offset)
 	if ctx.Source == nil {

@@ -75,9 +75,9 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 	case *parser.MacroBlockStatement:
 		return e.evalMacroBlockStatementEx(stmt, checkExitM, ectx, env)
 
-	// // rept
-	// case *parser.ReptStatement:
-	// 	return e.evalReptStatement(stmt, env)
+	// rept
+	case *parser.ReptStatement:
+		return e.evalReptStatementEx(stmt, checkExitM, ectx, env)
 
 	// var
 	case *parser.VariableStatement:
