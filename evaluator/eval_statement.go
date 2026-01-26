@@ -67,13 +67,13 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 	case *parser.MacroStatement:
 		return e.evalMacroStatement(stmt, env)
 
-	// // マクロ呼出し
-	// case *parser.MacroCallStatement:
-	// 	return e.evalMacroCallStatement(stmt, env)
+	// マクロ呼出し
+	case *parser.MacroCallStatement:
+		return e.evalMacroCallStatementEx(stmt, checkExitM, ectx, env)
 
-	// // マクロ呼出し
-	// case *parser.MacroBlockStatement:
-	// 	return e.evalMacroBlockStatement(stmt, env)
+	// マクロ呼出し
+	case *parser.MacroBlockStatement:
+		return e.evalMacroBlockStatementEx(stmt, checkExitM, ectx, env)
 
 	// // rept
 	// case *parser.ReptStatement:

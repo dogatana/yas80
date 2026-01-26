@@ -77,6 +77,41 @@ func (e *Evaluator) filterValidStatementForMacro(bs *parser.BlockStatement) {
 var expandingMacro map[string]bool = map[string]bool{}
 
 // マクロ評価（展開のみで引数は評価しない）
+func (e *Evaluator) evalMacroCallStatementEx(stmt *parser.MacroCallStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+	obj, ok := env.Get(stmt.Name)
+	if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_UNDEF, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+	macro, ok := obj.(*object.MacroObject)
+	if !ok {
+		// rule 上発生しない
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+	if len(stmt.Args.Expressions) != len(macro.Params) {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_ARG_COUNT, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+
+	if expandingMacro[stmt.Name] {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_CYCLIC, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+
+	if ectx == nil {
+		// トップレベルからのマクロ展開の場合 Offset は 1 からに変更する
+		tmp := *stmt.Context
+		ectx = &tmp
+	}
+	ectx.Offset++
+
+	expandingMacro[stmt.Name] = true
+	obj = e.expandMacroEx(stmt, macro, checkExitM, ectx, env)
+	expandingMacro[stmt.Name] = false
+
+	return obj
+}
 func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env TEnv) object.Object {
 	obj, ok := env.Get(stmt.Name)
 	if !ok {
@@ -114,6 +149,116 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env 
 	expandingMacro[stmt.Name] = false
 
 	return nodes
+}
+
+// 変更版 evalMacroBlockStatement
+func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+	objects := []object.Object{}
+	stmts := []parser.Statement{}
+
+	var block []parser.Statement
+
+	switch stmt := node.(type) {
+	case *parser.MacroBlockStatement:
+		// REPT の場合は $I, $COUNT 用の環境を作成する
+		if stmt.Count != 0 {
+			env = object.NewMacroEnvironment(env)
+		}
+		block = stmt.Block
+		comment := stmt.Name
+		if comment == "REPT" {
+			comment = fmt.Sprintf("REPT %d/%d", stmt.Index, stmt.Count)
+		}
+		co := &object.CommentObject{Comments: []string{comment}, Context: stmt.Context}
+		objects = append(objects, co)
+	case *parser.BlockStatement:
+		block = stmt.Block
+	default:
+		panic("invalid node type in evalMacroBlockStatement")
+	}
+
+	for _, node := range block {
+	EVAL_AGAIN:
+		switch stmt := node.(type) {
+		case *parser.MacroStatement:
+			// マクロ定義時除外されているはず
+			e.logger.Error(errcode.EMACRO_NEST, stmt.Context)
+			continue
+
+		case *parser.IfStatement:
+			// exitm の評価をするため、評価関数を渡す
+			obj := e.evalIfStatementWithFunc(stmt, env, e.evalMacroBlockStatement)
+			if isError(obj) {
+				continue
+			}
+			stmts = append(stmts, stmt)
+			if isRefNotFound(obj) {
+				continue
+			}
+			bo, ok := obj.(*object.BlockObject)
+			if !ok {
+				panic("not block object")
+			}
+			objects = append(objects, bo.Block...)
+			if len(bo.Block) > 0 && bo.Block[0].Type() == object.EXITM_OBJ {
+				goto BREAK
+			}
+
+		case *parser.ExitmStatement:
+			stmts = append(stmts, stmt)
+			objects = append(objects, &object.ExitmObject{})
+			goto BREAK
+
+		case *parser.MacroCallStatement:
+			obj := e.evalStatementEx(node, checkExitM, ectx, env)
+			if isError(obj) {
+				continue
+			}
+			if obj.Type() != object.NODES_OBJ {
+				panic("not nodes object")
+			}
+			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: stmt.Context}
+			// fmt.Println("-- expanded")
+			// for _, n := range bs.Block {
+			// 	fmt.Println(n.String())
+			// }
+			// fmt.Println("-- expanded")
+
+			node = bs
+			goto EVAL_AGAIN // 戻らずに自己ループする
+			// stmts = append(stmts, bs)
+			// e.Resolved = false
+
+		// マクロ ブロック (展開済み)
+		case *parser.MacroBlockStatement:
+			stmts = append(stmts, stmt)
+			obj := e.evalMacroBlockStatementEx(stmt, checkExitM, ectx, env)
+			bo, ok := obj.(*object.BlockObject)
+			if !ok {
+				panic("not block object")
+			}
+			objs := bo.Block
+			objects = append(objects, objs...)
+
+		default:
+			obj := e.evalStatementEx(node, checkExitM, ectx, env)
+			if isError(obj) {
+				continue
+			}
+			stmts = append(stmts, stmt)
+			objects = append(objects, obj)
+		}
+	}
+BREAK:
+	switch node := node.(type) {
+	case *parser.MacroBlockStatement:
+		node.Block = stmts
+	case *parser.BlockStatement:
+		node.Block = stmts
+	default:
+		panic("invalid node type in evalMacroBlockStatement")
+	}
+	return &object.BlockObject{Block: objects}
 }
 
 // macro 用 BlockStatement 評価
