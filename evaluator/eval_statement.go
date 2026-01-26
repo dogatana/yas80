@@ -87,9 +87,9 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 	case *parser.AssignStatement:
 		return e.evalAsignStatement(stmt, env)
 
-	// // if
-	// case *parser.IfStatement:
-	// 	return e.evalIfStatement(stmt, env)
+	// if
+	case *parser.IfStatement:
+		return e.evalIfStatement(stmt, env)
 
 	case *parser.BlockStatement:
 		return e.evalBlockStatementEx(stmt, checkExitM, ectx, env)
@@ -131,6 +131,10 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 			return object.ERROR
 		}
 		return obj
+
+	// Null
+	case *parser.NullStatement:
+		return object.NULL
 
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, stmt), nil) // TODO
@@ -277,6 +281,12 @@ func (e *Evaluator) evalBlockStatementEx(bs *parser.BlockStatement, checkExitM b
 		if isError(obj) {
 			bs.Block[i] = &parser.NullStatement{Context: stmt.GetContext()}
 			continue
+		}
+
+		// bs.Block[i] を無効化
+		switch stmt.NodeType() {
+		case parser.NODE_FUNC_STMT, parser.NODE_MACRO_STMT, parser.NODE_ENUM_STMT:
+			bs.Block[i] = &parser.NullStatement{Context: stmt.GetContext()}
 		}
 
 		switch obj := obj.(type) {
