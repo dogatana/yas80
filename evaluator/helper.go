@@ -66,11 +66,6 @@ func getLocationCounter(env TEnv) int {
 
 }
 
-// location counter 表示
-func printLocationCounter(env TEnv) {
-	fmt.Printf("$ %04x\n", getLocationCounter(env))
-}
-
 // location counter 更新
 func advanceLocationCounter(env TEnv, n int) {
 	obj, ok := env.Get("$")
@@ -89,11 +84,6 @@ func (e *Evaluator) intToByte(n int) (byte, bool) {
 // int -> word へ。丸めが発生した場合は false
 func (e *Evaluator) intToWord(n int) (int, bool) {
 	return (n & 0xffff), -32768 <= n && n <= 65535
-}
-
-// int -> unsigned word へ。丸めが発生した場合は false
-func (e *Evaluator) intToAddr(n int) (int, bool) {
-	return (n & 0xffff), 0 <= n && n <= 65535
 }
 
 // int ->  byte へ。丸めが発生した場合は false
@@ -126,7 +116,6 @@ func isTruthy(obj object.Object) bool {
 }
 
 func CollectCode(objects []object.Object) []byte {
-
 	var result []byte
 
 	for _, obj := range objects {
@@ -138,18 +127,6 @@ func CollectCode(objects []object.Object) []byte {
 		}
 	}
 	return result
-}
-
-func collectObjects(os []object.Object) []object.Object {
-	ret := []object.Object{}
-	for _, o := range os {
-		if bo, ok := o.(*object.BlockObject); ok {
-			ret = append(ret, bo.Block...)
-			continue
-		}
-		ret = append(ret, o)
-	}
-	return ret
 }
 
 // シンボル結合処理

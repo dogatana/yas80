@@ -781,7 +781,7 @@ func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
 
 		default:
 			// 利用不可
-			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_FUNC, stmt), stmt.(parser.Statement).GetContext())
+			e.logger.Warning(fmt.Sprintf(errcode.WSCOPE_FUNC, stmt), stmt.GetContext())
 		}
 	}
 	bs.Block = stmts

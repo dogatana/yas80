@@ -197,7 +197,7 @@ func (e *Evaluator) mangleNamesInStatement(stmt parser.Statement, replace func(p
 		news.Block = blk
 		for i, s := range news.Block {
 			ectx.Offset += 1
-			news.Block[i] = e.mangleNamesInStatement(s.(parser.Statement), replace, ectx)
+			news.Block[i] = e.mangleNamesInStatement(s, replace, ectx)
 		}
 		return &news
 

@@ -135,15 +135,6 @@ func testSymValues(t *testing.T, tn int, syms []symValue, getter func(name strin
 	}
 }
 
-func evalValue(obj object.Object) object.Object {
-	switch obj := obj.(type) {
-	case *object.SymbolObject:
-		return obj.Value
-	default:
-		return obj
-	}
-}
-
 func testSymbolValue(t *testing.T, tn int, obj object.Object, expected any) bool {
 	sym, ok := obj.(*object.SymbolObject)
 	if !ok {
@@ -185,18 +176,6 @@ func testStringObject(t *testing.T, tn int, obj object.Object, expected string) 
 		return false
 	}
 	return true
-}
-
-func collectValue(prog *object.ProgramObject) []*object.ValueObject {
-	var result []*object.ValueObject
-	for _, obj := range prog.Objects {
-		value, ok := obj.(*object.ValueObject)
-		if !ok {
-			continue
-		}
-		result = append(result, value)
-	}
-	return result
 }
 
 func bytesEqual(v1, v2 []byte) error {
