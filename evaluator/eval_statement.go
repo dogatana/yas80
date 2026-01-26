@@ -143,131 +143,131 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 }
 
 // evalStatement
-func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
+// func (e *Evaluator) evalStatement(node parser.Node, env TEnv) object.Object {
 
-	switch node := node.(type) {
+// 	switch node := node.(type) {
 
-	// Z80 命令
-	case *parser.Z80Instruction:
-		obj := e.evalZ80Instruction(node, env)
-		if obj.Type() == object.CODE_OBJ {
-			code := obj.(*object.CodeObject)
-			// アドレス設定はコード生成後
-			code.Addr = getLocationCounter(env)
-			// 生成コードのサイズ文ロケーションカウンタを進める
-			advanceLocationCounter(env, code.Size())
-		}
-		return obj
+// 	// Z80 命令
+// 	case *parser.Z80Instruction:
+// 		obj := e.evalZ80Instruction(node, env)
+// 		if obj.Type() == object.CODE_OBJ {
+// 			code := obj.(*object.CodeObject)
+// 			// アドレス設定はコード生成後
+// 			code.Addr = getLocationCounter(env)
+// 			// 生成コードのサイズ文ロケーションカウンタを進める
+// 			advanceLocationCounter(env, code.Size())
+// 		}
+// 		return obj
 
-	// ラベル定義
-	case *parser.LabelStatement:
-		return e.evalLabelStatement(node, env)
+// 	// ラベル定義
+// 	case *parser.LabelStatement:
+// 		return e.evalLabelStatement(node, env)
 
-	// PROC
-	case *parser.ProcStatement:
-		return e.evalProcStatement(node, env)
+// 	// PROC
+// 	case *parser.ProcStatement:
+// 		return e.evalProcStatement(node, env)
 
-	// DS/DSB/DSW
-	case *parser.DataStoreStatement:
-		obj := e.evalDataStoreStatement(node, env)
-		if isError(obj) {
-			return object.ERROR
-		}
-		advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
-		return obj
+// 	// DS/DSB/DSW
+// 	case *parser.DataStoreStatement:
+// 		obj := e.evalDataStoreStatement(node, env)
+// 		if isError(obj) {
+// 			return object.ERROR
+// 		}
+// 		advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
+// 		return obj
 
-	// DB/DW/DD
-	case *parser.DataStatement:
-		obj := e.evalDataStatement(node, env)
-		if isError(obj) {
-			return object.ERROR
-		}
-		advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
-		return obj
+// 	// DB/DW/DD
+// 	case *parser.DataStatement:
+// 		obj := e.evalDataStatement(node, env)
+// 		if isError(obj) {
+// 			return object.ERROR
+// 		}
+// 		advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
+// 		return obj
 
-	// 定数定義
-	case *parser.ConstStatement:
-		return e.evalConstStatement(node, env)
+// 	// 定数定義
+// 	case *parser.ConstStatement:
+// 		return e.evalConstStatement(node, env)
 
-	// マクロ定義
-	case *parser.MacroStatement:
-		return e.evalMacroStatement(node, env)
+// 	// マクロ定義
+// 	case *parser.MacroStatement:
+// 		return e.evalMacroStatement(node, env)
 
-	// マクロ呼出し
-	case *parser.MacroCallStatement:
-		return e.evalMacroCallStatement(node, env)
+// 	// マクロ呼出し
+// 	case *parser.MacroCallStatement:
+// 		return e.evalMacroCallStatement(node, env)
 
-	// マクロ呼出し
-	case *parser.MacroBlockStatement:
-		return e.evalMacroBlockStatement(node, env)
+// 	// マクロ呼出し
+// 	case *parser.MacroBlockStatement:
+// 		return e.evalMacroBlockStatement(node, env)
 
-	// rept
-	case *parser.ReptStatement:
-		return e.evalReptStatement(node, env)
+// 	// rept
+// 	case *parser.ReptStatement:
+// 		return e.evalReptStatement(node, env)
 
-	// var
-	case *parser.VariableStatement:
-		return e.evalVariableStatement(node, env)
+// 	// var
+// 	case *parser.VariableStatement:
+// 		return e.evalVariableStatement(node, env)
 
-	// 代入文
-	case *parser.AssignStatement:
-		return e.evalAsignStatement(node, env)
+// 	// 代入文
+// 	case *parser.AssignStatement:
+// 		return e.evalAsignStatement(node, env)
 
-	// if
-	case *parser.IfStatement:
-		return e.evalIfStatement(node, env)
+// 	// if
+// 	case *parser.IfStatement:
+// 		return e.evalIfStatement(node, env)
 
-	// ブロック
-	case *parser.BlockStatement:
-		return e.evalBlockStatement(node, env)
+// 	// ブロック
+// 	case *parser.BlockStatement:
+// 		return e.evalBlockStatement(node, env)
 
-	// func
-	case *parser.FuncStatement:
-		return e.evalFuncStatement(node, env)
+// 	// func
+// 	case *parser.FuncStatement:
+// 		return e.evalFuncStatement(node, env)
 
-	// return
-	case *parser.ReturnStatement:
-		return e.evalReturnStatement(node, env)
+// 	// return
+// 	case *parser.ReturnStatement:
+// 		return e.evalReturnStatement(node, env)
 
-	// comment
-	case *parser.CommentStatement:
-		return &object.CommentObject{Comments: []string{node.Text}, Context: node.Context}
+// 	// comment
+// 	case *parser.CommentStatement:
+// 		return &object.CommentObject{Comments: []string{node.Text}, Context: node.Context}
 
-	// システム変数設定
-	case *parser.SetSysVarStatement:
-		var v object.Object
+// 	// システム変数設定
+// 	case *parser.SetSysVarStatement:
+// 		var v object.Object
 
-		if obj, ok := node.Value.(object.Object); ok {
-			v = obj
-		} else {
-			obj := e.evalExpression(node.Value.(parser.Expression), env, node.Context)
-			if isError(obj) {
-				return object.ERROR
-			}
-			v = obj
-		}
+// 		if obj, ok := node.Value.(object.Object); ok {
+// 			v = obj
+// 		} else {
+// 			obj := e.evalExpression(node.Value.(parser.Expression), env, node.Context)
+// 			if isError(obj) {
+// 				return object.ERROR
+// 			}
+// 			v = obj
+// 		}
 
-		env.Set(node.Name, v)
-		comment := fmt.Sprintf("%s = %s", node.Name, v.String())
-		return &object.CommentObject{Comments: []string{comment}, Context: node.Context}
+// 		env.Set(node.Name, v)
+// 		comment := fmt.Sprintf("%s = %s", node.Name, v.String())
+// 		return &object.CommentObject{Comments: []string{comment}, Context: node.Context}
 
-	// enum
-	case *parser.EnumStatement:
-		obj := e.evalEnumStatement(node, env)
-		if isError(obj) {
-			return object.ERROR
-		}
-		return obj
+// 	// enum
+// 	case *parser.EnumStatement:
+// 		obj := e.evalEnumStatement(node, env)
+// 		if isError(obj) {
+// 			return object.ERROR
+// 		}
+// 		return obj
 
-	// Null
-	case *parser.NullStatement:
-		return object.NULL
+// 	// Null
+// 	case *parser.NullStatement:
+// 		return object.NULL
 
-	default:
-		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil) // TODO
-		return object.ERROR
-	}
-}
+// 	default:
+// 		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, node), nil) // TODO
+// 		return object.ERROR
+// 	}
+// }
 
 // 複合文 BlockStatement
 func (e *Evaluator) evalBlockStatementEx(bs *parser.BlockStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
@@ -314,36 +314,37 @@ func (e *Evaluator) evalBlockStatementEx(bs *parser.BlockStatement, checkExitM b
 	}
 	return block
 }
-func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env TEnv) object.Object {
-	block := &object.BlockObject{Block: []object.Object{}}
 
-	var node parser.Node
-	for i := range len(stmt.Block) {
-	EVAL_AGAIN:
-		node = stmt.Block[i]
-		obj := e.evalStatement(node, env)
-		switch obj := obj.(type) {
-		case *object.ReturnObject:
-			block.Block = append(block.Block, obj)
-			return block
-		case *object.BlockObject:
-			if len(obj.Block) == 0 {
-				block.Block = append(block.Block, object.NULL)
-				continue
-			}
-			block.Block = append(block.Block, obj.Block...)
-			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ {
-				return block
-			}
-		case *object.StatementObject:
-			stmt.Block[i] = obj.Statement
-			goto EVAL_AGAIN
-		default:
-			block.Block = append(block.Block, obj)
-		}
-	}
-	return block
-}
+// func (e *Evaluator) evalBlockStatement(stmt *parser.BlockStatement, env TEnv) object.Object {
+// 	block := &object.BlockObject{Block: []object.Object{}}
+
+// 	var node parser.Node
+// 	for i := range len(stmt.Block) {
+// 	EVAL_AGAIN:
+// 		node = stmt.Block[i]
+// 		obj := e.evalStatement(node, env)
+// 		switch obj := obj.(type) {
+// 		case *object.ReturnObject:
+// 			block.Block = append(block.Block, obj)
+// 			return block
+// 		case *object.BlockObject:
+// 			if len(obj.Block) == 0 {
+// 				block.Block = append(block.Block, object.NULL)
+// 				continue
+// 			}
+// 			block.Block = append(block.Block, obj.Block...)
+// 			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ {
+// 				return block
+// 			}
+// 		case *object.StatementObject:
+// 			stmt.Block[i] = obj.Statement
+// 			goto EVAL_AGAIN
+// 		default:
+// 			block.Block = append(block.Block, obj)
+// 		}
+// 	}
+// 	return block
+// }
 
 // PROC
 func (e *Evaluator) evalProcStatement(node *parser.ProcStatement, env TEnv) object.Object {
@@ -698,19 +699,21 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env TEnv) object.O
 		if stmt.Consequence == nil {
 			return object.NULL
 		}
-		return e.evalStatement(stmt.Consequence, env)
+		return e.evalStatementEx(stmt.Consequence.(parser.Statement), false, nil, env)
 	} else if stmt.Alternative == nil {
 		return object.NULL
 	} else {
-		return e.evalStatement(stmt.Alternative, env)
+		return e.evalStatementEx(stmt.Alternative.(parser.Statement), false, nil, env)
 	}
 }
 
-type evalBlockStatementFunc func(block parser.Node, env TEnv) object.Object
+type evalBlockStatementFunc func(block parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object
 
 // block 評価関数指定の If 文評価
 func (e *Evaluator) evalIfStatementWithFunc(
 	stmt *parser.IfStatement,
+	checkExitM bool,
+	ectx TContext,
 	env TEnv,
 	fn evalBlockStatementFunc) object.Object {
 
@@ -720,9 +723,9 @@ func (e *Evaluator) evalIfStatementWithFunc(
 	}
 
 	if isTruthy(cond) {
-		return fn(stmt.Consequence, env)
+		return fn(stmt.Consequence.(parser.Statement), checkExitM, ectx, env)
 	} else if stmt.Alternative != nil {
-		return fn(stmt.Alternative, env)
+		return fn(stmt.Alternative.(parser.Statement), checkExitM, ectx, env)
 	} else {
 		return object.NULL
 	}
