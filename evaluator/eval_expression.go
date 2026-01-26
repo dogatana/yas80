@@ -154,7 +154,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env TEnv
 
 	fn, ok := obj.(*object.FunctionObject)
 	if !ok {
-		e.logger.Error(errcode.EFUNC_NOT_FUNC, ctx)
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NOT_FUNC, expr.Name), ctx)
 		return object.ERROR
 	}
 	if len(expr.Arguments.Expressions) != len(fn.Params) {
