@@ -27,7 +27,7 @@ func getDebugEnv(name string) int {
 	return 0
 }
 
-func parse(logger *logging.Logger, input io.Reader, filename string) *parser.Program {
+func parse(logger *logging.Logger, input io.Reader, filename string) *parser.BlockStatement {
 	// l := parser.NewLexer(bufio.NewReader(input), filename, logger)
 	fb, err := fileblock.NewFromReader(filename, input)
 	if err != nil {
@@ -92,17 +92,17 @@ func main() {
 
 	// 構文解析開始
 	fmt.Println("# parse")
-	progNode := parse(logger, input, file)
+	prog := parse(logger, input, file)
 
 	// 構文解析直後の AST 表示
 	if getDebugEnv("astdebug") > 0 {
 		logger.Print()
 		fmt.Println("--")
-		for i, s := range progNode.Statements {
+		for i, s := range prog.Block {
 			fmt.Printf("%d: %#v\n", i, s)
 		}
 		fmt.Println("--")
-		fmt.Println(progNode.String())
+		fmt.Println(prog.String())
 		if getDebugEnv("astdebug") == 1 {
 			os.Exit(0)
 		}
@@ -110,25 +110,25 @@ func main() {
 
 	// プリプロセス
 	fmt.Println("# preprocess")
-	progNode = parser.PreProrocess(logger, progNode)
+	prog = parser.PreProrocess(logger, prog)
 
 	// プリプロセス直後の AST 表示
 	if getDebugEnv("astdebug") > 1 {
 		fmt.Println("--")
-		for i, s := range progNode.Statements {
+		for i, s := range prog.Block {
 			fmt.Printf("%d: %#v\n", i, s)
 		}
 		fmt.Println("--")
-		fmt.Println(progNode.String())
+		fmt.Println(prog.String())
 		os.Exit(0)
 	}
 
 	// AST 表示
 	fmt.Println("# ast")
-	if len(progNode.Statements) == 0 {
+	if len(prog.Block) == 0 {
 		fmt.Print("no statements detected")
 	} else {
-		fmt.Println(progNode.String())
+		fmt.Println(prog.String())
 	}
 	fmt.Println("")
 
@@ -137,8 +137,6 @@ func main() {
 
 	eval := evaluator.New(logger)
 	eval.Debug = getDebugEnv("evaldebug")
-
-	prog := &parser.BlockStatement{Block: progNode.Statements}
 
 	// eval 戦略
 	// 評価後 eval.Resolved が true ならコード生成完了とみなす
@@ -163,7 +161,7 @@ func main() {
 			os.Exit(1)
 
 		}
-		showResult(i, progNode, obj, env)
+		showResult(i, prog, obj, env)
 		// $ の評価ができないので、EvalEnvは実行しない
 		// eval.EvalEnv(env)
 		// eval.CheckSymbols(env)
@@ -210,7 +208,7 @@ func main() {
 	fmt.Printf("finalize %d times, codeStable %v\n", i, eval.CodeStable)
 	if len(logger.Errors) > 0 {
 		logger.Print()
-		fmt.Println(progNode.String())
+		fmt.Println(prog.String())
 		object.PrintEnv(env)
 		os.Exit(1)
 	}
@@ -239,7 +237,7 @@ func printObjects(objs []object.Object) {
 	}
 }
 
-func showResult(count int, prog *parser.Program, obj object.Object, env object.Environment) {
+func showResult(count int, prog *parser.BlockStatement, obj object.Object, env object.Environment) {
 	path := ""
 	if count >= 0 {
 		path = fmt.Sprintf("[%d] ", count)
@@ -250,7 +248,7 @@ func showResult(count int, prog *parser.Program, obj object.Object, env object.E
 	printObjects(bo.Block)
 
 	fmt.Printf("\n# %sast\n", path)
-	for _, node := range prog.Statements {
+	for _, node := range prog.Block {
 		switch stmt := node.(type) {
 		case *parser.MacroBlockStatement:
 			printContext(stmt.GetContext())

@@ -29,14 +29,14 @@ type Lexer struct {
 	isEOF   bool
 	start   int // token 開始 index
 	logger  *logging.Logger
-	program *Program
+	program *BlockStatement
 	lctx    *LexerContext
 	//	callback FileBlockProvider
 }
 
 func NewLexer(fb *fileblock.FileBlock, logger *logging.Logger) *Lexer {
 	lctx := &LexerContext{filename: fb.Filename, lineNumber: 1, fileBlock: fb}
-	l := &Lexer{logger: logger, program: &Program{}, lctx: lctx}
+	l := &Lexer{logger: logger, program: &BlockStatement{}, lctx: lctx}
 	l.nextChar()
 	return l
 }

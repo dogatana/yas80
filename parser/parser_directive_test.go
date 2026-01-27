@@ -21,10 +21,10 @@ func TestParseConstStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Block))
 		}
-		cs := prog.Statements[0].(*ConstStatement)
+		cs := prog.Block[0].(*ConstStatement)
 		ident, ok := cs.Name.(*Ident)
 		if !ok {
 			t.Fatalf("[%d] Name must be Ident. got %T", tn, cs.Name)
@@ -52,13 +52,13 @@ func TestParseEnumStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, -1)
 
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt := prog.Statements[0]
+		stmt := prog.Block[0]
 		enum, ok := stmt.(*EnumStatement)
 		if !ok {
-			t.Errorf("[%d] prog.Statements[0] not *EnumStatement. got %T", tn, stmt)
+			t.Errorf("[%d] prog.Block[0] not *EnumStatement. got %T", tn, stmt)
 		}
 		srcText := splitTrim(tt.input)
 		text := enum.String()
@@ -82,13 +82,13 @@ func TestParseReptStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt := prog.Statements[0]
+		stmt := prog.Block[0]
 		repeat, ok := stmt.(*ReptStatement)
 		if !ok {
-			t.Errorf("[%d] prog.Statements[0] not *RepeatStatment. got %T", tn, stmt)
+			t.Errorf("[%d] prog.Block[0] not *RepeatStatment. got %T", tn, stmt)
 		}
 		count := repeat.MaxCount.(*NumberLiteral).Value
 		if count != tt.count {
@@ -157,13 +157,13 @@ func TestParseIfStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt := prog.Statements[0]
+		stmt := prog.Block[0]
 		repeat, ok := stmt.(*IfStatement)
 		if !ok {
-			t.Errorf("[%d] prog.Statements[0] not *IfStatment. got %T", tn, stmt)
+			t.Errorf("[%d] prog.Block[0] not *IfStatment. got %T", tn, stmt)
 		}
 		text := repeat.String()
 		expected := splitTrim(tt.expected)
@@ -201,13 +201,13 @@ func TestParseFuncStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt := prog.Statements[0]
+		stmt := prog.Block[0]
 		fn, ok := stmt.(*FuncStatement)
 		if !ok {
-			t.Errorf("[%d] prog.Statements[0] not *FunctionStatment. got %T", tn, stmt)
+			t.Errorf("[%d] prog.Block[0] not *FunctionStatment. got %T", tn, stmt)
 		}
 
 		text := fn.String()
@@ -231,13 +231,13 @@ func TestParseVarStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt := prog.Statements[0]
+		stmt := prog.Block[0]
 		varStmt, ok := stmt.(*VariableStatement)
 		if !ok {
-			t.Errorf("[%d] prog.Statements[0] not *VariableStatement. got %T", tn, stmt)
+			t.Errorf("[%d] prog.Block[0] not *VariableStatement. got %T", tn, stmt)
 		}
 
 		text := varStmt.String()
@@ -261,13 +261,13 @@ func TestParseAssignStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt := prog.Statements[0]
+		stmt := prog.Block[0]
 		varStmt, ok := stmt.(*AssignStatement)
 		if !ok {
-			t.Errorf("[%d] prog.Statements[0] not *AssignStatement. got %T", tn, stmt)
+			t.Errorf("[%d] prog.Block[0] not *AssignStatement. got %T", tn, stmt)
 		}
 
 		text := varStmt.String()
@@ -293,10 +293,10 @@ func TestParseExitmStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt, ok := prog.Statements[0].(*ExitmStatement)
+		stmt, ok := prog.Block[0].(*ExitmStatement)
 		if !ok {
 			t.Errorf("[%d] not ExitmStatement. got %T", tn, stmt)
 		}
@@ -323,12 +323,12 @@ func TestParseReturnStatement(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Statements) != 1 {
+		if len(prog.Block) != 1 {
 			l.logger.Print()
 			fmt.Printf("%#v\n", prog)
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt, ok := prog.Statements[0].(*ReturnStatement)
+		stmt, ok := prog.Block[0].(*ReturnStatement)
 		if !ok {
 			t.Errorf("[%d] not ExitmStatement. got %T", tn, stmt)
 		}
@@ -390,10 +390,10 @@ func TestParseDataStatement(t *testing.T) {
 			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
 		}
 
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt, ok := prog.Statements[0].(*DataStatement)
+		stmt, ok := prog.Block[0].(*DataStatement)
 		if !ok {
 			t.Errorf("[%d] not DataStatement. got %T", tn, stmt)
 		}
@@ -452,10 +452,10 @@ func TestParseDataStoreStatement(t *testing.T) {
 		if len(l.logger.Errors) > 0 {
 			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
 		}
-		if len(prog.Statements) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Statements))
+		if len(prog.Block) != 1 {
+			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
 		}
-		stmt, ok := prog.Statements[0].(*DataStoreStatement)
+		stmt, ok := prog.Block[0].(*DataStoreStatement)
 		if !ok {
 			t.Errorf("[%d] not DataStoreStatement. got %T", tn, stmt)
 		}

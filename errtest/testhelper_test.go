@@ -21,8 +21,7 @@ const (
 )
 
 func evaluateInput(testType int, input string, logger *logging.Logger, env object.Environment) {
-	progNode := parseText(input, logger)
-	prog := &parser.BlockStatement{Block: progNode.Statements}
+	prog := parseText(input, logger)
 
 	if getCount(logger)[testType] > 0 {
 		return
@@ -88,7 +87,7 @@ func testMessage(t *testing.T, testType int, tn int, logger *logging.Logger, exp
 	}
 }
 
-func parseText(input string, logger *logging.Logger) *parser.Program {
+func parseText(input string, logger *logging.Logger) *parser.BlockStatement {
 	file := "<string>"
 	fb := fileblock.New(file, []byte(input))
 	l := parser.NewLexer(fb, logger)

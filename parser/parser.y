@@ -92,7 +92,7 @@ program		: { }
 					yylex.Error($2.(*ParseError).Message, $2.(*ParseError).Context)
 				} else {
 					prog := yylex.(*Lexer).program
-					prog.Statements = append(prog.Statements, $2)
+					prog.Block = append(prog.Block, $2)
 				}
 			}
 			;
@@ -646,7 +646,7 @@ indexed_expr: expr '[' ']'
 %%
 
 
-func Parse(l *Lexer) (*Program) {
+func Parse(l *Lexer) (*BlockStatement) {
 	// 常に有効
 	yyErrorVerbose = true
 	// error トークンでリカバリすると yyParse() は 0 を返すため、戻り値には意味がない

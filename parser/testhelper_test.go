@@ -14,7 +14,7 @@ func newLexerForTest(input string) *Lexer {
 	return NewLexer(fb, logger)
 }
 
-func ParseForTest(t *testing.T, lexer *Lexer, tn int) *Program {
+func ParseForTest(t *testing.T, lexer *Lexer, tn int) *BlockStatement {
 	prog := Parse(lexer)
 	return PreProrocess(lexer.logger, prog)
 }

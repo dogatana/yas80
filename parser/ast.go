@@ -104,21 +104,6 @@ func (s *NullStatement) ReplaceContext(ctx fileblock.Context) {
 	s.Context = &ctx
 }
 
-// Program
-type Program struct {
-	Statements []Statement
-}
-
-func (p *Program) NodeType() NodeType { return NODE_PROGRAM }
-func (p *Program) String() string {
-	var lines []string
-	for _, s := range p.Statements {
-
-		lines = append(lines, s.String())
-	}
-	return strings.Join(lines, "\n")
-}
-
 // Error(Expression, Statement)
 type ParseError struct {
 	Message string

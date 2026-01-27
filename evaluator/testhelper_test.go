@@ -16,8 +16,7 @@ type symValue struct {
 }
 
 func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObject, *Evaluator) {
-	progNode := parseTextForTest(input, logger)
-	prog := &parser.BlockStatement{Block: progNode.Statements}
+	prog := parseTextForTest(input, logger)
 
 	eval := New(logger)
 
@@ -93,8 +92,8 @@ func testEvalResult(t *testing.T, tn int, err string, eval *Evaluator) {
 	}
 }
 
-func parseTextForTest(input string, logger *logging.Logger) *parser.Program {
-	var prog *parser.Program
+func parseTextForTest(input string, logger *logging.Logger) *parser.BlockStatement {
+	var prog *parser.BlockStatement
 
 	fb := fileblock.New(logger.Filename, []byte(input))
 

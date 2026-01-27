@@ -44,7 +44,7 @@ OTDR
 	prog := ParseForTest(t, l, -1)
 
 	expected := strings.Split(strings.Trim(input, " \n"), "\n")
-	for i, node := range prog.Statements {
+	for i, node := range prog.Block {
 		inst, ok := node.(*Z80Instruction)
 		if !ok {
 			t.Errorf("not Z80Instuction. got %T", node)
@@ -85,7 +85,7 @@ RET 18
 		expected = append(expected, words[0])
 	}
 
-	for i, node := range prog.Statements {
+	for i, node := range prog.Block {
 		inst, ok := node.(*Z80Instruction)
 		if !ok {
 			t.Errorf("not Z80Instuction. got %T", node)
@@ -132,7 +132,7 @@ OUT (C), B
 		words := strings.Split(line, " ")
 		expected = append(expected, words[0])
 	}
-	for i, node := range prog.Statements {
+	for i, node := range prog.Block {
 		inst, ok := node.(*Z80Instruction)
 		if !ok {
 			t.Errorf("not Z80Instuction. got %T", node)

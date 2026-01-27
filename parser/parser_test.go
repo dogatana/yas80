@@ -34,10 +34,10 @@ func TestParseNumberLiteral(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
-		if len(prog.Statements) == 0 {
-			t.Fatalf("[%d] %d statements", tn, len(prog.Statements))
+		if len(prog.Block) == 0 {
+			t.Fatalf("[%d] %d statements", tn, len(prog.Block))
 		}
-		stmt := testAssignStatement(t, tn, prog.Statements[0])
+		stmt := testAssignStatement(t, tn, prog.Block[0])
 		testNumberLiteral(t, tn, stmt.Value, tt.expected)
 	}
 }
@@ -74,10 +74,10 @@ func TestParseNumberLiteralError(t *testing.T) {
 		if len(l.logger.Errors) > 0 {
 			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
 		}
-		if len(prog.Statements) == 0 {
-			t.Fatalf("[%d] %d statements", tn, len(prog.Statements))
+		if len(prog.Block) == 0 {
+			t.Fatalf("[%d] %d statements", tn, len(prog.Block))
 		}
-		stmt := testAssignStatement(t, tn, prog.Statements[0])
+		stmt := testAssignStatement(t, tn, prog.Block[0])
 		testStringLiteral(t, tn, stmt.Value, tt.expected)
 	}
 }
@@ -116,10 +116,10 @@ func TestParseStringLiteral(t *testing.T) {
 		if len(l.logger.Errors) > 0 {
 			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
 		}
-		if len(prog.Statements) == 0 {
-			t.Fatalf("[%d] %d statements", tn, len(prog.Statements))
+		if len(prog.Block) == 0 {
+			t.Fatalf("[%d] %d statements", tn, len(prog.Block))
 		}
-		stmt := testAssignStatement(t, tn, prog.Statements[0])
+		stmt := testAssignStatement(t, tn, prog.Block[0])
 		testStringLiteral(t, tn, stmt.Value, tt.expected)
 	}
 }
@@ -137,7 +137,7 @@ func TestParseArrayLiteral(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
-		stmt := testAssignStatement(t, tn, prog.Statements[0])
+		stmt := testAssignStatement(t, tn, prog.Block[0])
 
 		array, ok := stmt.Value.(*ArrayLiteral)
 		if !ok {
@@ -172,11 +172,11 @@ func TestParseLabelStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
-		if len(prog.Statements) == 0 {
+		if len(prog.Block) == 0 {
 			t.Fatalf("[%d] statements empty", tn)
 		}
 		var node Node
-		switch stmt := prog.Statements[0].(type) {
+		switch stmt := prog.Block[0].(type) {
 		case *LabelStatement:
 			node = stmt.Name
 		case *Z80Instruction:
@@ -209,10 +209,10 @@ func TestParseDotIdent(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Statements) == 0 {
+		if len(prog.Block) == 0 {
 			t.Fatalf("[%d] statements empty", tn)
 		}
-		stmt := testAssignStatement(t, tn, prog.Statements[0])
+		stmt := testAssignStatement(t, tn, prog.Block[0])
 		ident, ok := stmt.Value.(*DotIdent)
 		if !ok {
 			t.Errorf("[%d] not *DotIdent got %T", tn, stmt.Value)
