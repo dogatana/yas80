@@ -32,12 +32,9 @@ func TestParsePrefixExpression(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
-
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Block))
-		}
-		stmt := testAssignStatement(t, tn, prog.Block[0])
-		testNumberLiteral(t, tn, stmt.Value, tt.expected)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
+		as := testAssignStatement(t, tn, stmt)
+		testNumberLiteral(t, tn, as.Value, tt.expected)
 	}
 }
 
@@ -85,12 +82,10 @@ func TestParseInfixExpression(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Block))
-		}
-		stmt := testAssignStatement(t, tn, prog.Block[0])
-		testNumberLiteral(t, tn, stmt.Value, tt.expected)
+		as := testAssignStatement(t, tn, stmt)
+		testNumberLiteral(t, tn, as.Value, tt.expected)
 	}
 }
 
@@ -109,13 +104,11 @@ func TestParseCallFunction(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Block))
-		}
-		stmt := testAssignStatement(t, tn, prog.Block[0])
-		if stmt.Value.String() != tt.expected {
-			t.Errorf("[%d] stmt.Value.String() is not %q. got %q", tn, tt.expected, stmt.Value.String())
+		as := testAssignStatement(t, tn, stmt)
+		if as.Value.String() != tt.expected {
+			t.Errorf("[%d] stmt.Value.String() is not %q. got %q", tn, tt.expected, as.Value.String())
 		}
 	}
 }
@@ -131,16 +124,14 @@ func TestParseArrayVariable(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Block))
-		}
-		stmt, ok := prog.Block[0].(*VariableStatement)
+		vs, ok := stmt.(*VariableStatement)
 		if !ok {
 			t.Fatalf("[%d] Statements[0] is not VariableStatement . got %T", tn, prog.Block[0])
 		}
-		if stmt.String() != tt.expected {
-			t.Errorf("[%d] stmt.String() is not %q. got %q", tn, tt.expected, stmt.String())
+		if vs.String() != tt.expected {
+			t.Errorf("[%d] stmt.String() is not %q. got %q", tn, tt.expected, vs.String())
 		}
 	}
 }
@@ -156,13 +147,11 @@ func TestParseArrayElement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Block))
-		}
-		stmt := testAssignStatement(t, tn, prog.Block[0])
-		if stmt.Value.String() != tt.expected {
-			t.Errorf("[%d] stmt.String() is not %q. got %q", tn, tt.expected, stmt.Value.String())
+		as := testAssignStatement(t, tn, stmt)
+		if as.Value.String() != tt.expected {
+			t.Errorf("[%d] stmt.String() is not %q. got %q", tn, tt.expected, as.Value.String())
 		}
 	}
 }
@@ -187,12 +176,10 @@ func TestParseStringExpression(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Block))
-		}
-		stmt := testAssignStatement(t, tn, prog.Block[0])
-		testStringLiteral(t, tn, stmt.Value, tt.expected)
+		as := testAssignStatement(t, tn, stmt)
+		testStringLiteral(t, tn, as.Value, tt.expected)
 	}
 }
 

@@ -34,11 +34,10 @@ func TestParseNumberLiteral(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
-		if len(prog.Block) == 0 {
-			t.Fatalf("[%d] %d statements", tn, len(prog.Block))
-		}
-		stmt := testAssignStatement(t, tn, prog.Block[0])
-		testNumberLiteral(t, tn, stmt.Value, tt.expected)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
+
+		as := testAssignStatement(t, tn, stmt)
+		testNumberLiteral(t, tn, as.Value, tt.expected)
 	}
 }
 
@@ -77,8 +76,9 @@ func TestParseNumberLiteralError(t *testing.T) {
 		if len(prog.Block) == 0 {
 			t.Fatalf("[%d] %d statements", tn, len(prog.Block))
 		}
-		stmt := testAssignStatement(t, tn, prog.Block[0])
-		testStringLiteral(t, tn, stmt.Value, tt.expected)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
+		as := testAssignStatement(t, tn, stmt)
+		testStringLiteral(t, tn, as.Value, tt.expected)
 	}
 }
 
@@ -116,11 +116,9 @@ func TestParseStringLiteral(t *testing.T) {
 		if len(l.logger.Errors) > 0 {
 			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
 		}
-		if len(prog.Block) == 0 {
-			t.Fatalf("[%d] %d statements", tn, len(prog.Block))
-		}
-		stmt := testAssignStatement(t, tn, prog.Block[0])
-		testStringLiteral(t, tn, stmt.Value, tt.expected)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
+		as := testAssignStatement(t, tn, stmt)
+		testStringLiteral(t, tn, as.Value, tt.expected)
 	}
 }
 
@@ -137,11 +135,12 @@ func TestParseArrayLiteral(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
-		stmt := testAssignStatement(t, tn, prog.Block[0])
+		stmt := progHasOnlyOneStatement(t, tn, prog)
+		as := testAssignStatement(t, tn, stmt)
 
-		array, ok := stmt.Value.(*ArrayLiteral)
+		array, ok := as.Value.(*ArrayLiteral)
 		if !ok {
-			t.Errorf("[%d] not *ArrayLiteral. got %T", tn, stmt)
+			t.Errorf("[%d] not *ArrayLiteral. got %T", tn, as)
 		}
 		eles := array.Elements
 		if len(eles.Expressions) != tt.count {
@@ -209,13 +208,11 @@ func TestParseDotIdent(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
 
-		if len(prog.Block) == 0 {
-			t.Fatalf("[%d] statements empty", tn)
-		}
-		stmt := testAssignStatement(t, tn, prog.Block[0])
-		ident, ok := stmt.Value.(*DotIdent)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
+		as := testAssignStatement(t, tn, stmt)
+		ident, ok := as.Value.(*DotIdent)
 		if !ok {
-			t.Errorf("[%d] not *DotIdent got %T", tn, stmt.Value)
+			t.Errorf("[%d] not *DotIdent got %T", tn, as.Value)
 		}
 		if ident.Left != "ABC" || ident.Right != ".DEF" {
 			t.Errorf("[%d] not %q. got %q", tn, tt.expected, ident.String())

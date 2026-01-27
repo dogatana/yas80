@@ -43,6 +43,14 @@ func testInputEnd(t *testing.T, tn int, lexer *Lexer) {
 	}
 }
 
+// prog が 単一 Statement かどうか
+func progHasOnlyOneStatement(t *testing.T, tn int, prog *BlockStatement) Statement {
+	if len(prog.Block) != 1 {
+		t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Block))
+	}
+	return prog.Block[0]
+}
+
 func splitTrim(input string) string {
 	strs := strings.Split(strings.ReplaceAll(input, "\\", "\n"), "\n")
 	ret := []string{}

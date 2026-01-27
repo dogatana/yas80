@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 	"yas80/errcode"
@@ -20,11 +19,9 @@ func TestParseConstStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] returns %d statements. not 1", tn, len(prog.Block))
-		}
-		cs := prog.Block[0].(*ConstStatement)
+		cs := stmt.(*ConstStatement)
 		ident, ok := cs.Name.(*Ident)
 		if !ok {
 			t.Fatalf("[%d] Name must be Ident. got %T", tn, cs.Name)
@@ -51,11 +48,8 @@ func TestParseEnumStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, -1)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt := prog.Block[0]
 		enum, ok := stmt.(*EnumStatement)
 		if !ok {
 			t.Errorf("[%d] prog.Block[0] not *EnumStatement. got %T", tn, stmt)
@@ -81,11 +75,8 @@ func TestParseReptStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt := prog.Block[0]
 		repeat, ok := stmt.(*ReptStatement)
 		if !ok {
 			t.Errorf("[%d] prog.Block[0] not *RepeatStatment. got %T", tn, stmt)
@@ -156,11 +147,8 @@ func TestParseIfStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt := prog.Block[0]
 		repeat, ok := stmt.(*IfStatement)
 		if !ok {
 			t.Errorf("[%d] prog.Block[0] not *IfStatment. got %T", tn, stmt)
@@ -200,11 +188,8 @@ func TestParseFuncStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt := prog.Block[0]
 		fn, ok := stmt.(*FuncStatement)
 		if !ok {
 			t.Errorf("[%d] prog.Block[0] not *FunctionStatment. got %T", tn, stmt)
@@ -230,11 +215,8 @@ func TestParseVarStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt := prog.Block[0]
 		varStmt, ok := stmt.(*VariableStatement)
 		if !ok {
 			t.Errorf("[%d] prog.Block[0] not *VariableStatement. got %T", tn, stmt)
@@ -260,11 +242,8 @@ func TestParseAssignStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt := prog.Block[0]
 		varStmt, ok := stmt.(*AssignStatement)
 		if !ok {
 			t.Errorf("[%d] prog.Block[0] not *AssignStatement. got %T", tn, stmt)
@@ -292,14 +271,7 @@ func TestParseExitmStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
-
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt, ok := prog.Block[0].(*ExitmStatement)
-		if !ok {
-			t.Errorf("[%d] not ExitmStatement. got %T", tn, stmt)
-		}
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
 		if stmt.NodeType() != tt.NodeType {
 			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
@@ -322,31 +294,26 @@ func TestParseReturnStatement(t *testing.T) {
 	for tn, tt := range tests {
 		l := newLexerForTest(tt.input)
 		prog := ParseForTest(t, l, tn)
+		stmt := progHasOnlyOneStatement(t, tn, prog)
 
-		if len(prog.Block) != 1 {
-			l.logger.Print()
-			fmt.Printf("%#v\n", prog)
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt, ok := prog.Block[0].(*ReturnStatement)
-		if !ok {
-			t.Errorf("[%d] not ExitmStatement. got %T", tn, stmt)
-		}
 		if stmt.NodeType() != tt.NodeType {
 			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
 		}
+
+		rs := stmt.(*ReturnStatement)
+
 		switch v := tt.expected.(type) {
 		case nil:
 			if v != nil {
-				t.Errorf("[%d] ReturnStatement.Value not %v. got %s", tn, v, stmt.Value)
+				t.Errorf("[%d] ReturnStatement.Value not %v. got %s", tn, v, rs.Value)
 			}
 		case int:
-			result := stmt.Value.(*NumberLiteral).Value
+			result := rs.Value.(*NumberLiteral).Value
 			if result != v {
 				t.Errorf("[%d] ReturnStatement.Value not %d. got %d", tn, v, result)
 			}
 		case string:
-			result := stmt.Value.(*StringLiteral).Value
+			result := rs.Value.(*StringLiteral).Value
 			if result != v {
 				t.Errorf("[%d] ReturnStatement.Value not %s. got %s", tn, v, result)
 			}
@@ -390,21 +357,18 @@ func TestParseDataStatement(t *testing.T) {
 			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
 		}
 
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt, ok := prog.Block[0].(*DataStatement)
-		if !ok {
-			t.Errorf("[%d] not DataStatement. got %T", tn, stmt)
-		}
+		stmt := progHasOnlyOneStatement(t, tn, prog)
+
 		if stmt.NodeType() != tt.NodeType {
 			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
 		}
-		if stmt.Size != tt.size {
-			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, stmt.Size)
+
+		ds := stmt.(*DataStatement)
+		if ds.Size != tt.size {
+			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, ds.Size)
 		}
-		if len(stmt.Values) != tt.length {
-			t.Errorf("[%d] Data Length not %d. got %d", tn, tt.length, len(stmt.Values))
+		if len(ds.Values) != tt.length {
+			t.Errorf("[%d] Data Length not %d. got %d", tn, tt.length, len(ds.Values))
 		}
 	}
 }
@@ -452,22 +416,22 @@ func TestParseDataStoreStatement(t *testing.T) {
 		if len(l.logger.Errors) > 0 {
 			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
 		}
-		if len(prog.Block) != 1 {
-			t.Fatalf("[%d] expect 1 statements. got %d", tn, len(prog.Block))
-		}
-		stmt, ok := prog.Block[0].(*DataStoreStatement)
+
+		stmt := progHasOnlyOneStatement(t, tn, prog)
+
+		ds, ok := stmt.(*DataStoreStatement)
 		if !ok {
-			t.Errorf("[%d] not DataStoreStatement. got %T", tn, stmt)
+			t.Errorf("[%d] not DataStoreStatement. got %T", tn, ds)
 		}
-		if stmt.NodeType() != tt.NodeType {
-			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
+		if ds.NodeType() != tt.NodeType {
+			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(ds.NodeType())))
 		}
-		if stmt.Size != tt.size {
-			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, stmt.Size)
+		if ds.Size != tt.size {
+			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, ds.Size)
 		}
-		testNumberLiteral(t, tn, stmt.Count, tt.count)
+		testNumberLiteral(t, tn, ds.Count, tt.count)
 		if tt.filler >= 0 {
-			testNumberLiteral(t, tn, stmt.FillValue, tt.filler)
+			testNumberLiteral(t, tn, ds.FillValue, tt.filler)
 		}
 	}
 }
