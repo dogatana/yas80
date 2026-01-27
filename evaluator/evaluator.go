@@ -27,10 +27,9 @@ func makeCounter(start int) func() int {
 }
 
 // Program 評価
-func (e *Evaluator) EvalProgram(prog *parser.Program, env TEnv) object.Object {
+func (e *Evaluator) EvalProgram(prog *parser.BlockStatement, env TEnv) object.Object {
 	// 一旦 0 に初期化し ORG 他で上書きする
 	initLocationCounter(env, 0)
 	// return e.evalBlockPtr(&prog.Statements, env)
-	bs := &parser.BlockStatement{Block: prog.Statements}
-	return e.evalStatementEx(bs, false, nil, env)
+	return e.evalStatementEx(prog, false, nil, env)
 }

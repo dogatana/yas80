@@ -10,17 +10,17 @@ import (
 )
 
 type Lister struct {
-	Nodes   *parser.Program
+	Nodes   *parser.BlockStatement
 	Objects *object.BlockObject
 }
 
-func New(pnode *parser.Program, pobj *object.BlockObject) *Lister {
+func New(pnode *parser.BlockStatement, pobj *object.BlockObject) *Lister {
 	return &Lister{Nodes: pnode, Objects: pobj}
 }
 
 func (l *Lister) ProgramList(out io.Writer) {
 	w := bufio.NewWriter(out)
-	for _, s := range l.Nodes.Statements {
+	for _, s := range l.Nodes.Block {
 		printStatement(w, s)
 	}
 	w.Flush()
