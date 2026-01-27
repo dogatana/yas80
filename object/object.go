@@ -350,10 +350,11 @@ func (b *BlockObject) String() string {
 
 // Function
 type FunctionObject struct {
-	Name   string
-	Params []string
-	Body   parser.Node
-	Env    Environment
+	Name    string
+	Params  []string
+	Body    parser.Node
+	Env     Environment
+	Context *fileblock.Context
 }
 
 func (f *FunctionObject) Type() ObjectType { return FUNC_OBJ }

@@ -739,17 +739,21 @@ func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env TEnv) obje
 		return object.ERROR
 	}
 	if obj, ok := env.Get(name); ok {
-		if obj.Type() == object.FUNC_OBJ {
-			e.logger.Error(fmt.Sprintf(errcode.EFUNC_DUP, name), stmt.Context)
-		} else {
+		fobj, ok := obj.(*object.FunctionObject)
+		if !ok {
 			e.logger.Error(fmt.Sprintf(errcode.EFUNC_USED, name), stmt.Context)
+			return object.ERROR
 		}
-		return object.NULL
+		if !fobj.Context.Equal(stmt.Context) {
+			e.logger.Error(fmt.Sprintf(errcode.EFUNC_DUP, name), stmt.Context)
+			return object.ERROR
+		}
+	} else {
+		// 無効な文をチェック
+		e.filterValidStatementForFunc(stmt.Block)
 	}
-	// 無効な文をチェック
-	e.filterValidStatementForFunc(stmt.Block)
 
-	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env}
+	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env, Context: stmt.Context}
 	env.Set(name, obj)
 	return obj
 }
