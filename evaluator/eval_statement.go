@@ -577,30 +577,6 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, checkExitM bool, e
 	}
 }
 
-type evalBlockStatementFunc func(block parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object
-
-// block 評価関数指定の If 文評価
-func (e *Evaluator) evalIfStatementWithFunc(
-	stmt *parser.IfStatement,
-	checkExitM bool,
-	ectx TContext,
-	env TEnv,
-	fn evalBlockStatementFunc) object.Object {
-
-	cond := e.evalExpression(stmt.Condition, env, stmt.Context)
-	if isError(cond) || isRefNotFound(cond) {
-		return cond
-	}
-
-	if isTruthy(cond) {
-		return fn(stmt.Consequence.(parser.Statement), checkExitM, ectx, env)
-	} else if stmt.Alternative != nil {
-		return fn(stmt.Alternative.(parser.Statement), checkExitM, ectx, env)
-	} else {
-		return object.NULL
-	}
-}
-
 // func 文
 func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env TEnv) object.Object {
 	name := stmt.Name
