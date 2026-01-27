@@ -122,6 +122,14 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 
 	switch stmt := node.(type) {
 	case *parser.MacroBlockStatement:
+		if e.Debug == 6 {
+			fmt.Println("----- mbs start")
+			fmt.Printf("name %s\n", stmt.Name)
+			for i, s := range stmt.Block {
+				fmt.Printf("%d: %s\n", i, s.String())
+			}
+			fmt.Println("----- mbs end")
+		}
 		// REPT の場合は $I, $COUNT 用の環境を作成する
 		if stmt.Count != 0 {
 			env = object.NewMacroEnvironment(env)
@@ -149,7 +157,8 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 
 		case *parser.IfStatement:
 			// exitm の評価をするため、評価関数を渡す
-			obj := e.evalIfStatementWithFunc(stmt, false, ectx, env, e.evalMacroBlockStatementEx)
+			// obj := e.evalIfStatementWithFunc(stmt, false, ectx, env, e.evalMacroBlockStatementEx)
+			obj := e.evalStatementEx(stmt, true, ectx, env)
 			if isError(obj) {
 				continue
 			}
@@ -172,7 +181,7 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 			goto BREAK
 
 		case *parser.MacroCallStatement:
-			obj := e.evalStatementEx(node, checkExitM, ectx, env)
+			obj := e.evalStatementEx(node, true, ectx, env)
 			if isError(obj) {
 				continue
 			}
@@ -180,11 +189,14 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 				panic("not nodes object")
 			}
 			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: stmt.Context}
-			// fmt.Println("-- expanded")
-			// for _, n := range bs.Block {
-			// 	fmt.Println(n.String())
-			// }
-			// fmt.Println("-- expanded")
+
+			if e.Debug == 5 {
+				fmt.Println("-- expanded start")
+				for _, n := range bs.Block {
+					fmt.Println(n.String())
+				}
+				fmt.Println("-- expanded end")
+			}
 
 			node = bs
 			goto EVAL_AGAIN // 戻らずに自己ループする
@@ -194,7 +206,7 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 		// マクロ ブロック (展開済み)
 		case *parser.MacroBlockStatement:
 			stmts = append(stmts, stmt)
-			obj := e.evalMacroBlockStatementEx(stmt, checkExitM, ectx, env)
+			obj := e.evalMacroBlockStatementEx(stmt, true, ectx, env)
 			bo, ok := obj.(*object.BlockObject)
 			if !ok {
 				panic("not block object")
@@ -203,7 +215,7 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 			objects = append(objects, objs...)
 
 		default:
-			obj := e.evalStatementEx(node, checkExitM, ectx, env)
+			obj := e.evalStatementEx(node, true, ectx, env)
 			if isError(obj) {
 				continue
 			}
@@ -255,8 +267,9 @@ func (e *Evaluator) evalReptStatementEx(stmt *parser.ReptStatement, _ bool, ectx
 	ectx.Offset++
 
 	mb := &parser.MacroBlockStatement{
-		Name:  "REPT",
-		Count: num,
+		Name:    "REPT",
+		Count:   num,
+		Context: stmt.Context,
 	}
 
 	for i := 0; i < num; i++ {
@@ -341,7 +354,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		}
 
 		var s parser.Statement
-		ectx.Offset++
+		// ectx.Offset++
 		s = &parser.SetSysVarStatement{
 			Name:    "$COUNT",
 			Value:   &object.NumberObject{Value: num},
@@ -349,7 +362,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		s.ReplaceContext(*ectx)
 		mb.Block = append(mb.Block, s)
 
-		ectx.Offset++
+		// ectx.Offset++
 		s = &parser.SetSysVarStatement{
 			Name:    "$I",
 			Value:   &object.NumberObject{Value: i},
@@ -358,7 +371,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		mb.Block = append(mb.Block, s)
 
 		if values != nil {
-			ectx.Offset++
+			// ectx.Offset++
 			s = &parser.SetSysVarStatement{
 				Name:    "$V",
 				Value:   values[i],
@@ -367,7 +380,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 			mb.Block = append(mb.Block, s)
 		}
 
-		ectx.Offset++
+		// ectx.Offset++
 		objs := e.expandReptBlock(stmt, env, ectx)
 		if isError(objs) {
 			continue

@@ -75,6 +75,10 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 	case *parser.MacroBlockStatement:
 		return e.evalMacroBlockStatementEx(stmt, checkExitM, ectx, env)
 
+	// exitm
+	case *parser.ExitmStatement:
+		return &object.ExitmObject{}
+
 	// rept
 	case *parser.ReptStatement:
 		return e.evalReptStatementEx(stmt, checkExitM, ectx, env)
@@ -89,8 +93,9 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 
 	// if
 	case *parser.IfStatement:
-		return e.evalIfStatement(stmt, env)
+		return e.evalIfStatement(stmt, checkExitM, ectx, env)
 
+	// block
 	case *parser.BlockStatement:
 		return e.evalBlockStatementEx(stmt, checkExitM, ectx, env)
 
@@ -152,6 +157,7 @@ LOOP:
 	for i := range len(bs.Block) {
 	EVAL_AGAIN:
 		stmt := bs.Block[i]
+
 		obj := e.evalStatementEx(stmt, checkExitM, ectx, env)
 		if isError(obj) {
 			continue
@@ -170,11 +176,24 @@ LOOP:
 			stmts = append(stmts, stmt)
 			break LOOP
 
+		case *object.ExitmObject:
+			if checkExitM {
+				block.Block = append(block.Block, obj)
+				stmts = append(stmts, stmt)
+				break LOOP
+			}
+			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, "EXITM"), stmt.GetContext())
+			// stmt, obj とも append しない
+
 		case *object.BlockObject:
 			if len(obj.Block) == 0 {
 				break
 			}
 			block.Block = append(block.Block, obj.Block...)
+			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ { // TODO: Return
+				stmts = append(stmts, stmt)
+				break LOOP
+			}
 			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ { // TODO: Return
 				stmts = append(stmts, stmt)
 				break LOOP
@@ -539,7 +558,7 @@ func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env TEnv) o
 }
 
 // if 文
-func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env TEnv) object.Object {
+func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
 	obj := e.evalExpression(stmt.Condition, env, stmt.Context)
 	if isError(obj) {
 		return object.ERROR
@@ -549,12 +568,12 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env TEnv) object.O
 		if stmt.Consequence == nil {
 			return object.NULL
 		}
-		return e.evalStatementEx(stmt.Consequence.(parser.Statement), false, nil, env)
+		return e.evalStatementEx(stmt.Consequence.(parser.Statement), checkExitM, ectx, env)
 	} else {
 		if stmt.Alternative == nil {
 			return object.NULL
 		}
-		return e.evalStatementEx(stmt.Alternative.(parser.Statement), false, nil, env)
+		return e.evalStatementEx(stmt.Alternative.(parser.Statement), checkExitM, ectx, env)
 	}
 }
 
