@@ -330,6 +330,10 @@ func TestIfStatement(t *testing.T) {
 		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200  \ endif`, []symValue{{"RESULT", nil}}},
 
 		{`const val = 3 \ if val == 1 \ const result=100 \ elif val == 2 \ const result=200 \ else \ const result=300 \ endif`, []symValue{{"RESULT", 300}}},
+
+		{`if '' \ const val = 1 \ else \ const val = 0 \ endif`, []symValue{{"VAL", 0}}},
+		{`if HL \ const val = 1 \ else \ const val = 0 \ endif`, []symValue{{"VAL", 0}}},
+		{`if CY \ const val = 1 \ else \ const val = 0 \ endif`, []symValue{{"VAL", 0}}},
 	}
 
 	for tn, tt := range tests {
@@ -342,6 +346,5 @@ func TestIfStatement(t *testing.T) {
 			return e.getSymbolFromEnv(name, env)
 		}
 		testSymValues(t, tn, tt.syms, getter) // sym.Expected < 0 なので testSymValuesEx を使用する
-
 	}
 }

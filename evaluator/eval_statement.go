@@ -540,18 +540,20 @@ func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env TEnv) o
 
 // if 文
 func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, env TEnv) object.Object {
-	cond, ok := e.evalExpression(stmt.Condition, env, stmt.Context).(*object.NumberObject)
-	if !ok {
-		return &object.StatementObject{Statement: stmt}
+	obj := e.evalExpression(stmt.Condition, env, stmt.Context)
+	if isError(obj) {
+		return object.ERROR
 	}
-	if cond.Value != 0 {
+
+	if isTruthy(obj) {
 		if stmt.Consequence == nil {
 			return object.NULL
 		}
 		return e.evalStatementEx(stmt.Consequence.(parser.Statement), false, nil, env)
-	} else if stmt.Alternative == nil {
-		return object.NULL
 	} else {
+		if stmt.Alternative == nil {
+			return object.NULL
+		}
 		return e.evalStatementEx(stmt.Alternative.(parser.Statement), false, nil, env)
 	}
 }
