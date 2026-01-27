@@ -17,6 +17,7 @@ type symValue struct {
 
 func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObject, *Evaluator) {
 	progNode := parseTextForTest(input, logger)
+	prog := &parser.BlockStatement{Block: progNode.Statements}
 
 	eval := New(logger)
 
@@ -26,7 +27,7 @@ func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObj
 	eval.Resolved = true
 	for i = 0; i < 256; i++ {
 		eval.Resolved = true
-		obj = eval.EvalProgram(progNode, env)
+		obj = eval.EvalProgram(prog, env)
 		// eval.EvalEnv(env)
 		eval.CheckCyclicError(env)
 		if len(logger.Errors) > 0 {
@@ -46,7 +47,7 @@ func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObj
 	code := CollectCode(obj.(*object.BlockObject).Block)
 	eval.CodeStable = false
 	for i = 0; i < 256 && !eval.CodeStable; i++ {
-		obj = eval.EvalProgram(progNode, env)
+		obj = eval.EvalProgram(prog, env)
 		if len(logger.Errors) > 0 {
 			return obj.(*object.BlockObject), eval
 			// return &object.ProgramObject{}, eval

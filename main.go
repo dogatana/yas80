@@ -57,7 +57,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 	input = strings.NewReader(`
+	// input = strings.NewReader(`
 	// tm macro
 	//   if 1
 	//     rept 2
@@ -92,17 +92,17 @@ func main() {
 
 	// 構文解析開始
 	fmt.Println("# parse")
-	prog := parse(logger, input, file)
+	progNode := parse(logger, input, file)
 
 	// 構文解析直後の AST 表示
 	if getDebugEnv("astdebug") > 0 {
 		logger.Print()
 		fmt.Println("--")
-		for i, s := range prog.Statements {
+		for i, s := range progNode.Statements {
 			fmt.Printf("%d: %#v\n", i, s)
 		}
 		fmt.Println("--")
-		fmt.Println(prog.String())
+		fmt.Println(progNode.String())
 		if getDebugEnv("astdebug") == 1 {
 			os.Exit(0)
 		}
@@ -110,25 +110,25 @@ func main() {
 
 	// プリプロセス
 	fmt.Println("# preprocess")
-	prog = parser.PreProrocess(logger, prog)
+	progNode = parser.PreProrocess(logger, progNode)
 
 	// プリプロセス直後の AST 表示
 	if getDebugEnv("astdebug") > 1 {
 		fmt.Println("--")
-		for i, s := range prog.Statements {
+		for i, s := range progNode.Statements {
 			fmt.Printf("%d: %#v\n", i, s)
 		}
 		fmt.Println("--")
-		fmt.Println(prog.String())
+		fmt.Println(progNode.String())
 		os.Exit(0)
 	}
 
 	// AST 表示
 	fmt.Println("# ast")
-	if len(prog.Statements) == 0 {
+	if len(progNode.Statements) == 0 {
 		fmt.Print("no statements detected")
 	} else {
-		fmt.Println(prog.String())
+		fmt.Println(progNode.String())
 	}
 	fmt.Println("")
 
@@ -137,6 +137,8 @@ func main() {
 
 	eval := evaluator.New(logger)
 	eval.Debug = getDebugEnv("evaldebug")
+
+	prog := &parser.BlockStatement{Block: progNode.Statements}
 
 	// eval 戦略
 	// 評価後 eval.Resolved が true ならコード生成完了とみなす
@@ -161,7 +163,7 @@ func main() {
 			os.Exit(1)
 
 		}
-		showResult(i, prog, obj, env)
+		showResult(i, progNode, obj, env)
 		// $ の評価ができないので、EvalEnvは実行しない
 		// eval.EvalEnv(env)
 		// eval.CheckSymbols(env)
@@ -208,6 +210,8 @@ func main() {
 	fmt.Printf("finalize %d times, codeStable %v\n", i, eval.CodeStable)
 	if len(logger.Errors) > 0 {
 		logger.Print()
+		fmt.Println(progNode.String())
+		object.PrintEnv(env)
 		os.Exit(1)
 	}
 

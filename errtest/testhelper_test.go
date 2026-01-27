@@ -21,7 +21,8 @@ const (
 )
 
 func evaluateInput(testType int, input string, logger *logging.Logger, env object.Environment) {
-	prog := parseText(input, logger)
+	progNode := parseText(input, logger)
+	prog := &parser.BlockStatement{Block: progNode.Statements}
 
 	if getCount(logger)[testType] > 0 {
 		return
