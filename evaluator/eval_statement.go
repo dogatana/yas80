@@ -272,35 +272,39 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 // 複合文 BlockStatement
 func (e *Evaluator) evalBlockStatementEx(bs *parser.BlockStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
 	block := &object.BlockObject{Block: []object.Object{}}
+	stmts := make([]parser.Statement, 0, len(bs.Block))
 
 	// bs.Block の内容は書き換えるケースがあるので、インデックスでループする
+LOOP:
 	for i := range len(bs.Block) {
 	EVAL_AGAIN:
 		stmt := bs.Block[i]
 		obj := e.evalStatementEx(stmt, checkExitM, ectx, env)
 		if isError(obj) {
-			bs.Block[i] = &parser.NullStatement{Context: stmt.GetContext()}
 			continue
 		}
 
 		// bs.Block[i] を無効化
 		switch stmt.NodeType() {
-		case parser.NODE_FUNC_STMT, parser.NODE_MACRO_STMT, parser.NODE_ENUM_STMT:
-			bs.Block[i] = &parser.NullStatement{Context: stmt.GetContext()}
+		// case parser.NODE_FUNC_STMT, parser.NODE_MACRO_STMT, parser.NODE_ENUM_STMT:
+		case parser.NODE_MACRO_STMT, parser.NODE_ENUM_STMT:
+			continue
 		}
 
 		switch obj := obj.(type) {
 		case *object.ReturnObject: // TODO: Return
 			block.Block = append(block.Block, obj)
-			return block
+			stmts = append(stmts, stmt)
+			break LOOP
+
 		case *object.BlockObject:
 			if len(obj.Block) == 0 {
-				block.Block = append(block.Block, object.NULL)
-				continue
+				break
 			}
 			block.Block = append(block.Block, obj.Block...)
 			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ { // TODO: Return
-				return block
+				stmts = append(stmts, stmt)
+				break LOOP
 			}
 
 		// ProcStatement => StatementObject(ProcBlockStatement)
@@ -311,7 +315,10 @@ func (e *Evaluator) evalBlockStatementEx(bs *parser.BlockStatement, checkExitM b
 		default:
 			block.Block = append(block.Block, obj)
 		}
+		stmts = append(stmts, stmt)
 	}
+
+	bs.Block = stmts
 	return block
 }
 
