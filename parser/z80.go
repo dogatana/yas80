@@ -9,7 +9,7 @@ const (
 	Z80_REG_E
 	Z80_REG_H
 	Z80_REG_L
-	_
+
 	Z80_REG_A
 	Z80_REG_IXH
 	Z80_REG_IXL
