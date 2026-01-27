@@ -580,6 +580,25 @@ func TestMacroReptCombination(t *testing.T) {
 			input: `t1 macro arg\ ld a, arg \ endm \ rept [16, 17, 18] \ t1 $i \ endr`,
 			code:  []byte{0x3e, 0, 0x3e, 1, 0x3e, 2},
 		},
+		{
+			input: `
+			push_regs macro arg
+			var @arg1 = $isarray(arg)
+			if $isarray(arg)
+				rept arg
+				push $v
+				endr
+			else
+				push arg
+			endif
+			endm
+
+			push_regs hl
+			push_regs [bc, de]
+			push_regs af
+			`,
+			code: []byte{0xe5, 0xc5, 0xd5, 0xf5},
+		},
 	}
 
 	for tn, tt := range tests {
