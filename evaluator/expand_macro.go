@@ -171,8 +171,7 @@ func (e *Evaluator) mangleNamesInStatement(stmt parser.Statement, replace func(p
 	case *parser.MacroCallStatement:
 		news := *stmt
 		args := *stmt.Args
-		args.Expressions = make([]parser.Expression, len(args.Expressions))
-		copy(args.Expressions, stmt.Args.Expressions)
+		args.Expressions = slices.Clone(args.Expressions)
 		for i := range args.Expressions {
 			replace(&args.Expressions[i])
 		}
@@ -237,9 +236,12 @@ func buildMangleNamesFunc(args map[string]parser.Expression, seq int, macroName 
 
 		case *parser.FuncCallExpression:
 			newe := *expr
-			for i := range len(newe.Arguments.Expressions) {
-				fn(&newe.Arguments.Expressions[i])
+			args := *newe.Arguments
+			args.Expressions = slices.Clone(args.Expressions)
+			for i := range len(args.Expressions) {
+				fn(&args.Expressions[i])
 			}
+			newe.Arguments = &args
 			*ptr = &newe
 
 		case *parser.RegIndirectExpression:
