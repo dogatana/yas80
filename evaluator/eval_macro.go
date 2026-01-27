@@ -112,44 +112,6 @@ func (e *Evaluator) evalMacroCallStatementEx(stmt *parser.MacroCallStatement, ch
 
 	return obj
 }
-func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, env TEnv) object.Object {
-	obj, ok := env.Get(stmt.Name)
-	if !ok {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_UNDEF, stmt.Name), stmt.Context)
-		return object.ERROR
-	}
-	macro, ok := obj.(*object.MacroObject)
-	if !ok {
-		// rule 上発生しない
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NOT_MACRO, stmt.Name), stmt.Context)
-		return object.ERROR
-	}
-	if len(stmt.Args.Expressions) != len(macro.Params) {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_ARG_COUNT, stmt.Name), stmt.Context)
-		return object.ERROR
-	}
-
-	if expandingMacro[stmt.Name] {
-		e.logger.Error(fmt.Sprintf(errcode.EMACRO_CYCLIC, stmt.Name), stmt.Context)
-		return object.ERROR
-	}
-
-	var ectx TContext
-	if stmt.Context.Offset == 0 {
-		// トップレベルからのマクロ展開の場合 Offset は 1 からに変更する
-		tmp := *stmt.Context
-		ectx = &tmp
-	} else {
-		// マクロ内部からのマクロ展開の場合、Offset は前から継続する
-		ectx = stmt.Context
-	}
-
-	expandingMacro[stmt.Name] = true
-	nodes := e.expandMacro(stmt, macro, env, ectx)
-	expandingMacro[stmt.Name] = false
-
-	return nodes
-}
 
 // 変更版 evalMacroBlockStatement
 func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object {

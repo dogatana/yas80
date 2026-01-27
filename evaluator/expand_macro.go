@@ -55,54 +55,6 @@ func (e *Evaluator) expandMacroEx(mcall *parser.MacroCallStatement, macro *objec
 	mbc := &parser.MacroBlockStatement{Name: mcall.Name, Block: stmts, Context: mcall.Context}
 	return &object.StatementObject{Statement: mbc}
 }
-func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, env TEnv, ectx TContext) object.Object {
-	stmts := []parser.Statement{}
-	seq := e.Counter()
-
-	// 仮引数と引数Node の紐づけ
-	args := map[string]parser.Expression{}
-	for i, param := range macro.Params {
-		args[param] = mcall.Args.Expressions[i]
-	}
-
-	mfn := buildMangleNamesFunc(args, seq, mcall.Name)
-
-	for _, stmt := range macro.Body.Block {
-		// ectx.Offset++
-		// 引数のContextの内容を壊さないよう Clone してから使用する
-		// c := *ectx
-		// news := e.mangleNamesInStatement(stmt.(parser.Statement), mfn, &c)
-		news := e.mangleNamesInStatement(stmt, mfn, ectx)
-		news.ReplaceContext(*ectx)
-
-		switch news := news.(type) {
-		case *parser.MacroCallStatement:
-			obj := e.evalMacroCallStatement(news, env)
-			if isError(obj) {
-				continue
-			}
-			// bs := &parser.MacroBlockStatement{Name: news.Name, Block: obj.(*object.StatementObject).Statement, Context: news.Context}
-			bs := &parser.MacroBlockStatement{Name: news.Name, Block: []parser.Statement{}, Context: news.Context}
-			bs.ReplaceContext(*ectx) // struct(not *struct)
-			stmts = append(stmts, bs)
-			if len(bs.Block) > 0 {
-				ectx.Offset = bs.Block[len(bs.Block)-1].GetContext().Offset
-			}
-
-		case *parser.ReptStatement:
-			obj := e.evalReptStatement(news, env)
-			if isError(obj) {
-				continue
-			}
-			stmts = append(stmts, obj.(*object.StatementObject).Statement)
-
-		default:
-			stmts = append(stmts, news)
-		}
-	}
-	mbc := &parser.MacroBlockStatement{Name: mcall.Name, Block: stmts, Context: mcall.Context}
-	return &object.StatementObject{Statement: mbc}
-}
 
 func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx TContext) object.Object {
 	seq := e.Counter()
