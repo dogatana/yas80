@@ -157,14 +157,14 @@ func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env TEnv
 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NOT_FUNC, expr.Name), ctx)
 		return object.ERROR
 	}
-	if len(expr.Arguments.Expressions) != len(fn.Params) {
+	if len(expr.Args.Expressions) != len(fn.Params) {
 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), ctx)
 		return object.ERROR
 	}
 
 	newEnv := object.NewEnvironment(fn.Env)
 	for i, param := range fn.Params {
-		v := e.evalExpression(expr.Arguments.Expressions[i], env, nil) // TODO nil
+		v := e.evalExpression(expr.Args.Expressions[i], env, nil) // TODO nil
 		if isError(v) || isRefNotFound(v) {
 			return v
 		}

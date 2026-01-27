@@ -855,9 +855,9 @@ func (e *PrefixExpression) String() string {
 
 // 関数呼出し
 type FuncCallExpression struct {
-	Name      string
-	Arguments *ExpressionList
-	Context   *fileblock.Context
+	Name    string
+	Args    *ExpressionList
+	Context *fileblock.Context
 }
 
 func (e *FuncCallExpression) expressionNode()    {}
@@ -866,7 +866,7 @@ func (e *FuncCallExpression) String() string {
 	var out bytes.Buffer
 
 	out.WriteString(e.Name + "(")
-	out.WriteString(e.Arguments.String())
+	out.WriteString(e.Args.String())
 	out.WriteRune(')')
 
 	return out.String()

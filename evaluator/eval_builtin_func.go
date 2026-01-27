@@ -32,7 +32,7 @@ func (e *Evaluator) evalBuiltinFunction(expr *parser.FuncCallExpression, env TEn
 }
 
 func (e *Evaluator) ebfuncWord(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-	args := expr.Arguments.Expressions
+	args := expr.Args.Expressions
 
 	if len(args) != 1 {
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
@@ -59,7 +59,7 @@ func (e *Evaluator) ebfuncWord(expr *parser.FuncCallExpression, env TEnv, ctx TC
 }
 
 func (e *Evaluator) ebfuncHighLow(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-	args := expr.Arguments.Expressions
+	args := expr.Args.Expressions
 
 	if len(args) != 1 {
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
@@ -88,7 +88,7 @@ func (e *Evaluator) ebfuncHighLow(expr *parser.FuncCallExpression, env TEnv, ctx
 }
 
 func (e *Evaluator) ebfuncIsArray(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-	args := expr.Arguments.Expressions
+	args := expr.Args.Expressions
 
 	if len(args) != 1 {
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
@@ -110,7 +110,7 @@ func (e *Evaluator) ebfuncIsArray(expr *parser.FuncCallExpression, env TEnv, ctx
 }
 
 func (e *Evaluator) ebfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-	args := expr.Arguments.Expressions
+	args := expr.Args.Expressions
 
 	if len(args) != 1 {
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
@@ -133,7 +133,7 @@ func (e *Evaluator) ebfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx 
 }
 
 func (e *Evaluator) ebfuncReverse(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-	args := expr.Arguments.Expressions
+	args := expr.Args.Expressions
 
 	if len(args) != 1 {
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
@@ -159,7 +159,7 @@ func (e *Evaluator) ebfuncReverse(expr *parser.FuncCallExpression, env TEnv, ctx
 }
 
 func (e *Evaluator) ebfuncDefined(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-	args := expr.Arguments.Expressions
+	args := expr.Args.Expressions
 
 	if len(args) != 1 {
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)
@@ -175,7 +175,7 @@ func (e *Evaluator) ebfuncDefined(expr *parser.FuncCallExpression, env TEnv, ctx
 }
 
 func (e *Evaluator) ebfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-	args := expr.Arguments.Expressions
+	args := expr.Args.Expressions
 
 	if len(args) == 0 {
 		e.logger.Error(fmt.Sprintf(errcode.EBFN_ARG_COUNT, expr.Name), ctx)

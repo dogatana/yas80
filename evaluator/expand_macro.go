@@ -236,12 +236,12 @@ func buildMangleNamesFunc(args map[string]parser.Expression, seq int, macroName 
 
 		case *parser.FuncCallExpression:
 			newe := *expr
-			args := *newe.Arguments
+			args := *newe.Args
 			args.Expressions = slices.Clone(args.Expressions)
 			for i := range len(args.Expressions) {
 				fn(&args.Expressions[i])
 			}
-			newe.Arguments = &args
+			newe.Args = &args
 			*ptr = &newe
 
 		case *parser.RegIndirectExpression:
