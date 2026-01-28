@@ -118,34 +118,31 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 	objects := []object.Object{}
 	stmts := []parser.Statement{}
 
-	var block []parser.Statement
-
-	switch stmt := node.(type) {
-	case *parser.MacroBlockStatement:
-		if e.Debug == 6 {
-			fmt.Println("----- mbs start")
-			fmt.Printf("name %s\n", stmt.Name)
-			for i, s := range stmt.Block {
-				fmt.Printf("%d: %s\n", i, s.String())
-			}
-			fmt.Println("----- mbs end")
-		}
-		// REPT の場合は $I, $COUNT 用の環境を作成する
-		if stmt.Count != 0 {
-			env = object.NewMacroEnvironment(env)
-		}
-		block = stmt.Block
-		comment := stmt.Name
-		if comment == "REPT" {
-			comment = fmt.Sprintf("REPT %d/%d", stmt.Index, stmt.Count)
-		}
-		co := &object.CommentObject{Comments: []string{comment}, Context: stmt.Context}
-		objects = append(objects, co)
-	case *parser.BlockStatement:
-		block = stmt.Block
-	default:
+	stmt, ok := node.(*parser.MacroBlockStatement)
+	if !ok {
 		panic("invalid node type in evalMacroBlockStatement")
 	}
+
+	if e.Debug == 6 {
+		fmt.Println("----- mbs start")
+		fmt.Printf("name %s\n", stmt.Name)
+		for i, s := range stmt.Block {
+			fmt.Printf("%d: %s\n", i, s.String())
+		}
+		fmt.Println("----- mbs end")
+	}
+	// REPT の場合は $I, $COUNT 用の環境を作成する
+	if stmt.Count != 0 {
+		env = object.NewMacroEnvironment(env)
+	}
+
+	block := stmt.Block
+	comment := stmt.Name
+	if comment == "REPT" {
+		comment = fmt.Sprintf("REPT %d/%d", stmt.Index, stmt.Count)
+	}
+	co := &object.CommentObject{Comments: []string{comment}, Context: stmt.Context}
+	objects = append(objects, co)
 
 	for _, node := range block {
 	EVAL_AGAIN:
@@ -156,8 +153,6 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 			continue
 
 		case *parser.IfStatement:
-			// exitm の評価をするため、評価関数を渡す
-			// obj := e.evalIfStatementWithFunc(stmt, false, ectx, env, e.evalMacroBlockStatementEx)
 			obj := e.evalStatementEx(stmt, true, ectx, env)
 			if isError(obj) {
 				continue
@@ -348,10 +343,12 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 	nodes := []parser.Statement{}
 	for i := 0; i < num; i++ {
 		mb := &parser.MacroBlockStatement{
-			Name:  "REPT",
-			Count: num,
-			Index: i,
+			Name:    "REPT",
+			Count:   num,
+			Index:   i,
+			Context: stmt.Context,
 		}
+		mb.ReplaceContext(*ectx)
 
 		var s parser.Statement
 		// ectx.Offset++
@@ -389,9 +386,9 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) obje
 		nodes = append(nodes, mb)
 	}
 
-	ectx.Offset++
-	c := *ectx
-	nodes = append(nodes, &parser.CommentStatement{Text: "ENDR", Context: &c})
+	s := &parser.CommentStatement{Text: "ENDR", Context: stmt.Context}
+	s.ReplaceContext(*ectx)
+	nodes = append(nodes, s)
 
 	bs := &parser.BlockStatement{Block: nodes}
 	return &object.StatementObject{Statement: bs}
