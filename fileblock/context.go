@@ -11,9 +11,11 @@ type Context struct {
 }
 
 func (c *Context) String() string {
-	ret := fmt.Sprintf("%q:%d,%d", c.FileBlock.Filename, c.Line, c.Offset)
-	if c.Source != nil {
-		ret += fmt.Sprintf("[%q:%d,%d)]", c.Source.FileBlock.Filename, c.Source.Line, c.Source.Offset)
+	ret := fmt.Sprintf("%2d:%2d", c.Line, c.Offset)
+	if c.Source == nil {
+		ret += "(  )"
+	} else {
+		ret += fmt.Sprintf("(%2d)", c.Source.Line)
 	}
 	return ret
 }

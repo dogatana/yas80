@@ -335,6 +335,7 @@ func (f *FunctionObject) String() string {
 type MacroObject struct {
 	Name   string
 	Params []string
+	End    int
 	Body   *parser.BlockStatement
 }
 

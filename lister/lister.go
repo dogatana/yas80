@@ -20,36 +20,45 @@ func New(pnode *parser.BlockStatement, pobj *object.BlockObject) *Lister {
 
 func (l *Lister) ProgramList(out io.Writer) {
 	w := bufio.NewWriter(out)
-	for _, s := range l.Nodes.Block {
-		printStatement(w, s)
-	}
+	printStatement(w, l.Nodes)
 	w.Flush()
 }
 
 func printStatement(w io.Writer, stmt parser.Statement) {
-	fmt.Printf("%+v\n", stmt)
-	ctx := stmt.GetContext()
-	if ctx == nil {
-		return
-	}
-	if ctx.Offset == 0 {
-		fmt.Fprint(w, "  ")
-	} else {
-		fmt.Fprint(w, "+ ")
-	}
-	printContext(w, ctx)
+	// fmt.Fprintf(w, "%T\n", stmt)
+
 	switch stmt := stmt.(type) {
 	case *parser.MacroBlockStatement:
-		if stmt.Name == "REPT" {
-			fmt.Fprintf(w, "REPT %d\n", stmt.Count)
-		} else {
-			fmt.Fprintln(w, "MACRO", stmt.Name)
-		}
+		printLineHead(w, stmt.Context)
+		fmt.Fprintln(w, stmt.Name)
+
 		for _, s := range stmt.Block {
-			printStatement(w, s.(parser.Statement))
+			printStatement(w, s)
+		}
+	case *parser.BlockStatement:
+		for _, s := range stmt.Block {
+			printStatement(w, s)
 		}
 	default:
+		ctx := stmt.GetContext()
+		printLineHead(w, ctx)
 		fmt.Fprintln(w, stmt.String())
+	}
+}
+
+func printLineHead(w io.Writer, ctx *fileblock.Context) {
+	printExpand(w, ctx)
+	printContext(w, ctx)
+}
+
+func printExpand(w io.Writer, ctx *fileblock.Context) {
+	if ctx == nil {
+		fmt.Fprint(w, " ? ")
+	}
+	if ctx.Offset == 0 {
+		fmt.Fprint(w, "   ")
+	} else {
+		fmt.Fprint(w, " + ")
 	}
 }
 

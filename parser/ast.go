@@ -356,6 +356,7 @@ type MacroStatement struct {
 	Name    string
 	Params  []string
 	Body    *BlockStatement
+	End     int // ENDM 行
 	Context *fileblock.Context
 }
 

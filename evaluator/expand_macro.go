@@ -37,9 +37,9 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 			mbs := obj.(*object.StatementObject).Statement.(*parser.MacroBlockStatement)
 			mbs.ReplaceContext(*ectx) // struct(not *struct)
 			stmts = append(stmts, mbs)
-			if len(mbs.Block) > 0 {
-				ectx.Offset = mbs.Block[len(mbs.Block)-1].GetContext().Offset
-			}
+			// if len(mbs.Block) > 0 {
+			// 	ectx.Offset = mbs.Block[len(mbs.Block)-1].GetContext().Offset
+			// }
 
 		case *parser.ReptStatement:
 			obj := e.evalReptStatement(news, checkExitM, ectx, env)
@@ -52,6 +52,11 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 			stmts = append(stmts, news)
 		}
 	}
+
+	// ENDM コメント追加
+	cs := &parser.CommentStatement{Text: "ENDM", Context: ectx}
+	stmts = append(stmts, cs)
+
 	mbc := &parser.MacroBlockStatement{Name: mcall.Name, Block: stmts, Context: mcall.Context}
 	return &object.StatementObject{Statement: mbc}
 }
@@ -148,7 +153,6 @@ func (e *Evaluator) mangleNamesInStatement(stmt parser.Statement, replace func(p
 		blk := slices.Clone(stmt.Block)
 		news.Block = blk
 		for i, s := range news.Block {
-			ectx.Offset += 1
 			news.Block[i] = e.mangleNamesInStatement(s, replace, ectx)
 		}
 		return &news

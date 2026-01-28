@@ -57,13 +57,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	input = strings.NewReader(`
-	rept 3
-	nop
-	exitm if $i == 1
-	ret
-	endr
-	`)
+	// 	input = strings.NewReader(`
+	// rept 2
+	//   rept 2
+	//     ret
+	//  endr
+	// endr
+	// 	`)
 	// logger 作成
 	logger := logging.New(file)
 
@@ -211,8 +211,10 @@ func main() {
 	}
 
 	lister := lister.New(prog, obj.(*object.BlockObject))
+	fmt.Println("-- list")
 	lister.ProgramList(os.Stdout)
 
+	fmt.Println("-- objects")
 	printObjects(obj.(*object.BlockObject).Block)
 }
 

@@ -265,7 +265,7 @@ directive	: CONST ident_expr '=' expr
 			}
 			| ident MACRO param_list EOL block_statement ENDM
 			{
-				$$ = &MacroStatement{Name: $1.Name, Params: $3, Body: $5, Context: $1.Context}
+				$$ = &MacroStatement{Name: $1.Name, Params: $3, Body: $5, End: $6.Context.Line, Context: $1.Context}
 			}
 			| IDENT expr_list 
 			{

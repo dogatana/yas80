@@ -25,7 +25,7 @@ func (e *Evaluator) evalMacroStatement(stmt *parser.MacroStatement, env TEnv) ob
 	// 無効な文をチェック
 	e.filterValidStatementForMacro(stmt.Body)
 
-	obj := &object.MacroObject{Name: name, Params: stmt.Params, Body: stmt.Body}
+	obj := &object.MacroObject{Name: name, Params: stmt.Params, End: stmt.End, Body: stmt.Body}
 	env.Set(name, obj)
 	return obj // 形式上必要
 }
@@ -103,8 +103,8 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, chec
 		// トップレベルからのマクロ展開の場合 Offset は 1 からに変更する
 		tmp := *stmt.Context
 		ectx = &tmp
+		ectx.Offset++
 	}
-	ectx.Offset++
 
 	expandingMacro[stmt.Name] = true
 	obj = e.expandMacro(stmt, macro, checkExitM, ectx, env)
@@ -125,21 +125,23 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Statement, checkExitM bo
 
 	if e.Debug == 6 {
 		fmt.Println("----- mbs start")
+		fmt.Printf("%s: ", stmt.Context.String())
 		fmt.Printf("name %s\n", stmt.Name)
 		for i, s := range stmt.Block {
+			fmt.Printf("%s: ", stmt.GetContext().String())
 			fmt.Printf("%d: %s\n", i, s.String())
 		}
 		fmt.Println("----- mbs end")
 	}
 	// REPT の場合は $I, $COUNT 用の環境を作成する
-	if stmt.Count != 0 {
+	if stmt.Name == "REPT" {
 		env = object.NewMacroEnvironment(env)
 	}
 
 	block := stmt.Block
 	comment := stmt.Name
 	if comment == "REPT" {
-		comment = fmt.Sprintf("REPT %d/%d", stmt.Index, stmt.Count)
+		comment = fmt.Sprintf("REPT (%d)", stmt.Count)
 	}
 	co := &object.CommentObject{Comments: []string{comment}, Context: stmt.Context}
 	objects = append(objects, co)
@@ -276,8 +278,8 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, _ bool, ectx T
 		// トップレベルからのマクロ展開の場合 Offset は 1 から
 		tmp := *stmt.Context
 		ectx = &tmp
+		ectx.Offset++
 	}
-	ectx.Offset++
 
 	mb := &parser.MacroBlockStatement{
 		Name:    "REPT",
