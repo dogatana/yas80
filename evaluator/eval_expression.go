@@ -185,7 +185,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env TEnv
 		}
 	}
 	last := ret.Block[len(ret.Block)-1]
-	if last.Type() == object.RETURN_OBJ {
+	if last.Type() == object.OBJ_RETURN {
 		return last.(*object.ReturnObject).Value
 	}
 	return object.NULL

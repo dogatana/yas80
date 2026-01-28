@@ -8,7 +8,7 @@ type RegisterObject struct {
 	Register     int
 }
 
-func (f *RegisterObject) Type() ObjectType { return REGISTER_OBJ }
+func (f *RegisterObject) Type() ObjectType { return OBJ_REGISTER }
 func (f *RegisterObject) String() string   { return parser.Z80Opcode2Name(f.Register) }
 
 // フラグ
@@ -16,7 +16,7 @@ type FlagObject struct {
 	Flag int
 }
 
-func (f *FlagObject) Type() ObjectType { return REGISTER_OBJ }
+func (f *FlagObject) Type() ObjectType { return OBJ_REGISTER }
 func (r *FlagObject) String() string   { return parser.Z80Opcode2Name(r.Flag) }
 
 // Z80 Regisers and Flags

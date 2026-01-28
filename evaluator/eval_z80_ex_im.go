@@ -29,7 +29,7 @@ func (e *Evaluator) evalZ80_EX(stmt *parser.Z80Instruction, op1, op2 object.Obje
 
 	switch {
 	// EX rr, rr'
-	case op1.Type() == object.REGISTER_OBJ && op2.Type() == object.REGISTER_OBJ:
+	case op1.Type() == object.OBJ_REGISTER && op2.Type() == object.OBJ_REGISTER:
 		reg1 := op1.(*object.RegisterObject)
 		reg2 := op2.(*object.RegisterObject)
 		switch {
@@ -42,10 +42,10 @@ func (e *Evaluator) evalZ80_EX(stmt *parser.Z80Instruction, op1, op2 object.Obje
 			e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		}
 	// EX (SP), rr
-	case op1.Type() == object.REG_INDIRECT_OBJ && op2.Type() == object.REGISTER_OBJ:
+	case op1.Type() == object.OBJ_REG_INDIRECT && op2.Type() == object.OBJ_REGISTER:
 		return e.evalExSpReg16(code, op1, op2, stmt.Context)
 	// EX rr, (SP), => EX (SP), rr
-	case op1.Type() == object.REGISTER_OBJ && op2.Type() == object.REG_INDIRECT_OBJ:
+	case op1.Type() == object.OBJ_REGISTER && op2.Type() == object.OBJ_REG_INDIRECT:
 		return e.evalExSpReg16(code, op2, op1, stmt.Context)
 	}
 

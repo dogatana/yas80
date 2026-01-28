@@ -16,7 +16,7 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 	// Z80 命令
 	case *parser.Z80Instruction:
 		obj := e.evalZ80Instruction(stmt, env)
-		if obj.Type() == object.CODE_OBJ {
+		if obj.Type() == object.OBJ_CODE {
 			code := obj.(*object.CodeObject)
 			// アドレス設定はコード生成後
 			code.Addr = getLocationCounter(env)
@@ -190,11 +190,11 @@ LOOP:
 				break
 			}
 			block.Block = append(block.Block, obj.Block...)
-			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ { // TODO: Return
+			if block.Block[len(block.Block)-1].Type() == object.OBJ_RETURN { // TODO: Return
 				stmts = append(stmts, stmt)
 				break LOOP
 			}
-			if block.Block[len(block.Block)-1].Type() == object.RETURN_OBJ { // TODO: Return
+			if block.Block[len(block.Block)-1].Type() == object.OBJ_RETURN { // TODO: Return
 				stmts = append(stmts, stmt)
 				break LOOP
 			}
@@ -656,7 +656,7 @@ func (e *Evaluator) evalEnumStatement(stmt *parser.EnumStatement, env TEnv) obje
 	name := stmt.Name
 	obj, ok := env.Get(name)
 	if ok {
-		if obj.Type() == object.ENUM_OBJ {
+		if obj.Type() == object.OBJ_ENUM {
 			e.logger.Error(fmt.Sprintf(errcode.EENUM_DUP, name), stmt.Context)
 		} else {
 			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED, name), stmt.Context)

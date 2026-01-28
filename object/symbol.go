@@ -33,7 +33,7 @@ type SymbolObject struct {
 	Context   *fileblock.Context
 }
 
-func (s *SymbolObject) Type() ObjectType { return SYMBOL_OBJ }
+func (s *SymbolObject) Type() ObjectType { return OBJ_SYMBOL }
 func (s *SymbolObject) String() string {
 	str := fmt.Sprintf("Symbol{%q, %s, %s",
 		s.Name, symbolTypeNames[s.SymType], s.Value.String())

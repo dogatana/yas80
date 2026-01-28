@@ -15,7 +15,7 @@ func (e *Evaluator) evalMacroStatement(stmt *parser.MacroStatement, env TEnv) ob
 		return object.ERROR
 	}
 	if obj, ok := env.Get(name); ok {
-		if obj.Type() == object.MACRO_OBJ {
+		if obj.Type() == object.OBJ_MACRO {
 			e.logger.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), stmt.Context)
 		} else {
 			e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, name), stmt.Context)
@@ -171,7 +171,7 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 				panic("not block object")
 			}
 			objects = append(objects, bo.Block...)
-			if len(bo.Block) > 0 && bo.Block[0].Type() == object.EXITM_OBJ {
+			if len(bo.Block) > 0 && bo.Block[0].Type() == object.OBJ_EXITM {
 				goto BREAK
 			}
 
@@ -185,7 +185,7 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 			if isError(obj) {
 				continue
 			}
-			if obj.Type() != object.NODES_OBJ {
+			if obj.Type() != object.OBJ_NODES {
 				panic("not nodes object")
 			}
 			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: stmt.Context}

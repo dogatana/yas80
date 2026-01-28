@@ -15,19 +15,19 @@ import (
 // 各種 object 判定
 
 func isError(obj object.Object) bool {
-	return obj.Type() == object.ERROR_OBJ
+	return obj.Type() == object.OBJ_ERROR
 }
 
 func isNumber(obj object.Object) bool {
-	return obj.Type() == object.NUMBER_OBJ
+	return obj.Type() == object.OBJ_NUMBER
 }
 
 func isString(obj object.Object) bool {
-	return obj.Type() == object.STRING_OBJ
+	return obj.Type() == object.OBJ_STRING
 }
 
 func isRefNotFound(obj object.Object) bool {
-	return obj.Type() == object.REF_NOTFOUND_OBJ
+	return obj.Type() == object.OBJ_REF_NOTFOUND
 }
 
 // 依存先の識別子を抽出する: 重複する名は後段のソートでユニークになる

@@ -9,30 +9,30 @@ import (
 )
 
 const (
-	NULL_OBJ = iota + 1
-	ERROR_OBJ
-	NUMBER_OBJ
-	STRING_OBJ
-	ENUM_OBJ
-	REGISTER_OBJ
-	REG_INDIRECT_OBJ
-	ADDR_INDIRECT_OBJ
-	CODE_OBJ
-	PROGRAM_OBJ
-	NODE_OBJ
-	NODES_OBJ
-	RETURN_OBJ
-	BLOCK_OBJ
-	PROC_OBJ
-	FUNC_OBJ
-	MACRO_OBJ
-	REF_NOTFOUND_OBJ
-	SYMBOL_OBJ
-	DELETE_OBJ
-	EXITM_OBJ
-	VALUE_OBJ
-	COMMENT_OBJ
-	ARRAY_OBJ
+	OBJ_NULL = iota + 1
+	OBJ_ERROR
+	OBJ_NUMBER
+	OBJ_STRING
+	OBJ_ENUM
+	OBJ_REGISTER
+	OBJ_REG_INDIRECT
+	OBJ_ADDR_INDIRECT
+	OBJ_CODE
+	OBJ_PROGRAM
+	OBJ_NODE
+	OBJ_NODES
+	OBJ_RETURN
+	OBJ_BLOCK
+	OBJ_PROC
+	OBJ_FUNC
+	OBJ_MACRO
+	OBJ_REF_NOTFOUND
+	OBJ_SYMBOL
+	OBJ_DELETE
+	OBJ_EXITM
+	OBJ_VALUE
+	OBJ_COMMENT
+	OBJ_ARRAY
 )
 
 // 同一判定のため定数的に定義しておく
@@ -49,8 +49,8 @@ type Object interface {
 }
 
 var objectTypeNames map[ObjectType]string = map[ObjectType]string{
-	CODE_OBJ: "CODE_OBJ",
-	NODE_OBJ: "NODE_OBJ",
+	OBJ_CODE: "CODE_OBJ",
+	OBJ_NODE: "NODE_OBJ",
 }
 
 func (o ObjectType) String() string {
@@ -66,7 +66,7 @@ type ProgramObject struct {
 	Objects []Object
 }
 
-func (p *ProgramObject) Type() ObjectType { return PROGRAM_OBJ }
+func (p *ProgramObject) Type() ObjectType { return OBJ_PROGRAM }
 func (p *ProgramObject) String() string {
 	results := []string{}
 
@@ -82,7 +82,7 @@ type ValueObject struct {
 	Context *fileblock.Context
 }
 
-func (v *ValueObject) Type() ObjectType { return VALUE_OBJ }
+func (v *ValueObject) Type() ObjectType { return OBJ_VALUE }
 func (v *ValueObject) String() string {
 	return fmt.Sprintf("VALUE(%s)", v.Value.String())
 }
@@ -93,7 +93,7 @@ type CommentObject struct {
 	Context  *fileblock.Context
 }
 
-func (o *CommentObject) Type() ObjectType { return COMMENT_OBJ }
+func (o *CommentObject) Type() ObjectType { return OBJ_COMMENT }
 func (o *CommentObject) String() string {
 	var out bytes.Buffer
 
@@ -121,7 +121,7 @@ type CodeObject struct {
 	Context *fileblock.Context
 }
 
-func (f *CodeObject) Type() ObjectType { return CODE_OBJ }
+func (f *CodeObject) Type() ObjectType { return OBJ_CODE }
 func (f *CodeObject) String() string {
 	var out bytes.Buffer
 
@@ -144,14 +144,14 @@ func (f *CodeObject) Size() int {
 // NULL
 type NullObject struct{}
 
-func (n *NullObject) Type() ObjectType { return NULL_OBJ }
+func (n *NullObject) Type() ObjectType { return OBJ_NULL }
 func (n *NullObject) String() string   { return "NULL" }
 
 // Error
 type ErrorObject struct {
 }
 
-func (e *ErrorObject) Type() ObjectType { return ERROR_OBJ }
+func (e *ErrorObject) Type() ObjectType { return OBJ_ERROR }
 func (e *ErrorObject) String() string   { return "ERROR" }
 
 // 右辺値で識別子が見つからない場合に使用
@@ -159,7 +159,7 @@ type RefNotFoundObject struct {
 	Names []string
 }
 
-func (r *RefNotFoundObject) Type() ObjectType { return REF_NOTFOUND_OBJ }
+func (r *RefNotFoundObject) Type() ObjectType { return OBJ_REF_NOTFOUND }
 func (r *RefNotFoundObject) String() string {
 	var out bytes.Buffer
 
@@ -177,7 +177,7 @@ type ProcObject struct {
 }
 
 // Object の実装
-func (o *ProcObject) Type() ObjectType { return PROC_OBJ }
+func (o *ProcObject) Type() ObjectType { return OBJ_PROC }
 func (o *ProcObject) String() string   { return fmt.Sprintf("PROC(%s[0x%04x])", o.Name, o.Addr) }
 
 // Environ interface の実装
@@ -194,7 +194,7 @@ type EnumObject struct {
 }
 
 // Object の実装
-func (o *EnumObject) Type() ObjectType { return ENUM_OBJ }
+func (o *EnumObject) Type() ObjectType { return OBJ_ENUM }
 func (o *EnumObject) String() string {
 	var out bytes.Buffer
 
@@ -219,7 +219,7 @@ type DeleltedObject struct {
 	Node parser.Node
 }
 
-func (d *DeleltedObject) Type() ObjectType { return DELETE_OBJ }
+func (d *DeleltedObject) Type() ObjectType { return OBJ_DELETE }
 func (d *DeleltedObject) String() string {
 	body := strings.Join(strings.Split(d.Node.String(), "\n"), " \\ ")
 
@@ -230,7 +230,7 @@ func (d *DeleltedObject) String() string {
 type ExitmObject struct {
 }
 
-func (e *ExitmObject) Type() ObjectType { return EXITM_OBJ }
+func (e *ExitmObject) Type() ObjectType { return OBJ_EXITM }
 func (e *ExitmObject) String() string   { return "EXITM" }
 
 // return
@@ -239,7 +239,7 @@ type ReturnObject struct {
 	LineNumber int
 }
 
-func (r *ReturnObject) Type() ObjectType { return RETURN_OBJ }
+func (r *ReturnObject) Type() ObjectType { return OBJ_RETURN }
 func (r *ReturnObject) String() string {
 	if r.Value == NULL {
 		return "RETURN"
@@ -254,7 +254,7 @@ type NumberObject struct {
 	Context   *fileblock.Context
 }
 
-func (n *NumberObject) Type() ObjectType { return NUMBER_OBJ }
+func (n *NumberObject) Type() ObjectType { return OBJ_NUMBER }
 func (n *NumberObject) String() string   { return fmt.Sprintf("%d(0x%x)", n.Value, n.Value) }
 
 // 文字列
@@ -263,7 +263,7 @@ type StringObject struct {
 	Context *fileblock.Context
 }
 
-func (s *StringObject) Type() ObjectType { return STRING_OBJ }
+func (s *StringObject) Type() ObjectType { return OBJ_STRING }
 func (s *StringObject) String() string   { return fmt.Sprintf("%q", s.Value) }
 
 // レジスタ間接
@@ -272,7 +272,7 @@ type RegIndirectObject struct {
 	Displacement int
 }
 
-func (o *RegIndirectObject) Type() ObjectType { return REG_INDIRECT_OBJ }
+func (o *RegIndirectObject) Type() ObjectType { return OBJ_REG_INDIRECT }
 func (o *RegIndirectObject) String() string {
 	if o.Displacement != 0 {
 		return fmt.Sprintf("(%s%+d)", parser.TokenLiteral(o.Register), o.Displacement)
@@ -286,7 +286,7 @@ type AddrIndirectObject struct {
 	Address int
 }
 
-func (o *AddrIndirectObject) Type() ObjectType { return ADDR_INDIRECT_OBJ }
+func (o *AddrIndirectObject) Type() ObjectType { return OBJ_ADDR_INDIRECT }
 func (o *AddrIndirectObject) String() string {
 	return fmt.Sprintf("($%x)", o.Address)
 }
@@ -296,7 +296,7 @@ type StatementObject struct {
 	Statement parser.Statement
 }
 
-func (n *StatementObject) Type() ObjectType { return NODE_OBJ }
+func (n *StatementObject) Type() ObjectType { return OBJ_NODE }
 func (n *StatementObject) String() string   { return n.Statement.String() }
 
 // Nodes
@@ -304,7 +304,7 @@ type StatemetnsObject struct {
 	Statements []parser.Statement
 }
 
-func (n *StatemetnsObject) Type() ObjectType { return NODES_OBJ }
+func (n *StatemetnsObject) Type() ObjectType { return OBJ_NODES }
 func (n *StatemetnsObject) String() string   { return fmt.Sprintf("NODES(%v)", n.Statements) }
 
 // // ENUM
@@ -338,7 +338,7 @@ type BlockObject struct {
 	Block []Object
 }
 
-func (b *BlockObject) Type() ObjectType { return BLOCK_OBJ }
+func (b *BlockObject) Type() ObjectType { return OBJ_BLOCK }
 func (b *BlockObject) String() string {
 	strs := []string{}
 
@@ -357,7 +357,7 @@ type FunctionObject struct {
 	Context *fileblock.Context
 }
 
-func (f *FunctionObject) Type() ObjectType { return FUNC_OBJ }
+func (f *FunctionObject) Type() ObjectType { return OBJ_FUNC }
 func (f *FunctionObject) String() string {
 	var out bytes.Buffer
 
@@ -380,7 +380,7 @@ type MacroObject struct {
 	Body   *parser.BlockStatement
 }
 
-func (mo *MacroObject) Type() ObjectType { return MACRO_OBJ }
+func (mo *MacroObject) Type() ObjectType { return OBJ_MACRO }
 func (mo *MacroObject) String() string {
 	var out bytes.Buffer
 
@@ -400,7 +400,7 @@ type ArrayObject struct {
 	Expressions []parser.Expression
 }
 
-func (o *ArrayObject) Type() ObjectType { return ARRAY_OBJ }
+func (o *ArrayObject) Type() ObjectType { return OBJ_ARRAY }
 func (o *ArrayObject) String() string {
 
 	values := []string{}
