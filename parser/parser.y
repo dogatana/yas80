@@ -185,7 +185,7 @@ directive	: CONST ident_expr '=' expr
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else {
-					$$ = &ReptStatement{MaxCount: $2, Block: $4, Context: $1.Context}
+					$$ = &ReptStatement{MaxCount: $2, Block: $4, End: $5.Context.Line, Context: $1.Context}
 				}
 			}
 			| IF expr EOL block_statement elseifs ENDIF
@@ -593,13 +593,7 @@ expr		: NUMBER
 				names := strings.Split(name, ".")
 				$$ = &DotIdent{Name: name, Left: names[0], Right: "." + names[1], Context: $1.Context}
 			}
-			| IDENT '(' expr_list ')'
-			{
-				$$ = &FuncCallExpression{
-					Name: strings.ToUpper($1.Literal),
-					Arguments: $3, 
-					Context: $1.Context}
-			}
+			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ Name: strings.ToUpper($1.Literal), Args: $3, Context: $1.Context} }
 			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2, Context: $1.Context} }
 			| indexed_expr 				{ $$ = $1}
 			| '(' expr ')'				{ $$ = $2}

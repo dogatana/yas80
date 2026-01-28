@@ -246,6 +246,7 @@ func (s *EnumElement) String() string {
 type ReptStatement struct {
 	MaxCount Expression
 	Block    *BlockStatement
+	End      int // ENDR 行
 	Context  *fileblock.Context
 }
 
@@ -419,6 +420,7 @@ type MacroBlockStatement struct {
 	Count   int    // REPT 用
 	Value   any    // REPT 用 Expression/Object
 	Block   []Statement
+	End     int // ENDR/ENDM 行
 	Context *fileblock.Context
 }
 
