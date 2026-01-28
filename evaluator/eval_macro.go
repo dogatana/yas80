@@ -77,7 +77,7 @@ func (e *Evaluator) filterValidStatementForMacro(bs *parser.BlockStatement) {
 var expandingMacro map[string]bool = map[string]bool{}
 
 // マクロ評価（展開のみで引数は評価しない）
-func (e *Evaluator) evalMacroCallStatementEx(stmt *parser.MacroCallStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
 	obj, ok := env.Get(stmt.Name)
 	if !ok {
 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_UNDEF, stmt.Name), stmt.Context)
@@ -107,14 +107,14 @@ func (e *Evaluator) evalMacroCallStatementEx(stmt *parser.MacroCallStatement, ch
 	ectx.Offset++
 
 	expandingMacro[stmt.Name] = true
-	obj = e.expandMacroEx(stmt, macro, checkExitM, ectx, env)
+	obj = e.expandMacro(stmt, macro, checkExitM, ectx, env)
 	expandingMacro[stmt.Name] = false
 
 	return obj
 }
 
 // 変更版 evalMacroBlockStatement
-func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+func (e *Evaluator) evalMacroBlockStatement(node parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object {
 	objects := []object.Object{}
 	stmts := []parser.Statement{}
 
@@ -171,7 +171,7 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 			}
 
 		case *parser.IfStatement:
-			obj := e.evalStatementEx(stmt, true, ectx, env)
+			obj := e.evalStatement(stmt, true, ectx, env)
 			if isError(obj) {
 				continue
 			}
@@ -194,7 +194,7 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 			goto BREAK
 
 		case *parser.MacroCallStatement:
-			obj := e.evalStatementEx(node, true, ectx, env)
+			obj := e.evalStatement(node, true, ectx, env)
 			if isError(obj) {
 				continue
 			}
@@ -219,7 +219,7 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 		// マクロ ブロック (展開済み)
 		case *parser.MacroBlockStatement:
 			stmts = append(stmts, stmt)
-			obj := e.evalMacroBlockStatementEx(stmt, true, ectx, env)
+			obj := e.evalMacroBlockStatement(stmt, true, ectx, env)
 			bo, ok := obj.(*object.BlockObject)
 			if !ok {
 				panic("not block object")
@@ -228,7 +228,7 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 			objects = append(objects, objs...)
 
 		default:
-			obj := e.evalStatementEx(node, true, ectx, env)
+			obj := e.evalStatement(node, true, ectx, env)
 			if isError(obj) {
 				continue
 			}
@@ -249,7 +249,7 @@ BREAK:
 }
 
 // REPT 展開
-func (e *Evaluator) evalReptStatementEx(stmt *parser.ReptStatement, _ bool, ectx TContext, env TEnv) object.Object {
+func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, _ bool, ectx TContext, env TEnv) object.Object {
 	obj := e.evalExpression(stmt.MaxCount, env, stmt.Context)
 	if isError(obj) || isRefNotFound(obj) {
 		return obj
@@ -323,91 +323,4 @@ func (e *Evaluator) evalReptStatementEx(stmt *parser.ReptStatement, _ bool, ectx
 	mb.Block = append(mb.Block, &parser.CommentStatement{Text: "ENDR", Context: ectx})
 
 	return &object.StatementObject{Statement: mb}
-}
-func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, env TEnv) object.Object {
-	obj := e.evalExpression(stmt.MaxCount, env, stmt.Context)
-	if isError(obj) || isRefNotFound(obj) {
-		return obj
-	}
-
-	var num int
-	var values []any
-
-	switch obj := obj.(type) {
-	case *object.NumberObject:
-		num = obj.Value
-	case *object.ArrayObject:
-		num = len(obj.Values)
-		values = make([]any, len(obj.Values))
-		for i, o := range obj.Values {
-			values[i] = o
-		}
-	default:
-		e.logger.Error(errcode.EREPT_COUNT, stmt.Context)
-		return object.ERROR
-	}
-
-	var ectx TContext
-	if stmt.Context.Offset == 0 {
-		// トップレベルからのマクロ展開の場合 Offset は 1 から
-		tmp := *stmt.Context
-		ectx = &tmp
-	} else {
-		// マクロ内部からのマクロ展開の場合、Offset は前からの継続
-		ectx = stmt.Context
-	}
-	ectx.Offset++
-
-	nodes := []parser.Statement{}
-	for i := 0; i < num; i++ {
-		mb := &parser.MacroBlockStatement{
-			Name:    "REPT",
-			Count:   num,
-			Index:   i,
-			Context: stmt.Context,
-		}
-		mb.ReplaceContext(*ectx)
-
-		var s parser.Statement
-		// ectx.Offset++
-		s = &parser.SetSysVarStatement{
-			Name:    "$COUNT",
-			Value:   &object.NumberObject{Value: num},
-			Context: stmt.Context}
-		s.ReplaceContext(*ectx)
-		mb.Block = append(mb.Block, s)
-
-		// ectx.Offset++
-		s = &parser.SetSysVarStatement{
-			Name:    "$I",
-			Value:   &object.NumberObject{Value: i},
-			Context: stmt.Context}
-		s.ReplaceContext(*ectx)
-		mb.Block = append(mb.Block, s)
-
-		if values != nil {
-			// ectx.Offset++
-			s = &parser.SetSysVarStatement{
-				Name:    "$V",
-				Value:   values[i],
-				Context: stmt.Context}
-			s.ReplaceContext(*ectx)
-			mb.Block = append(mb.Block, s)
-		}
-
-		// ectx.Offset++
-		objs := e.expandReptBlock(stmt, env, ectx)
-		if isError(objs) {
-			continue
-		}
-		mb.Block = append(mb.Block, objs.(*object.StatemetnsObject).Statements...)
-		nodes = append(nodes, mb)
-	}
-
-	s := &parser.CommentStatement{Text: "ENDR", Context: stmt.Context}
-	s.ReplaceContext(*ectx)
-	nodes = append(nodes, s)
-
-	bs := &parser.BlockStatement{Block: nodes}
-	return &object.StatementObject{Statement: bs}
 }

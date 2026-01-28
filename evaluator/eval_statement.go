@@ -9,7 +9,7 @@ import (
 )
 
 // evalStatement Ex
-func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object {
 
 	switch stmt := stmt.(type) {
 
@@ -69,11 +69,11 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 
 	// マクロ呼出し
 	case *parser.MacroCallStatement:
-		return e.evalMacroCallStatementEx(stmt, checkExitM, ectx, env)
+		return e.evalMacroCallStatement(stmt, checkExitM, ectx, env)
 
 	// マクロ呼出し
 	case *parser.MacroBlockStatement:
-		return e.evalMacroBlockStatementEx(stmt, checkExitM, ectx, env)
+		return e.evalMacroBlockStatement(stmt, checkExitM, ectx, env)
 
 	// exitm
 	case *parser.ExitmStatement:
@@ -81,7 +81,7 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 
 	// rept
 	case *parser.ReptStatement:
-		return e.evalReptStatementEx(stmt, checkExitM, ectx, env)
+		return e.evalReptStatement(stmt, checkExitM, ectx, env)
 
 	// var
 	case *parser.VariableStatement:
@@ -97,7 +97,7 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 
 	// block
 	case *parser.BlockStatement:
-		return e.evalBlockStatementEx(stmt, checkExitM, ectx, env)
+		return e.evalBlockStatement(stmt, checkExitM, ectx, env)
 
 	// func
 	case *parser.FuncStatement:
@@ -148,7 +148,7 @@ func (e *Evaluator) evalStatementEx(stmt parser.Statement, checkExitM bool, ectx
 }
 
 // 複合文 BlockStatement
-func (e *Evaluator) evalBlockStatementEx(bs *parser.BlockStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+func (e *Evaluator) evalBlockStatement(bs *parser.BlockStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
 	block := &object.BlockObject{Block: []object.Object{}}
 	stmts := make([]parser.Statement, 0, len(bs.Block))
 
@@ -158,7 +158,7 @@ LOOP:
 	EVAL_AGAIN:
 		stmt := bs.Block[i]
 
-		obj := e.evalStatementEx(stmt, checkExitM, ectx, env)
+		obj := e.evalStatement(stmt, checkExitM, ectx, env)
 		if isError(obj) {
 			continue
 		}
@@ -294,7 +294,7 @@ func (e *Evaluator) evalProcBlockStatement(stmt *parser.ProcBlockStatement, chec
 	}
 	// ProcObject は Environment intterface を実装
 	bs := &parser.BlockStatement{Block: stmt.Block}
-	return e.evalStatementEx(bs, checkExitM, ectx, pobj.(object.Environment))
+	return e.evalStatement(bs, checkExitM, ectx, pobj.(object.Environment))
 }
 
 // ラベル定義文
@@ -568,12 +568,12 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, checkExitM bool, e
 		if stmt.Consequence == nil {
 			return object.NULL
 		}
-		return e.evalStatementEx(stmt.Consequence.(parser.Statement), checkExitM, ectx, env)
+		return e.evalStatement(stmt.Consequence.(parser.Statement), checkExitM, ectx, env)
 	} else {
 		if stmt.Alternative == nil {
 			return object.NULL
 		}
-		return e.evalStatementEx(stmt.Alternative.(parser.Statement), checkExitM, ectx, env)
+		return e.evalStatement(stmt.Alternative.(parser.Statement), checkExitM, ectx, env)
 	}
 }
 

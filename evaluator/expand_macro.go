@@ -7,7 +7,7 @@ import (
 	"yas80/parser"
 )
 
-func (e *Evaluator) expandMacroEx(mcall *parser.MacroCallStatement, macro *object.MacroObject, checkExitM bool, ectx TContext, env TEnv) object.Object {
+func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, checkExitM bool, ectx TContext, env TEnv) object.Object {
 	stmts := []parser.Statement{}
 	seq := e.Counter()
 
@@ -29,7 +29,7 @@ func (e *Evaluator) expandMacroEx(mcall *parser.MacroCallStatement, macro *objec
 
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
-			obj := e.evalMacroCallStatementEx(news, checkExitM, ectx, env)
+			obj := e.evalMacroCallStatement(news, checkExitM, ectx, env)
 			if isError(obj) {
 				continue
 			}
@@ -42,7 +42,7 @@ func (e *Evaluator) expandMacroEx(mcall *parser.MacroCallStatement, macro *objec
 			}
 
 		case *parser.ReptStatement:
-			obj := e.evalReptStatement(news, env)
+			obj := e.evalReptStatement(news, checkExitM, ectx, env)
 			if isError(obj) {
 				continue
 			}
@@ -67,7 +67,7 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx T
 		news := e.mangleNamesInStatement(stmt, mangleFn, ectx)
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
-			obj := e.evalMacroCallStatementEx(news, true, ectx, env)
+			obj := e.evalMacroCallStatement(news, true, ectx, env)
 			if isError(obj) {
 				return object.ERROR
 			}
@@ -82,7 +82,7 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx T
 			stmts = append(stmts, s)
 
 		case *parser.ReptStatement:
-			obj := e.evalReptStatement(news, env)
+			obj := e.evalReptStatement(news, true, ectx, env)
 			if isError(obj) {
 				return object.ERROR
 			}

@@ -57,16 +57,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	// input = strings.NewReader(`
-	// tm macro
-	//   if 1
-	//     rept 2
-	//       ld a, $i
-	//     endr
-	//   endif
-	// endm
-	// tm
-	// 	`)
+	input = strings.NewReader(`
+	rept 3
+	nop
+	exitm if $i == 1
+	ret
+	endr
+	`)
 	// logger 作成
 	logger := logging.New(file)
 

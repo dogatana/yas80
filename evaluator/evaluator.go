@@ -31,5 +31,5 @@ func (e *Evaluator) EvalProgram(prog *parser.BlockStatement, env TEnv) object.Ob
 	// 一旦 0 に初期化し ORG 他で上書きする
 	initLocationCounter(env, 0)
 	// return e.evalBlockPtr(&prog.Statements, env)
-	return e.evalStatementEx(prog, false, nil, env)
+	return e.evalStatement(prog, false, nil, env)
 }

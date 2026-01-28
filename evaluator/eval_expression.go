@@ -171,7 +171,7 @@ func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env TEnv
 		newEnv.Set(param, v)
 	}
 
-	ret, ok := e.evalBlockStatementEx(fn.Body.(*parser.BlockStatement), false, nil, newEnv).(*object.BlockObject)
+	ret, ok := e.evalBlockStatement(fn.Body.(*parser.BlockStatement), false, nil, newEnv).(*object.BlockObject)
 	if !ok {
 		panic(fmt.Sprintf("call func %s returns %T(%#v)", fn.Name, ret, ret))
 	}
