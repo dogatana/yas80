@@ -20,10 +20,6 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	mfn := buildMangleNamesFunc(args, seq, mcall.Name)
 
 	for _, stmt := range macro.Body.Block {
-		// ectx.Offset++
-		// 引数のContextの内容を壊さないよう Clone してから使用する
-		// c := *ectx
-		// news := e.mangleNamesInStatement(stmt.(parser.Statement), mfn, &c)
 		news := e.mangleNamesInStatement(stmt, mfn, ectx)
 		news.ReplaceContext(*ectx)
 
@@ -33,13 +29,9 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 			if isError(obj) {
 				continue
 			}
-			// mbs := &parser.MacroBlockStatement{Name: news.Name, Block: []obj.(*object.StatementObject).Statement, Context: news.Context}
 			mbs := obj.(*object.StatementObject).Statement.(*parser.MacroBlockStatement)
 			mbs.ReplaceContext(*ectx) // struct(not *struct)
 			stmts = append(stmts, mbs)
-			// if len(mbs.Block) > 0 {
-			// 	ectx.Offset = mbs.Block[len(mbs.Block)-1].GetContext().Offset
-			// }
 
 		case *parser.ReptStatement:
 			obj := e.evalReptStatement(news, checkExitM, ectx, env)
@@ -76,7 +68,6 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx T
 			if isError(obj) {
 				return object.ERROR
 			}
-			// bs := &parser.MacroBlockStatement{Name: news.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: rept.Context}
 			sobj, ok := obj.(*object.StatementObject)
 			if !ok {
 				panic("not *object.StatementObject")

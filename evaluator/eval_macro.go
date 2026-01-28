@@ -215,8 +215,6 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Statement, checkExitM bo
 
 			node = bs
 			goto EVAL_AGAIN // 戻らずに自己ループする
-			// stmts = append(stmts, bs)
-			// e.Resolved = false
 
 		// マクロ ブロック (展開済み)
 		case *parser.MacroBlockStatement:
