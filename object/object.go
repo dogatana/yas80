@@ -18,7 +18,6 @@ const (
 	OBJ_REG_INDIRECT
 	OBJ_ADDR_INDIRECT
 	OBJ_CODE
-	OBJ_PROGRAM
 	OBJ_NODE
 	OBJ_NODES
 	OBJ_RETURN
@@ -34,7 +33,7 @@ const (
 	OBJ_ARRAY
 )
 
-// 同一判定のため定数的に定義しておく
+// 同一判定のため定数として定義
 var (
 	NULL  = &NullObject{}
 	ERROR = &ErrorObject{}
@@ -45,34 +44,6 @@ type ObjectType int
 type Object interface {
 	Type() ObjectType
 	String() string
-}
-
-var objectTypeNames map[ObjectType]string = map[ObjectType]string{
-	OBJ_CODE: "CODE_OBJ",
-	OBJ_NODE: "NODE_OBJ",
-}
-
-func (o ObjectType) String() string {
-	name, ok := objectTypeNames[o]
-	if ok {
-		return name
-	}
-	return "UNKNOWN_OBJ"
-}
-
-// program
-type ProgramObject struct {
-	Objects []Object
-}
-
-func (p *ProgramObject) Type() ObjectType { return OBJ_PROGRAM }
-func (p *ProgramObject) String() string {
-	results := []string{}
-
-	for _, result := range p.Objects {
-		results = append(results, result.String())
-	}
-	return strings.Join(results, "\n")
 }
 
 // value - list ファイル出力用
@@ -168,7 +139,7 @@ func (r *RefNotFoundObject) String() string {
 	return out.String()
 }
 
-// proc
+// proc - Object interface と Environ interface を実装する
 type ProcObject struct {
 	Name string
 	Addr int
@@ -186,7 +157,7 @@ func (o *ProcObject) Set(name string, obj Object) Object { return o.Env.Set(name
 func (o *ProcObject) Outer() Environment                 { return o.Env.Outer() }
 func (o *ProcObject) Store() map[string]Object           { return o.Env.Store() }
 
-// enum
+// enum - Object interface と Environ interface を実装する
 type EnumObject struct {
 	Name string
 	Env  Environment

@@ -39,7 +39,6 @@ func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObj
 	eval.CheckSymbolError(env)
 	if len(logger.Errors) > 0 || !eval.Resolved {
 		return obj.(*object.BlockObject), eval
-		// return &object.ProgramObject{}, eval
 	}
 
 	// finalize
@@ -49,7 +48,6 @@ func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObj
 		obj = eval.EvalProgram(prog, env)
 		if len(logger.Errors) > 0 {
 			return obj.(*object.BlockObject), eval
-			// return &object.ProgramObject{}, eval
 
 		}
 		newCode := CollectCode(obj.(*object.BlockObject).Block)
@@ -60,11 +58,9 @@ func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObj
 	}
 	if !eval.CodeStable {
 		return obj.(*object.BlockObject), eval
-		// return &object.ProgramObject{}, eval
 	}
 	if prog, ok := obj.(*object.BlockObject); !ok {
 		return prog, eval
-		// return &object.ProgramObject{}, eval
 	} else {
 		return prog, eval
 	}
