@@ -152,6 +152,24 @@ func (e *Evaluator) evalMacroBlockStatementEx(node parser.Statement, checkExitM 
 			e.logger.Error(errcode.EMACRO_NEST, stmt.Context)
 			continue
 
+		case *parser.BlockStatement:
+			obj := e.evalStatement(stmt, true, ectx, env)
+			if isError(obj) {
+				continue
+			}
+			stmts = append(stmts, stmt)
+			if isRefNotFound(obj) {
+				continue
+			}
+			bo, ok := obj.(*object.BlockObject)
+			if !ok {
+				panic("not block object")
+			}
+			objects = append(objects, bo.Block...)
+			if len(bo.Block) > 0 && bo.Block[0].Type() == object.OBJ_EXITM {
+				goto BREAK
+			}
+
 		case *parser.IfStatement:
 			obj := e.evalStatementEx(stmt, true, ectx, env)
 			if isError(obj) {

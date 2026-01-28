@@ -194,7 +194,7 @@ LOOP:
 				stmts = append(stmts, stmt)
 				break LOOP
 			}
-			if block.Block[len(block.Block)-1].Type() == object.OBJ_RETURN { // TODO: Return
+			if checkExitM && block.Block[len(block.Block)-1].Type() == object.OBJ_EXITM {
 				stmts = append(stmts, stmt)
 				break LOOP
 			}
