@@ -28,7 +28,6 @@ const (
 	OBJ_MACRO
 	OBJ_REF_NOTFOUND
 	OBJ_SYMBOL
-	OBJ_DELETE
 	OBJ_EXITM
 	OBJ_VALUE
 	OBJ_COMMENT
@@ -213,18 +212,6 @@ func (o *EnumObject) Get(name string) (Object, bool)     { return o.Env.Get(name
 func (o *EnumObject) Set(name string, obj Object) Object { return o.Env.Set(name, obj) }
 func (o *EnumObject) Outer() Environment                 { return o.Env.Outer() }
 func (o *EnumObject) Store() map[string]Object           { return o.Env.Store() }
-
-// deleted
-type DeleltedObject struct {
-	Node parser.Node
-}
-
-func (d *DeleltedObject) Type() ObjectType { return OBJ_DELETE }
-func (d *DeleltedObject) String() string {
-	body := strings.Join(strings.Split(d.Node.String(), "\n"), " \\ ")
-
-	return "DELETED(" + body + ")"
-}
 
 // exitm
 type ExitmObject struct {
