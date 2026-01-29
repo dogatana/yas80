@@ -131,9 +131,9 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		case parser.Z80_REG_HL:
 			code = &object.CodeObject{Code: []byte{0xe9}, CZ80: 4, Context: stmt.Context}
 		case parser.Z80_REG_IX:
-			code = &object.CodeObject{Code: []byte{0xdd, 0xe9}, CZ80: 4, Context: stmt.Context}
+			code = &object.CodeObject{Code: []byte{0xdd, 0xe9}, CZ80: 8, Context: stmt.Context}
 		case parser.Z80_REG_IY:
-			code = &object.CodeObject{Code: []byte{0xfd, 0xe9}, CZ80: 4, Context: stmt.Context}
+			code = &object.CodeObject{Code: []byte{0xfd, 0xe9}, CZ80: 8, Context: stmt.Context}
 		default:
 			e.logger.Error(errcode.EZ80_JP_INDIRECT_REG, stmt.Context)
 			return &object.CodeObject{Code: []byte{0xe9}, CZ80: 4, Context: stmt.Context}

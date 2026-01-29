@@ -76,9 +76,11 @@ func (e *Evaluator) evalZ80_ADD16(stmt *parser.Z80Instruction, op1, op2 object.O
 			return code
 		case parser.Z80_REG_IX: // ADD のみ
 			code.Code = []byte{0xdd, code.Code[0]}
+			code.CZ80 = 15
 			return code
 		case parser.Z80_REG_IY: // ADD のみ
 			code.Code = []byte{0xfd, code.Code[0]}
+			code.CZ80 = 15
 			return code
 		}
 	}

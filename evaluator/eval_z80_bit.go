@@ -64,15 +64,27 @@ func (e *Evaluator) evalZ80_BIT(stmt *parser.Z80Instruction, op1, op2 object.Obj
 		code.Code[1] |= 0x06
 		switch op2.Register {
 		case parser.Z80_REG_HL:
-			code.CZ80 = 12
+			if stmt.Opcode == parser.Z80_INST_BIT {
+				code.CZ80 = 12
+			} else {
+				code.CZ80 = 15
+			}
 			return code
 		case parser.Z80_REG_IX:
 			code.Code = []byte{0xdd, 0xcb, byte(op2.Displacement), code.Code[1]}
-			code.CZ80 = 20
+			if stmt.Opcode == parser.Z80_INST_BIT {
+				code.CZ80 = 20
+			} else {
+				code.CZ80 = 23
+			}
 			return code
 		case parser.Z80_REG_IY:
-			code.CZ80 = 20
 			code.Code = []byte{0xfd, 0xcb, byte(op2.Displacement), code.Code[1]}
+			if stmt.Opcode == parser.Z80_INST_BIT {
+				code.CZ80 = 20
+			} else {
+				code.CZ80 = 23
+			}
 			return code
 		default:
 			e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(op2.Register)), stmt.Context)
