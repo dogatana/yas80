@@ -67,13 +67,19 @@ func getLocationCounter(env TEnv) int {
 }
 
 // location counter 更新
-func advanceLocationCounter(env TEnv, n int) {
+func advanceLocationCounter(env TEnv, n int) error {
 	obj, ok := env.Get("$")
 	if !ok {
 		panic("getLocationCounter failed")
 	}
 	counter := obj.(*object.NumberObject)
 	counter.Value += n
+
+	// 64KB アドレス超過のチェック
+	if counter.Value > 0xffff {
+		return fmt.Errorf(errcode.EADDRESS_OVERFLOW, counter.Value)
+	}
+	return nil
 }
 
 // int -> byte へ。丸め発生した場合は false

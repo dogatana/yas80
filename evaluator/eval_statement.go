@@ -21,7 +21,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 			// アドレス設定はコード生成後
 			code.Addr = getLocationCounter(env)
 			// 生成コードのサイズ文ロケーションカウンタを進める
-			advanceLocationCounter(env, code.Size())
+			if err := advanceLocationCounter(env, code.Size()); err != nil {
+				e.logger.Error(err.Error(), stmt.Context)
+			}
 		}
 		return obj
 
@@ -47,7 +49,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 		if isError(obj) {
 			return object.ERROR
 		}
-		advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
+		if err := advanceLocationCounter(env, len(obj.(*object.CodeObject).Code)); err != nil {
+			e.logger.Error(err.Error(), stmt.Context)
+		}
 		return obj
 
 	// DB/DW/DD
@@ -56,7 +60,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 		if isError(obj) {
 			return object.ERROR
 		}
-		advanceLocationCounter(env, len(obj.(*object.CodeObject).Code))
+		if err := advanceLocationCounter(env, len(obj.(*object.CodeObject).Code)); err != nil {
+			e.logger.Error(err.Error(), stmt.Context)
+		}
 		return obj
 
 	// 定数定義
