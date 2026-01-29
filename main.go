@@ -3,9 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
-	"strconv"
 	"yas80/evaluator"
 	"yas80/fileblock"
 	"yas80/lister"
@@ -14,29 +12,6 @@ import (
 	"yas80/options"
 	"yas80/parser"
 )
-
-func getDebugEnv(name string) int {
-	v := os.Getenv(name)
-	if v == "" {
-		return 0
-	}
-	num, err := strconv.Atoi(v)
-	if err == nil {
-		return num
-	}
-	return 0
-}
-
-func parse(logger *logging.Logger, input io.Reader, filename string) *parser.BlockStatement {
-	// l := parser.NewLexer(bufio.NewReader(input), filename, logger)
-	fb, err := fileblock.NewFromReader(filename, input)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
-	l := parser.NewLexer(fb, logger)
-	return parser.Parse(l)
-}
 
 var Option options.Option
 
@@ -279,7 +254,7 @@ func printStatement(stmt parser.Statement) {
 			fmt.Println("MACRO", stmt.Name)
 		}
 		for _, s := range stmt.Block {
-			printContext(s.(parser.Statement).GetContext())
+			printContext(s.GetContext())
 			fmt.Println(s.String())
 		}
 	default:
