@@ -76,6 +76,8 @@ const (
 
 	// ORG
 	EORG_ALLOC = "ABS/REL のみ指定可能"
+	EORG_NULL  = "アドレスが未確定"
+	EORG_VALUE = "アドレス指定誤り"
 
 	// CONST/EQU
 	ECONST_DUP  = "CONST/EQU '%s' は定義済み"

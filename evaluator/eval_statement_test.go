@@ -348,3 +348,61 @@ func TestIfStatement(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter) // sym.Expected < 0 なので testSymValuesEx を使用する
 	}
 }
+
+func TestOrgStatement(t *testing.T) {
+	tests := []struct {
+		input string
+		addr  int
+		err   string
+	}{
+		// 0-
+		{input: `nop `, addr: 0},
+		{input: `org $1000 \ nop `, addr: 0x1000},
+		{input: `org $ffff \ nop `, addr: 0xffff},
+		{input: `org -1 \ nop `, addr: 0xffff},
+		{input: `org $ffff \ ld a, 1`, err: errcode.EADDRESS_OVERFLOW},
+		{input: `org hl \ nop `, err: errcode.EORG_VALUE},
+		{input: `org 'hl' \ nop `, err: errcode.EORG_VALUE},
+		{input: `org abc \ nop `, err: errcode.EORG_NULL},
+		{input: `fn func\endf\ org fn()`, err: errcode.EORG_NULL},
+		{input: `org 0, aaa`, err: errcode.EORG_ALLOC},
+		// 10-
+		{input: `org $ffff \ dsw 1`, err: errcode.EADDRESS_OVERFLOW},
+		{input: `org $ffff \ ds 2`, err: errcode.EADDRESS_OVERFLOW},
+		{input: `org $ffff \ db $ff, $ff`, err: errcode.EADDRESS_OVERFLOW},
+		{input: `org $ffff \ dw $ffff`, err: errcode.EADDRESS_OVERFLOW},
+		{input: `org $ffff \ dd $w(0)`, err: errcode.EADDRESS_OVERFLOW},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code address
+		var code *object.CodeObject
+		for _, obj := range prog.Block {
+			obj, ok := obj.(*object.CodeObject)
+			if ok {
+				code = obj
+				break
+			}
+		}
+		if code == nil {
+			t.Errorf("[%d] not CodeObject. got %T", tn, prog.Block[0])
+			continue
+		}
+		if code.Addr != tt.addr {
+			t.Errorf("[%d] address is not $%04x. %s", tn, tt.addr, code.String())
+		}
+	}
+}

@@ -31,6 +31,10 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.LabelStatement:
 		return e.evalLabelStatement(stmt, env)
 
+	// ORG
+	case *parser.OrgStatement:
+		return e.evalOrgStatement(stmt, env)
+
 	// PROC
 	case *parser.ProcStatement:
 		if object.InProcEnv(env) {
@@ -301,6 +305,35 @@ func (e *Evaluator) evalProcBlockStatement(stmt *parser.ProcBlockStatement, chec
 	// ProcObject は Environment intterface を実装
 	bs := &parser.BlockStatement{Block: stmt.Block}
 	return e.evalStatement(bs, checkExitM, ectx, pobj.(object.Environment))
+}
+
+// ORG
+func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object.Object {
+	e.concatenateSymbol(&stmt.Address, env, stmt.Context)
+	obj := e.evalExpression(stmt.Address, env, stmt.Context)
+
+	var value int
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject, *object.NullObject:
+		e.logger.Error(errcode.EORG_NULL, stmt.Context)
+		return object.ERROR
+
+	case *object.NumberObject:
+		value = obj.Value
+
+	default:
+		e.logger.Error(errcode.EORG_VALUE, stmt.Context)
+		return object.ERROR
+	}
+
+	addr, ok := e.intToWord(value)
+	if !ok {
+		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
+	}
+	initLocationCounter(env, addr)
+	return object.NULL
 }
 
 // ラベル定義文
