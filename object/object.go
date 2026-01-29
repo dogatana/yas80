@@ -91,24 +91,24 @@ type CodeObject struct {
 	Context *fileblock.Context
 }
 
-func (f *CodeObject) Type() ObjectType { return OBJ_CODE }
-func (f *CodeObject) String() string {
+func (o *CodeObject) Type() ObjectType { return OBJ_CODE }
+func (o *CodeObject) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(fmt.Sprintf("code %2d:%2d", f.Context.Line, f.Context.Offset))
-	if f.Context.Source == nil {
+	out.WriteString(fmt.Sprintf("code %2d:%2d", o.Context.Line, o.Context.Offset))
+	if o.Context.Source == nil {
 		out.WriteString("(  )")
 	} else {
-		out.WriteString(fmt.Sprintf("(%2d)", f.Context.Source.Line))
+		out.WriteString(fmt.Sprintf("(%2d)", o.Context.Source.Line))
 	}
-	out.WriteString(fmt.Sprintf(" :%04x: ", f.Addr))
-	for _, b := range f.Code {
+	out.WriteString(fmt.Sprintf(" :%04x: [%2d] ", o.Addr, o.CZ80))
+	for _, b := range o.Code {
 		out.WriteString(fmt.Sprintf("%02x ", b))
 	}
 	return out.String()
 }
-func (f *CodeObject) Size() int {
-	return len(f.Code)
+func (o *CodeObject) Size() int {
+	return len(o.Code)
 }
 
 // NULL
