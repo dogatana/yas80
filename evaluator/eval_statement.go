@@ -333,7 +333,7 @@ func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object
 		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
 	}
 	initLocationCounter(env, addr)
-	return object.NULL
+	return &object.OrgObject{Addr: addr, AllocType: int(stmt.AllocType)}
 }
 
 // ラベル定義文

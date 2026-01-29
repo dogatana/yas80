@@ -17,6 +17,7 @@ const (
 	OBJ_REGISTER
 	OBJ_REG_INDIRECT
 	OBJ_ADDR_INDIRECT
+	OBJ_ORG
 	OBJ_CODE
 	OBJ_NODE
 	OBJ_NODES
@@ -80,6 +81,21 @@ func (o *CommentObject) String() string {
 	}
 	out.WriteString(strings.Join(o.Comments, "\n"))
 	return out.String()
+}
+
+// org
+type OrgObject struct {
+	Addr      int
+	AllocType int
+}
+
+func (o *OrgObject) Type() ObjectType { return OBJ_ORG }
+func (o *OrgObject) String() string {
+	if o.AllocType == 0 {
+		return fmt.Sprintf("ORG $%04x", o.Addr)
+	} else {
+		return fmt.Sprintf("ORG $%04x, REL", o.Addr)
+	}
 }
 
 // code
