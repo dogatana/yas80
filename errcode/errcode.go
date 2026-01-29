@@ -72,6 +72,9 @@ const (
 	ESYM_CYCLIC = "シンボル %s の定義が循環参照を含む"
 	ESYM_NULL   = "シンボル %s の値が未確定"
 
+	// ORG
+	EORG_ALLOC = "ABS/REL のみ指定可能"
+
 	// CONST/EQU
 	ECONST_DUP  = "CONST/EQU '%s' は定義済み"
 	ECONST_USED = "%s を CONST/EQU として再定義不可"

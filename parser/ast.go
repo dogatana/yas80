@@ -20,6 +20,7 @@ const (
 	// statement
 	NODE_NULL // eval用: エラーが発生した文を置き換える
 	NODE_STMT
+	NODE_ORG_STMT
 	NODE_DELETED_STMT
 	NODE_LABEL_STMT
 	NODE_EXPR_STMT
@@ -124,6 +125,34 @@ func (s *ParseError) String() string {
 	} else {
 		return fmt.Sprintf("%s %d", s.Message, s.Context.Line)
 	}
+}
+
+type AllocType int
+
+const (
+	ALLOC_ABS = iota
+	ALLOC_REL
+)
+
+// org
+type OrgStatement struct {
+	Address   Expression
+	AllocType AllocType
+	Context   *fileblock.Context
+}
+
+func (s *OrgStatement) GetContext() *fileblock.Context { return s.Context }
+func (s *OrgStatement) ReplaceContext(ctx fileblock.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
+func (s *OrgStatement) NodeType() NodeType { return NODE_ORG_STMT }
+func (s *OrgStatement) String() string {
+	ret := fmt.Sprintf("ORG %s", s.Address.String())
+	if s.AllocType == ALLOC_REL {
+		ret += ", REL"
+	}
+	return ret
 }
 
 // ラベル - 独立した文として生成

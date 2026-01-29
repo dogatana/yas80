@@ -298,6 +298,18 @@ directive	: CONST ident_expr '=' expr
 				data.Label = $1
 				$$ = $2 
 			}
+			| ORG expr	{ $$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: $1.Context }}
+			| ORG expr ',' ident	
+			{ 
+				switch strings.ToUpper($4.Name) {
+				case "ABS":
+					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: $1.Context }
+				case "REL":
+					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_REL, Context: $1.Context }
+				default:
+					$$ = &ParseError{Message: errcode.EORG_ALLOC, Context: $1.Context}
+				}
+			}
 			;
 
 
