@@ -26,7 +26,9 @@ SRC = main.go \
 	logging/logging.go \
 	errcode/errcode.go \
 	fileblock/fileblock.go fileblock/context.go \
-	lister/lister.go
+	lister/lister.go \
+	options/options.go
+
 
 TEMP = parser/temp.go
 YACC = parser/parser.y

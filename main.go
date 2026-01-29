@@ -6,12 +6,12 @@ import (
 	"io"
 	"os"
 	"strconv"
-	"strings"
 	"yas80/evaluator"
 	"yas80/fileblock"
 	"yas80/lister"
 	"yas80/logging"
 	"yas80/object"
+	"yas80/options"
 	"yas80/parser"
 )
 
@@ -38,43 +38,39 @@ func parse(logger *logging.Logger, input io.Reader, filename string) *parser.Blo
 	return parser.Parse(l)
 }
 
+var Option options.Option
+
 // メイン関数
 func main() {
 	var (
-		file  string
-		input io.Reader
+		file string
+		fb   *fileblock.FileBlock
+		err  error
 	)
 
-	switch len(os.Args) {
-	case 1:
-		file = "stdin"
-		input = os.Stdin
-	case 2:
-		file = "arg"
-		input = strings.NewReader(os.Args[1])
-	case 3:
-		fmt.Println("usage: main | main text")
-		os.Exit(1)
-	}
+	opt := options.Parse()
 
-	// 	input = strings.NewReader(`
-	// rept 2
-	//   rept 2
-	//     ret
-	//  endr
-	// endr
-	// 	`)
-	// logger 作成
-	logger := logging.New(file)
-
-	// lexer debug
-	if getDebugEnv("lexdebug") != 0 {
-		fb, err := fileblock.NewFromReader(file, input)
-		if err != nil {
+	switch {
+	case opt.Line != "":
+		fb = fileblock.New("line", []byte(opt.Line))
+	case len(opt.Args) == 0:
+		if fb, err = fileblock.NewFromReader("stdin", os.Stdin); err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		l := parser.NewLexer(fb, logger)
+	case len(opt.Args) > 0:
+		if fb, err = fileblock.NewFromFile(opt.Args[0]); err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+	}
+
+	Option = opt
+	logger := logging.New(file)
+	l := parser.NewLexer(fb, logger)
+
+	// lexer debug
+	if opt.Lexdebug {
 		for {
 			tok := l.NextToken()
 			fmt.Println(tok.String())
@@ -85,14 +81,14 @@ func main() {
 		}
 	}
 
-	parser.SetYYDebug(getDebugEnv("yydebug"))
+	parser.SetYYDebug(opt.YYdebug)
 
 	// 構文解析開始
 	fmt.Println("# parse")
-	prog := parse(logger, input, file)
+	prog := parser.Parse(l)
 
 	// 構文解析直後の AST 表示
-	if getDebugEnv("astdebug") > 0 {
+	if opt.Astdebug > 0 {
 		logger.Print()
 		fmt.Println("--")
 		for i, s := range prog.Block {
@@ -100,7 +96,7 @@ func main() {
 		}
 		fmt.Println("--")
 		fmt.Println(prog.String())
-		if getDebugEnv("astdebug") == 1 {
+		if opt.Astdebug == 1 {
 			os.Exit(0)
 		}
 	}
@@ -110,7 +106,7 @@ func main() {
 	prog = parser.PreProrocess(logger, prog)
 
 	// プリプロセス直後の AST 表示
-	if getDebugEnv("astdebug") > 1 {
+	if opt.Astdebug > 1 {
 		fmt.Println("--")
 		for i, s := range prog.Block {
 			fmt.Printf("%d: %#v\n", i, s)
@@ -133,7 +129,7 @@ func main() {
 	env := object.NewEnvironment(nil)
 
 	eval := evaluator.New(logger)
-	eval.Debug = getDebugEnv("evaldebug")
+	eval.Debug = opt.Evaldebug
 
 	// eval 戦略
 	// 評価後 eval.Resolved が true ならコード生成完了とみなす
