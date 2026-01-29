@@ -120,10 +120,10 @@ const (
 	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
 
 	// 組み込み関数
-	EBFN_NOT_FOUND = "組み込み関数 %s は未定義"
-	EBFN_ARG_COUNT = "組み込み関数 %s の引数の数に誤り"
-	EBFN_ARG_VALUE = "組み込み関数 %s の引数誤り"
-	EBFN_ARG_NULL  = "組み込み関数 %s の引数が未確定"
+	EEBFN_NOT_FOUND = "組み込み関数 %s は未定義"
+	EEBFN_ARG_COUNT = "組み込み関数 %s の引数の数に誤り"
+	EEBFN_ARG_VALUE = "組み込み関数 %s の引数誤り"
+	EEBFN_ARG_NULL  = "組み込み関数 %s の引数が未確定"
 
 	// 組み込みマクロ
 	EEBMAC_ARG_COUNT = "%s の引数の数誤り"

@@ -18,10 +18,10 @@ func TestBuiltinFuncLength(t *testing.T) {
 		// 0-
 		{input: `const v = $len([1,2,3])`, syms: []symValue{{"V", 3}}},
 		{input: `const array = [1,2,3] \ var v = $length(array)`, syms: []symValue{{"V", 3}}},
-		{input: `const v = $len()`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const v = $len(1,2)`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const v = $len(1)`, err: errcode.EBFN_ARG_VALUE},
-		{input: `const v = $len(xyz)`, err: errcode.EBFN_ARG_NULL},
+		{input: `const v = $len()`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const v = $len(1,2)`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const v = $len(1)`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `const v = $len(xyz)`, err: errcode.EEBFN_ARG_NULL},
 	}
 
 	for tn, tt := range tests {
@@ -64,9 +64,9 @@ func TestBuiltinFuncIsArray(t *testing.T) {
 		{input: `const v = $isary(1)`, syms: []symValue{{"V", 0}}},
 		{input: `const v = $isary("a")`, syms: []symValue{{"V", 0}}},
 		{input: `const v = $isary(hl)`, syms: []symValue{{"V", 0}}},
-		{input: `const v = $isary()`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const v = $isary(1,2)`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const v = $isary(xyz)`, err: errcode.EBFN_ARG_NULL},
+		{input: `const v = $isary()`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const v = $isary(1,2)`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const v = $isary(xyz)`, err: errcode.EEBFN_ARG_NULL},
 	}
 
 	for tn, tt := range tests {
@@ -106,10 +106,10 @@ func TestBuiltinFuncReverse(t *testing.T) {
 		// 0-
 		{input: `rept [1,2,3] \ ld a, $v \endr\ rept $rev([1,2,3]) \ ld a, $v \endr`, code: []byte{0x3e, 1, 0x3e, 2, 0x3e, 3, 0x3e, 3, 0x3e, 2, 0x3e, 1}},
 		{input: `rept [1,2,3] \ ld a, $v \endr\ rept $reverse($rev([1,2,3])) \ ld a, $v \endr`, code: []byte{0x3e, 1, 0x3e, 2, 0x3e, 3, 0x3e, 1, 0x3e, 2, 0x3e, 3}},
-		{input: `const abc = $rev()`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const abc = $rev(1, 2)`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const abc = $rev(1)`, err: errcode.EBFN_ARG_VALUE},
-		{input: `const abc = $rev(def)`, err: errcode.EBFN_ARG_NULL},
+		{input: `const abc = $rev()`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const abc = $rev(1, 2)`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const abc = $rev(1)`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `const abc = $rev(def)`, err: errcode.EEBFN_ARG_NULL},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
@@ -154,8 +154,8 @@ func TestBuiltinFuncFormat(t *testing.T) {
 			code:  []byte{0xc9, 123},
 			syms:  []symValue{{"DATA_123", 1}},
 		},
-		{input: `db $fmt()`, err: errcode.EBFN_ARG_COUNT},
-		{input: `db $fmt(1,2)`, err: errcode.EBFN_ARG_VALUE},
+		{input: `db $fmt()`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `db $fmt(1,2)`, err: errcode.EEBFN_ARG_VALUE},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
@@ -196,14 +196,14 @@ func TestBuiltinFuncHighLow(t *testing.T) {
 		{input: `const v = $hi(0x1234)`, syms: []symValue{{"V", 0x12}}},
 		{input: `const v = $l(0x1234)`, syms: []symValue{{"V", 0x34}}},
 		{input: `const v = $lo(0x1234)`, syms: []symValue{{"V", 0x34}}},
-		{input: `const v = $h()`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const v = $h(1,2)`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const v = $h("a")`, err: errcode.EBFN_ARG_VALUE},
-		{input: `const v = $h(xyz)`, err: errcode.EBFN_ARG_NULL},
-		{input: `const v = $l()`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const v = $l(1,2)`, err: errcode.EBFN_ARG_COUNT},
-		{input: `const v = $l("a")`, err: errcode.EBFN_ARG_VALUE},
-		{input: `const v = $l(xyz)`, err: errcode.EBFN_ARG_NULL},
+		{input: `const v = $h()`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const v = $h(1,2)`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const v = $h("a")`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `const v = $h(xyz)`, err: errcode.EEBFN_ARG_NULL},
+		{input: `const v = $l()`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const v = $l(1,2)`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `const v = $l("a")`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `const v = $l(xyz)`, err: errcode.EEBFN_ARG_NULL},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
@@ -242,10 +242,10 @@ func TestBuiltinFuncWord(t *testing.T) {
 		// 0-
 		{input: `dd $w(0x12)`, code: []byte{0x12, 0}},
 		{input: `db $w(0x12)`, code: []byte{0x12, 0}},
-		{input: `db $w()`, err: errcode.EBFN_ARG_COUNT},
-		{input: `db $w(1,2)`, err: errcode.EBFN_ARG_COUNT},
-		{input: `db $w("a")`, err: errcode.EBFN_ARG_VALUE},
-		{input: `const v \ db $w(v)`, err: errcode.EBFN_ARG_NULL},
+		{input: `db $w()`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `db $w(1,2)`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `db $w("a")`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `const v \ db $w(v)`, err: errcode.EEBFN_ARG_NULL},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
