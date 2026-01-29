@@ -76,7 +76,7 @@ func advanceLocationCounter(env TEnv, n int) error {
 	counter.Value += n
 
 	// 64KB アドレス超過のチェック
-	if counter.Value > 0xffff {
+	if counter.Value > 0x10000 {
 		return fmt.Errorf(errcode.EADDRESS_OVERFLOW, counter.Value)
 	}
 	return nil
