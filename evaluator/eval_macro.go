@@ -78,6 +78,12 @@ var expandingMacro map[string]bool = map[string]bool{}
 
 // マクロ評価（展開のみで引数は評価しない）
 func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+	// 組み込みマクロ
+	if obj, ok := e.evalBuiltinMacro(stmt, env); ok {
+		return obj
+	}
+
+	// ユーザ定義マクロ
 	obj, ok := env.Get(stmt.Name)
 	if !ok {
 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_UNDEF, stmt.Name), stmt.Context)

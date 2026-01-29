@@ -125,6 +125,11 @@ const (
 	EBFN_ARG_VALUE = "組み込み関数 %s の引数誤り"
 	EBFN_ARG_NULL  = "組み込み関数 %s の引数が未確定"
 
+	// 組み込みマクロ
+	EEBMAC_ARG_COUNT = "%s の引数の数誤り"
+	EEBMAC_ARG_VALUE = "%s の引数誤り"
+	EEBMAC_ARG_NULL  = "%s の引数が未確定"
+
 	// MACRO 定義
 	EMACRO_NAME = "%s は MACRO 名として使用不可"
 	EMACRO_USED = "%s を MACRO として再定義不可"

@@ -211,6 +211,9 @@ func main() {
 	}
 
 	lister := lister.New(prog, obj.(*object.BlockObject))
+	fmt.Println("-- log")
+	logger.Print()
+
 	fmt.Println("-- list")
 	lister.ProgramList(os.Stdout)
 
