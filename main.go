@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"yas80/binwriter"
 	"yas80/evaluator"
 	"yas80/fileblock"
 	"yas80/lister"
@@ -190,6 +191,11 @@ func main() {
 
 	fmt.Println("-- objects")
 	printObjects(obj.(*object.BlockObject).Block)
+
+	fmt.Println("-- binwriter")
+
+	bw := binwriter.New(obj, logger)
+	bw.Write(os.Stdout)
 }
 
 func printObjects(objs []object.Object) {
