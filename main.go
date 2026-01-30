@@ -195,7 +195,7 @@ func main() {
 	fmt.Println("-- binwriter")
 
 	bw := binwriter.New(obj, logger)
-	bw.Write(os.Stdout)
+	bw.Write("out.bin")
 }
 
 func printObjects(objs []object.Object) {

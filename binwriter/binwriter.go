@@ -1,9 +1,10 @@
 package binwriter
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
-	"io"
+	"os"
 	"slices"
 	"yas80/errcode"
 	"yas80/logging"
@@ -32,14 +33,38 @@ func New(prog object.Object, logger *logging.Logger) *BinWriter {
 	return &BinWriter{prog: prog.(*object.BlockObject), logger: logger}
 }
 
-func (b *BinWriter) Write(out io.Writer) {
+func (b *BinWriter) Write(filename string) error {
 	segs, err := b.allocateMemory()
 	if err != nil {
 		fmt.Printf("error %s", err.Error())
 	}
-	for _, s := range segs {
-		fmt.Printf(s.String())
+	for i, s := range segs {
+		fmt.Printf("%d: %s\n", i, s.String())
 	}
+
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	var size, n int
+	w := bufio.NewWriter(f)
+	for _, s := range segs {
+		if n, err = w.Write(s.code); err != nil {
+			return err
+		}
+		size += n
+		for _, cs := range s.children {
+			if n, err = w.Write(cs.code); err != nil {
+				return err
+			}
+			size += n
+		}
+	}
+	w.Flush()
+	fmt.Printf("write %d(0x%x)\n", size, size)
+	return nil
 }
 
 func (b *BinWriter) allocateMemory() ([]*Segment, error) {
