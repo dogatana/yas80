@@ -89,9 +89,13 @@ func testMessage(t *testing.T, testType int, tn int, logger *logging.Logger, exp
 
 func parseText(input string, logger *logging.Logger) *parser.BlockStatement {
 	file := "<string>"
-	fb := filecontent.New(file, []byte(input))
-	l := parser.NewLexer(fb, logger)
-	return parser.Parse(l)
+	fc := filecontent.New(file, []byte(input))
+	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
+		ret := fc
+		fc = nil
+		return ret
+	})
+	return parser.Parse(lex)
 }
 
 func getCount(logger *logging.Logger) []int {

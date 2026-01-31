@@ -93,8 +93,12 @@ func parseTextForTest(input string, logger *logging.Logger) *parser.BlockStateme
 
 	fc := filecontent.New(logger.Filename, []byte(input))
 
-	l := parser.NewLexer(fc, logger)
-	prog = parser.Parse(l)
+	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
+		ret := fc
+		fc = nil
+		return ret
+	})
+	prog = parser.Parse(lex)
 	if len(logger.Errors) > 0 {
 		return prog
 	}
