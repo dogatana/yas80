@@ -11,12 +11,27 @@ func newLexerForTest(input string) *Lexer {
 	file := "<string>"
 	logger := logging.New(file)
 	fc := filecontent.New(file, []byte(input))
-	return NewLexer(fc, logger)
+	lex := NewLexer(logger, func() *filecontent.FileContent {
+		ret := fc
+		fc = nil
+		return ret
+	})
+
+	// ./parser/*_test.go の後方互換性のため、最初の FILE トークンを読み飛ばす
+	var lval yySymType
+	lex.Lex(&lval)
+	return lex
 }
 
 func ParseForTest(t *testing.T, lexer *Lexer, tn int) *BlockStatement {
 	prog := Parse(lexer)
 	return PreProrocess(lexer.logger, prog)
+}
+
+func nextToken(l *Lexer) Token {
+	var lval yySymType
+	l.Lex(&lval)
+	return lval.token
 }
 
 func testInputEnd(t *testing.T, tn int, lexer *Lexer) {
