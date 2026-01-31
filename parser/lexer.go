@@ -4,24 +4,24 @@ import (
 	"fmt"
 	"strings"
 	"yas80/errcode"
-	"yas80/fileblock"
+	"yas80/filecontent"
 	"yas80/logging"
 )
 
 const EOF = 0
 
-type FileBlockProvider func() *fileblock.FileBlock
+type filecontentProvider func() *filecontent.FileContent
 
 type LexerContext struct {
-	filename   string
-	lineNumber int
-	index      int
-	fileBlock  *fileblock.FileBlock
-	curChar    rune
+	filename    string
+	lineNumber  int
+	index       int
+	fileContent *filecontent.FileContent
+	curChar     rune
 }
 
-func (ctx *LexerContext) toContext(start int) *fileblock.Context {
-	return &fileblock.Context{FileBlock: ctx.fileBlock, Line: ctx.lineNumber, Index: start}
+func (ctx *LexerContext) toContext(start int) *filecontent.Context {
+	return &filecontent.Context{FileContent: ctx.fileContent, Line: ctx.lineNumber, Index: start}
 }
 
 // 最低限必要な構造体を定義
@@ -31,11 +31,11 @@ type Lexer struct {
 	logger  *logging.Logger
 	program *BlockStatement
 	lctx    *LexerContext
-	//	callback FileBlockProvider
+	//	callback filecontentProvider
 }
 
-func NewLexer(fb *fileblock.FileBlock, logger *logging.Logger) *Lexer {
-	lctx := &LexerContext{filename: fb.Filename, lineNumber: 1, fileBlock: fb}
+func NewLexer(fc *filecontent.FileContent, logger *logging.Logger) *Lexer {
+	lctx := &LexerContext{filename: fc.Filename, lineNumber: 1, fileContent: fc}
 	l := &Lexer{logger: logger, program: &BlockStatement{}, lctx: lctx}
 	l.nextChar()
 	return l
@@ -45,14 +45,14 @@ func NewLexer(fb *fileblock.FileBlock, logger *logging.Logger) *Lexer {
 func (l *Lexer) Lex(lval *yySymType) int {
 	// if l.ctx == nil {
 	// 	l.ctx = &LexerContext{
-	// 		fileBlock:  l.callback(),
+	// 		filecontent:  l.callback(),
 	// 		index:      0,
 	// 		curChar:    0,
 	// 		lineNumber: 0,
 	// 	}
 	// }
-	// if l.ctx.fileBlock == nil {
-	// 	// これ以上 FileBlock が得られない場合 EOF
+	// if l.ctx.fileContent == nil {
+	// 	// これ以上 filecontent が得られない場合 EOF
 	// 	tok := Token{TokenType: 0, Literal: "[EOF]", LineNumber: l.ctx.lineNumber}
 	// 	lval.token = tok
 	// 	return int(tok.TokenSubType)
@@ -63,7 +63,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 }
 
 // yyLexer インターフェースメソッド
-func (l *Lexer) Error(msg string, ctx *fileblock.Context) {
+func (l *Lexer) Error(msg string, ctx *filecontent.Context) {
 	if strings.HasPrefix(msg, "[I]") {
 		l.logger.Info(msg[3:], ctx)
 	} else if strings.HasPrefix(msg, "[W]") {
@@ -77,7 +77,7 @@ func (l *Lexer) Error(msg string, ctx *fileblock.Context) {
 	}
 }
 
-func NewLexerProvider(callback FileBlockProvider, logger *logging.Logger) *Lexer {
+func NewLexerProvider(callback filecontentProvider, logger *logging.Logger) *Lexer {
 	return &Lexer{logger: logger}
 }
 
@@ -369,7 +369,7 @@ func (l *Lexer) nextChar() {
 		l.lctx.curChar = EOF
 		return
 	}
-	if l.lctx.index >= len(l.lctx.fileBlock.Content) {
+	if l.lctx.index >= len(l.lctx.fileContent.Content) {
 		if l.lctx.curChar != '\n' {
 			l.lctx.curChar = '\n'
 			return
@@ -379,19 +379,19 @@ func (l *Lexer) nextChar() {
 		return
 	}
 	start := l.lctx.index
-	l.lctx.index += l.charSize(l.lctx.fileBlock.Content[l.lctx.index])
-	l.lctx.curChar = []rune(string(l.lctx.fileBlock.Content[start:l.lctx.index]))[0]
+	l.lctx.index += l.charSize(l.lctx.fileContent.Content[l.lctx.index])
+	l.lctx.curChar = []rune(string(l.lctx.fileContent.Content[start:l.lctx.index]))[0]
 	if l.lctx.curChar == '\n' {
 		l.lctx.lineNumber++
 	}
 }
 
 func (l *Lexer) peekChar() rune {
-	if l.lctx.index >= len(l.lctx.fileBlock.Content) {
+	if l.lctx.index >= len(l.lctx.fileContent.Content) {
 		return '\n'
 	}
-	end := l.lctx.index + l.charSize(l.lctx.fileBlock.Content[l.lctx.index])
-	return []rune(string(l.lctx.fileBlock.Content[l.lctx.index:end]))[0]
+	end := l.lctx.index + l.charSize(l.lctx.fileContent.Content[l.lctx.index])
+	return []rune(string(l.lctx.fileContent.Content[l.lctx.index:end]))[0]
 }
 
 func (l *Lexer) skipWhitespace() {
@@ -446,10 +446,10 @@ func (l *Lexer) readString(quote rune) string {
 
 func (l *Lexer) readWord() string {
 	startIndex := l.lctx.index - 1
-	for l.lctx.index < len(l.lctx.fileBlock.Content) && l.isWordChar(rune(l.lctx.fileBlock.Content[l.lctx.index])) {
+	for l.lctx.index < len(l.lctx.fileContent.Content) && l.isWordChar(rune(l.lctx.fileContent.Content[l.lctx.index])) {
 		l.lctx.index++
 	}
-	return string(l.lctx.fileBlock.Content[startIndex:l.lctx.index])
+	return string(l.lctx.fileContent.Content[startIndex:l.lctx.index])
 }
 
 func (l *Lexer) readHexString() string {
@@ -457,10 +457,10 @@ func (l *Lexer) readHexString() string {
 		return ""
 	}
 	startIndex := l.lctx.index - 1
-	for l.lctx.index < len(l.lctx.fileBlock.Content) && l.isHexChar(rune(l.lctx.fileBlock.Content[l.lctx.index])) {
+	for l.lctx.index < len(l.lctx.fileContent.Content) && l.isHexChar(rune(l.lctx.fileContent.Content[l.lctx.index])) {
 		l.lctx.index++
 	}
-	return string(l.lctx.fileBlock.Content[startIndex:l.lctx.index])
+	return string(l.lctx.fileContent.Content[startIndex:l.lctx.index])
 }
 
 func (l *Lexer) readBinString() string {
@@ -468,10 +468,10 @@ func (l *Lexer) readBinString() string {
 		return ""
 	}
 	startIndex := l.lctx.index - 1
-	for l.lctx.index < len(l.lctx.fileBlock.Content) && l.isBinChar(rune(l.lctx.fileBlock.Content[l.lctx.index])) {
+	for l.lctx.index < len(l.lctx.fileContent.Content) && l.isBinChar(rune(l.lctx.fileContent.Content[l.lctx.index])) {
 		l.lctx.index++
 	}
-	return string(l.lctx.fileBlock.Content[startIndex:l.lctx.index])
+	return string(l.lctx.fileContent.Content[startIndex:l.lctx.index])
 }
 
 func (l *Lexer) readOctString() string {
@@ -479,10 +479,10 @@ func (l *Lexer) readOctString() string {
 		return ""
 	}
 	startIndex := l.lctx.index - 1
-	for l.lctx.index < len(l.lctx.fileBlock.Content) && l.isOctChar(rune(l.lctx.fileBlock.Content[l.lctx.index])) {
+	for l.lctx.index < len(l.lctx.fileContent.Content) && l.isOctChar(rune(l.lctx.fileContent.Content[l.lctx.index])) {
 		l.lctx.index++
 	}
-	return string(l.lctx.fileBlock.Content[startIndex:l.lctx.index])
+	return string(l.lctx.fileContent.Content[startIndex:l.lctx.index])
 }
 
 func (l *Lexer) isDigit(ch rune) bool {

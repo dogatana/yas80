@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
-	"yas80/fileblock"
+	"yas80/filecontent"
 	"yas80/parser"
 )
 
@@ -50,7 +50,7 @@ type Object interface {
 // value - list ファイル出力用
 type ValueObject struct {
 	Value   Object
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (o *ValueObject) Type() ObjectType { return OBJ_VALUE }
@@ -61,7 +61,7 @@ func (o *ValueObject) String() string {
 // value - list ファイル出力用
 type CommentObject struct {
 	Comments []string
-	Context  *fileblock.Context
+	Context  *filecontent.Context
 }
 
 func (o *CommentObject) Type() ObjectType { return OBJ_COMMENT }
@@ -104,7 +104,7 @@ type CodeObject struct {
 	Code    []byte
 	CZ80    int
 	CR800   int
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (o *CodeObject) Type() ObjectType { return OBJ_CODE }
@@ -225,7 +225,7 @@ func (o *ReturnObject) String() string {
 type NumberObject struct {
 	Value     int
 	ForceWord bool // true: word 強制
-	Context   *fileblock.Context
+	Context   *filecontent.Context
 }
 
 func (o *NumberObject) Type() ObjectType { return OBJ_NUMBER }
@@ -234,7 +234,7 @@ func (o *NumberObject) String() string   { return fmt.Sprintf("%d(0x%x)", o.Valu
 // 文字列
 type StringObject struct {
 	Value   string
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (o *StringObject) Type() ObjectType { return OBJ_STRING }
@@ -302,7 +302,7 @@ type FunctionObject struct {
 	Params  []string
 	Body    parser.Node
 	Env     Environment
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (o *FunctionObject) Type() ObjectType { return OBJ_FUNC }

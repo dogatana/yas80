@@ -3,7 +3,7 @@ package object
 import (
 	"fmt"
 	"strings"
-	"yas80/fileblock"
+	"yas80/filecontent"
 	"yas80/parser"
 )
 
@@ -30,7 +30,7 @@ type SymbolObject struct {
 	Node      parser.Node
 	Value     Object
 	DependsOn []string
-	Context   *fileblock.Context
+	Context   *filecontent.Context
 }
 
 func (s *SymbolObject) Type() ObjectType { return OBJ_SYMBOL }
@@ -43,7 +43,7 @@ func (s *SymbolObject) String() string {
 	return str + "}"
 }
 
-func NewLabelSymbol(name string, addr int, ctx *fileblock.Context) *SymbolObject {
+func NewLabelSymbol(name string, addr int, ctx *filecontent.Context) *SymbolObject {
 	return &SymbolObject{
 		Name:    name,
 		SymType: SYM_LABEL,
@@ -52,7 +52,7 @@ func NewLabelSymbol(name string, addr int, ctx *fileblock.Context) *SymbolObject
 	}
 }
 
-func NewConstSymbol(name string, node parser.Node, value Object, depends []string, ctx *fileblock.Context) *SymbolObject {
+func NewConstSymbol(name string, node parser.Node, value Object, depends []string, ctx *filecontent.Context) *SymbolObject {
 	return &SymbolObject{Name: name,
 		SymType:   SYM_CONST,
 		Node:      node,
@@ -62,7 +62,7 @@ func NewConstSymbol(name string, node parser.Node, value Object, depends []strin
 	}
 }
 
-func NewVarSymbol(name string, node parser.Node, value Object, depends []string, ctx *fileblock.Context) *SymbolObject {
+func NewVarSymbol(name string, node parser.Node, value Object, depends []string, ctx *filecontent.Context) *SymbolObject {
 	return &SymbolObject{Name: name,
 		SymType:   SYM_VAR,
 		Node:      node,
@@ -72,7 +72,7 @@ func NewVarSymbol(name string, node parser.Node, value Object, depends []string,
 	}
 }
 
-func NewUnknownSymbol(name string, ctx *fileblock.Context) *SymbolObject {
+func NewUnknownSymbol(name string, ctx *filecontent.Context) *SymbolObject {
 	return &SymbolObject{
 		Name:      name,
 		SymType:   SYM_UNKNOWN,

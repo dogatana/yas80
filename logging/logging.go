@@ -2,7 +2,7 @@ package logging
 
 import (
 	"fmt"
-	"yas80/fileblock"
+	"yas80/filecontent"
 )
 
 type LogMessage interface {
@@ -11,7 +11,7 @@ type LogMessage interface {
 }
 type ErrorMessage struct {
 	message string
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (m *ErrorMessage) Message() string { return m.message }
@@ -19,13 +19,13 @@ func (m *ErrorMessage) Error() string {
 	if m.Context == nil {
 		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, m.message)
 	} else {
-		return fmt.Sprintf("%q:%d [ERROR] %s", m.Context.FileBlock.Filename, m.Context.Line, m.message)
+		return fmt.Sprintf("%q:%d [ERROR] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
 	}
 }
 
 type WarningMessage struct {
 	message string
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (m *WarningMessage) Message() string { return m.message }
@@ -33,13 +33,13 @@ func (m *WarningMessage) Error() string {
 	if m.Context == nil {
 		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, m.message)
 	} else {
-		return fmt.Sprintf("%q:%d [WARN] %s", m.Context.FileBlock.Filename, m.Context.Line, m.message)
+		return fmt.Sprintf("%q:%d [WARN] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
 	}
 }
 
 type InfoMessage struct {
 	message string
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (m *InfoMessage) Message() string { return m.message }
@@ -47,7 +47,7 @@ func (m *InfoMessage) Error() string {
 	if m.Context == nil {
 		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, m.message)
 	} else {
-		return fmt.Sprintf("%q:%d [INFO] %s", m.Context.FileBlock.Filename, m.Context.Line, m.message)
+		return fmt.Sprintf("%q:%d [INFO] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
 	}
 }
 
@@ -62,18 +62,18 @@ func New(filename string) *Logger {
 	return &Logger{Filename: filename}
 }
 
-func (l *Logger) Error(msg string, ctx *fileblock.Context) error {
+func (l *Logger) Error(msg string, ctx *filecontent.Context) error {
 	err := &ErrorMessage{message: msg, Context: ctx}
 	l.Errors = append(l.Errors, err)
 	return err
 }
 
-func (l *Logger) Warning(msg string, ctx *fileblock.Context) error {
+func (l *Logger) Warning(msg string, ctx *filecontent.Context) error {
 	err := &WarningMessage{message: msg, Context: ctx}
 	l.Warnings = append(l.Warnings, err)
 	return err
 }
-func (l *Logger) Info(msg string, ctx *fileblock.Context) error {
+func (l *Logger) Info(msg string, ctx *filecontent.Context) error {
 	err := &InfoMessage{message: msg, Context: ctx}
 	l.Infomation = append(l.Infomation, err)
 	return err

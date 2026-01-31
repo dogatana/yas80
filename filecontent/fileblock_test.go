@@ -1,4 +1,4 @@
-package fileblock
+package filecontent
 
 import (
 	"bytes"

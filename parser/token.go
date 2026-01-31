@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	"yas80/fileblock"
+	"yas80/filecontent"
 )
 
 // TokenType, TokenType は grammer.y の %token で定義される
@@ -13,7 +13,7 @@ type Token struct {
 	TokenType    TokenType
 	TokenSubType TokenSubType
 	Literal      string
-	Context      *fileblock.Context
+	Context      *filecontent.Context
 }
 
 func (t Token) String() string {

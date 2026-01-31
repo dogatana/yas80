@@ -3,14 +3,14 @@ package parser
 import (
 	"strings"
 	"testing"
-	"yas80/fileblock"
+	"yas80/filecontent"
 	"yas80/logging"
 )
 
 func newLexerForTest(input string) *Lexer {
 	file := "<string>"
 	logger := logging.New(file)
-	fb := fileblock.New(file, []byte(input))
+	fb := filecontent.New(file, []byte(input))
 	return NewLexer(fb, logger)
 }
 

@@ -1,4 +1,4 @@
-package fileblock
+package filecontent
 
 import (
 	"bytes"
@@ -12,12 +12,12 @@ import (
 	"golang.org/x/text/transform"
 )
 
-type FileBlock struct {
+type FileContent struct {
 	Filename string
 	Content  []byte
 }
 
-func (fb *FileBlock) String() string {
+func (fb *FileContent) String() string {
 	var content string
 	if fb.Content == nil {
 		content = "<nil>"
@@ -27,19 +27,19 @@ func (fb *FileBlock) String() string {
 	return fmt.Sprintf("FileBlock{FileName: %s, Content: %s}", fb.Filename, content)
 }
 
-func New(filename string, content []byte) *FileBlock {
-	return &FileBlock{Filename: filename, Content: content}
+func New(filename string, content []byte) *FileContent {
+	return &FileContent{Filename: filename, Content: content}
 }
 
-func NewFromReader(filename string, reader io.Reader) (*FileBlock, error) {
+func NewFromReader(filename string, reader io.Reader) (*FileContent, error) {
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
-	return &FileBlock{Filename: filename, Content: data}, nil
+	return &FileContent{Filename: filename, Content: data}, nil
 
 }
-func NewFromFile(filename string) (*FileBlock, error) {
+func NewFromFile(filename string) (*FileContent, error) {
 	var data []byte
 	var err error
 
@@ -64,7 +64,7 @@ func NewFromFile(filename string) (*FileBlock, error) {
 	}
 	// CR/LF を LF へ
 	data = bytes.ReplaceAll(data, []byte{13, 10}, []byte{10})
-	return &FileBlock{Filename: filename, Content: data}, nil
+	return &FileContent{Filename: filename, Content: data}, nil
 }
 
 func checkFile(filename string) error {

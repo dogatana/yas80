@@ -6,7 +6,7 @@ import (
 	"os"
 	"yas80/binwriter"
 	"yas80/evaluator"
-	"yas80/fileblock"
+	"yas80/filecontent"
 	"yas80/lister"
 	"yas80/logging"
 	"yas80/object"
@@ -20,7 +20,7 @@ var Option options.Option
 func main() {
 	var (
 		file string
-		fb   *fileblock.FileBlock
+		fc   *filecontent.FileContent
 		err  error
 	)
 
@@ -28,14 +28,14 @@ func main() {
 
 	switch {
 	case opt.Line != "":
-		fb = fileblock.New("line", []byte(opt.Line))
+		fc = filecontent.New("line", []byte(opt.Line))
 	case len(opt.Args) == 0:
-		if fb, err = fileblock.NewFromReader("stdin", os.Stdin); err != nil {
+		if fc, err = filecontent.NewFromReader("stdin", os.Stdin); err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
 	case len(opt.Args) > 0:
-		if fb, err = fileblock.NewFromFile(opt.Args[0]); err != nil {
+		if fc, err = filecontent.NewFromFile(opt.Args[0]); err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
@@ -43,7 +43,7 @@ func main() {
 
 	Option = opt
 	logger := logging.New(file)
-	l := parser.NewLexer(fb, logger)
+	l := parser.NewLexer(fc, logger)
 
 	// lexer debug
 	if opt.Lexdebug {
@@ -268,7 +268,7 @@ func printStatement(stmt parser.Statement) {
 		fmt.Println(stmt.String())
 	}
 }
-func printContext(ctx *fileblock.Context) {
+func printContext(ctx *filecontent.Context) {
 	if ctx == nil {
 		fmt.Println("--:--")
 		return

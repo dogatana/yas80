@@ -25,7 +25,7 @@ SRC = main.go \
 	evaluator/eval_builtin_macro.go \
 	logging/logging.go \
 	errcode/errcode.go \
-	fileblock/fileblock.go fileblock/context.go \
+	filecontent/filecontent.go filecontent/context.go \
 	lister/lister.go \
 	binwriter/binwriter.go \
 	options/options.go 
@@ -54,10 +54,10 @@ yacc:
 	python ${PATCH} ${PARSER} ${PARSER} ${YOUT}
 
 vet: fmt
-	go vet ./parser ./evaluator ./fileblock ./errtest ./logging
+	go vet ./parser ./evaluator ./filecontent ./errtest ./logging
 
 fmt:
-	go fmt ./parser ./evaluator ./fileblock ./errtest ./logging
+	go fmt ./parser ./evaluator ./filecontent ./errtest ./logging
 
 check:
 	staticcheck ./parser ./evaluator ./errtest ./logging
@@ -66,10 +66,10 @@ tc:
 	python internal/testutil/errcode_coverage.py
 
 test: internal/testutil/errcode_names.go
-	go test ./parser ./evaluator ./fileblock ./errtest
+	go test ./parser ./evaluator ./filecontent ./errtest
 
 testv: internal/testutil/errcode_names.go
-	go test -v ./parser ./evaluator ./fileblock ./errtest
+	go test -v ./parser ./evaluator ./filecontent ./errtest
 
 internal/testutil/errcode_names.go: errcode/errcode.go
 	python internal/testutil/errcode_names.py $< $@

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"yas80/errcode"
-	"yas80/fileblock"
+	"yas80/filecontent"
 )
 
 func parseInt(s string) (int64, error) {
@@ -180,7 +180,7 @@ var infixFuncs map[int]infixFuncType = map[int]infixFuncType{
 	},
 }
 
-func buildInfixExpression(opcode int, op1, op2 Expression, ctx *fileblock.Context) Expression {
+func buildInfixExpression(opcode int, op1, op2 Expression, ctx *filecontent.Context) Expression {
 	if op1.NodeType() == NODE_ERROR {
 		return op1
 	}
@@ -227,7 +227,7 @@ var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
 	},
 }
 
-func buildPrefixExpression(opcode int, op Expression, ctx *fileblock.Context) Expression {
+func buildPrefixExpression(opcode int, op Expression, ctx *filecontent.Context) Expression {
 	if op.NodeType() == NODE_ERROR {
 		return op
 	}

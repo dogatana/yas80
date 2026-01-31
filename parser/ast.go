@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
-	"yas80/fileblock"
+	"yas80/filecontent"
 )
 
 const (
@@ -80,8 +80,8 @@ type Node interface {
 // 文
 type Statement interface {
 	Node
-	GetContext() *fileblock.Context
-	ReplaceContext(ctx fileblock.Context)
+	GetContext() *filecontent.Context
+	ReplaceContext(ctx filecontent.Context)
 }
 
 // 式
@@ -94,13 +94,13 @@ type Expression interface {
 
 // Null
 type NullStatement struct {
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *NullStatement) NodeType() NodeType             { return NODE_NULL }
-func (s *NullStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *NullStatement) String() string                 { return "NullStatement" }
-func (s *NullStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *NullStatement) NodeType() NodeType               { return NODE_NULL }
+func (s *NullStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *NullStatement) String() string                   { return "NullStatement" }
+func (s *NullStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -108,11 +108,11 @@ func (s *NullStatement) ReplaceContext(ctx fileblock.Context) {
 // Error(Expression, Statement)
 type ParseError struct {
 	Message string
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *ParseError) GetContext() *fileblock.Context { return s.Context }
-func (s *ParseError) ReplaceContext(ctx fileblock.Context) {
+func (s *ParseError) GetContext() *filecontent.Context { return s.Context }
+func (s *ParseError) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -138,11 +138,11 @@ const (
 type OrgStatement struct {
 	Address   Expression
 	AllocType AllocType
-	Context   *fileblock.Context
+	Context   *filecontent.Context
 }
 
-func (s *OrgStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *OrgStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *OrgStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *OrgStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -158,11 +158,11 @@ func (s *OrgStatement) String() string {
 // ラベル - 独立した文として生成
 type LabelStatement struct {
 	Name    Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *LabelStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *LabelStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *LabelStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *LabelStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -175,11 +175,11 @@ func (s *LabelStatement) String() string {
 type ProcStatement struct {
 	Name    Expression
 	Block   *BlockStatement
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *ProcStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *ProcStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *ProcStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *ProcStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -190,12 +190,12 @@ func (s *ProcStatement) String() string     { return fmt.Sprintf("PROC(%s)", s.N
 type ProcBlockStatement struct {
 	Name    string
 	Block   []Statement
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *ProcBlockStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *ProcBlockStatement) NodeType() NodeType             { return NODE_PROC_BLOCK_STMT }
-func (s *ProcBlockStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *ProcBlockStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *ProcBlockStatement) NodeType() NodeType               { return NODE_PROC_BLOCK_STMT }
+func (s *ProcBlockStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -215,12 +215,12 @@ func (s *ProcBlockStatement) String() string {
 type EnumStatement struct {
 	Name     string
 	Elements *EnumElements
-	Context  *fileblock.Context
+	Context  *filecontent.Context
 }
 
-func (s *EnumStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *EnumStatement) NodeType() NodeType             { return NODE_ENUM_STMT }
-func (s *EnumStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *EnumStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *EnumStatement) NodeType() NodeType               { return NODE_ENUM_STMT }
+func (s *EnumStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -239,9 +239,9 @@ type EnumElements struct {
 	Elements []*EnumElement
 }
 
-func (s *EnumElements) GetContext() *fileblock.Context       { return nil }
-func (s *EnumElements) NodeType() NodeType                   { return NODE_ENUM_ELEMENTS_STMT }
-func (s *EnumElements) ReplaceContext(ctx fileblock.Context) {}
+func (s *EnumElements) GetContext() *filecontent.Context       { return nil }
+func (s *EnumElements) NodeType() NodeType                     { return NODE_ENUM_ELEMENTS_STMT }
+func (s *EnumElements) ReplaceContext(ctx filecontent.Context) {}
 func (s *EnumElements) String() string {
 	stmts := []string{}
 	for _, e := range s.Elements {
@@ -254,12 +254,12 @@ func (s *EnumElements) String() string {
 type EnumElement struct {
 	Name    string
 	Value   Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *EnumElement) GetContext() *fileblock.Context { return s.Context }
-func (s *EnumElement) NodeType() NodeType             { return NODE_ENUM_ELEMENT }
-func (s *EnumElement) ReplaceContext(ctx fileblock.Context) {
+func (s *EnumElement) GetContext() *filecontent.Context { return s.Context }
+func (s *EnumElement) NodeType() NodeType               { return NODE_ENUM_ELEMENT }
+func (s *EnumElement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -276,12 +276,12 @@ type ReptStatement struct {
 	MaxCount Expression
 	Block    *BlockStatement
 	End      int // ENDR 行
-	Context  *fileblock.Context
+	Context  *filecontent.Context
 }
 
-func (s *ReptStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *ReptStatement) NodeType() NodeType             { return NODE_REPT_STMT }
-func (s *ReptStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *ReptStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *ReptStatement) NodeType() NodeType               { return NODE_REPT_STMT }
+func (s *ReptStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -303,12 +303,12 @@ func (s *ReptStatement) String() string {
 type SetSysVarStatement struct {
 	Name    string
 	Value   any // Expression or Object
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *SetSysVarStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *SetSysVarStatement) NodeType() NodeType             { return NODE_SET_SYSVAR_STMT }
-func (s *SetSysVarStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *SetSysVarStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *SetSysVarStatement) NodeType() NodeType               { return NODE_SET_SYSVAR_STMT }
+func (s *SetSysVarStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -321,12 +321,12 @@ type IfStatement struct {
 	Condition   Expression
 	Consequence Node
 	Alternative Node
-	Context     *fileblock.Context
+	Context     *filecontent.Context
 }
 
-func (s *IfStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *IfStatement) NodeType() NodeType             { return NODE_IF_STMT }
-func (s *IfStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *IfStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *IfStatement) NodeType() NodeType               { return NODE_IF_STMT }
+func (s *IfStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -361,12 +361,12 @@ type FuncStatement struct {
 	Name    string
 	Params  []string
 	Block   *BlockStatement
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *FuncStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *FuncStatement) NodeType() NodeType             { return NODE_FUNC_STMT }
-func (s *FuncStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *FuncStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *FuncStatement) NodeType() NodeType               { return NODE_FUNC_STMT }
+func (s *FuncStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -386,12 +386,12 @@ type MacroStatement struct {
 	Params  []string
 	Body    *BlockStatement
 	End     int // ENDM 行
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *MacroStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *MacroStatement) NodeType() NodeType             { return NODE_MACRO_STMT }
-func (s *MacroStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *MacroStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *MacroStatement) NodeType() NodeType               { return NODE_MACRO_STMT }
+func (s *MacroStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -409,12 +409,12 @@ func (s *MacroStatement) String() string {
 type MacroCallStatement struct {
 	Name    string
 	Args    *ExpressionList
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *MacroCallStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *MacroCallStatement) NodeType() NodeType             { return NODE_MACRO_CALL_STMT }
-func (s *MacroCallStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *MacroCallStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *MacroCallStatement) NodeType() NodeType               { return NODE_MACRO_CALL_STMT }
+func (s *MacroCallStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -431,9 +431,9 @@ type BlockStatement struct {
 	Block []Statement
 }
 
-func (s *BlockStatement) GetContext() *fileblock.Context       { return &fileblock.Context{} }
-func (s *BlockStatement) NodeType() NodeType                   { return NODE_BLOCK_STMT }
-func (s *BlockStatement) ReplaceContext(ctx fileblock.Context) {}
+func (s *BlockStatement) GetContext() *filecontent.Context       { return &filecontent.Context{} }
+func (s *BlockStatement) NodeType() NodeType                     { return NODE_BLOCK_STMT }
+func (s *BlockStatement) ReplaceContext(ctx filecontent.Context) {}
 func (s *BlockStatement) String() string {
 	stmts := []string{}
 
@@ -451,12 +451,12 @@ type MacroBlockStatement struct {
 	Value   any    // REPT 用 Expression/Object
 	Block   []Statement
 	End     int // ENDR/ENDM 行
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *MacroBlockStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *MacroBlockStatement) NodeType() NodeType             { return NODE_MACRO_BLOCK_STMT }
-func (s *MacroBlockStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *MacroBlockStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *MacroBlockStatement) NodeType() NodeType               { return NODE_MACRO_BLOCK_STMT }
+func (s *MacroBlockStatement) ReplaceContext(ctx filecontent.Context) {
 	if s.Context.Source == nil {
 		ctx.Source = s.Context
 	} else {
@@ -480,12 +480,12 @@ func (s *MacroBlockStatement) String() string {
 type ConstStatement struct {
 	Name    Expression
 	Value   Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *ConstStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *ConstStatement) NodeType() NodeType             { return NODE_CONST_STMT }
-func (s *ConstStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *ConstStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *ConstStatement) NodeType() NodeType               { return NODE_CONST_STMT }
+func (s *ConstStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -504,12 +504,12 @@ func (s *ConstStatement) String() string {
 type VariableStatement struct {
 	Name    Expression
 	Value   Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *VariableStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *VariableStatement) NodeType() NodeType             { return NODE_VAR_STMT }
-func (s *VariableStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *VariableStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *VariableStatement) NodeType() NodeType               { return NODE_VAR_STMT }
+func (s *VariableStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -528,12 +528,12 @@ func (s *VariableStatement) String() string {
 type AssignStatement struct {
 	Left    Expression
 	Value   Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *AssignStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *AssignStatement) NodeType() NodeType             { return NODE_ASSIGN_STMT }
-func (s *AssignStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *AssignStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *AssignStatement) NodeType() NodeType               { return NODE_ASSIGN_STMT }
+func (s *AssignStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -549,12 +549,12 @@ func (s *AssignStatement) String() string {
 
 // Exitm 文
 type ExitmStatement struct {
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *ExitmStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *ExitmStatement) NodeType() NodeType             { return NODE_EXITM_STMT }
-func (s *ExitmStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *ExitmStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *ExitmStatement) NodeType() NodeType               { return NODE_EXITM_STMT }
+func (s *ExitmStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -563,12 +563,12 @@ func (s *ExitmStatement) String() string { return "EXITM" }
 // Return 文
 type ReturnStatement struct {
 	Value   Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *ReturnStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *ReturnStatement) NodeType() NodeType             { return NODE_RETURN_STMT }
-func (s *ReturnStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *ReturnStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *ReturnStatement) NodeType() NodeType               { return NODE_RETURN_STMT }
+func (s *ReturnStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -584,12 +584,12 @@ type DataStatement struct {
 	Label   Expression
 	Size    int
 	Values  []Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *DataStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *DataStatement) NodeType() NodeType             { return NODE_DATA_STMT }
-func (s *DataStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *DataStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *DataStatement) NodeType() NodeType               { return NODE_DATA_STMT }
+func (s *DataStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -602,12 +602,12 @@ type DataStoreStatement struct {
 	Size      int
 	Count     Expression
 	FillValue Expression
-	Context   *fileblock.Context
+	Context   *filecontent.Context
 }
 
-func (s *DataStoreStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *DataStoreStatement) NodeType() NodeType             { return NODE_DATA_STORE_STMT }
-func (s *DataStoreStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *DataStoreStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *DataStoreStatement) NodeType() NodeType               { return NODE_DATA_STORE_STMT }
+func (s *DataStoreStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -628,14 +628,14 @@ type Z80Instruction struct {
 	Opcode   int
 	Op1      Expression
 	Op2      Expression
-	Context  *fileblock.Context
+	Context  *filecontent.Context
 }
 
-func (s *Z80Instruction) GetContext() *fileblock.Context { return s.Context }
+func (s *Z80Instruction) GetContext() *filecontent.Context { return s.Context }
 func (s *Z80Instruction) NodeType() NodeType {
 	return NodeType(s.InstType)
 }
-func (s *Z80Instruction) ReplaceContext(ctx fileblock.Context) {
+func (s *Z80Instruction) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -664,12 +664,12 @@ func (s *Z80Instruction) String() string {
 // Return 文
 type CommentStatement struct {
 	Text    string
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
-func (s *CommentStatement) GetContext() *fileblock.Context { return s.Context }
-func (s *CommentStatement) NodeType() NodeType             { return NODE_COMMENT_STMT }
-func (s *CommentStatement) ReplaceContext(ctx fileblock.Context) {
+func (s *CommentStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *CommentStatement) NodeType() NodeType               { return NODE_COMMENT_STMT }
+func (s *CommentStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -681,7 +681,7 @@ func (s *CommentStatement) String() string { return s.Text }
 type Label struct {
 	LabelType int
 	Name      string
-	Context   *fileblock.Context
+	Context   *filecontent.Context
 }
 
 func (e *Label) expressionNode()    {}
@@ -691,7 +691,7 @@ func (e *Label) String() string     { return e.Name }
 // 数値
 type NumberLiteral struct {
 	Value   int
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (e *NumberLiteral) expressionNode()    {}
@@ -703,7 +703,7 @@ func (e *NumberLiteral) String() string {
 // 文字列
 type StringLiteral struct {
 	Value   string
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (e *StringLiteral) expressionNode()    {}
@@ -715,7 +715,7 @@ func (e *StringLiteral) String() string {
 // 配列
 type ArrayLiteral struct {
 	Elements *ExpressionList
-	Context  *fileblock.Context
+	Context  *filecontent.Context
 }
 
 func (e *ArrayLiteral) expressionNode()    {}
@@ -733,7 +733,7 @@ func (e *ArrayLiteral) String() string {
 type IndexedExpression struct {
 	Left    Expression
 	Index   Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (e *IndexedExpression) expressionNode()    {}
@@ -755,7 +755,7 @@ func (e *IndexedExpression) String() string {
 type RegisterLiteral struct {
 	RegisterType int
 	Register     int
-	Context      *fileblock.Context
+	Context      *filecontent.Context
 }
 
 func (e *RegisterLiteral) expressionNode()    {}
@@ -767,7 +767,7 @@ func (e *RegisterLiteral) String() string {
 // フラグ
 type FlagLiteral struct {
 	Flag    int
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (e *FlagLiteral) expressionNode()    {}
@@ -781,7 +781,7 @@ type Ident struct {
 	Name      string
 	IdentType int
 	Value     Expression
-	Context   *fileblock.Context
+	Context   *filecontent.Context
 }
 
 func (e *Ident) expressionNode()    {}
@@ -794,7 +794,7 @@ type DotIdent struct {
 	Left    string
 	Right   string
 	Value   Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (e *DotIdent) expressionNode()    {}
@@ -805,7 +805,7 @@ func (e *DotIdent) String() string     { return e.Name }
 type RegIndirectExpression struct {
 	Register     *RegisterLiteral
 	Displacement Expression
-	Context      *fileblock.Context
+	Context      *filecontent.Context
 }
 
 func (e *RegIndirectExpression) expressionNode()    {}
@@ -825,7 +825,7 @@ func (e *RegIndirectExpression) String() string {
 // アドレス間接指定
 type AddrIndirectExpression struct {
 	Address Expression
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (e *AddrIndirectExpression) expressionNode()    {}
@@ -839,7 +839,7 @@ type InfixExpression struct {
 	Operator int
 	Op1      Expression
 	Op2      Expression
-	Context  *fileblock.Context
+	Context  *filecontent.Context
 }
 
 func (e *InfixExpression) expressionNode()    {}
@@ -869,7 +869,7 @@ func (e *InfixExpression) String() string {
 type PrefixExpression struct {
 	Operator int
 	Op       Expression
-	Context  *fileblock.Context
+	Context  *filecontent.Context
 }
 
 func (e *PrefixExpression) expressionNode()    {}
@@ -889,7 +889,7 @@ func (e *PrefixExpression) String() string {
 type FuncCallExpression struct {
 	Name    string
 	Args    *ExpressionList
-	Context *fileblock.Context
+	Context *filecontent.Context
 }
 
 func (e *FuncCallExpression) expressionNode()    {}

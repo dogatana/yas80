@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 	"yas80/evaluator"
-	"yas80/fileblock"
+	"yas80/filecontent"
 	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
@@ -89,7 +89,7 @@ func testMessage(t *testing.T, testType int, tn int, logger *logging.Logger, exp
 
 func parseText(input string, logger *logging.Logger) *parser.BlockStatement {
 	file := "<string>"
-	fb := fileblock.New(file, []byte(input))
+	fb := filecontent.New(file, []byte(input))
 	l := parser.NewLexer(fb, logger)
 	return parser.Parse(l)
 }
