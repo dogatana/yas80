@@ -159,8 +159,8 @@ const (
 	ENOT_IMPL_STMT = "未実装エラー: eval(%T')"
 
 	// BinWriter
-	EBW_NOT_ABS_FIRST = "最初に ORG ABS が必要"
-	EBW_OVERLAPPED    = "ORG $04x と ORG $04x の範囲が重なっている"
+	EBW_OVERLAPPED = "ORG $%04x と ORG $%04x の範囲が重なっている"
+	EBW_NULL       = "コード生成なし"
 
 	// warning
 	WROUND_BYTE = "数値 '%d(0x%x)' をバイト範囲(-128 - 255)に丸めました"

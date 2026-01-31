@@ -194,8 +194,19 @@ func main() {
 
 	fmt.Println("-- binwriter")
 
-	bw := binwriter.New(obj, logger)
-	bw.Write("out.bin")
+	bw := binwriter.New(obj)
+	if err := bw.Allocate(); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	if err := bw.Write("out.bin"); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	if err := bw.WriteMap(os.Stdout); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
 }
 
 func printObjects(objs []object.Object) {

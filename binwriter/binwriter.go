@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"slices"
 	"yas80/errcode"
-	"yas80/logging"
 	"yas80/object"
 )
 
@@ -16,32 +16,65 @@ type Segment struct {
 	addr      int
 	size      int // children も含むサイズ
 	code      []byte
+	gap       bool // gap のために作成された Segment
 	children  []*Segment
 }
 
 func (s *Segment) String() string {
+	if s.gap {
+		return fmt.Sprintf("GAP %04x - %04x")
+
+	}
 	return fmt.Sprintf("Segment $%04x - $%04x, size: $%x, children[%d]",
 		s.addr, s.addr+s.size-1, s.size, len(s.children))
 }
 
 type BinWriter struct {
-	prog   *object.BlockObject
-	logger *logging.Logger
+	prog *object.BlockObject
+	segs []*Segment // 配置済み Segment
 }
 
-func New(prog object.Object, logger *logging.Logger) *BinWriter {
-	return &BinWriter{prog: prog.(*object.BlockObject), logger: logger}
+func New(prog object.Object) *BinWriter {
+	return &BinWriter{prog: prog.(*object.BlockObject)}
 }
 
 func (b *BinWriter) Write(filename string) error {
-	segs, err := b.allocateMemory()
-	if err != nil {
-		fmt.Printf("error %s", err.Error())
-	}
-	for i, s := range segs {
-		fmt.Printf("%d: %s\n", i, s.String())
+	if b.segs == nil {
+		return errors.New(errcode.EBW_NULL)
 	}
 
+	if err := b.writeBin(filename); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *BinWriter) WriteMap(w io.Writer) error {
+	ofs := 0
+	for _, s := range b.segs {
+		if s.gap {
+			if _, err := fmt.Fprintf(w, "%05x GAP %04x - %04x, size %04x\n", ofs, s.addr, s.addr+s.size-1, s.size); err != nil {
+				return err
+			}
+			ofs += s.size
+		} else {
+			size := len(s.code)
+			if _, err := fmt.Fprintf(w, "%05x ABS %04x - %04x, size %04x\n", ofs, s.addr, s.addr+size-1, size); err != nil {
+				return err
+			}
+			ofs += size
+			for _, rs := range s.children {
+				if _, err := fmt.Fprintf(w, "%05x REL %04x - %04x, size %04x\n", ofs, rs.addr, rs.addr+rs.size-1, size); err != nil {
+					return err
+				}
+				ofs += rs.size
+			}
+		}
+	}
+	return nil
+}
+
+func (b *BinWriter) writeBin(filename string) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
@@ -50,7 +83,7 @@ func (b *BinWriter) Write(filename string) error {
 
 	var size, n int
 	w := bufio.NewWriter(f)
-	for _, s := range segs {
+	for _, s := range b.segs {
 		if n, err = w.Write(s.code); err != nil {
 			return err
 		}
@@ -67,69 +100,81 @@ func (b *BinWriter) Write(filename string) error {
 	return nil
 }
 
-func (b *BinWriter) allocateMemory() ([]*Segment, error) {
+// Segment を割り付ける
+func (b *BinWriter) Allocate() error {
 	segs := b.collectSegemnts()
-	nsegs := make([]*Segment, 0, len(segs))
+	newSegs := make([]*Segment, 0, len(segs))
 
 	if len(segs) == 0 {
-		return nsegs, nil
+		return nil
 	}
 
+	var seg *Segment
 	if segs[0].allocType != 0 {
-		return nsegs, errors.New(errcode.EBW_NOT_ABS_FIRST)
+		// 最初が REL Segment の場合、addr:0 で Segment を作成し、children に設定
+		seg = &Segment{addr: 0, size: segs[0].size, children: []*Segment{segs[0]}}
+	} else {
+		seg = segs[0]
 	}
 
-	seg := segs[0]
+	// 以降のセグメントを割り当て
 	for _, s := range segs[1:] {
 		if s.allocType != 0 {
+			// REL
 			seg.children = append(seg.children, s)
 			seg.size += s.size
 			continue
 		}
 
-		naddr := seg.addr + seg.size
+		naddr := seg.addr + seg.size // 現在の Sgement の次の開始アドレス
 		switch {
+		// ABS Segment のアドレス重複
 		case s.addr < naddr:
-			return nsegs, fmt.Errorf(errcode.EBW_OVERLAPPED, seg.addr, s.addr)
+			return fmt.Errorf(fmt.Sprintf(errcode.EBW_OVERLAPPED, seg.addr, s.addr), nil)
+
+		// ABS Segment 間にギャップあり
 		case s.addr > naddr:
 			size := s.addr - naddr
 			code := make([]byte, size)
 			for i := 0; i < size; i++ {
 				code[i] = 0 // TODO: fill_byte で埋める
 			}
-			fill := &Segment{addr: naddr, code: code, size: size}
-			nsegs = append(nsegs, seg, fill)
+			fill := &Segment{addr: naddr, code: code, size: size, gap: true}
+			newSegs = append(newSegs, seg, fill)
 			seg = s
 		default:
-			nsegs = append(nsegs, seg)
+			newSegs = append(newSegs, seg)
 			seg = s
 		}
 	}
-	nsegs = append(nsegs, seg)
-	return nsegs, nil
+	newSegs = append(newSegs, seg)
+
+	b.segs = newSegs
+	return nil
 }
 
+// OrgObject, CodeObject から Segment を作成
 func (b *BinWriter) collectSegemnts() []*Segment {
 	objs := b.flattenObject(b.prog)
-	inseg := false
+	inseg := false // Segment 処理中
 	segs := []*Segment{}
 
-	var seg *Segment
+	var seg *Segment // 処理中 Segment
 	for _, o := range objs {
 		switch o := o.(type) {
 		case *object.CodeObject:
 			if inseg {
-				// セグメント処理中
+				// 処理中の Segment に追加
 				seg.code = append(seg.code, o.Code...)
 				seg.size += len(o.Code)
 				continue
 			}
-			// ORG なしに CODE 開始した場合、新規にセグメント作成
+			// 最初が CodeObject の場合、新規に Segment を作成
 			seg = &Segment{addr: o.Addr, code: slices.Clone(o.Code), size: len(o.Code)}
 			inseg = true
 		case *object.OrgObject:
-			// 処理中のセグメントを保存
 			if seg != nil {
+				// 処理中の Segment があれば保存
 				segs = append(segs, seg)
 			}
 			seg = &Segment{addr: o.Addr, code: []byte{}, allocType: o.AllocType}
@@ -142,6 +187,7 @@ func (b *BinWriter) collectSegemnts() []*Segment {
 	return segs
 }
 
+// prog(*object.BlockObject) を単一階層の slice に変換
 func (b *BinWriter) flattenObject(obj object.Object) []object.Object {
 	objs := []object.Object{}
 
