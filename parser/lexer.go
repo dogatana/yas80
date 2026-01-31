@@ -32,6 +32,7 @@ type Lexer struct {
 	logger   *logging.Logger
 	program  *BlockStatement
 	lctx     *LexerContext
+	lexState int
 	//	callback filecontentProvider
 }
 
@@ -47,25 +48,21 @@ func NewLexer(logger *logging.Logger, callback func() *filecontent.FileContent) 
 	return l
 }
 
-var lexState = 0
-
 // yyLexer インターフェースメソッド
 func (l *Lexer) Lex(lval *yySymType) int {
 	var fc *filecontent.FileContent
 
 	for {
-		switch lexState {
+		switch l.lexState {
 		case 0:
 			// l.ctx == nil
 			fc = l.callback()
 			if fc == nil {
-				// これ以上 filecontent が得られない場合 EOF
-				tok := Token{TokenType: EOL, Literal: "\\n"}
-				lval.token = tok
-				lexState = 9
-				return int(tok.TokenType)
+				// これ以上 filecontent が得られない場合 EOF を返すステートへ移行
+				l.lexState = 9
+				break
 			}
-			lexState++
+			l.lexState++
 
 		case 1:
 			// setup LexerContext
@@ -78,13 +75,13 @@ func (l *Lexer) Lex(lval *yySymType) int {
 			tok := Token{TokenType: FILE, Literal: fc.Filename}
 			lval.token = tok
 
-			lexState++
+			l.lexState++
 			return int(tok.TokenType)
 
 		case 2:
 			tok := l.NextToken()
 			if tok.TokenType == EOF {
-				lexState = 0
+				l.lexState = 0
 				break
 			}
 			lval.token = tok
