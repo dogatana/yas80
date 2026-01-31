@@ -117,6 +117,10 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.ReturnStatement:
 		return e.evalReturnStatement(stmt, env)
 
+	// file
+	case *parser.FileStatement:
+		return &object.FileObject{Filename: stmt.Filename}
+
 	// comment
 	case *parser.CommentStatement:
 		return &object.CommentObject{Comments: []string{stmt.Text}, Context: stmt.Context}

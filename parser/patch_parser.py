@@ -14,7 +14,7 @@ patch_data: list[PatchData] = [
     # yyLexer.Error() の引数定義を修正
     PatchData(
         "\tError(s string)\n", 
-        "\tError(s string, ctx *fileblock.Context) // # changed\n"
+        "\tError(s string, ctx *filecontent.Context) // # changed\n"
     ),
 
     # ステート遷移のデバッグ表示強化

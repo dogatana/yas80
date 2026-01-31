@@ -13,6 +13,7 @@ const (
 
 	// program
 	NODE_PROGRAM
+	NODE_FILE
 
 	// eror
 	NODE_ERROR
@@ -133,6 +134,18 @@ const (
 	ALLOC_ABS = iota
 	ALLOC_REL
 )
+
+// file
+type FileStatement struct {
+	Filename string
+}
+
+func (s *FileStatement) NodeType() NodeType                   { return NODE_FILE }
+func (s *FileStatement) GetContext() *filecontent.Context     { return nil }
+func (s *FileStatement) ReplaceContext(_ filecontent.Context) {}
+func (s *FileStatement) String() string {
+	return "FILE " + s.Filename
+}
 
 // org
 type OrgStatement struct {

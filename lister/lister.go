@@ -54,6 +54,7 @@ func printLineHead(w io.Writer, ctx *filecontent.Context) {
 func printExpand(w io.Writer, ctx *filecontent.Context) {
 	if ctx == nil {
 		fmt.Fprint(w, " ? ")
+		return
 	}
 	if ctx.Offset == 0 {
 		fmt.Fprint(w, "   ")
@@ -63,6 +64,10 @@ func printExpand(w io.Writer, ctx *filecontent.Context) {
 }
 
 func printContext(w io.Writer, ctx *filecontent.Context) {
+	if ctx == nil {
+		fmt.Fprint(w, "--:-- (  ) ")
+		return
+	}
 	fmt.Fprintf(w, "%2d:%2d ", ctx.Line, ctx.Offset)
 	if ctx.Source == nil {
 		fmt.Fprint(w, "(  ) ")

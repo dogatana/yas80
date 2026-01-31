@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"yas80/errcode"
-	"yas80/fileblock"
+	"yas80/filecontent"
 )
 
 // goyacc が __yyfmt__ を勝手に import することの対策
@@ -38,7 +38,7 @@ var _ = __yyfmt__.Sprintf
 %type<token> string
 
 // 終端記号
-%token<token> EOL
+%token<token> EOL FILE
 %token<token> NUMBER STRING
 %token<token> IDENT 
 %token<token> AT_IDENT    // @def 
@@ -98,6 +98,7 @@ program		: { }
 			;
 
 statement   : EOL { $$ = nil }
+			| FILE	{ $$ = &FileStatement{Filename: $1.Literal}}
 			| ident_expr ':'  EOL 
 			{
 				if $1.NodeType() == NODE_ERROR {

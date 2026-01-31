@@ -30,6 +30,7 @@ const (
 	OBJ_SYMBOL
 	OBJ_EXITM
 	OBJ_VALUE
+	OBJ_FILE
 	OBJ_COMMENT
 	OBJ_ARRAY
 )
@@ -56,6 +57,16 @@ type ValueObject struct {
 func (o *ValueObject) Type() ObjectType { return OBJ_VALUE }
 func (o *ValueObject) String() string {
 	return fmt.Sprintf("VALUE(%s)", o.Value.String())
+}
+
+// file
+type FileObject struct {
+	Filename string
+}
+
+func (o *FileObject) Type() ObjectType { return OBJ_FILE }
+func (o *FileObject) String() string {
+	return "FILE " + o.Filename
 }
 
 // value - list ファイル出力用
