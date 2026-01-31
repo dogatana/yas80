@@ -53,9 +53,9 @@ type ValueObject struct {
 	Context *fileblock.Context
 }
 
-func (v *ValueObject) Type() ObjectType { return OBJ_VALUE }
-func (v *ValueObject) String() string {
-	return fmt.Sprintf("VALUE(%s)", v.Value.String())
+func (o *ValueObject) Type() ObjectType { return OBJ_VALUE }
+func (o *ValueObject) String() string {
+	return fmt.Sprintf("VALUE(%s)", o.Value.String())
 }
 
 // value - list ファイル出力用
@@ -130,27 +130,27 @@ func (o *CodeObject) Size() int {
 // NULL
 type NullObject struct{}
 
-func (n *NullObject) Type() ObjectType { return OBJ_NULL }
-func (n *NullObject) String() string   { return "NULL" }
+func (o *NullObject) Type() ObjectType { return OBJ_NULL }
+func (o *NullObject) String() string   { return "NULL" }
 
 // Error
 type ErrorObject struct {
 }
 
-func (e *ErrorObject) Type() ObjectType { return OBJ_ERROR }
-func (e *ErrorObject) String() string   { return "ERROR" }
+func (o *ErrorObject) Type() ObjectType { return OBJ_ERROR }
+func (o *ErrorObject) String() string   { return "ERROR" }
 
 // 右辺値で識別子が見つからない場合に使用
 type RefNotFoundObject struct {
 	Names []string
 }
 
-func (r *RefNotFoundObject) Type() ObjectType { return OBJ_REF_NOTFOUND }
-func (r *RefNotFoundObject) String() string {
+func (o *RefNotFoundObject) Type() ObjectType { return OBJ_REF_NOTFOUND }
+func (o *RefNotFoundObject) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("REF_NOTFOUND(")
-	out.WriteString(strings.Join(r.Names, ", "))
+	out.WriteString(strings.Join(o.Names, ", "))
 	out.WriteRune(')')
 	return out.String()
 }
@@ -204,8 +204,8 @@ func (o *EnumObject) Store() map[string]Object           { return o.Env.Store() 
 type ExitmObject struct {
 }
 
-func (e *ExitmObject) Type() ObjectType { return OBJ_EXITM }
-func (e *ExitmObject) String() string   { return "EXITM" }
+func (o *ExitmObject) Type() ObjectType { return OBJ_EXITM }
+func (o *ExitmObject) String() string   { return "EXITM" }
 
 // return
 type ReturnObject struct {
@@ -213,12 +213,12 @@ type ReturnObject struct {
 	LineNumber int
 }
 
-func (r *ReturnObject) Type() ObjectType { return OBJ_RETURN }
-func (r *ReturnObject) String() string {
-	if r.Value == NULL {
+func (o *ReturnObject) Type() ObjectType { return OBJ_RETURN }
+func (o *ReturnObject) String() string {
+	if o.Value == NULL {
 		return "RETURN"
 	}
-	return "RETURN " + r.Value.String()
+	return "RETURN " + o.Value.String()
 }
 
 // 数値
@@ -228,8 +228,8 @@ type NumberObject struct {
 	Context   *fileblock.Context
 }
 
-func (n *NumberObject) Type() ObjectType { return OBJ_NUMBER }
-func (n *NumberObject) String() string   { return fmt.Sprintf("%d(0x%x)", n.Value, n.Value) }
+func (o *NumberObject) Type() ObjectType { return OBJ_NUMBER }
+func (o *NumberObject) String() string   { return fmt.Sprintf("%d(0x%x)", o.Value, o.Value) }
 
 // 文字列
 type StringObject struct {
@@ -237,8 +237,8 @@ type StringObject struct {
 	Context *fileblock.Context
 }
 
-func (s *StringObject) Type() ObjectType { return OBJ_STRING }
-func (s *StringObject) String() string   { return fmt.Sprintf("%q", s.Value) }
+func (o *StringObject) Type() ObjectType { return OBJ_STRING }
+func (o *StringObject) String() string   { return fmt.Sprintf("%q", o.Value) }
 
 // レジスタ間接
 type RegIndirectObject struct {
@@ -281,42 +281,16 @@ type StatemetnsObject struct {
 func (n *StatemetnsObject) Type() ObjectType { return OBJ_NODES }
 func (n *StatemetnsObject) String() string   { return fmt.Sprintf("NODES(%v)", n.Statements) }
 
-// // ENUM
-// type EnumObject struct {
-// 	Name  string
-// 	Value map[string]Object
-// 	Keys  []string
-// }
-
-// func (e *EnumObject) Type() ObjectType { return ENUM_OBJ }
-// func (e *EnumObject) String() string {
-
-// 	stmts := []string{"ENUM " + e.Name}
-
-// 	for k, v := range e.Value {
-// 		s := fmt.Sprintf("%s = %s", k, v.String())
-// 		stmts = append(stmts, s)
-// 	}
-// 	stmts = append(stmts, "END_ENUM")
-
-// 	return strings.Join(stmts, "\n")
-// }
-
-// func (e *EnumObject) Get(key string) (Object, bool) {
-// 	v, ok := e.Value[key]
-// 	return v, ok
-// }
-
 // Block
 type BlockObject struct {
 	Block []Object
 }
 
-func (b *BlockObject) Type() ObjectType { return OBJ_BLOCK }
-func (b *BlockObject) String() string {
+func (o *BlockObject) Type() ObjectType { return OBJ_BLOCK }
+func (o *BlockObject) String() string {
 	strs := []string{}
 
-	for _, o := range b.Block {
+	for _, o := range o.Block {
 		strs = append(strs, o.String())
 	}
 	return strings.Join(strs, "\n")
@@ -331,17 +305,17 @@ type FunctionObject struct {
 	Context *fileblock.Context
 }
 
-func (f *FunctionObject) Type() ObjectType { return OBJ_FUNC }
-func (f *FunctionObject) String() string {
+func (o *FunctionObject) Type() ObjectType { return OBJ_FUNC }
+func (o *FunctionObject) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(f.Name + " FUNC")
-	if len(f.Params) > 0 {
+	out.WriteString(o.Name + " FUNC")
+	if len(o.Params) > 0 {
 		out.WriteRune(' ')
-		out.WriteString(strings.Join(f.Params, ", "))
+		out.WriteString(strings.Join(o.Params, ", "))
 	}
 	out.WriteRune('\n')
-	out.WriteString(f.Body.String() + "\n")
+	out.WriteString(o.Body.String() + "\n")
 	out.WriteString("ENDF")
 
 	return out.String()
@@ -355,16 +329,16 @@ type MacroObject struct {
 	Body   *parser.BlockStatement
 }
 
-func (mo *MacroObject) Type() ObjectType { return OBJ_MACRO }
-func (mo *MacroObject) String() string {
+func (o *MacroObject) Type() ObjectType { return OBJ_MACRO }
+func (o *MacroObject) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(mo.Name + " MACRO")
-	if len(mo.Params) > 0 {
+	out.WriteString(o.Name + " MACRO")
+	if len(o.Params) > 0 {
 		out.WriteRune(' ')
-		out.WriteString(strings.Join(mo.Params, ", "))
+		out.WriteString(strings.Join(o.Params, ", "))
 	}
-	out.WriteString(" \\ " + mo.Body.String() + " \\ ENDM")
+	out.WriteString(" \\ " + o.Body.String() + " \\ ENDM")
 
 	return out.String()
 }
