@@ -18,32 +18,47 @@ var Option options.Option
 
 // メイン関数
 func main() {
-	var (
-		file string
-		fc   *filecontent.FileContent
-		err  error
-	)
 
 	opt := options.Parse()
 
+	fcs := []*filecontent.FileContent{}
+
 	switch {
 	case opt.Line != "":
-		fc = filecontent.New("line", []byte(opt.Line))
+		fc := filecontent.New("line", []byte(opt.Line))
+		fcs = append(fcs, fc)
+
 	case len(opt.Args) == 0:
-		if fc, err = filecontent.NewFromReader("stdin", os.Stdin); err != nil {
+		fc, err := filecontent.NewFromReader("stdin", os.Stdin)
+		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
+		fcs = append(fcs, fc)
 	case len(opt.Args) > 0:
-		if fc, err = filecontent.NewFromFile(opt.Args[0]); err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
+		for _, arg := range opt.Args {
+			fc, err := filecontent.NewFromFile(arg)
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+			fcs = append(fcs, fc)
 		}
 	}
 
 	Option = opt
-	logger := logging.New(file)
-	l := parser.NewLexer(fc, logger)
+
+	index := 0
+
+	logger := logging.New(fcs[0].Filename) // TODO: yas80 でも良い？
+	l := parser.NewLexer(logger, func() *filecontent.FileContent {
+		if index < len(fcs) {
+			fc := fcs[index]
+			index++
+			return fc
+		}
+		return nil
+	})
 
 	// lexer debug
 	if opt.Lexdebug {

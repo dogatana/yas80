@@ -26,40 +26,75 @@ func (ctx *LexerContext) toContext(start int) *filecontent.Context {
 
 // 最低限必要な構造体を定義
 type Lexer struct {
-	isEOF   bool
-	start   int // token 開始 index
-	logger  *logging.Logger
-	program *BlockStatement
-	lctx    *LexerContext
+	callback func() *filecontent.FileContent
+	isEOF    bool
+	start    int // token 開始 index
+	logger   *logging.Logger
+	program  *BlockStatement
+	lctx     *LexerContext
 	//	callback filecontentProvider
 }
 
-func NewLexer(fc *filecontent.FileContent, logger *logging.Logger) *Lexer {
+func NewLexerOrg(fc *filecontent.FileContent, logger *logging.Logger) *Lexer {
 	lctx := &LexerContext{filename: fc.Filename, lineNumber: 1, fileContent: fc}
 	l := &Lexer{logger: logger, program: &BlockStatement{}, lctx: lctx}
 	l.nextChar()
 	return l
 }
 
+func NewLexer(logger *logging.Logger, callback func() *filecontent.FileContent) *Lexer {
+	l := &Lexer{logger: logger, callback: callback, program: &BlockStatement{}}
+	return l
+}
+
+var lexState = 0
+
 // yyLexer インターフェースメソッド
 func (l *Lexer) Lex(lval *yySymType) int {
-	// if l.ctx == nil {
-	// 	l.ctx = &LexerContext{
-	// 		filecontent:  l.callback(),
-	// 		index:      0,
-	// 		curChar:    0,
-	// 		lineNumber: 0,
-	// 	}
-	// }
-	// if l.ctx.fileContent == nil {
-	// 	// これ以上 filecontent が得られない場合 EOF
-	// 	tok := Token{TokenType: 0, Literal: "[EOF]", LineNumber: l.ctx.lineNumber}
-	// 	lval.token = tok
-	// 	return int(tok.TokenSubType)
-	// }
-	tok := l.NextToken()
-	lval.token = tok
-	return int(tok.TokenType)
+	var fc *filecontent.FileContent
+
+	for {
+		switch lexState {
+		case 0:
+			// l.ctx == nil
+			fc = l.callback()
+			if fc == nil {
+				// これ以上 filecontent が得られない場合 EOF
+				tok := Token{TokenType: EOL, Literal: "\\n"}
+				lval.token = tok
+				lexState = 9
+				return int(tok.TokenType)
+			}
+			lexState++
+
+		case 1:
+			// setup LexerContext
+			lctx := &LexerContext{filename: fc.Filename, lineNumber: 1, fileContent: fc}
+			l.isEOF = false
+			l.lctx = lctx
+			l.nextChar()
+
+			// return FILE
+			tok := Token{TokenType: FILE, Literal: fc.Filename}
+			lval.token = tok
+
+			lexState++
+			return int(tok.TokenType)
+
+		case 2:
+			tok := l.NextToken()
+			if tok.TokenType == EOF {
+				lexState = 0
+				break
+			}
+			lval.token = tok
+			return int(tok.TokenType)
+		case 9:
+			tok := Token{TokenType: 0, Literal: "[EOF]"}
+			lval.token = tok
+			return int(tok.TokenType)
+		}
+	}
 }
 
 // yyLexer インターフェースメソッド
