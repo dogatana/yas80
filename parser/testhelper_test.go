@@ -28,12 +28,6 @@ func ParseForTest(t *testing.T, lexer *Lexer, tn int) *BlockStatement {
 	return PreProrocess(lexer.logger, prog)
 }
 
-func nextToken(l *Lexer) Token {
-	var lval yySymType
-	l.Lex(&lval)
-	return lval.token
-}
-
 func testInputEnd(t *testing.T, tn int, lexer *Lexer) {
 	// EOL
 	for {
