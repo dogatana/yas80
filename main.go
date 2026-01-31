@@ -212,12 +212,15 @@ func main() {
 	bw := binwriter.New(obj)
 	if err := bw.Allocate(); err != nil {
 		fmt.Println(err.Error())
-		os.Exit(1)
+		// os.Exit(1)
 	}
-	if err := bw.Write("out.bin"); err != nil {
+
+	var buf bytes.Buffer
+	if err := bw.Write(&buf); err != nil {
 		fmt.Println(err.Error())
-		os.Exit(1)
+		// os.Exit(1)
 	}
+	// fmt.Printf("wrote %d(0x%x) bytes\n", buf.Len(), buf.Len())
 	if err := bw.WriteMap(os.Stdout); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

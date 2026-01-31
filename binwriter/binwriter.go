@@ -1,11 +1,9 @@
 package binwriter
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"slices"
 	"yas80/errcode"
 	"yas80/object"
@@ -18,11 +16,12 @@ type Segment struct {
 	code      []byte
 	gap       bool // gap のために作成された Segment
 	children  []*Segment
+	err       error
 }
 
 func (s *Segment) String() string {
 	if s.gap {
-		return fmt.Sprintf("GAP %04x - %04x")
+		return fmt.Sprintf("GAP %04x - %04x, size: $%x", s.addr, s.addr+s.size-1, s.size)
 
 	}
 	return fmt.Sprintf("Segment $%04x - $%04x, size: $%x, children[%d]",
@@ -38,15 +37,11 @@ func New(prog object.Object) *BinWriter {
 	return &BinWriter{prog: prog.(*object.BlockObject)}
 }
 
-func (b *BinWriter) Write(filename string) error {
+func (b *BinWriter) Write(w io.Writer) error {
 	if b.segs == nil {
 		return errors.New(errcode.EBW_NULL)
 	}
-
-	if err := b.writeBin(filename); err != nil {
-		return err
-	}
-	return nil
+	return b.write(w)
 }
 
 func (b *BinWriter) WriteMap(w io.Writer) error {
@@ -74,15 +69,13 @@ func (b *BinWriter) WriteMap(w io.Writer) error {
 	return nil
 }
 
-func (b *BinWriter) writeBin(filename string) error {
-	f, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
+func (b *BinWriter) write(w io.Writer) error {
 
-	var size, n int
-	w := bufio.NewWriter(f)
+	var (
+		size, n int
+		err     error
+	)
+
 	for _, s := range b.segs {
 		if n, err = w.Write(s.code); err != nil {
 			return err
@@ -95,8 +88,6 @@ func (b *BinWriter) writeBin(filename string) error {
 			size += n
 		}
 	}
-	w.Flush()
-	fmt.Printf("write %d(0x%x)\n", size, size)
 	return nil
 }
 
@@ -130,7 +121,9 @@ func (b *BinWriter) Allocate() error {
 		switch {
 		// ABS Segment のアドレス重複
 		case s.addr < naddr:
-			return fmt.Errorf(fmt.Sprintf(errcode.EBW_OVERLAPPED, seg.addr, s.addr), nil)
+			newSegs = append(newSegs, seg, s)
+			b.segs = newSegs
+			return fmt.Errorf(errcode.EBW_OVERLAPPED, seg.addr, s.addr)
 
 		// ABS Segment 間にギャップあり
 		case s.addr > naddr:
@@ -142,6 +135,7 @@ func (b *BinWriter) Allocate() error {
 			fill := &Segment{addr: naddr, code: code, size: size, gap: true}
 			newSegs = append(newSegs, seg, fill)
 			seg = s
+
 		default:
 			newSegs = append(newSegs, seg)
 			seg = s
