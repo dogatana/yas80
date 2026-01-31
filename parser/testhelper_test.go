@@ -10,8 +10,8 @@ import (
 func newLexerForTest(input string) *Lexer {
 	file := "<string>"
 	logger := logging.New(file)
-	fb := filecontent.New(file, []byte(input))
-	return NewLexer(fb, logger)
+	fc := filecontent.New(file, []byte(input))
+	return NewLexer(fc, logger)
 }
 
 func ParseForTest(t *testing.T, lexer *Lexer, tn int) *BlockStatement {

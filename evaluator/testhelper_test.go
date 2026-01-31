@@ -91,9 +91,9 @@ func testEvalResult(t *testing.T, tn int, err string, eval *Evaluator) {
 func parseTextForTest(input string, logger *logging.Logger) *parser.BlockStatement {
 	var prog *parser.BlockStatement
 
-	fb := filecontent.New(logger.Filename, []byte(input))
+	fc := filecontent.New(logger.Filename, []byte(input))
 
-	l := parser.NewLexer(fb, logger)
+	l := parser.NewLexer(fc, logger)
 	prog = parser.Parse(l)
 	if len(logger.Errors) > 0 {
 		return prog
