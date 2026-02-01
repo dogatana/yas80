@@ -1,11 +1,11 @@
 package binwriter
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"slices"
 	"yas80/errcode"
+	"yas80/logging"
 	"yas80/object"
 )
 
@@ -29,23 +29,27 @@ func (s *Segment) String() string {
 }
 
 type BinWriter struct {
-	prog *object.BlockObject
-	segs []*Segment // 配置済み Segment
-	fill int
+	prog   *object.BlockObject
+	segs   []*Segment // 配置済み Segment
+	fill   int
+	logger *logging.Logger
 }
 
-func New(prog object.Object, fill int) *BinWriter {
-	return &BinWriter{prog: prog.(*object.BlockObject), fill: fill}
+func New(prog object.Object, fill int, logger *logging.Logger) *BinWriter {
+	return &BinWriter{prog: prog.(*object.BlockObject), fill: fill, logger: logger}
 }
 
-func (b *BinWriter) Write(w io.Writer) error {
-	if err := b.allocate(); err != nil {
-		return err
+func (b *BinWriter) Write(w io.Writer) bool {
+	b.allocate()
+	if len(b.logger.Errors) > 0 {
+		return false
 	}
-	if b.segs == nil {
-		return errors.New(errcode.EBW_NULL)
+	if len(b.segs) == 0 {
+		b.logger.Error(errcode.EBW_NULL, nil)
+		return false
 	}
-	return b.write(w)
+	b.write(w)
+	return true
 }
 
 func (b *BinWriter) WriteMap(w io.Writer) error {
@@ -96,13 +100,13 @@ func (b *BinWriter) write(w io.Writer) error {
 }
 
 // Segment を割り付ける
-func (b *BinWriter) allocate() error {
+func (b *BinWriter) allocate() {
 	segs := b.collectSegemnts()
 
 	// 有効 Segment なし
 	if len(segs) == 0 {
 		b.segs = segs
-		return nil
+		return
 	}
 	segs = b.mergeREL(segs)
 
@@ -128,8 +132,11 @@ func (b *BinWriter) allocate() error {
 		case addr > s.addr:
 			nsegs = append(nsegs, s)
 			b.segs = nsegs
-			return fmt.Errorf(errcode.EBW_OVERLAPPED, segs[i].addr, s.addr)
-
+			b.logger.Error(fmt.Sprintf(errcode.EBW_OVERLAPPED, segs[i].addr, s.addr), nil)
+			if addr < s.addr+s.size {
+				// 現在の Segment の後続アドレスを設定する
+				addr = s.addr + s.size
+			}
 		default:
 			nsegs = append(nsegs, s)
 			addr += s.size
@@ -137,7 +144,6 @@ func (b *BinWriter) allocate() error {
 	}
 
 	b.segs = nsegs
-	return nil
 }
 
 // REL を ABS に merge

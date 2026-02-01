@@ -2,12 +2,13 @@ package binwriter
 
 import (
 	"testing"
+	"yas80/errcode"
 	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
 )
 
-func TestGapAndSortSegment(t *testing.T) {
+func TestBinWriterGapAndSortSegment(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -29,6 +30,14 @@ func TestGapAndSortSegment(t *testing.T) {
 			code:  []byte{0xfb, 0x80, 0x80, 0x80, 0xc9},
 			fill:  0x80,
 		},
+		{
+			input: `ld hl, $1234 \ org 1 \ ret`,
+			err:   errcode.EBW_OVERLAPPED,
+		},
+		{
+			input: ` `,
+			err:   errcode.EBW_NULL,
+		},
 	}
 
 	for tn, tt := range tests {
@@ -38,6 +47,7 @@ func TestGapAndSortSegment(t *testing.T) {
 		env := object.NewEnvironment(nil)
 		logger := logging.New("<binwrite>")
 		prog, _ := evalInput(tt.input, logger, env)
+		code, ok := codeFromObj(prog, tt.fill, logger)
 
 		// error, warning, information
 		if tt.err != "" {
@@ -45,13 +55,54 @@ func TestGapAndSortSegment(t *testing.T) {
 			continue
 		}
 
-		code, err := codeFromObj(prog, tt.fill)
-
-		if err != nil {
-			t.Errorf("[%d], codeFromObj %s", tn, err.Error())
+		if !ok {
+			t.Errorf("[%d], codeFromObj %s", tn, logger.Errors[0].Error())
 		}
 
-		if err = testutil.BytesEqual(code, tt.code); err != nil {
+		if err := testutil.BytesEqual(code, tt.code); err != nil {
+			t.Errorf("[%d], %s", tn, err.Error())
+		}
+
+	}
+}
+
+func TestBinWriterAbsAndRel(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+		fill  int
+	}{
+		{
+			input: `org 0 \ call $ \ org $1000, rel \ call $ \ org $2000, rel \ call $ \ org $10 \ ret`,
+			code: []byte{
+				0xcd, 0x00, 0x00, 0xcd, 0x00, 0x10, 0xcd, 0x00, 0x20,
+				0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+				0xc9},
+			fill: 255,
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<binwrite>")
+		prog, _ := evalInput(tt.input, logger, env)
+		code, ok := codeFromObj(prog, tt.fill, logger)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, logger)
+			continue
+		}
+
+		if !ok {
+			t.Errorf("[%d], codeFromObj %s", tn, logger.Errors[0].Error())
+		}
+
+		if err := testutil.BytesEqual(code, tt.code); err != nil {
 			t.Errorf("[%d], %s", tn, err.Error())
 		}
 

@@ -79,11 +79,11 @@ func parseTextForTest(input string, logger *logging.Logger) *parser.BlockStateme
 	return prog
 }
 
-func codeFromObj(obj object.Object, fill int) ([]byte, error) {
-	bw := New(obj, fill)
+func codeFromObj(obj object.Object, fill int, logger *logging.Logger) ([]byte, bool) {
+	bw := New(obj, fill, logger)
 
 	var buf bytes.Buffer
-	err := bw.Write(&buf)
+	ok := bw.Write(&buf)
 
-	return buf.Bytes(), err
+	return buf.Bytes(), ok
 }

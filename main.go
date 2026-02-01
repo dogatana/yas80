@@ -214,15 +214,14 @@ func main() {
 
 	fill, _ := getIntFromEnv(env, "$FILL")
 
-	bw := binwriter.New(obj, fill)
+	bw := binwriter.New(obj, fill, logger)
 
 	var buf bytes.Buffer
-	if err := bw.Write(&buf); err != nil {
-		fmt.Println(err.Error())
-		// os.Exit(1)
+	if bw.Write(&buf) {
+		os.WriteFile("out.bin", buf.Bytes(), 0644)
 	}
-	os.WriteFile("out.bin", buf.Bytes(), 0644)
-	// fmt.Printf("wrote %d(0x%x) bytes\n", buf.Len(), buf.Len())
+	logger.Print()
+
 	if err := bw.WriteMap(os.Stdout); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)

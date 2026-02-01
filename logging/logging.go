@@ -17,7 +17,7 @@ type ErrorMessage struct {
 func (m *ErrorMessage) Message() string { return m.message }
 func (m *ErrorMessage) Error() string {
 	if m.Context == nil {
-		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, m.message)
+		return fmt.Sprintf("[ERROR] %s", m.message)
 	} else {
 		return fmt.Sprintf("%q:%d [ERROR] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
 	}
@@ -31,7 +31,7 @@ type WarningMessage struct {
 func (m *WarningMessage) Message() string { return m.message }
 func (m *WarningMessage) Error() string {
 	if m.Context == nil {
-		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, m.message)
+		return fmt.Sprintf("[WARN] %s", m.message)
 	} else {
 		return fmt.Sprintf("%q:%d [WARN] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
 	}
@@ -45,7 +45,7 @@ type InfoMessage struct {
 func (m *InfoMessage) Message() string { return m.message }
 func (m *InfoMessage) Error() string {
 	if m.Context == nil {
-		return fmt.Sprintf("%q:%d [ERROR] %s", "???", -1, m.message)
+		return fmt.Sprintf("[INFO] %s", m.message)
 	} else {
 		return fmt.Sprintf("%q:%d [INFO] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
 	}
