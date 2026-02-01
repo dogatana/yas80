@@ -39,7 +39,7 @@ func TestAssembleFile(t *testing.T) {
 		logger.Print()
 		result := CollectCode(prog.Block)
 
-		if err := bytesEqual(result, code); err != nil {
+		if err := testutil.BytesEqual(result, code); err != nil {
 			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 	}

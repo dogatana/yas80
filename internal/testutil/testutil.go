@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -74,4 +75,16 @@ func ReadTestDataFile(t *testing.T, filename string) []byte {
 		t.Fatalf("ReadFile(%q) returns %s", path, err.Error())
 	}
 	return data
+}
+
+func BytesEqual(v1, v2 []byte) error {
+	if len(v1) != len(v2) {
+		return fmt.Errorf("size diff got 0x%x. expected 0x%x\n", len(v1), len(v2))
+	}
+	for i, v := range v1 {
+		if v != v2[i] {
+			return fmt.Errorf("contentis diff [0x%x] 0x%02x 0x%02x\n", i, v, v2[i])
+		}
+	}
+	return nil
 }

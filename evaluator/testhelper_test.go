@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 	"yas80/filecontent"
+	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
@@ -112,7 +113,7 @@ func testCodeResult(t *testing.T, tn int, expected []byte, prog *object.BlockObj
 		return
 	}
 	code := CollectCode(prog.Block)
-	if err := bytesEqual(code, expected); err != nil {
+	if err := testutil.BytesEqual(code, expected); err != nil {
 		t.Errorf("[%d] generated code diff %s", tn, err.Error())
 	}
 }
@@ -176,16 +177,4 @@ func testStringObject(t *testing.T, tn int, obj object.Object, expected string) 
 		return false
 	}
 	return true
-}
-
-func bytesEqual(v1, v2 []byte) error {
-	if len(v1) != len(v2) {
-		return fmt.Errorf("size diff got 0x%x. expected 0x%x\n", len(v1), len(v2))
-	}
-	for i, v := range v1 {
-		if v != v2[i] {
-			return fmt.Errorf("contentis diff [0x%x] 0x%02x 0x%02x\n", i, v, v2[i])
-		}
-	}
-	return nil
 }
