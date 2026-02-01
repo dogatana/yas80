@@ -150,6 +150,7 @@ func (e *MacroEnvironment) Set(name string, obj Object) Object {
 func (e *MacroEnvironment) Outer() Environment       { return e.outer }
 func (e *MacroEnvironment) Store() map[string]Object { return e.store }
 
+// debug
 func PrintEnv(env Environment) {
 	prefix := ""
 	for i := 0; ; i++ {

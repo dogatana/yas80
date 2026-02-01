@@ -212,7 +212,9 @@ func main() {
 
 	fmt.Println("-- binwriter")
 
-	bw := binwriter.New(obj)
+	fill, _ := getIntFromEnv(env, "$FILL")
+
+	bw := binwriter.New(obj, fill)
 	if err := bw.Allocate(); err != nil {
 		fmt.Println(err.Error())
 		// os.Exit(1)
@@ -223,6 +225,7 @@ func main() {
 		fmt.Println(err.Error())
 		// os.Exit(1)
 	}
+	os.WriteFile("out.bin", buf.Bytes(), 0644)
 	// fmt.Printf("wrote %d(0x%x) bytes\n", buf.Len(), buf.Len())
 	if err := bw.WriteMap(os.Stdout); err != nil {
 		fmt.Println(err.Error())
@@ -246,6 +249,18 @@ func printObjects(objs []object.Object) {
 		}
 		fmt.Println(o.String())
 	}
+}
+
+func getIntFromEnv(env object.Environment, name string) (int, bool) {
+	obj, ok := env.Get(name)
+	if !ok {
+		return 0, false
+	}
+	num, ok := obj.(*object.NumberObject)
+	if !ok {
+		return 0, false
+	}
+	return num.Value, true
 }
 
 func showResult(count int, prog *parser.BlockStatement, obj object.Object, env object.Environment) {
@@ -300,6 +315,7 @@ func printStatement(stmt parser.Statement) {
 		fmt.Println(stmt.String())
 	}
 }
+
 func printContext(ctx *filecontent.Context) {
 	if ctx == nil {
 		fmt.Println("--:--")

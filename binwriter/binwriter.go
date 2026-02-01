@@ -31,10 +31,11 @@ func (s *Segment) String() string {
 type BinWriter struct {
 	prog *object.BlockObject
 	segs []*Segment // 配置済み Segment
+	fill int
 }
 
-func New(prog object.Object) *BinWriter {
-	return &BinWriter{prog: prog.(*object.BlockObject)}
+func New(prog object.Object, fill int) *BinWriter {
+	return &BinWriter{prog: prog.(*object.BlockObject), fill: fill}
 }
 
 func (b *BinWriter) Write(w io.Writer) error {
@@ -115,7 +116,7 @@ func (b *BinWriter) Allocate() error {
 			size := s.addr - addr
 			code := make([]byte, size)
 			for i := 0; i < size; i++ {
-				code[i] = 0xff // TODO: fill-byte
+				code[i] = byte(b.fill)
 			}
 			gap := &Segment{addr: addr, code: code, size: size, gap: true}
 			nsegs = append(nsegs, gap, s)
