@@ -50,8 +50,8 @@ func (e *Evaluator) ebMacroAlign(stmt *parser.MacroCallStatement, env TEnv) obje
 		// あれば第2オペランド
 		obj = e.evalExpression(args[1], env, stmt.Context)
 	} else {
-		// なければ $FILL_BYTE
-		obj, _ = env.Get("$FILL_BYTE")
+		// なければ $FILL
+		obj, _ = env.Get("$FILL")
 	}
 	switch obj := obj.(type) {
 	case *object.ErrorObject:

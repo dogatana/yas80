@@ -119,6 +119,9 @@ func main() {
 	// env 作成
 	env := object.NewEnvironment(nil)
 
+	// システム変数初期値上書き
+	env.Set("$FILL", &object.NumberObject{Value: opt.Fill})
+
 	eval := evaluator.New(logger)
 	eval.Debug = opt.Evaldebug
 

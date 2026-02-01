@@ -41,28 +41,26 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 
 	// default filler
 	var filler int
-	if stmt.Size == 1 {
-		if obj, ok := env.Get("$FILL_BYTE"); !ok {
-			panic("no $FILL_BYTE")
+
+	if stmt.FillValue == nil {
+		// 指定がなければ $FILL を使用
+		if obj, ok := env.Get("$FILL"); !ok {
+			panic("no $FILL")
 		} else {
 			filler = obj.(*object.NumberObject).Value
+		}
+		filler &= 0xff
+		if stmt.Size == 2 { // WORD とする
+			filler = filler<<8 + filler
 		}
 	} else {
-		if obj, ok := env.Get("$FILL_WORD"); !ok {
-			panic("no $FILL_BYTE")
-		} else {
-			filler = obj.(*object.NumberObject).Value
-		}
-	}
-
-	if stmt.FillValue != nil {
 		// 文で指定した filler
 		obj = e.evalExpression(stmt.FillValue, env, stmt.Context)
 		switch obj := obj.(type) {
 		case *object.ErrorObject:
 			return object.ERROR
 		case *object.RefNotFoundObject:
-			// do nothing デフォルトを使用
+			// $FILL ベースの値を利用
 		case *object.NumberObject:
 			filler = obj.Value
 		default:

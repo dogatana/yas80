@@ -33,8 +33,7 @@ func setupSystemVariables(env Environment) {
 	env.Set("_", &SymbolObject{Name: "_", SymType: SYM_VAR, Value: NULL})
 
 	env.Set("$", &NumberObject{Value: 0})
-	env.Set("$FILL_BYTE", &NumberObject{Value: 0})
-	env.Set("$FILL_WORD", &NumberObject{Value: 0})
+	env.Set("$FILL", &NumberObject{Value: 0})
 }
 
 // for Proc

@@ -10,6 +10,7 @@ type Option struct {
 	Line      string
 	Args      []string
 	R800      bool
+	Fill      int
 }
 
 func Parse() Option {
@@ -26,6 +27,10 @@ func Parse() Option {
 
 	// R800 CPU をターゲットにする
 	flag.BoolVar(&opt.R800, "R800", false, "assemble for R800(bool)")
+
+	// fill
+	flag.IntVar(&opt.Fill, "fill", 0xff, "filler for DS and Segment Gap")
+
 	flag.Parse()
 	opt.Args = flag.Args()
 	return opt
