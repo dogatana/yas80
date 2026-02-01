@@ -9,7 +9,7 @@ import (
 	"yas80/parser"
 )
 
-func evalInput(input string, logger *logging.Logger, env object.Environment) (*object.BlockObject, *evaluator.Evaluator) {
+func evalInput(input any, logger *logging.Logger, env object.Environment) (*object.BlockObject, *evaluator.Evaluator) {
 	prog := parseTextForTest(input, logger)
 
 	eval := evaluator.New(logger)
@@ -60,16 +60,29 @@ func evalInput(input string, logger *logging.Logger, env object.Environment) (*o
 	}
 }
 
-func parseTextForTest(input string, logger *logging.Logger) *parser.BlockStatement {
+func parseTextForTest(input any, logger *logging.Logger) *parser.BlockStatement {
 	var prog *parser.BlockStatement
 
-	fc := filecontent.New(logger.Filename, []byte(input))
+	fcs := []*filecontent.FileContent{}
+	switch input := input.(type) {
+	case string:
+		fcs = append(fcs, filecontent.New(logger.Filename, []byte(input)))
+	case []string:
+		for _, s := range input {
+			fcs = append(fcs, filecontent.New(logger.Filename, []byte(s)))
+		}
+	}
+	index := 0
+	callback := func() *filecontent.FileContent {
+		if index >= len(fcs) {
+			return nil
+		}
+		fc := fcs[index]
+		index++
+		return fc
+	}
 
-	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
-		ret := fc
-		fc = nil
-		return ret
-	})
+	lex := parser.NewLexer(logger, callback)
 	prog = parser.Parse(lex)
 	if len(logger.Errors) > 0 {
 		return prog

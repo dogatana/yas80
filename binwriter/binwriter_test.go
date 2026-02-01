@@ -108,3 +108,60 @@ func TestBinWriterAbsAndRel(t *testing.T) {
 
 	}
 }
+
+func TestBinWriterMultiFiles(t *testing.T) {
+	tests := []struct {
+		input any
+		code  []byte
+		err   string
+		fill  int
+	}{
+		{
+			input: []string{
+				`ld a, 1`,
+				`ld a, 2`,
+				`ld a, 3`},
+			code: []byte{0x3e, 0x01, 0x3e, 0x02, 0x3e, 0x03},
+		},
+		{
+			input: []string{
+				`ld a, 1`,
+				`org 4 \ ld a, 2`,
+				`org 8 \ ld a, 3`},
+			code: []byte{0x3e, 0x01, 0, 0, 0x3e, 0x02, 0, 0, 0x3e, 0x03},
+		},
+		{
+			input: []string{
+				`ld a, 1`,
+				`org $1234, REL \ ld hl, $`,
+				`org $5678, REL \ ld hl, $`,
+				`org 8 \ ld hl, $`},
+			code: []byte{0x3e, 0x01, 0x21, 0x34, 0x12, 0x21, 0x78, 0x56, 0x21, 0x08, 0x00},
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<binwrite>")
+		prog, _ := evalInput(tt.input, logger, env)
+		code, ok := codeFromObj(prog, tt.fill, logger)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, logger)
+			continue
+		}
+
+		if !ok {
+			t.Errorf("[%d], codeFromObj %s", tn, logger.Errors[0].Error())
+		}
+
+		if err := testutil.BytesEqual(code, tt.code); err != nil {
+			t.Errorf("[%d], %s", tn, err.Error())
+		}
+
+	}
+}
