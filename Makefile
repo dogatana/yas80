@@ -37,6 +37,8 @@ YACC = parser/parser.y
 PARSER = parser/parser.go
 PATCH = parser/patch_parser.py
 YOUT = parser/y.output
+TESTDIR = ./binwriter ./errtest ./evaluator ./filecontent ./parser
+
 	  
 main.exe: ${SRC} 
 	go build -o $@
@@ -54,22 +56,22 @@ yacc:
 	python ${PATCH} ${PARSER} ${PARSER} ${YOUT}
 
 vet: fmt
-	go vet ./parser ./evaluator ./filecontent ./errtest ./logging
+	go vet ./...
 
 fmt:
-	go fmt ./parser ./evaluator ./filecontent ./errtest ./logging
+	go fmt ./...
 
 check:
-	staticcheck ./parser ./evaluator ./errtest ./logging
+	staticcheck ./...
 
 tc:
 	python internal/testutil/errcode_coverage.py
 
 test: internal/testutil/errcode_names.go
-	go test ./parser ./evaluator ./filecontent ./errtest
+	go test ${TESTDIR}
 
 testv: internal/testutil/errcode_names.go
-	go test -v ./parser ./evaluator ./filecontent ./errtest
+	go test -v ${TESTDIR}
 
 internal/testutil/errcode_names.go: errcode/errcode.go
 	python internal/testutil/errcode_names.py $< $@

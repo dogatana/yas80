@@ -215,10 +215,6 @@ func main() {
 	fill, _ := getIntFromEnv(env, "$FILL")
 
 	bw := binwriter.New(obj, fill)
-	if err := bw.Allocate(); err != nil {
-		fmt.Println(err.Error())
-		// os.Exit(1)
-	}
 
 	var buf bytes.Buffer
 	if err := bw.Write(&buf); err != nil {

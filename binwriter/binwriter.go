@@ -39,6 +39,9 @@ func New(prog object.Object, fill int) *BinWriter {
 }
 
 func (b *BinWriter) Write(w io.Writer) error {
+	if err := b.allocate(); err != nil {
+		return err
+	}
 	if b.segs == nil {
 		return errors.New(errcode.EBW_NULL)
 	}
@@ -93,7 +96,7 @@ func (b *BinWriter) write(w io.Writer) error {
 }
 
 // Segment を割り付ける
-func (b *BinWriter) Allocate() error {
+func (b *BinWriter) allocate() error {
 	segs := b.collectSegemnts()
 
 	// 有効 Segment なし
