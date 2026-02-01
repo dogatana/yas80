@@ -94,13 +94,54 @@ func (b *BinWriter) write(w io.Writer) error {
 // Segment を割り付ける
 func (b *BinWriter) Allocate() error {
 	segs := b.collectSegemnts()
-	newSegs := make([]*Segment, 0, len(segs))
 
+	// 有効 Segment なし
 	if len(segs) == 0 {
+		b.segs = segs
 		return nil
 	}
+	segs = b.mergeREL(segs)
+
+	// addr 順にソート
+	slices.SortFunc(segs, func(a, b *Segment) int { return a.addr - b.addr })
+
+	nsegs := make([]*Segment, 1, len(segs))
+	nsegs[0] = segs[0]
+
+	addr := segs[0].addr + segs[0].size
+	for i, s := range segs[1:] {
+		switch {
+		case addr < s.addr:
+			size := s.addr - addr
+			code := make([]byte, size)
+			for i := 0; i < size; i++ {
+				code[i] = 0xff // TODO: fill-byte
+			}
+			gap := &Segment{addr: addr, code: code, size: size, gap: true}
+			nsegs = append(nsegs, gap, s)
+			addr += size + s.size
+
+		case addr > s.addr:
+			nsegs = append(nsegs, s)
+			b.segs = nsegs
+			return fmt.Errorf(errcode.EBW_OVERLAPPED, segs[i].addr, s.addr)
+
+		default:
+			nsegs = append(nsegs, s)
+			addr += s.size
+		}
+	}
+
+	b.segs = nsegs
+	return nil
+}
+
+// REL を ABS に merge
+func (b *BinWriter) mergeREL(segs []*Segment) []*Segment {
+	nsegs := make([]*Segment, 0, len(segs))
 
 	var seg *Segment
+
 	if segs[0].allocType != 0 {
 		// 最初が REL Segment の場合、addr:0 で Segment を作成し、children に設定
 		seg = &Segment{addr: 0, size: segs[0].size, children: []*Segment{segs[0]}}
@@ -108,43 +149,18 @@ func (b *BinWriter) Allocate() error {
 		seg = segs[0]
 	}
 
-	// 以降のセグメントを割り当て
 	for _, s := range segs[1:] {
-		if s.allocType != 0 {
-			// REL
+		if s.allocType != 0 { // REL
 			seg.children = append(seg.children, s)
 			seg.size += s.size
-			continue
-		}
-
-		naddr := seg.addr + seg.size // 現在の Sgement の次の開始アドレス
-		switch {
-		// ABS Segment のアドレス重複
-		case s.addr < naddr:
-			newSegs = append(newSegs, seg, s)
-			b.segs = newSegs
-			return fmt.Errorf(errcode.EBW_OVERLAPPED, seg.addr, s.addr)
-
-		// ABS Segment 間にギャップあり
-		case s.addr > naddr:
-			size := s.addr - naddr
-			code := make([]byte, size)
-			for i := 0; i < size; i++ {
-				code[i] = 0 // TODO: fill_byte で埋める
-			}
-			fill := &Segment{addr: naddr, code: code, size: size, gap: true}
-			newSegs = append(newSegs, seg, fill)
-			seg = s
-
-		default:
-			newSegs = append(newSegs, seg)
+		} else {
+			nsegs = append(nsegs, seg)
 			seg = s
 		}
 	}
-	newSegs = append(newSegs, seg)
+	nsegs = append(nsegs, seg)
 
-	b.segs = newSegs
-	return nil
+	return nsegs
 }
 
 // OrgObject, CodeObject から Segment を作成

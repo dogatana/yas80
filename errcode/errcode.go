@@ -159,7 +159,7 @@ const (
 	ENOT_IMPL_STMT = "未実装エラー: eval(%T')"
 
 	// BinWriter
-	EBW_OVERLAPPED = "ORG $%04x と ORG $%04x の範囲が重なっている"
+	EBW_OVERLAPPED = "ORG $%04x と ORG $%04x の範囲が重複"
 	EBW_NULL       = "コード生成なし"
 
 	// warning
