@@ -35,6 +35,10 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.OrgStatement:
 		return e.evalOrgStatement(stmt, env)
 
+	// INCLUDE
+	case *parser.IncludeStatement:
+		return object.NULL // TODO
+
 	// PROC
 	case *parser.ProcStatement:
 		if object.InProcEnv(env) {

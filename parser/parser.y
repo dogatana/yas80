@@ -117,7 +117,19 @@ statement   : EOL { $$ = nil }
 				}
 			}
 			| instruction EOL	{ $$ = $1 }
-			| directive	 EOL	{ $$ = $1 }
+			| directive	 EOL	{ 
+				if inc, ok := $1.(*IncludeStatement); ok {
+					fc, err := filecontent.NewFromString(inc.Filename, "call $1234")
+					// fc, err := filecontent.NewFromFile(inc.Filename)
+					if err != nil {
+						$$ = &ParseError{Message: fmt.Sprintf(errcode.EFILE, inc.Filename), Context: inc.Context}
+					} else {
+						yylex.Push(fc, inc.Context)
+					}
+				} else {
+					$$ = $1 
+				}
+			}
 			| error EOL
 			{
 				// ここで対処する前に syntax error が出力されているので改めてエラー出力はしない
@@ -311,18 +323,7 @@ directive	: CONST ident_expr '=' expr
 					$$ = &ParseError{Message: errcode.EORG_ALLOC, Context: $1.Context}
 				}
 			}
-			| INCLUDE STRING
-			{
-				name := $2.Literal
-				fc, err := filecontent.NewFromString(name, "call $1234")
-				// fc, err := filecontent.NewFromFile(name)
-				if err != nil {
-					$$ = &ParseError{Message: fmt.Sprintf(errcode.EFILE, name), Context: $1.Context}
-				} else {
-					$$ = &IncludeStatement{Filename: name, Context: $1.Context}
-					yylex.Push(fc, $1.Context)
-				}
-			}
+			| INCLUDE STRING { $$ = &IncludeStatement{Filename: $2.Literal, Context: $1.Context} }
 			;
 
 

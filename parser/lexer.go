@@ -65,13 +65,15 @@ func (f *fcStack) pop() *LexerContext {
 	f.values = slices.Delete(f.values, size-1, size)
 	return ctx
 }
-func (f *fcStack) len() int { return len(f.values) }
 
 func (l *Lexer) Push(fc *filecontent.FileContent, ctx *filecontent.Context) {
-	// TODO
+	stack.push(l.lctx)
+	fileContent = fc
+	l.lexState = 1
 }
 
 var stack = &fcStack{}
+var fileContent *filecontent.FileContent
 
 // yyLexer インターフェースメソッド
 func (l *Lexer) Lex(lval *yySymType) int {
@@ -79,27 +81,34 @@ func (l *Lexer) Lex(lval *yySymType) int {
 	for {
 		switch l.lexState {
 		case 0:
-			// stack empty
-			fc := l.callback()
-			if fc == nil {
+			// 次のファイルを取得
+			fileContent = l.callback()
+			if fileContent == nil {
 				// これ以上 filecontent が得られない場合 EOF を返すステートへ移行
 				l.lexState = 9
 				break
 			}
+			l.lexState++
 
+		case 1:
 			// setup LexerContext
-			lctx := &LexerContext{filename: fc.Filename, lineNumber: 1, fileContent: fc}
+			lctx := &LexerContext{filename: fileContent.Filename, lineNumber: 1, fileContent: fileContent}
 			stack.push(lctx)
 
-			l.isEOF = false
 			l.lctx = lctx
+			l.isEOF = false
 			l.nextChar()
 
 			l.lexState++
 
-		case 1:
+		case 2:
 			// pop
 			lctx := stack.pop()
+			if lctx == nil {
+				l.lexState = 0
+				break
+			}
+			l.isEOF = false
 			l.lctx = lctx
 
 			// return FILE
@@ -109,7 +118,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 			l.lexState++
 			return int(tok.TokenType)
 
-		case 2:
+		case 3:
 			tok := l.NextToken()
 			if tok.TokenType == EOF {
 				l.lexState = 0
