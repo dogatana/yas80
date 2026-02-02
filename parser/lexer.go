@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"yas80/errcode"
 	"yas80/filecontent"
@@ -48,31 +49,61 @@ func NewLexer(logger *logging.Logger, callback func() *filecontent.FileContent) 
 	return l
 }
 
+type fcStack struct {
+	values []*LexerContext
+}
+
+func (f *fcStack) push(ctx *LexerContext) {
+	f.values = append(f.values, ctx)
+}
+func (f *fcStack) pop() *LexerContext {
+	size := len(f.values)
+	if size == 0 {
+		return nil
+	}
+	ctx := f.values[size-1]
+	f.values = slices.Delete(f.values, size-1, size)
+	return ctx
+}
+func (f *fcStack) len() int { return len(f.values) }
+
+func (l *Lexer) Push(fc *filecontent.FileContent, ctx *filecontent.Context) {
+	// TODO
+}
+
+var stack = &fcStack{}
+
 // yyLexer インターフェースメソッド
 func (l *Lexer) Lex(lval *yySymType) int {
-	var fc *filecontent.FileContent
 
 	for {
 		switch l.lexState {
 		case 0:
-			// l.ctx == nil
-			fc = l.callback()
+			// stack empty
+			fc := l.callback()
 			if fc == nil {
 				// これ以上 filecontent が得られない場合 EOF を返すステートへ移行
 				l.lexState = 9
 				break
 			}
-			l.lexState++
 
-		case 1:
 			// setup LexerContext
 			lctx := &LexerContext{filename: fc.Filename, lineNumber: 1, fileContent: fc}
+			stack.push(lctx)
+
 			l.isEOF = false
 			l.lctx = lctx
 			l.nextChar()
 
+			l.lexState++
+
+		case 1:
+			// pop
+			lctx := stack.pop()
+			l.lctx = lctx
+
 			// return FILE
-			tok := Token{TokenType: FILE, Literal: fc.Filename}
+			tok := Token{TokenType: FILE, Literal: lctx.filename}
 			lval.token = tok
 
 			l.lexState++
@@ -86,6 +117,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 			}
 			lval.token = tok
 			return int(tok.TokenType)
+
 		case 9:
 			tok := Token{TokenType: 0, Literal: "[EOF]"}
 			lval.token = tok
@@ -107,10 +139,6 @@ func (l *Lexer) Error(msg string, ctx *filecontent.Context) {
 	} else {
 		l.logger.Error(msg, ctx)
 	}
-}
-
-func (l *Lexer) Push(fc *filecontent.FileContent) {
-	// TODO
 }
 
 func NewLexerProvider(callback filecontentProvider, logger *logging.Logger) *Lexer {

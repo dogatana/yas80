@@ -320,7 +320,7 @@ directive	: CONST ident_expr '=' expr
 					$$ = &ParseError{Message: fmt.Sprintf(errcode.EFILE, name), Context: $1.Context}
 				} else {
 					$$ = &IncludeStatement{Filename: name, Context: $1.Context}
-					yylex.Push(fc)
+					yylex.Push(fc, $1.Context)
 				}
 			}
 			;
