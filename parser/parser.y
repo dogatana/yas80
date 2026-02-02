@@ -38,7 +38,7 @@ var _ = __yyfmt__.Sprintf
 %type<token> string
 
 // 終端記号
-%token<token> EOL FILE
+%token<token> EOL FILE INCLUDE
 %token<token> NUMBER STRING
 %token<token> IDENT 
 %token<token> AT_IDENT    // @def 
@@ -309,6 +309,18 @@ directive	: CONST ident_expr '=' expr
 					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_REL, Context: $1.Context }
 				default:
 					$$ = &ParseError{Message: errcode.EORG_ALLOC, Context: $1.Context}
+				}
+			}
+			| INCLUDE STRING
+			{
+				name := $2.Literal
+				fc, err := filecontent.NewFromString(name, "call $1234")
+				// fc, err := filecontent.NewFromFile(name)
+				if err != nil {
+					$$ = &ParseError{Message: fmt.Sprintf(errcode.EFILE, name), Context: $1.Context}
+				} else {
+					$$ = &IncludeStatement{Filename: name, Context: $1.Context}
+					yylex.Push(fc)
 				}
 			}
 			;

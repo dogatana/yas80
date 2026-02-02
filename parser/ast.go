@@ -14,6 +14,7 @@ const (
 	// program
 	NODE_PROGRAM
 	NODE_FILE
+	NODE_INCLUDE
 
 	// eror
 	NODE_ERROR
@@ -145,6 +146,22 @@ func (s *FileStatement) GetContext() *filecontent.Context     { return nil }
 func (s *FileStatement) ReplaceContext(_ filecontent.Context) {}
 func (s *FileStatement) String() string {
 	return "FILE " + s.Filename
+}
+
+// include
+type IncludeStatement struct {
+	Filename string
+	Context  *filecontent.Context
+}
+
+func (s *IncludeStatement) NodeType() NodeType               { return NODE_INCLUDE }
+func (s *IncludeStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *IncludeStatement) ReplaceContext(ctx filecontent.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
+func (s *IncludeStatement) String() string {
+	return "INCLUDE " + s.Filename
 }
 
 // org

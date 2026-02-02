@@ -109,6 +109,10 @@ func (l *Lexer) Error(msg string, ctx *filecontent.Context) {
 	}
 }
 
+func (l *Lexer) Push(fc *filecontent.FileContent) {
+	// TODO
+}
+
 func NewLexerProvider(callback filecontentProvider, logger *logging.Logger) *Lexer {
 	return &Lexer{logger: logger}
 }

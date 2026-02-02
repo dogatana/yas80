@@ -6,6 +6,8 @@ const (
 	ESYNTAX   = "syntax error"
 	EINTERNAL = "internal error %s"
 
+	EFILE = "ファイル %s が見つからない"
+
 	EADDRESS_OVERFLOW = "アドレスオバーフロー $%x"
 
 	ESTR_CTRL      = "文字列リテラルに制御文字を含めることは不可"
