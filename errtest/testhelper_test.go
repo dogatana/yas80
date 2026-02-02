@@ -89,7 +89,7 @@ func testMessage(t *testing.T, testType int, tn int, logger *logging.Logger, exp
 
 func parseText(input string, logger *logging.Logger) *parser.BlockStatement {
 	file := "<string>"
-	fc := filecontent.New(file, []byte(input))
+	fc, _ := filecontent.NewFromString(file, input)
 	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
 		ret := fc
 		fc = nil

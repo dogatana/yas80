@@ -10,7 +10,7 @@ import (
 func newLexerForTest(input string) *Lexer {
 	file := "<string>"
 	logger := logging.New(file)
-	fc := filecontent.New(file, []byte(input))
+	fc, _ := filecontent.NewFromString(file, input)
 	lex := NewLexer(logger, func() *filecontent.FileContent {
 		ret := fc
 		fc = nil

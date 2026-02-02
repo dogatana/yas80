@@ -25,7 +25,7 @@ func main() {
 
 	switch {
 	case opt.Line != "":
-		fc := filecontent.New("line", []byte(opt.Line))
+		fc, _ := filecontent.NewFromString("line", opt.Line)
 		fcs = append(fcs, fc)
 
 	case len(opt.Args) == 0:

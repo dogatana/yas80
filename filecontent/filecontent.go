@@ -27,8 +27,8 @@ func (fb *FileContent) String() string {
 	return fmt.Sprintf("FileBlock{FileName: %s, Content: %s}", fb.Filename, content)
 }
 
-func New(filename string, content []byte) *FileContent {
-	return &FileContent{Filename: filename, Content: content}
+func NewFromString(filename string, content string) (*FileContent, error) {
+	return &FileContent{Filename: filename, Content: []byte(content)}, nil
 }
 
 func NewFromReader(filename string, reader io.Reader) (*FileContent, error) {

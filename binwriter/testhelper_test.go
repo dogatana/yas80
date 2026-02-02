@@ -66,10 +66,12 @@ func parseTextForTest(input any, logger *logging.Logger) *parser.BlockStatement 
 	fcs := []*filecontent.FileContent{}
 	switch input := input.(type) {
 	case string:
-		fcs = append(fcs, filecontent.New(logger.Filename, []byte(input)))
+		fc, _ := filecontent.NewFromString(logger.Filename, input)
+		fcs = append(fcs, fc)
 	case []string:
 		for _, s := range input {
-			fcs = append(fcs, filecontent.New(logger.Filename, []byte(s)))
+			fc, _ := filecontent.NewFromString(logger.Filename, s)
+			fcs = append(fcs, fc)
 		}
 	}
 	index := 0

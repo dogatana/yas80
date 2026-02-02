@@ -92,7 +92,7 @@ func testEvalResult(t *testing.T, tn int, err string, eval *Evaluator) {
 func parseTextForTest(input string, logger *logging.Logger) *parser.BlockStatement {
 	var prog *parser.BlockStatement
 
-	fc := filecontent.New(logger.Filename, []byte(input))
+	fc, _ := filecontent.NewFromString(logger.Filename, input)
 
 	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
 		ret := fc
