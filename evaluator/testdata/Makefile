@@ -15,7 +15,8 @@ SRCS = inst0.asm \
 		inst-bit.asm \
 		inst-call-ret.asm \
 		inst-io.asm \
-		forward.asm forward_symbol.asm forward_mix.asm
+		forward.asm forward_symbol.asm forward_mix.asm \
+		include.asm
 
 BINS = $(SRCS:.asm=.bin)
 

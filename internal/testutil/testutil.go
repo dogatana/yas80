@@ -64,6 +64,7 @@ func hasMessage(messages []logging.LogMessage, expected string) bool {
 	return false
 }
 
+// testdata フォルダ内のファイル内容を返す
 func ReadTestDataFile(t *testing.T, filename string) []byte {
 	_, file, _, ok := runtime.Caller(1)
 	if !ok {
@@ -75,6 +76,15 @@ func ReadTestDataFile(t *testing.T, filename string) []byte {
 		t.Fatalf("ReadFile(%q) returns %s", path, err.Error())
 	}
 	return data
+}
+
+// testdata フォルダ内のファイルパスを返す
+func GetTestFilePath(t *testing.T, filename string) string {
+	_, file, _, ok := runtime.Caller(1)
+	if !ok {
+		t.Fatal("runtime.Caller(1) failed")
+	}
+	return filepath.Join(filepath.Dir(file), "testdata", filename)
 }
 
 func BytesEqual(v1, v2 []byte) error {

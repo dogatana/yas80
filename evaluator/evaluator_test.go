@@ -21,25 +21,28 @@ func TestAssembleFile(t *testing.T) {
 		{input: "forward_mix"},
 		{input: "macro"},
 		{input: "var-macro", code: []byte{1, 0, 0x10, 2, 0, 0x20, 3, 0, 0x30}},
+
+		{input: "include"},
 	}
 
 	for tn, tt := range tests {
-		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
-		input := string(testutil.ReadTestDataFile(t, tt.input+".asm"))
+		path := testutil.GetTestFilePath(t, tt.input+".asm")
 
-		code := tt.code
-		if code == nil {
-			code = testutil.ReadTestDataFile(t, tt.input+".bin")
+		env := object.NewEnvironment(nil)
+		logger := logging.New(path)
+
+		code, ok := evalFile(logger, env)
+		if !ok {
+			t.Errorf("[%d] BinWrier.Write() failed. got %d", tn, len(code))
+			return
 		}
 
-		prog, e := evalInput(input, logger, env)
-		testEvalResult(t, tn, "", e)
+		expected := tt.code
+		if expected == nil {
+			expected = testutil.ReadTestDataFile(t, tt.input+".bin")
+		}
 
-		logger.Print()
-		result := CollectCode(prog.Block)
-
-		if err := testutil.BytesEqual(result, code); err != nil {
+		if err := testutil.BytesEqual(code, expected); err != nil {
 			t.Errorf("[%d] generated code diff %s", tn, err.Error())
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+	"yas80/binwriter"
 	"yas80/filecontent"
 	"yas80/internal/testutil"
 	"yas80/logging"
@@ -18,6 +19,20 @@ type symValue struct {
 
 func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObject, *Evaluator) {
 	prog := parseTextForTest(input, logger)
+	return evalProg(prog, logger, env)
+}
+
+func evalFile(logger *logging.Logger, env TEnv) ([]byte, bool) {
+	prog := parseFileForTest(logger)
+	obj, _ := evalProg(prog, logger, env)
+
+	bw := binwriter.New(obj, 0, logger)
+	var buf bytes.Buffer
+	ok := bw.Write(&buf)
+	return buf.Bytes(), ok
+}
+
+func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*object.BlockObject, *Evaluator) {
 
 	eval := New(logger)
 
@@ -93,6 +108,29 @@ func parseTextForTest(input string, logger *logging.Logger) *parser.BlockStateme
 	var prog *parser.BlockStatement
 
 	fc, _ := filecontent.NewFromString(logger.Filename, input)
+
+	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
+		ret := fc
+		fc = nil
+		return ret
+	})
+	prog = parser.Parse(lex)
+	if len(logger.Errors) > 0 {
+		return prog
+	}
+
+	prog = parser.PreProrocess(logger, prog)
+	return prog
+}
+
+func parseFileForTest(logger *logging.Logger) *parser.BlockStatement {
+	var prog *parser.BlockStatement
+
+	fc, err := filecontent.NewFromFile(logger.Filename)
+	if err != nil {
+		fmt.Println("parseFileForTest", err.Error())
+
+	}
 
 	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
 		ret := fc
