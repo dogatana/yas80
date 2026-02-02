@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"yas80/errcode"
@@ -265,4 +266,11 @@ func getLastIfStatement(stmt *IfStatement) Node {
 		}
 		stmt = block.Block[0].(*IfStatement)
 	}
+}
+
+// include 処理 TODO: -I オプションの利用
+func loadIncludeFile(base, target string) (*filecontent.FileContent, error) {
+	dir := filepath.Dir(base)
+	path := filepath.Join(dir, target)
+	return filecontent.NewFromFile(path)
 }

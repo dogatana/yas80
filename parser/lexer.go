@@ -65,6 +65,12 @@ func (f *fcStack) pop() *LexerContext {
 	f.values = slices.Delete(f.values, size-1, size)
 	return ctx
 }
+func (f *fcStack) print() {
+	for _, v := range f.values {
+		fmt.Printf("[%s]", v.filename)
+	}
+	fmt.Println("")
+}
 
 func (l *Lexer) Push(fc *filecontent.FileContent, ctx *filecontent.Context) {
 	stack.push(l.lctx)
@@ -121,7 +127,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		case 3:
 			tok := l.NextToken()
 			if tok.TokenType == EOF {
-				l.lexState = 0
+				l.lexState = 2
 				break
 			}
 			lval.token = tok

@@ -119,8 +119,8 @@ statement   : EOL { $$ = nil }
 			| instruction EOL	{ $$ = $1 }
 			| directive	 EOL	{ 
 				if inc, ok := $1.(*IncludeStatement); ok {
-					fc, err := filecontent.NewFromString(inc.Filename, "call $1234")
-					// fc, err := filecontent.NewFromFile(inc.Filename)
+					//fc, err := filecontent.NewFromString(inc.Filename, "call $1234")
+					fc, err := loadIncludeFile(inc.Context.FileContent.Filename, inc.Filename)
 					if err != nil {
 						$$ = &ParseError{Message: fmt.Sprintf(errcode.EFILE, inc.Filename), Context: inc.Context}
 					} else {
