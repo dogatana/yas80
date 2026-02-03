@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"testing"
+	"yas80/errcode"
 	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
@@ -11,6 +12,7 @@ func TestAssembleFile(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
+		err   string
 	}{
 		{input: "label-backward"},
 		{input: "equ-backward"},
@@ -23,18 +25,18 @@ func TestAssembleFile(t *testing.T) {
 		{input: "var-macro", code: []byte{1, 0, 0x10, 2, 0, 0x20, 3, 0, 0x30}},
 
 		{input: "include"},
+		{input: "inc", err: errcode.EFILE},
 	}
 
 	for tn, tt := range tests {
 		path := testutil.GetTestFilePath(t, tt.input+".asm")
-
 		env := object.NewEnvironment(nil)
 		logger := logging.New(path)
 
-		code, ok := evalFile(logger, env)
-		if !ok {
-			t.Errorf("[%d] BinWrier.Write() failed. got %d", tn, len(code))
-			return
+		code, _ := evalFile(logger, env)
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, logger)
+			continue
 		}
 
 		expected := tt.code
