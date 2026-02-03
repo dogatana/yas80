@@ -36,6 +36,7 @@ const (
 	// EDATA_EMPTY  = "DB/DW/DD に値が指定されていない"
 	EDATA_DW_STR = "DW では文字列は指定できない"
 	EDATA_ENCODE = "文字列 %q を SHIFT-JIS へ変換できない"
+	EDATA_VALUE  = "データ定義(DB/DW/DD)に使用できない値"
 
 	EDS_COUNT = "DS/DSB/DSW のデータ数が未確定"
 	EDS_FILL  = "DS/DSB/DSW の埋め込みデータが未確定"

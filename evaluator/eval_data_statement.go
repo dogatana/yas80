@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 	"yas80/errcode"
+	"yas80/filecontent"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -118,62 +119,92 @@ func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) obje
 		code = make([]byte, 0, count)
 	}
 
-	var value int
-	for _, expr := range stmt.Values {
-		obj := e.evalExpression(expr, env, stmt.Context)
-		fword := false
+	if e.test(code, stmt.Size, stmt.Values, env, stmt.Context) == nil {
+		return object.ERROR
+	}
+	fmt.Printf("code: %v\n", code)
+	return &object.CodeObject{Code: code, Addr: getLocationCounter(env), Context: stmt.Context}
+}
+
+func (e *Evaluator) test(code []byte, size int, exprs []parser.Expression, env object.Environment, ctx *filecontent.Context) []byte {
+
+	for _, expr := range exprs {
+		obj := e.evalExpression(expr, env, ctx)
+
 		switch obj := obj.(type) {
 		case *object.ErrorObject:
-			return object.ERROR
+			return nil
+
 		case *object.RefNotFoundObject:
-			value = 0
-			e.Resolved = false
+			code = append(code, 0)
+
 		case *object.NumberObject:
-			value = obj.Value
-			fword = obj.ForceWord
+			e.numberToCode(obj, code, size, ctx)
+
 		case *object.StringObject:
-			if stmt.Size == 2 {
-				e.logger.Error(errcode.EDATA_DW_STR, stmt.Context)
-				return object.ERROR
+			if size == 2 {
+				e.logger.Error(errcode.EDATA_DW_STR, ctx)
+				return nil
 			}
-			if s, err := e.utf8ToShiftJis(obj.Value); err != nil {
-				e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, obj.Value), stmt.Context)
-				return object.ERROR
-			} else {
-				code = append(code, s...)
-			}
-			continue
-		}
-		switch {
-		case stmt.Size == 0:
-			if -128 <= value && value <= 255 {
-				if fword {
-					code = append(code, byte(value), 0)
-				} else {
-					code = append(code, byte(value))
-				}
-			} else {
-				v, ok := e.intToWord(value)
-				if !ok {
-					e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
-				}
-				code = append(code, byte(v&0xff), byte(v>>8))
+			if e.stringToCode(obj, code, size, ctx) == nil {
+				return nil
 			}
 
-		case stmt.Size == 1 && !fword:
-			v, ok := e.intToByte(value)
-			if !ok {
-				e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, value, value), stmt.Context)
+		case *object.ArrayObject:
+			for _, v := range obj.Values {
+				switch v := v.(type) {
+				case *object.NumberObject:
+					code = e.numberToCode(v, code, size, ctx)
+				case *object.StringObject:
+					if size == 2 {
+						e.logger.Error(errcode.EDATA_DW_STR, ctx)
+						return nil
+					}
+					code = e.stringToCode(v, code, size, ctx)
+					if code == nil {
+						return nil
+					}
+				default:
+					e.logger.Error(errcode.EDATA_VALUE, ctx)
+					return nil
+				}
 			}
-			code = append(code, v)
-
-		case stmt.Size == 2 || fword:
-			v, ok := e.intToWord(value)
-			if !ok {
-				e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
-			}
-			code = append(code, byte(v&0xff), byte(v>>8))
+		default:
+			e.logger.Error(errcode.EDATA_VALUE, ctx)
+			return nil
 		}
 	}
-	return &object.CodeObject{Code: code, Addr: getLocationCounter(env), Context: stmt.Context}
+	return code
+}
+
+func (e *Evaluator) numberToCode(obj *object.NumberObject, code []byte, size int, ctx TContext) []byte {
+	v := obj.Value
+	switch {
+	case size == 1 || size == 0 && -128 <= v && v <= 127:
+		v, ok := e.intToByte(v)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, v, v), ctx)
+		}
+		code = append(code, v)
+	case size == 2 || size == 0 || obj.ForceWord:
+		v, ok := e.intToWord(obj.Value)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, v, v), ctx)
+		}
+		code = append(code, byte(v&0xff), byte((v>>8)&0xff))
+	}
+	return code
+}
+
+func (e *Evaluator) stringToCode(obj *object.StringObject, code []byte, size int, ctx TContext) []byte {
+	if e.stringToCode(obj, code, size, ctx) == nil {
+		return nil
+	}
+	if s, err := e.utf8ToShiftJis(obj.Value); err != nil {
+		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, obj.Value), ctx)
+		return nil
+	} else {
+		code = append(code, s...)
+	}
+	return code
 }
