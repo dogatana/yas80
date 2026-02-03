@@ -9,7 +9,7 @@ const (
 	EFILE_NOT_FOUND = "ファイル %s が見つからない"
 	EFILE_ERR       = "ファイル %s: %s"
 
-	EINCLUDE_CYCLIC = "INCLUDE %q が循環"
+	EINCLUDE_CYCLIC = "INCLUDE %q で循環 INCLUDE 検出"
 
 	EADDRESS_OVERFLOW = "アドレスオバーフロー $%x"
 
