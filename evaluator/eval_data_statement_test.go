@@ -186,6 +186,7 @@ func TestDataStatement(t *testing.T) {
 		},
 		{input: `dw "あいう"`, err: errcode.EDATA_DW_STR},
 		{input: `db "` + string([]byte{0x80, 0xff}) + `"`, err: errcode.EDATA_ENCODE},
+		{input: "db '魚の𩸽はおいしい'", err: errcode.EDATA_ENCODE}, // u+29e3d（ほっけ）
 	}
 
 	for tn, tt := range tests {

@@ -111,22 +111,15 @@ func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) obje
 		}
 	}
 
-	count := len(stmt.Values)
-	var code []byte
-	if stmt.Size == 2 {
-		code = make([]byte, 0, count*2)
-	} else {
-		code = make([]byte, 0, count)
-	}
-
-	if e.test(code, stmt.Size, stmt.Values, env, stmt.Context) == nil {
+	code := e.test(stmt.Size, stmt.Values, env, stmt.Context)
+	if code == nil {
 		return object.ERROR
 	}
-	fmt.Printf("code: %v\n", code)
 	return &object.CodeObject{Code: code, Addr: getLocationCounter(env), Context: stmt.Context}
 }
 
-func (e *Evaluator) test(code []byte, size int, exprs []parser.Expression, env object.Environment, ctx *filecontent.Context) []byte {
+func (e *Evaluator) test(size int, exprs []parser.Expression, env object.Environment, ctx *filecontent.Context) []byte {
+	var code []byte
 
 	for _, expr := range exprs {
 		obj := e.evalExpression(expr, env, ctx)
@@ -139,31 +132,33 @@ func (e *Evaluator) test(code []byte, size int, exprs []parser.Expression, env o
 			code = append(code, 0)
 
 		case *object.NumberObject:
-			e.numberToCode(obj, code, size, ctx)
+			code = append(code, e.numberToCode(obj, size, ctx)...)
+			if code == nil {
+				return nil
+			}
 
 		case *object.StringObject:
 			if size == 2 {
 				e.logger.Error(errcode.EDATA_DW_STR, ctx)
 				return nil
 			}
-			if e.stringToCode(obj, code, size, ctx) == nil {
-				return nil
-			}
+			code = e.stringToCode(obj, ctx)
 
 		case *object.ArrayObject:
 			for _, v := range obj.Values {
 				switch v := v.(type) {
 				case *object.NumberObject:
-					code = e.numberToCode(v, code, size, ctx)
+					code = append(code, e.numberToCode(v, size, ctx)...)
 				case *object.StringObject:
 					if size == 2 {
 						e.logger.Error(errcode.EDATA_DW_STR, ctx)
 						return nil
 					}
-					code = e.stringToCode(v, code, size, ctx)
-					if code == nil {
+					c := e.stringToCode(v, ctx)
+					if c == nil {
 						return nil
 					}
+					code = append(code, c...)
 				default:
 					e.logger.Error(errcode.EDATA_VALUE, ctx)
 					return nil
@@ -177,34 +172,30 @@ func (e *Evaluator) test(code []byte, size int, exprs []parser.Expression, env o
 	return code
 }
 
-func (e *Evaluator) numberToCode(obj *object.NumberObject, code []byte, size int, ctx TContext) []byte {
+func (e *Evaluator) numberToCode(obj *object.NumberObject, size int, ctx TContext) []byte {
 	v := obj.Value
 	switch {
-	case size == 1 || size == 0 && -128 <= v && v <= 127:
+	case size == 1 && !obj.ForceWord || size == 0 && !obj.ForceWord && -128 <= v && v <= 255:
 		v, ok := e.intToByte(v)
 		if !ok {
 			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, v, v), ctx)
 		}
-		code = append(code, v)
-	case size == 2 || size == 0 || obj.ForceWord:
+		return []byte{v}
+	default:
 		v, ok := e.intToWord(obj.Value)
 		if !ok {
 			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, v, v), ctx)
 		}
-		code = append(code, byte(v&0xff), byte((v>>8)&0xff))
+		return []byte{byte(v & 0xff), byte((v >> 8) & 0xff)}
 	}
-	return code
+
 }
 
-func (e *Evaluator) stringToCode(obj *object.StringObject, code []byte, size int, ctx TContext) []byte {
-	if e.stringToCode(obj, code, size, ctx) == nil {
-		return nil
-	}
-	if s, err := e.utf8ToShiftJis(obj.Value); err != nil {
+func (e *Evaluator) stringToCode(obj *object.StringObject, ctx TContext) []byte {
+	if code, err := e.utf8ToShiftJis(obj.Value); err != nil {
 		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, obj.Value), ctx)
 		return nil
 	} else {
-		code = append(code, s...)
+		return code
 	}
-	return code
 }
