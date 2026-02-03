@@ -28,18 +28,26 @@ func (ctx *LexerContext) toContext(start int) *filecontent.Context {
 
 // 最低限必要な構造体を定義
 type Lexer struct {
-	callback  func() *filecontent.FileContent
-	isEOF     bool
-	start     int // token 開始 index
-	logger    *logging.Logger
-	program   *BlockStatement
-	lctx      *LexerContext
-	lexState  int
-	including map[string]bool // 循環 include 検査用
+	callback func() *filecontent.FileContent
+	isEOF    bool
+	start    int // token 開始 index
+	logger   *logging.Logger
+	program  *BlockStatement
+	lctx     *LexerContext
+
+	lexState    int
+	including   map[string]bool // 循環 include 検査用
+	fileContent *filecontent.FileContent
+	stack       stackType
 }
 
 func NewLexer(logger *logging.Logger, callback func() *filecontent.FileContent) *Lexer {
-	l := &Lexer{logger: logger, callback: callback, program: &BlockStatement{}, including: map[string]bool{}}
+	l := &Lexer{
+		logger:    logger,
+		callback:  callback,
+		program:   &BlockStatement{},
+		including: map[string]bool{},
+	}
 	return l
 }
 
@@ -72,14 +80,14 @@ func (l *Lexer) Push(filename string, fc *filecontent.FileContent, ctx *filecont
 		return fmt.Errorf(errcode.EINCLUDE_CYCLIC, filename)
 	}
 	l.including[abs] = true
-	stack.push(l.lctx)
-	fileContent = fc
+	l.stack.push(l.lctx)
+	l.fileContent = fc
 	l.lexState = 1
 	return nil
 }
 
-var stack = &stackType{}
-var fileContent *filecontent.FileContent
+// var fileContent *filecontent.FileContent
+// var stack = &stackType{}
 
 // yyLexer インターフェースメソッド
 func (l *Lexer) Lex(lval *yySymType) int {
@@ -88,8 +96,8 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		switch l.lexState {
 		case 0:
 			// 次のファイルを取得
-			fileContent = l.callback()
-			if fileContent == nil {
+			l.fileContent = l.callback()
+			if l.fileContent == nil {
 				// これ以上 filecontent が得られない場合 EOF を返すステートへ移行
 				l.lexState = 9
 				break
@@ -98,8 +106,8 @@ func (l *Lexer) Lex(lval *yySymType) int {
 
 		case 1:
 			// setup LexerContext
-			lctx := &LexerContext{filename: fileContent.Filename, lineNumber: 1, fileContent: fileContent}
-			stack.push(lctx)
+			lctx := &LexerContext{filename: l.fileContent.Filename, lineNumber: 1, fileContent: l.fileContent}
+			l.stack.push(lctx)
 
 			l.lctx = lctx
 			l.isEOF = false
@@ -109,7 +117,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 
 		case 2:
 			// pop
-			lctx := stack.pop()
+			lctx := l.stack.pop()
 			if lctx == nil {
 				l.lexState = 0
 				break
@@ -157,12 +165,6 @@ func (l *Lexer) Error(msg string, ctx *filecontent.Context) {
 		l.logger.Error(msg, ctx)
 	}
 }
-
-func NewLexerProvider(callback filecontentProvider, logger *logging.Logger) *Lexer {
-	return &Lexer{logger: logger}
-}
-
-func (l *Lexer) Logger() *logging.Logger { return l.logger }
 
 func (l *Lexer) NextToken() Token {
 	var literal string
