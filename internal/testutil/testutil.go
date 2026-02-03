@@ -89,11 +89,11 @@ func GetTestFilePath(t *testing.T, filename string) string {
 
 func BytesEqual(v1, v2 []byte) error {
 	if len(v1) != len(v2) {
-		return fmt.Errorf("size diff got 0x%x. expected 0x%x\n", len(v1), len(v2))
+		return fmt.Errorf("size diff got 0x%x. expected 0x%x", len(v1), len(v2))
 	}
 	for i, v := range v1 {
 		if v != v2[i] {
-			return fmt.Errorf("contentis diff [0x%x] 0x%02x 0x%02x\n", i, v, v2[i])
+			return fmt.Errorf("contentis diff [0x%x] 0x%02x 0x%02x", i, v, v2[i])
 		}
 	}
 	return nil

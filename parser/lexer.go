@@ -12,8 +12,6 @@ import (
 
 const EOF = 0
 
-type filecontentProvider func() *filecontent.FileContent
-
 type LexerContext struct {
 	filename    string
 	lineNumber  int

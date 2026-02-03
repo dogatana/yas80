@@ -16,7 +16,6 @@ type Segment struct {
 	code      []byte
 	gap       bool // gap のために作成された Segment
 	children  []*Segment
-	err       error
 }
 
 func (s *Segment) String() string {
