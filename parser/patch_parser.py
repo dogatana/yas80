@@ -16,7 +16,7 @@ patch_data: list[PatchData] = [
         "\tError(s string)\n", 
         (
             "\tError(s string, ctx *filecontent.Context) // # changed\n"
-            "\tPush(fc *filecontent.FileContent, ctx *filecontent.Context) // # added\n"
+            "\tPush(filename string, fc *filecontent.FileContent, ctx *filecontent.Context) error // # added\n"
         )
     ),
 

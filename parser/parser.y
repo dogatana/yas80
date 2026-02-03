@@ -122,9 +122,9 @@ statement   : EOL { $$ = nil }
 					//fc, err := filecontent.NewFromString(inc.Filename, "call $1234")
 					fc, err := loadIncludeFile(inc.Context.FileContent.Filename, inc.Filename)
 					if err != nil {
-						$$ = &ParseError{Message: fmt.Sprintf(errcode.EFILE, inc.Filename), Context: inc.Context}
-					} else {
-						yylex.Push(fc, inc.Context)
+						$$ = &ParseError{Message: fmt.Sprintf(errcode.EFILE_NOT_FOUND, inc.Filename), Context: inc.Context}
+					} else if err := yylex.Push(inc.Filename, fc, inc.Context); err != nil {
+						$$ = &ParseError{Message: err.Error(), Context: inc.Context}
 					}
 				} else {
 					$$ = $1 

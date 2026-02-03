@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 	"yas80/errcode"
@@ -27,36 +28,30 @@ func (ctx *LexerContext) toContext(start int) *filecontent.Context {
 
 // 最低限必要な構造体を定義
 type Lexer struct {
-	callback func() *filecontent.FileContent
-	isEOF    bool
-	start    int // token 開始 index
-	logger   *logging.Logger
-	program  *BlockStatement
-	lctx     *LexerContext
-	lexState int
-	//	callback filecontentProvider
-}
-
-func NewLexerOrg(fc *filecontent.FileContent, logger *logging.Logger) *Lexer {
-	lctx := &LexerContext{filename: fc.Filename, lineNumber: 1, fileContent: fc}
-	l := &Lexer{logger: logger, program: &BlockStatement{}, lctx: lctx}
-	l.nextChar()
-	return l
+	callback  func() *filecontent.FileContent
+	isEOF     bool
+	start     int // token 開始 index
+	logger    *logging.Logger
+	program   *BlockStatement
+	lctx      *LexerContext
+	lexState  int
+	including map[string]bool // 循環 include 検査用
 }
 
 func NewLexer(logger *logging.Logger, callback func() *filecontent.FileContent) *Lexer {
-	l := &Lexer{logger: logger, callback: callback, program: &BlockStatement{}}
+	l := &Lexer{logger: logger, callback: callback, program: &BlockStatement{}, including: map[string]bool{}}
 	return l
 }
 
-type fcStack struct {
+// スタック struct 定義
+type stackType struct {
 	values []*LexerContext
 }
 
-func (f *fcStack) push(ctx *LexerContext) {
+func (f *stackType) push(ctx *LexerContext) {
 	f.values = append(f.values, ctx)
 }
-func (f *fcStack) pop() *LexerContext {
+func (f *stackType) pop() *LexerContext {
 	size := len(f.values)
 	if size == 0 {
 		return nil
@@ -65,20 +60,25 @@ func (f *fcStack) pop() *LexerContext {
 	f.values = slices.Delete(f.values, size-1, size)
 	return ctx
 }
-func (f *fcStack) print() {
-	for _, v := range f.values {
-		fmt.Printf("[%s]", v.filename)
-	}
-	fmt.Println("")
-}
 
-func (l *Lexer) Push(fc *filecontent.FileContent, ctx *filecontent.Context) {
+// include "name" をパースした際に parser から呼ばれる
+func (l *Lexer) Push(filename string, fc *filecontent.FileContent, ctx *filecontent.Context) error {
+	name := filepath.FromSlash(fc.Filename)
+	abs, err := filepath.Abs(name)
+	if err != nil {
+		return fmt.Errorf(errcode.EFILE_ERR, fc.Filename, err.Error())
+	}
+	if l.including[abs] {
+		return fmt.Errorf(errcode.EINCLUDE_CYCLIC, filename)
+	}
+	l.including[abs] = true
 	stack.push(l.lctx)
 	fileContent = fc
 	l.lexState = 1
+	return nil
 }
 
-var stack = &fcStack{}
+var stack = &stackType{}
 var fileContent *filecontent.FileContent
 
 // yyLexer インターフェースメソッド
@@ -127,6 +127,8 @@ func (l *Lexer) Lex(lval *yySymType) int {
 		case 3:
 			tok := l.NextToken()
 			if tok.TokenType == EOF {
+				abs, _ := filepath.Abs(filepath.FromSlash(l.lctx.filename))
+				l.including[abs] = false
 				l.lexState = 2
 				break
 			}

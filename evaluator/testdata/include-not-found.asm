@@ -1,3 +1,3 @@
 ld a, 0
-include "included.asm"
+include "not-exist.inc"
 ld hl, 0

@@ -6,7 +6,10 @@ const (
 	ESYNTAX   = "syntax error"
 	EINTERNAL = "internal error %s"
 
-	EFILE = "ファイル %s が見つからない"
+	EFILE_NOT_FOUND = "ファイル %s が見つからない"
+	EFILE_ERR       = "ファイル %s: %s"
+
+	EINCLUDE_CYCLIC = "INCLUDE %q が循環"
 
 	EADDRESS_OVERFLOW = "アドレスオバーフロー $%x"
 

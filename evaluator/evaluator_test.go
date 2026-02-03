@@ -25,7 +25,8 @@ func TestAssembleFile(t *testing.T) {
 		{input: "var-macro", code: []byte{1, 0, 0x10, 2, 0, 0x20, 3, 0, 0x30}},
 
 		{input: "include"},
-		{input: "include-not-found", err: errcode.EFILE},
+		{input: "include-not-found", err: errcode.EFILE_NOT_FOUND},
+		{input: "include-cyclic", err: errcode.EINCLUDE_CYCLIC},
 	}
 
 	for tn, tt := range tests {
