@@ -132,33 +132,34 @@ func (e *Evaluator) test(size int, exprs []parser.Expression, env object.Environ
 			code = append(code, 0)
 
 		case *object.NumberObject:
-			code = append(code, e.numberToCode(obj, size, ctx)...)
-			if code == nil {
+			if c := e.numberToCode(obj, size, ctx); c == nil {
 				return nil
+			} else {
+				code = append(code, c...)
 			}
 
 		case *object.StringObject:
-			if size == 2 {
-				e.logger.Error(errcode.EDATA_DW_STR, ctx)
+			if c := e.stringToCode(obj, size, ctx); c == nil {
 				return nil
+			} else {
+				code = append(code, c...)
 			}
-			code = e.stringToCode(obj, ctx)
 
 		case *object.ArrayObject:
 			for _, v := range obj.Values {
 				switch v := v.(type) {
 				case *object.NumberObject:
-					code = append(code, e.numberToCode(v, size, ctx)...)
+					if c := e.numberToCode(v, size, ctx); c == nil {
+						return nil
+					} else {
+						code = append(code, c...)
+					}
 				case *object.StringObject:
-					if size == 2 {
-						e.logger.Error(errcode.EDATA_DW_STR, ctx)
+					if c := e.stringToCode(v, size, ctx); c == nil {
 						return nil
+					} else {
+						code = append(code, c...)
 					}
-					c := e.stringToCode(v, ctx)
-					if c == nil {
-						return nil
-					}
-					code = append(code, c...)
 				default:
 					e.logger.Error(errcode.EDATA_VALUE, ctx)
 					return nil
@@ -191,11 +192,32 @@ func (e *Evaluator) numberToCode(obj *object.NumberObject, size int, ctx TContex
 
 }
 
-func (e *Evaluator) stringToCode(obj *object.StringObject, ctx TContext) []byte {
-	if code, err := e.utf8ToShiftJis(obj.Value); err != nil {
+func (e *Evaluator) stringToCode(obj *object.StringObject, size int, ctx TContext) []byte {
+	// sjis 1バイト目か？
+	var isJis1st = func(c byte) bool {
+		return (0x81 <= c && c <= 0x9f) || (0xe0 <= c && c <= 0xfc)
+	}
+
+	// utf8 -> sjis
+	s, err := e.utf8ToShiftJis(obj.Value)
+	if err != nil {
 		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, obj.Value), ctx)
 		return nil
-	} else {
-		return code
 	}
+	// db, dd ならそのまま返す
+	if size != 2 {
+		return s
+	}
+
+	// dw なら文字コードをwordとして返す
+	word := make([]byte, 0, len(s))
+	for i := 0; i < len(s); i++ {
+		if isJis1st(s[i]) && i+1 < len(s) {
+			word = append(word, s[i+1], s[i])
+			i++
+		} else {
+			word = append(word, s[i], 0)
+		}
+	}
+	return word
 }
