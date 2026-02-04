@@ -117,6 +117,7 @@ func (l *Logger) Print() {
 
 // Warnin, Information から重複したメッセージを削除する
 func (l *Logger) RemoveDupe() {
+	l.Errors = l.removeDupedMessage(l.Errors)
 	l.Warnings = l.removeDupedMessage(l.Warnings)
 	l.Infomation = l.removeDupedMessage(l.Infomation)
 }
@@ -133,6 +134,10 @@ func (l *Logger) removeDupedMessage(msgs []LogMessage) []LogMessage {
 				continue
 			}
 			switch m := m.(type) {
+			case *ErrorMessage:
+				if m.Equal(msgs[j].(*ErrorMessage)) {
+					msgs[j] = nil
+				}
 			case *WarningMessage:
 				if m.Equal(msgs[j].(*WarningMessage)) {
 					msgs[j] = nil
