@@ -12,16 +12,19 @@ const (
 	EINCLUDE_CYCLIC = "INCLUDE %q で循環 INCLUDE 検出"
 
 	// 定義
-	ECHARMAP_NULL        = "CHARMAP %s ファイル名が未確定"
-	ECHARMAP_FILENAME    = "CHARMAP %s のファイル名誤り"
-	ECHARMAP_ABSFILENAME = "CHARMAP %s のファイル名: %s"
-	ECHARMAP_FILE        = "CHARMAP %s, %s: JSON エラー:  %s"
-	ECHARMAP_JSON        = "CHARMAP %s, %s: JSON フォーマットエラー %s"
+	ECHARMAP_DUP             = "CHARMAP %s は定義済み"
+	ECHARMAP_USED            = "%s を CHARMAP として再定義不可"
+	ECHARMAP_NULL            = "JSON ファイル名が未確定"
+	ECHARMAP_NOT_STR         = "JSON ファイル名が文字列でない"
+	ECHARMAP_READ            = "%s ファイル読み込みエラー(%s)"
+	ECHARMAP_JSON            = "JSON フォーマットが期待どおりでない"
+	ECHARMAP_FMT             = "CHARMAP 定義エラー (%q)"
+	ECHARMAP_DEFCHAR_NULL    = "デフォルトコードが未確定"
+	ECHARMAP_DEFCHAR_NOT_INT = "デフォルトコードが数値でない"
 	// 適用
-	ECHARMAP_VALUE_NULL         = "CHARMAP の適用対象が未確定"
-	ECHARMAP_VALUE              = "CHARMAP を適用できない"
-	ECHARMAP_DEFCHAR_VALUE_NULL = "CHARMAP の適用対象が未確定"
-	ECHARMAP_DEFCHAR_VALUE      = "CHARMAP を適用できない"
+	ECHARMAP_VALUE_NULL = "CHARMAP の適用対象が未確定"
+	ECHARMAP_VALUE      = "CHARMAP を適用できない値"
+	ECHARMAP_UNDEF      = "CHARMAP に文字 '%c' の定義がない"
 
 	EADDRESS_OVERFLOW = "アドレスオバーフロー $%x"
 
@@ -34,11 +37,6 @@ const (
 	EARRAY_NAME         = "配列名誤り"
 	EARRAY_INDEX        = "配列インデックス誤り"
 	EARRAY_OUT_OF_INDEX = "配列インデックスが範囲外"
-
-	// E006 = "間接指定オペランド誤り"
-	// E009 = "'%s' は未定義"
-	// E030 = "'%s' の定義に循環参照あり"
-	// E900 = "E900 内部エラー %s"
 
 	EUNI_OP_TYPE = "単項演算子 '%s' は使用できない"
 
@@ -143,7 +141,7 @@ const (
 
 	// FUNC 呼出し
 	EFUNC_NOT_FUNC  = "%s は FUNC/CHARMAP でない"
-	EFUNC_UNDEF     = "FUNC '%s' は未定義"
+	EFUNC_UNDEF     = "FUNC/CHARMAP %s は未定義"
 	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
 
 	// 組み込み関数

@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -10,7 +11,28 @@ import (
 	"yas80/parser"
 )
 
+// charmap 定義
 func (e *Evaluator) evalCharmapStatement(stmt *parser.CharmapStatement, env TEnv) object.Object {
+
+	// Name のチェック
+	if obj, ok := env.Get(stmt.Name); ok {
+		if obj.Type() == object.OBJ_SYMBOL {
+			obj = obj.(*object.SymbolObject).Value
+		}
+		switch obj := obj.(type) {
+		case *object.CharamapObject:
+			if !obj.Context.Equal(stmt.Context) {
+				e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_DUP, stmt.Name), stmt.Context)
+				return object.ERROR
+			}
+			// 再度評価せずに CharmapObject を返す
+			return obj
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_USED, stmt.Name), stmt.Context)
+			return object.ERROR
+		}
+	}
+
 	obj := e.evalExpression(stmt.Filename, env, stmt.Context)
 
 	// json ファイル名を評価
@@ -22,19 +44,19 @@ func (e *Evaluator) evalCharmapStatement(stmt *parser.CharmapStatement, env TEnv
 		e.Resolved = false
 		return obj
 	case *object.NullObject:
-		e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_NULL, stmt.Name), stmt.Context)
+		e.logger.Error(errcode.ECHARMAP_NULL, stmt.Context)
 		return object.ERROR
 
 	case *object.StringObject:
 		filename = obj.Value
 
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_FILENAME, stmt.Name), stmt.Context)
+		e.logger.Error(errcode.ECHARMAP_NOT_STR, stmt.Context)
 		return object.ERROR
 	}
 
 	// default char
-	defChar := 0
+	defChar := -1 // 未定義の場合エラー
 	if stmt.DefChar != nil {
 		obj := e.evalExpression(stmt.DefChar, env, stmt.Context)
 		switch obj := obj.(type) {
@@ -44,14 +66,14 @@ func (e *Evaluator) evalCharmapStatement(stmt *parser.CharmapStatement, env TEnv
 			e.Resolved = false
 			return obj
 		case *object.NullObject:
-			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_NULL, stmt.Name), stmt.Context)
+			e.logger.Error(errcode.ECHARMAP_DEFCHAR_NULL, stmt.Context)
 			return object.ERROR
 
 		case *object.NumberObject:
 			defChar = obj.Value
 
 		default:
-			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_FILENAME, stmt.Name), stmt.Context)
+			e.logger.Error(errcode.ECHARMAP_DEFCHAR_NOT_INT, stmt.Context)
 			return object.ERROR
 		}
 	}
@@ -72,17 +94,23 @@ func (e *Evaluator) evalCharmapStatement(stmt *parser.CharmapStatement, env TEnv
 	return charmap
 }
 
+// charmap json ファイル読み込み
 func (e *Evaluator) loadCharmapJson(filename, absPath string, stmt *parser.CharmapStatement) map[string][]byte {
 	// ファイル読み込み
 	text, err := os.ReadFile(absPath)
 	if err != nil {
-		e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_FILE, stmt.Name, filename, err.Error()), stmt.Context)
+		e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_READ, filename, err.Error()), stmt.Context)
 		return nil
 	}
+	// BOM があれば削除
+	if bytes.HasPrefix(text, []byte{0xef, 0xbb, 0xbf}) {
+		text = text[3:]
+	}
+
 	// map 読み込み
 	var rawMap map[string]any
 	if err := json.Unmarshal(text, &rawMap); err != nil {
-		e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_FILE, stmt.Name, filename, err.Error()), stmt.Context)
+		e.logger.Error(errcode.ECHARMAP_JSON, stmt.Context)
 		return nil
 	}
 
@@ -91,8 +119,7 @@ func (e *Evaluator) loadCharmapJson(filename, absPath string, stmt *parser.Charm
 	for k, v := range rawMap {
 		va, ok := v.([]any)
 		if !ok {
-			kverr := fmt.Sprintf("%q = %v", k, v)
-			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_JSON, stmt.Name, filename, kverr), stmt.Context)
+			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_FMT, k), stmt.Context)
 			continue
 		}
 		ary := make([]byte, 0, len(va))
@@ -100,8 +127,7 @@ func (e *Evaluator) loadCharmapJson(filename, absPath string, stmt *parser.Charm
 			if num, ok := v.(float64); ok {
 				ary = append(ary, byte(num))
 			} else {
-				kverr := fmt.Sprintf("%q = %v", k, v)
-				e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_JSON, stmt.Name, filename, kverr), stmt.Context)
+				e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_FMT, k), stmt.Context)
 			}
 		}
 		cmap[k] = ary
@@ -109,15 +135,16 @@ func (e *Evaluator) loadCharmapJson(filename, absPath string, stmt *parser.Charm
 	return cmap
 }
 
+// ソースファイルの位置からの相対ファイルパスを取得
 func (e *Evaluator) getRelativeFilepath(base, target string) string {
 	dir := filepath.Dir(base)
 	return filepath.Join(dir, target)
 }
 
 func (e *Evaluator) applyCharmap(cmap *object.CharamapObject, expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-	// len(expr.Args.Expression) は 1 or 2
 
-	var str string // charmap の適用対象
+	// 対象文字列を取得
+	var str string
 
 	obj := e.evalExpression(expr.Args.Expressions[0], env, ctx)
 	switch obj := obj.(type) {
@@ -138,33 +165,12 @@ func (e *Evaluator) applyCharmap(cmap *object.CharamapObject, expr *parser.FuncC
 		return object.ERROR
 	}
 
-	defChar := 0 // default character
-	if len(expr.Args.Expressions) == 2 {
-		obj := e.evalExpression(expr.Args.Expressions[1], env, ctx)
-		switch obj := obj.(type) {
-		case *object.ErrorObject:
-			return obj
-		case *object.RefNotFoundObject:
-			e.Resolved = false
-			return obj
-		case *object.NullObject:
-			e.logger.Error(errcode.ECHARMAP_DEFCHAR_VALUE_NULL, ctx)
-			return object.ERROR
-
-		case *object.NumberObject:
-			defChar = obj.Value
-
-		default:
-			e.logger.Error(errcode.ECHARMAP_DEFCHAR_VALUE, ctx)
-			return object.ERROR
-		}
-	}
-
 	// default char int ->  []byte
+	defChar := cmap.DefChar
 	var defCode []byte
-	if -128 <= defChar && defChar <= 255 {
+	if 0 <= defChar && defChar <= 255 { // 0-255
 		defCode = []byte{byte(defChar)}
-	} else {
+	} else if defChar > 255 { // 256-
 		word, ok := e.intToWord(defChar)
 		if !ok {
 			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, defChar, defChar), ctx)
@@ -177,8 +183,11 @@ func (e *Evaluator) applyCharmap(cmap *object.CharamapObject, expr *parser.FuncC
 	for _, c := range str {
 		if v, ok := cmap.Cmap[string(c)]; ok {
 			bstr = append(bstr, v...)
-		} else {
+		} else if defChar >= 0 {
 			bstr = append(bstr, defCode...)
+		} else { // defChar < 0 の場合、未定義ならエラーにする
+			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_UNDEF, c), ctx)
+			bstr = append(bstr, '?') // ? とする
 		}
 	}
 

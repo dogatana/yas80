@@ -59,7 +59,7 @@ func NewFromFile(filename string) (*FileContent, error) {
 	}
 
 	// BOM があれば削除
-	if hasBOM(data) {
+	if bytes.HasPrefix(data, []byte{0xef, 0xbb, 0xbf}) {
 		data = data[3:]
 	}
 	// CR/LF を LF へ
@@ -91,11 +91,4 @@ func shiftJisToUtf8(input []byte) ([]byte, error) {
 		return nil, fmt.Errorf("unknown encoding")
 	}
 	return data, err
-}
-
-func hasBOM(data []byte) bool {
-	if len(data) < 3 {
-		return false
-	}
-	return data[0] == 0xef && data[1] == 0xbb && data[2] == 0xbf
 }
