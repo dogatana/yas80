@@ -22,6 +22,9 @@ func (m *ErrorMessage) Error() string {
 		return fmt.Sprintf("%q:%d [ERROR] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
 	}
 }
+func (m *ErrorMessage) Equal(o *ErrorMessage) bool {
+	return m.message == o.message && m.Context.Equal(o.Context)
+}
 
 type WarningMessage struct {
 	message string
@@ -36,6 +39,9 @@ func (m *WarningMessage) Error() string {
 		return fmt.Sprintf("%q:%d [WARN] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
 	}
 }
+func (m *WarningMessage) Equal(o *WarningMessage) bool {
+	return m.message == o.message && m.Context.Equal(o.Context)
+}
 
 type InfoMessage struct {
 	message string
@@ -49,6 +55,9 @@ func (m *InfoMessage) Error() string {
 	} else {
 		return fmt.Sprintf("%q:%d [INFO] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
 	}
+}
+func (m *InfoMessage) Equal(o *InfoMessage) bool {
+	return m.message == o.message && m.Context.Equal(o.Context)
 }
 
 type Logger struct {
@@ -83,7 +92,9 @@ func (l *Logger) Count() (int, int, int) {
 	return len(l.Errors), len(l.Warnings), len(l.Infomation)
 }
 
+// logMessage の表示
 func (l *Logger) Print() {
+	// Warning, Information の重複を削除
 	if len(l.Errors) != 0 {
 		fmt.Printf("%d errros\n", len(l.Errors))
 		for _, e := range l.Errors {
@@ -102,4 +113,42 @@ func (l *Logger) Print() {
 			fmt.Println(e.Error())
 		}
 	}
+}
+
+// Warnin, Information から重複したメッセージを削除する
+func (l *Logger) RemoveDupe() {
+	l.Warnings = l.removeDupedMessage(l.Warnings)
+	l.Infomation = l.removeDupedMessage(l.Infomation)
+}
+
+// removeDupe のサポート関数
+func (l *Logger) removeDupedMessage(msgs []LogMessage) []LogMessage {
+	for i := 0; i < len(msgs)-1; i++ {
+		m := msgs[i]
+		if m == nil {
+			continue
+		}
+		for j := i + 1; j < len(msgs); j++ {
+			if msgs[j] == nil {
+				continue
+			}
+			switch m := m.(type) {
+			case *WarningMessage:
+				if m.Equal(msgs[j].(*WarningMessage)) {
+					msgs[j] = nil
+				}
+			case *InfoMessage:
+				if m.Equal(msgs[j].(*InfoMessage)) {
+					msgs[j] = nil
+				}
+			}
+		}
+	}
+	result := []LogMessage{}
+	for _, m := range msgs {
+		if m != nil {
+			result = append(result, m)
+		}
+	}
+	return result
 }

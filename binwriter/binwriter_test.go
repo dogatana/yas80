@@ -165,3 +165,47 @@ func TestBinWriterMultiFiles(t *testing.T) {
 
 	}
 }
+
+func TestRemoveDuplicateMessages(t *testing.T) {
+	tests := []struct {
+		input any
+		code  []byte
+		err   string
+		fill  int
+	}{
+		{
+			input: `ld a, 1024`, code: []byte{0x3e, 0x00},
+		},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<binwrite>")
+		prog, _ := evalInput(tt.input, logger, env)
+		code, ok := codeFromObj(prog, tt.fill, logger)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, logger)
+			continue
+		}
+
+		if !ok {
+			t.Errorf("[%d], codeFromObj %s", tn, logger.Errors[0].Error())
+		}
+
+		if err := testutil.BytesEqual(code, tt.code); err != nil {
+			t.Errorf("[%d], %s", tn, err.Error())
+		}
+
+		if len(logger.Warnings) != 2 {
+			t.Errorf("[%d], logger should have 2 messages. got %d", tn, len(logger.Warnings))
+		}
+		logger.RemoveDupe()
+		if len(logger.Warnings) != 1 {
+			t.Errorf("[%d], logger should have 1 messages. got %d", tn, len(logger.Warnings))
+		}
+	}
+}
