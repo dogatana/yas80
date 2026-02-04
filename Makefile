@@ -23,6 +23,7 @@ SRC = main.go \
 	evaluator/eval_env.go evaluator/check_symbol.go \
 	evaluator/eval_builtin_func.go \
 	evaluator/eval_builtin_macro.go \
+	evaluator/eval_charmap.go \
 	logging/logging.go \
 	errcode/errcode.go \
 	filecontent/filecontent.go filecontent/context.go \

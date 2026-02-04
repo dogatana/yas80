@@ -120,7 +120,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 
 	// 関数呼出し
 	case *parser.FuncCallExpression:
-		return e.evalCallExpression(node, env, ctx)
+		return e.evalFuncCallExpression(node, env, ctx)
 
 	// 中置演算子
 	case *parser.InfixExpression:
@@ -137,7 +137,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 }
 
 // 関数呼出し
-func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+func (e *Evaluator) evalFuncCallExpression(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	if expr.Name[0] == '$' {
 		return e.evalBuiltinFunction(expr, env, ctx)
 	}
@@ -152,11 +152,19 @@ func (e *Evaluator) evalCallExpression(expr *parser.FuncCallExpression, env TEnv
 		obj = sym.Value
 	}
 
-	fn, ok := obj.(*object.FunctionObject)
-	if !ok {
+	var fn *object.FunctionObject
+
+	switch obj := obj.(type) {
+	case *object.FunctionObject:
+		fn = obj
+	case *object.CharamapObject:
+		return e.applyCharmap(obj, expr, env, ctx)
+
+	default:
 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NOT_FUNC, expr.Name), ctx)
 		return object.ERROR
 	}
+
 	if len(expr.Args.Expressions) != len(fn.Params) {
 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), ctx)
 		return object.ERROR

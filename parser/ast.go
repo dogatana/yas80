@@ -22,6 +22,7 @@ const (
 	// statement
 	NODE_NULL // eval用: エラーが発生した文を置き換える
 	NODE_STMT
+	NODE_CHARMAP_STMT
 	NODE_ORG_STMT
 	NODE_DELETED_STMT
 	NODE_LABEL_STMT
@@ -162,6 +163,28 @@ func (s *IncludeStatement) ReplaceContext(ctx filecontent.Context) {
 }
 func (s *IncludeStatement) String() string {
 	return "INCLUDE " + s.Filename
+}
+
+// charmap
+type CharmapStatement struct {
+	Name     string
+	Filename Expression
+	DefChar  Expression
+	Context  *filecontent.Context
+}
+
+func (s *CharmapStatement) NodeType() NodeType               { return NODE_CHARMAP_STMT }
+func (s *CharmapStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *CharmapStatement) ReplaceContext(ctx filecontent.Context) {
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
+func (s *CharmapStatement) String() string {
+	str := fmt.Sprintf("CHARMAP %s, %q", s.Name, s.Filename)
+	if s.DefChar != nil {
+		str += ", " + s.DefChar.String()
+	}
+	return str
 }
 
 // org

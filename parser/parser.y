@@ -38,7 +38,7 @@ var _ = __yyfmt__.Sprintf
 %type<token> string
 
 // 終端記号
-%token<token> EOL FILE INCLUDE
+%token<token> EOL FILE INCLUDE CHARMAP
 %token<token> NUMBER STRING
 %token<token> IDENT 
 %token<token> AT_IDENT    // @def 
@@ -324,6 +324,14 @@ directive	: CONST ident_expr '=' expr
 				}
 			}
 			| INCLUDE STRING { $$ = &IncludeStatement{Filename: $2.Literal, Context: $1.Context} }
+			| CHARMAP IDENT ',' expr
+			{ 
+				$$ = &CharmapStatement{Name: strings.ToUpper($2.Literal), Filename: $4, Context: $1.Context} 
+			}
+			| CHARMAP IDENT ',' expr ',' expr
+			{ 
+				$$ = &CharmapStatement{Name: strings.ToUpper($2.Literal), Filename: $4, DefChar: $6, Context: $1.Context} 
+			}
 			;
 
 

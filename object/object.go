@@ -25,6 +25,7 @@ const (
 	OBJ_BLOCK
 	OBJ_PROC
 	OBJ_FUNC
+	OBJ_CHARMAP
 	OBJ_MACRO
 	OBJ_REF_NOTFOUND
 	OBJ_SYMBOL
@@ -305,6 +306,19 @@ func (o *BlockObject) String() string {
 		strs = append(strs, o.String())
 	}
 	return strings.Join(strs, "\n")
+}
+
+// charmap
+type CharamapObject struct {
+	Name    string
+	DefChar int
+	Cmap    map[string][]byte
+	Context *filecontent.Context
+}
+
+func (o *CharamapObject) Type() ObjectType { return OBJ_CHARMAP }
+func (o *CharamapObject) String() string {
+	return fmt.Sprintf("CHARAMAP %s (%d chars)", o.Name, len(o.Cmap))
 }
 
 // Function

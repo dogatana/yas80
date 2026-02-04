@@ -121,6 +121,10 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.ReturnStatement:
 		return e.evalReturnStatement(stmt, env)
 
+	// charmap
+	case *parser.CharmapStatement:
+		return e.evalCharmapStatement(stmt, env)
+
 	// file
 	case *parser.FileStatement:
 		return &object.FileObject{Filename: stmt.Filename}

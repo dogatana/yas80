@@ -11,6 +11,18 @@ const (
 
 	EINCLUDE_CYCLIC = "INCLUDE %q で循環 INCLUDE 検出"
 
+	// 定義
+	ECHARMAP_NULL        = "CHARMAP %s ファイル名が未確定"
+	ECHARMAP_FILENAME    = "CHARMAP %s のファイル名誤り"
+	ECHARMAP_ABSFILENAME = "CHARMAP %s のファイル名: %s"
+	ECHARMAP_FILE        = "CHARMAP %s, %s: JSON エラー:  %s"
+	ECHARMAP_JSON        = "CHARMAP %s, %s: JSON フォーマットエラー %s"
+	// 適用
+	ECHARMAP_VALUE_NULL         = "CHARMAP の適用対象が未確定"
+	ECHARMAP_VALUE              = "CHARMAP を適用できない"
+	ECHARMAP_DEFCHAR_VALUE_NULL = "CHARMAP の適用対象が未確定"
+	ECHARMAP_DEFCHAR_VALUE      = "CHARMAP を適用できない"
+
 	EADDRESS_OVERFLOW = "アドレスオバーフロー $%x"
 
 	ESTR_CTRL      = "文字列リテラルに制御文字を含めることは不可"
@@ -128,8 +140,9 @@ const (
 	EFUNC_NAME = "%s は関数名として使用不可"
 	EFUNC_USED = "%s を FUNC として再定義不可"
 	EFUNC_DUP  = "FUNC '%s' は定義済み"
+
 	// FUNC 呼出し
-	EFUNC_NOT_FUNC  = "%s は FUNC でない"
+	EFUNC_NOT_FUNC  = "%s は FUNC/CHARMAP でない"
 	EFUNC_UNDEF     = "FUNC '%s' は未定義"
 	EFUNC_ARG_COUNT = "FUNC '%s' の仮引数の数と関数呼出しの実引数の数が不一致"
 

@@ -42,6 +42,7 @@ var reservedWords map[string]Token = map[string]Token{
 	"FUNCTION": {TokenType: FUNCTION, Literal: "FUNCTION"},
 	"ORG":      {TokenType: ORG, Literal: "ORG"},
 	"INCLUDE":  {TokenType: INCLUDE, Literal: "INCLUDE"},
+	"CHARMAP":  {TokenType: CHARMAP, Literal: "CHARMAP"},
 
 	// データ定義
 	"DB":   {TokenType: DATA, TokenSubType: DB, Literal: "DB"},
