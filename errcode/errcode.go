@@ -24,7 +24,7 @@ const (
 	// 適用
 	ECHARMAP_VALUE_NULL = "CHARMAP の適用対象が未確定"
 	ECHARMAP_VALUE      = "CHARMAP を適用できない値"
-	ECHARMAP_UNDEF      = "CHARMAP に文字 '%c' の定義がない"
+	ECHARMAP_NOT_DEF    = "CHARMAP に文字 '%c' の定義がない"
 
 	EADDRESS_OVERFLOW = "アドレスオバーフロー $%x"
 

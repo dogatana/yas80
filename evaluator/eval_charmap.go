@@ -95,9 +95,9 @@ func (e *Evaluator) evalCharmapStatement(stmt *parser.CharmapStatement, env TEnv
 }
 
 // charmap json ファイル読み込み
-func (e *Evaluator) loadCharmapJson(filename, absPath string, stmt *parser.CharmapStatement) map[string][]byte {
+func (e *Evaluator) loadCharmapJson(filename, path string, stmt *parser.CharmapStatement) map[string][]byte {
 	// ファイル読み込み
-	text, err := os.ReadFile(absPath)
+	text, err := os.ReadFile(path)
 	if err != nil {
 		e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_READ, filename, err.Error()), stmt.Context)
 		return nil
@@ -175,7 +175,7 @@ func (e *Evaluator) applyCharmap(cmap *object.CharamapObject, expr *parser.FuncC
 		if !ok {
 			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, defChar, defChar), ctx)
 		}
-		defCode = []byte{byte(word & 0xff), byte((word >> 8) & 0xff)}
+		defCode = []byte{byte((word >> 8) & 0xff), byte(word & 0xff)}
 	}
 
 	// str に適用
@@ -186,7 +186,7 @@ func (e *Evaluator) applyCharmap(cmap *object.CharamapObject, expr *parser.FuncC
 		} else if defChar >= 0 {
 			bstr = append(bstr, defCode...)
 		} else { // defChar < 0 の場合、未定義ならエラーにする
-			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_UNDEF, c), ctx)
+			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_NOT_DEF, c), ctx)
 			bstr = append(bstr, '?') // ? とする
 		}
 	}

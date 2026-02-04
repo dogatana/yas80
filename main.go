@@ -220,6 +220,8 @@ func main() {
 	if bw.Write(&buf) {
 		os.WriteFile("out.bin", buf.Bytes(), 0644)
 	}
+	// LogMessage の重複削除
+	logger.RemoveDupe()
 	logger.Print()
 
 	if err := bw.WriteMap(os.Stdout); err != nil {
