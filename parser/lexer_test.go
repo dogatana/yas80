@@ -433,13 +433,15 @@ func TestLexZ80Instructions(t *testing.T) {
 func TestLexReservedWords(t *testing.T) {
 	input := "const var equ function org " +
 		"if else elif endif " +
+		"include charmap " +
 		"macro endm exitm " +
 		"rept endr " +
 		"func endf return " +
 		"proc endp " +
 		"block endb " +
-		"for endfor " +
-		"DB DEFB DW DEFW DD DS DSB DSW "
+		"for endfor " + // 予約
+		"db defb dw defw dd ds dsb dsw " +
+		""
 	l := newLexerForTest(input)
 
 	for {

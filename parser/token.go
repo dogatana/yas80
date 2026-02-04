@@ -80,6 +80,6 @@ var reservedWords map[string]Token = map[string]Token{
 	"ENUM": {TokenType: ENUM, Literal: "ENUM"},
 	"ENDE": {TokenType: ENDE, Literal: "ENDE"},
 
-	"FOR":    {TokenType: FOR, Literal: "FOR"},
-	"ENDFOR": {TokenType: ENDFOR, Literal: "ENDFOR"},
+	"FOR":    {TokenType: FOR, Literal: "FOR"},       // 予約
+	"ENDFOR": {TokenType: ENDFOR, Literal: "ENDFOR"}, // 予約
 }
