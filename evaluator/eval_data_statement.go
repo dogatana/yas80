@@ -146,6 +146,10 @@ func (e *Evaluator) test(size int, exprs []parser.Expression, env object.Environ
 			}
 
 		case *object.ArrayObject:
+			if len(obj.Values) == 0 {
+				e.logger.Error(errcode.EARRAY_EMPTY, ctx)
+				return nil
+			}
 			for _, v := range obj.Values {
 				switch v := v.(type) {
 				case *object.NumberObject:

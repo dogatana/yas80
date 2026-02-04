@@ -170,7 +170,6 @@ func TestDataStatement(t *testing.T) {
 		{input: `dd "'\"\\\0\a\b\f\n\r\t\v"`,
 			code: []byte{0x27, 0x22, 0x5c, 0, 0x07, 0x08, 0x0c, 0x0a, 0x0d, 0x09, 0x0b}},
 		// 20-
-		// error
 		{input: `
 			db_data db 1, 2
 			dw_data dw $1234, $5678
@@ -185,11 +184,16 @@ func TestDataStatement(t *testing.T) {
 			},
 		},
 		{input: `db 1, 'a', 2, 'b'`, code: []byte{0x01, 0x61, 0x02, 0x62}},
-		// {input: `dw "あいう"`, err: errcode.EDATA_DW_STR},
 		{input: `dw "あいう"`, code: []byte{0xa0, 0x82, 0xa2, 0x82, 0xa4, 0x82}},                            // dw 0x82a0, 0x82a2, 0x82a4
 		{input: `dw "abあい12"`, code: []byte{0x61, 0, 0x62, 0, 0xa0, 0x82, 0xa2, 0x82, 0x31, 0, 0x32, 0}}, // dw 0x61, 062, x0x82a0, 0x82a2, 0x31, 0x32
 		{input: `db "` + string([]byte{0x80, 0xff}) + `"`, err: errcode.EDATA_ENCODE},
 		{input: "db '魚の𩸽は美味しい'", err: errcode.EDATA_ENCODE}, // u+29e3d（ほっけ）
+		// array
+		{input: `db [1, 'a', 2, 'b']`, code: []byte{0x01, 0x61, 0x02, 0x62}},
+		{input: `dw ["あいう"]`, code: []byte{0xa0, 0x82, 0xa2, 0x82, 0xa4, 0x82}},                            // dw 0x82a0, 0x82a2, 0x82a4
+		{input: `dw ["abあい12"]`, code: []byte{0x61, 0, 0x62, 0, 0xa0, 0x82, 0xa2, 0x82, 0x31, 0, 0x32, 0}}, // dw 0x61, 062, x0x82a0, 0x82a2, 0x31, 0x32
+		{input: `db ["` + string([]byte{0x80, 0xff}) + `"]`, err: errcode.EDATA_ENCODE},
+		{input: `db []`, err: errcode.EARRAY_EMPTY},
 	}
 
 	for tn, tt := range tests {

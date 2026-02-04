@@ -18,6 +18,7 @@ const (
 
 	ENUMBER = "数値リテラル誤り: '%s'"
 
+	EARRAY_EMPTY        = "空の配列"
 	EARRAY_NAME         = "配列名誤り"
 	EARRAY_INDEX        = "配列インデックス誤り"
 	EARRAY_OUT_OF_INDEX = "配列インデックスが範囲外"
