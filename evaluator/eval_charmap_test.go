@@ -15,6 +15,7 @@ func TestCharmapDef(t *testing.T) {
 		syms  []symValue
 		err   string
 	}{
+		// json file
 		{input: `charmap cmap, 'cmap.json' \ charmap cmap, 'cmap.json'`, err: errcode.ECHARMAP_DUP},
 		{input: `const cmap = 1 \ charmap cmap,'cmap.json'`, err: errcode.ECHARMAP_USED},
 		{input: `fn func\endf \ charmap cmap, fn()`, err: errcode.ECHARMAP_NULL},
@@ -27,6 +28,8 @@ func TestCharmapDef(t *testing.T) {
 		{input: `charmap cmap, 'zilog.bin`, err: errcode.ECHARMAP_JSON},
 		{input: `charmap cmap, 'cmap-err1.json'`, err: errcode.ECHARMAP_JSON}, // [1]
 		{input: `charmap cmap, 'cmap-err2.json'`, err: errcode.ECHARMAP_FMT},  // { "a": 1 }
+		// json text
+		{input: `charmap cm, '{"a":1}'`, err: errcode.ECHARMAP_FMT},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
@@ -80,6 +83,25 @@ func TestCharmapApply(t *testing.T) {
 			code:  []byte{97, 1, 2, 0x82, 0xa0, 0x82, 0xa0},
 			err:   errcode.WROUND_WORD,
 		},
+		{
+			input: `charmap cmap, '{"a":[97],"b":[1,2],"あ":[130,160],"い":[66]}' \ db cmap('abあい')`,
+			code:  []byte{97, 1, 2, 130, 160, 66},
+		},
+		{
+			input: `charmap cmap, '{"a":[97],"b":[1,2],"あ":[130,160],"い":[66]}', 255 \ db cmap('abxy')`,
+			code:  []byte{97, 1, 2, 255, 255},
+		},
+		{
+			input: `charmap cmap, '{"a":[97],"b":[1,2],"あ":[130,160],"い":[66]}', 0x82a0\ db cmap('abxy')`,
+			code:  []byte{97, 1, 2, 0x82, 0xa0, 0x82, 0xa0},
+		},
+		{
+			input: `charmap cmap, '{"a":[97],"b":[1,2],"あ":[130,160],"い":[66]}', 0x182a0\ db cmap('abxy')`,
+			code:  []byte{97, 1, 2, 0x82, 0xa0, 0x82, 0xa0},
+			err:   errcode.WROUND_WORD,
+		},
+
+		{input: `charmap cm, '{"a":1}'`, err: errcode.ECHARMAP_FMT},
 		{input: `charmap cmap, 'cmap.json' \ db cmap('x')`, err: errcode.ECHARMAP_NOT_DEF},
 		{input: `fn func \ endf \ charmap cmap, 'cmap.json' \ db cmap(fn())`, err: errcode.ECHARMAP_VALUE_NULL},
 		{input: `fn func \ endf \ charmap cmap, 'cmap.json' \ db cmap(123)`, err: errcode.ECHARMAP_VALUE},

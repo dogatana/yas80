@@ -78,11 +78,8 @@ func (e *Evaluator) evalCharmapStatement(stmt *parser.CharmapStatement, env TEnv
 		}
 	}
 
-	// json ファイル path をソースファイル相対で決定
-	path := e.getRelativeFilepath(stmt.Context.FileContent.Filename, filename)
-
 	// json ファイルを cmap へ読み込み
-	cmap := e.loadCharmapJson(filename, path, stmt)
+	cmap := e.loadCharmapJson(filename, stmt)
 	if cmap == nil {
 		return object.ERROR
 	}
@@ -95,16 +92,26 @@ func (e *Evaluator) evalCharmapStatement(stmt *parser.CharmapStatement, env TEnv
 }
 
 // charmap json ファイル読み込み
-func (e *Evaluator) loadCharmapJson(filename, path string, stmt *parser.CharmapStatement) map[string][]byte {
-	// ファイル読み込み
-	text, err := os.ReadFile(path)
-	if err != nil {
-		e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_READ, filename, err.Error()), stmt.Context)
-		return nil
-	}
-	// BOM があれば削除
-	if bytes.HasPrefix(text, []byte{0xef, 0xbb, 0xbf}) {
-		text = text[3:]
+func (e *Evaluator) loadCharmapJson(filename string, stmt *parser.CharmapStatement) map[string][]byte {
+	var text []byte
+	if filename[0] == '{' {
+		// filenanme を json テキストとして扱う
+		text = []byte(filename)
+	} else {
+		// json ファイル path をソースファイル相対で決定
+		path := e.getRelativeFilepath(stmt.Context.FileContent.Filename, filename)
+
+		// ファイル読み込み
+		var err error
+		text, err = os.ReadFile(path)
+		if err != nil {
+			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_READ, filename, err.Error()), stmt.Context)
+			return nil
+		}
+		// BOM があれば削除
+		if bytes.HasPrefix(text, []byte{0xef, 0xbb, 0xbf}) {
+			text = text[3:]
+		}
 	}
 
 	// map 読み込み
