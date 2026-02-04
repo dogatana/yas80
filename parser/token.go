@@ -74,12 +74,12 @@ var reservedWords map[string]Token = map[string]Token{
 	"ENDF":   {TokenType: ENDF, Literal: "ENDF"},
 	"RETURN": {TokenType: RETURN, Literal: "RETURN"},
 
-	"BLOCK": {TokenType: BLOCK, Literal: "BLOCK"},
-	"ENDB":  {TokenType: ENDB, Literal: "ENDB"},
+	// "BLOCK": {TokenType: BLOCK, Literal: "BLOCK"}, // 予約
+	// "ENDB":  {TokenType: ENDB, Literal: "ENDB"},   // 予約
 
 	"ENUM": {TokenType: ENUM, Literal: "ENUM"},
 	"ENDE": {TokenType: ENDE, Literal: "ENDE"},
 
-	"FOR":    {TokenType: FOR, Literal: "FOR"},       // 予約
-	"ENDFOR": {TokenType: ENDFOR, Literal: "ENDFOR"}, // 予約
+	// "FOR":    {TokenType: FOR, Literal: "FOR"},       // 予約
+	// "ENDFOR": {TokenType: ENDFOR, Literal: "ENDFOR"}, // 予約
 }

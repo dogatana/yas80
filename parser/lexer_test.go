@@ -431,16 +431,17 @@ func TestLexZ80Instructions(t *testing.T) {
 
 // 予約語のテスト
 func TestLexReservedWords(t *testing.T) {
-	input := "const var equ function org " +
-		"if else elif endif " +
-		"include charmap " +
-		"macro endm exitm " +
-		"rept endr " +
-		"func endf return " +
-		"proc endp " +
-		"block endb " +
-		"for endfor " + // 予約
-		"db defb dw defw dd ds dsb dsw " +
+	input := "" +
+		"equ const var function org include charmap " +
+		"db defb dw defw dd ds dsb dsw  " +
+		"if else elif endif  " +
+		"macro endm exitm  " +
+		"rept endr  " +
+		"proc endp  " +
+		"func endf return  " +
+		// "block endb  " + // 予約
+		"enum ende  " +
+		// "for endfor  " + // 予約
 		""
 	l := newLexerForTest(input)
 
