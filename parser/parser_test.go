@@ -47,9 +47,9 @@ func TestParseNumberLiteralError(t *testing.T) {
 		expected string
 		err      string
 	}{
-		{input: `_ = 0x`, err: errcode.ENUMBER},
-		{input: `_ = 0b`, err: errcode.ENUMBER},
-		{input: `_ = 0o`, err: errcode.ENUMBER},
+		{input: `_ = 0x`, err: errcode.ENUMBER_LITERAL},
+		{input: `_ = 0b`, err: errcode.ENUMBER_LITERAL},
+		{input: `_ = 0o`, err: errcode.ENUMBER_LITERAL},
 		{input: `_ = 0xG`, err: errcode.ESYNTAX},
 		{input: `_ = 0bG`, err: errcode.ESYNTAX},
 		{input: `_ = 0oG`, err: errcode.ESYNTAX},

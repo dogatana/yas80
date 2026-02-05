@@ -111,14 +111,14 @@ func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) obje
 		}
 	}
 
-	code := e.test(stmt.Size, stmt.Values, env, stmt.Context)
+	code := e.evalDataStatementSub(stmt.Size, stmt.Values, env, stmt.Context)
 	if code == nil {
 		return object.ERROR
 	}
 	return &object.CodeObject{Code: code, Addr: getLocationCounter(env), Context: stmt.Context}
 }
 
-func (e *Evaluator) test(size int, exprs []parser.Expression, env object.Environment, ctx *filecontent.Context) []byte {
+func (e *Evaluator) evalDataStatementSub(size int, exprs []parser.Expression, env object.Environment, ctx *filecontent.Context) []byte {
 	var code []byte
 
 	for _, expr := range exprs {
@@ -181,19 +181,21 @@ func (e *Evaluator) numberToCode(obj *object.NumberObject, size int, ctx TContex
 	v := obj.Value
 	switch {
 	case size == 1 && !obj.ForceWord || size == 0 && !obj.ForceWord && -128 <= v && v <= 255:
-		v, ok := e.intToByte(v)
-		if !ok {
+		if b, ok := e.intToByte(v); ok {
+			return []byte{b}
+		} else {
 			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, v, v), ctx)
+			return []byte{b}
 		}
-		return []byte{v}
-	default:
-		v, ok := e.intToWord(obj.Value)
-		if !ok {
-			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, v, v), ctx)
-		}
-		return []byte{byte(v & 0xff), byte((v >> 8) & 0xff)}
-	}
 
+	default:
+		if w, ok := e.intToWord(obj.Value); ok {
+			return []byte{byte(w & 0xff), byte((w >> 8) & 0xff)}
+		} else {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, v, v), ctx)
+			return []byte{byte(w & 0xff), byte((w >> 8) & 0xff)}
+		}
+	}
 }
 
 func (e *Evaluator) stringToCode(obj *object.StringObject, size int, ctx TContext) []byte {

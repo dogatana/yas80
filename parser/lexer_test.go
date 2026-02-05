@@ -572,13 +572,13 @@ func TestLexError(t *testing.T) {
 		input string
 		err   string
 	}{
-		{"0x", errcode.ENUMBER},
-		{"0o", errcode.ENUMBER},
-		{"0b", errcode.ENUMBER},
-		{" 0x ", errcode.ENUMBER},
-		{" 0o ", errcode.ENUMBER},
+		{"0x", errcode.ENUMBER_LITERAL},
+		{"0o", errcode.ENUMBER_LITERAL},
+		{"0b", errcode.ENUMBER_LITERAL},
+		{" 0x ", errcode.ENUMBER_LITERAL},
+		{" 0o ", errcode.ENUMBER_LITERAL},
 		// 5-
-		{" 0b ", errcode.ENUMBER},
+		{" 0b ", errcode.ENUMBER_LITERAL},
 		{"'\x01'", errcode.ESTR_CTRL},
 		{"\"\x01\"", errcode.ESTR_CTRL},
 		{"'a\x01b", errcode.ESTR_CTRL},

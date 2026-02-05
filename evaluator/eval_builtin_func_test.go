@@ -273,3 +273,51 @@ func TestBuiltinFuncWord(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+
+func TestBuiltinFuncChr(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `db $chr([1])`, code: []byte{1}},
+		{input: `db $chr([1, 2])`, code: []byte{2}}, // 0102
+		{input: `dw $chr([1])`, code: []byte{1, 0}},
+		{input: `dw $chr([1, 2])`, code: []byte{2, 1}},
+		{input: `fn func\endf\ db $chr(fn())`, err: errcode.EEBFN_ARG_NULL},
+		{input: `db $chr(1)`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $chr('a')`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $chr([])`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `db $chr([1,2,3])`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `db $chr(['a'])`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $chr(['a', 1])`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $chr([1, 'a'])`, err: errcode.EEBFN_ARG_VALUE},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}

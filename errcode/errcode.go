@@ -31,7 +31,7 @@ const (
 	ESTR_CTRL      = "文字列リテラルに制御文字を含めることは不可"
 	ESTR_END_QUOTE = "文字列リテラル終端の引用符なし"
 
-	ENUMBER = "数値リテラル誤り: '%s'"
+	ENUMBER_LITERAL = "数値リテラル誤り: '%s'"
 
 	EARRAY_EMPTY        = "空の配列"
 	EARRAY_NAME         = "配列名誤り"

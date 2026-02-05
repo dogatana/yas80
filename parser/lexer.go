@@ -286,7 +286,7 @@ LINE_CONT:
 		literal = "0" + string(l.lctx.curChar)
 		l.nextChar() // 'x'または'X'をスキップ
 		if !l.isHexChar(l.lctx.curChar) {
-			l.logger.Error(fmt.Sprintf(errcode.ENUMBER, literal), l.lctx.toContext(l.start))
+			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), l.lctx.toContext(l.start))
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
 		literal += l.readHexString()
@@ -299,7 +299,7 @@ LINE_CONT:
 		literal = "0" + string(l.lctx.curChar)
 		l.nextChar() // 'b'または'B'をスキップ
 		if !l.isBinChar(l.lctx.curChar) {
-			l.logger.Error(fmt.Sprintf(errcode.ENUMBER, literal), l.lctx.toContext(l.start))
+			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), l.lctx.toContext(l.start))
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
 		literal += l.readBinString()
@@ -312,7 +312,7 @@ LINE_CONT:
 		literal = "0" + string(l.lctx.curChar)
 		l.nextChar() // 'o'または'O'をスキップ
 		if !l.isOctChar(l.lctx.curChar) {
-			l.logger.Error(fmt.Sprintf(errcode.ENUMBER, literal), l.lctx.toContext(l.start))
+			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), l.lctx.toContext(l.start))
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
 		literal += l.readOctString()

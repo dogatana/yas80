@@ -19,12 +19,14 @@ func (e *Evaluator) evalBuiltinFunction(expr *parser.FuncCallExpression, env TEn
 		return e.ebfuncLength(expr, env, ctx)
 	case "$REV", "$REVERSE":
 		return e.ebfuncReverse(expr, env, ctx)
-	case "$DEFINED":
-		return e.ebfuncDefined(expr, env, ctx)
 	case "$FMT", "$FORMAT":
 		return e.ebfuncFormat(expr, env, ctx)
 	case "$ISARY", "$ISARRAY":
 		return e.ebfuncIsArray(expr, env, ctx)
+	case "$CHR":
+		return e.ebfuncChr(expr, env, ctx)
+	case "$DEFINED":
+		return e.ebfuncDefined(expr, env, ctx)
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_NOT_FOUND, expr.Name), ctx)
 		return object.ERROR
@@ -217,4 +219,70 @@ func (e *Evaluator) ebfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx 
 	}
 	s := fmt.Sprintf(fmts, fargs...)
 	return &object.StringObject{Value: s, Context: ctx}
+}
+
+func (e *Evaluator) ebfuncChr(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+	args := expr.Args.Expressions
+
+	if len(args) != 1 {
+		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_COUNT, expr.Name), ctx)
+		return object.ERROR
+	}
+
+	obj := e.evalExpression(args[0], env, ctx)
+
+	var array *object.ArrayObject
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		e.Resolved = false
+		return obj
+	case *object.NullObject:
+		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
+		return object.ERROR
+
+	case *object.ArrayObject:
+		array = obj
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
+		return object.ERROR
+	}
+
+	switch len(array.Values) {
+	case 1:
+		if obj, ok := array.Values[0].(*object.NumberObject); !ok {
+			e.logger.Error(errcode.EEBFN_ARG_VALUE, ctx)
+			return object.ERROR
+		} else {
+			return obj
+		}
+	case 2:
+		var num int
+		// 1sr byte
+		if v, ok := array.Values[0].(*object.NumberObject); !ok {
+			e.logger.Error(errcode.EEBFN_ARG_VALUE, ctx)
+			return object.ERROR
+		} else if b, ok := e.intToByte(v.Value); ok {
+			num = int(b) << 8
+		} else {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, v.Value, v.Value), ctx)
+			num = int(b) << 8
+		}
+		// 2nd byte
+		if v, ok := array.Values[1].(*object.NumberObject); !ok {
+			e.logger.Error(errcode.EEBFN_ARG_VALUE, ctx)
+			return object.ERROR
+		} else if b, ok := e.intToByte(v.Value); ok {
+			num |= int(b)
+		} else {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, v.Value, v.Value), ctx)
+			num |= int(b)
+		}
+		return &object.NumberObject{Value: num}
+
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_COUNT, expr.Name), ctx)
+		return object.ERROR
+	}
 }
