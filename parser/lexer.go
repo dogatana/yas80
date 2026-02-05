@@ -341,25 +341,28 @@ LINE_CONT:
 			l.nextChar()
 			return Token{TokenType: DOT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 		}
-		l.nextChar()
-		// AF’の対処
-		if strings.ToUpper(literal) == "AF" && l.lctx.curChar == '\'' {
+		if strings.ToUpper(literal) == "AF" && l.peekChar() == '\'' {
 			literal += "'"
 			l.nextChar()
 		}
+
 		// z80 予約語
 		tok, ok := z80ReservedWords[strings.ToUpper(literal)]
 		if ok {
 			tok.Context = l.lctx.toContext(l.start)
+			l.nextChar()
 			return tok
 		}
 		// yas80 予約語
 		tok, ok = reservedWords[strings.ToUpper(literal)]
 		if ok {
 			tok.Context = l.lctx.toContext(l.start)
+			l.nextChar()
 			return tok
 		}
+
 		// これ以外は IDENT
+		l.nextChar()
 		return Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '@' || l.lctx.curChar == '.':
