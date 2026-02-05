@@ -13,6 +13,8 @@ import (
 
 // charmap 定義
 func (e *Evaluator) evalCharmapStatement(stmt *parser.CharmapStatement, env TEnv) object.Object {
+	e.concatenateSymbol(&stmt.Filename, env, stmt.Context)
+	e.concatenateSymbol(&stmt.DefChar, env, stmt.Context)
 
 	// Name のチェック
 	if obj, ok := env.Get(stmt.Name); ok {
