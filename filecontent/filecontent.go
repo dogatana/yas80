@@ -2,6 +2,7 @@ package filecontent
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -15,16 +16,29 @@ import (
 type FileContent struct {
 	Filename string
 	Content  []byte
+	lines    []string
 }
 
-func (fb *FileContent) String() string {
+func (fc *FileContent) String() string {
 	var content string
-	if fb.Content == nil {
+	if fc.Content == nil {
 		content = "<nil>"
 	} else {
-		content = fmt.Sprintf("[]byte(len=%d)", len(fb.Content))
+		content = fmt.Sprintf("[]byte(len=%d)", len(fc.Content))
 	}
-	return fmt.Sprintf("FileBlock{FileName: %s, Content: %s}", fb.Filename, content)
+	return fmt.Sprintf("FileBlock{FileName: %s, Content: %s}", fc.Filename, content)
+}
+
+// 指定行を取得
+func (fc *FileContent) GetLine(line int) (string, error) {
+	if fc.lines == nil {
+		fc.lines = strings.Split(string(fc.Content), "\n")
+		// fc.Content = nil // ガベージに回す
+	}
+	if line < 1 || line > len(fc.lines) {
+		return "", errors.New("out of range")
+	}
+	return fc.lines[line-1], nil
 }
 
 func NewFromString(filename string, content string) (*FileContent, error) {
