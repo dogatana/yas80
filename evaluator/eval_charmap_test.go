@@ -100,6 +100,22 @@ func TestCharmapApply(t *testing.T) {
 			code:  []byte{97, 1, 2, 0x82, 0xa0, 0x82, 0xa0},
 			err:   errcode.WROUND_WORD,
 		},
+		{
+			input: `charmap cmap, '{"a":[1],"あ":[2]}' \ db cmap('abあい')`,
+			err:   errcode.ECHARMAP_NOT_DEF,
+		},
+		{
+			input: `charmap cmap, '{"a":[1],"あ":[2]}', -1 \ db cmap('abあい')`, // defChar のデフォルト
+			err:   errcode.ECHARMAP_NOT_DEF,
+		},
+		{
+			input: `charmap cmap, '{"a":[1],"あ":[2]}', -2 \ db cmap('abあい')`,
+			code:  []byte{1, 0x62, 2, 0x82, 0xa2},
+		},
+		{
+			input: `charmap cmap, '{"a":[1],"あ":[2]}', -2 \ db cmap('ab𩸽い')`, // ShiftJIS に変換できない文字
+			err:   errcode.EDATA_ENCODE,
+		},
 
 		{input: `charmap cm, '{"a":1}'`, err: errcode.ECHARMAP_FMT},
 		{input: `charmap cmap, 'cmap.json' \ db cmap('x')`, err: errcode.ECHARMAP_NOT_DEF},

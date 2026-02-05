@@ -190,9 +190,20 @@ func (e *Evaluator) applyCharmap(cmap *object.CharamapObject, expr *parser.FuncC
 	for _, c := range str {
 		if v, ok := cmap.Cmap[string(c)]; ok {
 			bstr = append(bstr, v...)
-		} else if defChar >= 0 {
+			continue
+		}
+		switch {
+		case defChar >= 0:
 			bstr = append(bstr, defCode...)
-		} else { // defChar < 0 の場合、未定義ならエラーにする
+		case defChar == -2:
+			if s, err := e.utf8ToShiftJis(string(c)); err == nil {
+				bstr = append(bstr, s...)
+			} else {
+				e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, string(c)), ctx)
+				bstr = append(bstr, '?')
+			}
+		default:
+			// defChar < 0 && defChar != -2 の場合、未定義エラーにする
 			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_NOT_DEF, c), ctx)
 			bstr = append(bstr, '?') // ? とする
 		}
