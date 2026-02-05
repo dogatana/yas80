@@ -2,26 +2,88 @@ package lister
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
+	"os"
 	"yas80/filecontent"
+	"yas80/internal/util"
 	"yas80/object"
 	"yas80/parser"
 )
 
 type Lister struct {
-	Nodes   *parser.BlockStatement
-	Objects *object.BlockObject
+	pnodes *parser.BlockStatement
+	pobj   *object.BlockObject
 }
 
 func New(pnode *parser.BlockStatement, pobj *object.BlockObject) *Lister {
-	return &Lister{Nodes: pnode, Objects: pobj}
+	return &Lister{pnodes: pnode, pobj: pobj}
 }
 
 func (l *Lister) ProgramList(out io.Writer) {
+	objs := util.FlattenObject(l.pobj)
+
+	var (
+		fc    *filecontent.FileContent
+		sline string
+		err   error
+	)
+	line := 1
+
 	w := bufio.NewWriter(out)
-	printStatement(w, l.Nodes)
+
+	for _, obj := range objs {
+		var code *object.CodeObject
+		if obj.Type() == object.OBJ_FILE {
+			file := obj.(*object.FileObject).Filename
+			// (1)ファイル名出力
+			fmt.Printf("%s:\n", file)
+			continue
+		}
+
+		code, ok := obj.(*object.CodeObject)
+		if !ok || len(code.Code) == 0 {
+			continue
+		}
+
+		ctx := code.Context
+
+		if fc == nil {
+			fc = ctx.FileContent
+		}
+
+		for line < ctx.Line {
+			sline, err := fc.GetLine(line)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			fmt.Printf("%6d: %30s\t%s\n", line, "", sline)
+			line++
+		}
+		sline, err = fc.GetLine(line)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(l.codeToLine(code) + sline)
+		line++
+	}
 	w.Flush()
+
+	for i := 148; i <= 151; i++ {
+		s, _ := fc.GetLine(i)
+		fmt.Printf("%d: %s\n", i, s)
+	}
+}
+
+func (l *Lister) codeToLine(code *object.CodeObject) string {
+	var buf bytes.Buffer
+	for _, b := range code.Code {
+		buf.WriteString(fmt.Sprintf("%02x", b))
+	}
+	return fmt.Sprintf("%6d  %04x  %-16s  [%2d]\t", code.Context.Line, code.Addr, string(buf.String()), code.CZ80)
 }
 
 func printStatement(w io.Writer, stmt parser.Statement) {

@@ -204,13 +204,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	lister := lister.New(prog, obj.(*object.BlockObject))
-	fmt.Println("-- log")
-	logger.Print()
-
-	fmt.Println("-- list")
-	lister.ProgramList(os.Stdout)
-
 	fmt.Println("-- objects")
 	printObjects(obj.(*object.BlockObject).Block)
 
@@ -224,14 +217,21 @@ func main() {
 	if bw.Write(&buf) {
 		os.WriteFile("out.bin", buf.Bytes(), 0644)
 	}
+
+	fmt.Println("-- log")
 	// LogMessage の重複削除
 	logger.RemoveDupe()
 	logger.Print()
 
+	fmt.Println("-- map")
 	if err := bw.WriteMap(os.Stdout); err != nil {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
+
+	fmt.Println("-- list")
+	lister := lister.New(prog, obj.(*object.BlockObject))
+	lister.ProgramList(os.Stdout)
 }
 
 func printObjects(objs []object.Object) {
