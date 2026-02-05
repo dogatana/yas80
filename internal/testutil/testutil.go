@@ -12,7 +12,11 @@ import (
 )
 
 func TestLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
-	ename := ErrcodeNames[err]
+	ename, ok := ErrcodeNames[err]
+	if !ok {
+		t.Fatalf("[%d] errcode の定義が見つからない %q", err)
+		return
+	}
 
 	var msgs []logging.LogMessage
 	switch ename[0] {

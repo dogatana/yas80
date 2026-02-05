@@ -53,13 +53,14 @@ func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, op1, op2 object.Objec
 }
 
 // 8 ビットレジスタへの LD
-func (e *Evaluator) evalZ80LD_REG8(stmt *parser.Z80Instruction, op1 *object.RegisterObject, op2 object.Object, _ TEnv) object.Object {
+func (e *Evaluator) evalZ80LD_REG8(stmt *parser.Z80Instruction, op1 *object.RegisterObject, argOp2 object.Object, _ TEnv) object.Object {
 	code := &object.CodeObject{Code: []byte{0x7f}, CZ80: 4, Context: stmt.Context} // LD A, A
 
 	// r1 が A-L の場合
 	r1, ok1 := Z80Reg8Index[op1.Register]
 
-	switch op2 := op2.(type) {
+EVAL_AGAIN:
+	switch op2 := argOp2.(type) {
 	case *object.RefNotFoundObject:
 		// 未確定の場合として LD A,0 を返す
 		e.Resolved = false
@@ -93,6 +94,10 @@ func (e *Evaluator) evalZ80LD_REG8(stmt *parser.Z80Instruction, op1 *object.Regi
 
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op2.Register)), stmt.Context)
 		return code
+
+	case *object.StringObject:
+		argOp2 = e.stringObjToOp2(op2, stmt.Context)
+		goto EVAL_AGAIN
 
 	case *object.NumberObject:
 		code.Code = []byte{0x3e, 0x00} // LD A, 0
@@ -159,10 +164,11 @@ func (e *Evaluator) evalZ80LD_REG8(stmt *parser.Z80Instruction, op1 *object.Regi
 }
 
 // 16 ビットレジスタへの LD
-func (e *Evaluator) evalZ80LD_REG16(stmt *parser.Z80Instruction, op1 *object.RegisterObject, op2 object.Object, env TEnv) object.Object {
+func (e *Evaluator) evalZ80LD_REG16(stmt *parser.Z80Instruction, op1 *object.RegisterObject, argOp2 object.Object, env TEnv) object.Object {
 	code := &object.CodeObject{Code: []byte{0x01, 0x00, 0x00}, CZ80: 10, Context: stmt.Context} // LD BC, 0
 
-	switch op2 := op2.(type) {
+EVAL_AGAIN:
+	switch op2 := argOp2.(type) {
 	case *object.RefNotFoundObject:
 		e.Resolved = false
 		return code
@@ -189,6 +195,10 @@ func (e *Evaluator) evalZ80LD_REG16(stmt *parser.Z80Instruction, op1 *object.Reg
 			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op2.Register)), stmt.Context)
 			return code
 		}
+
+	case *object.StringObject:
+		argOp2 = e.stringObjToOp2(op2, stmt.Context)
+		goto EVAL_AGAIN
 
 	case *object.NumberObject:
 		// LD rr, nn

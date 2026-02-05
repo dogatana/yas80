@@ -129,6 +129,41 @@ func TestInstructionAmbiguous(t *testing.T) {
 	}
 }
 
+func TestInstruction_LD_STR(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `ld a, 'a'`, code: []byte{0x3e, 'a'}},
+		{input: `ld a, 'ab'`, code: []byte{0x3e, 'a'}, err: errcode.WROUND_BYTE},
+		{input: `ld hl, 'a'`, code: []byte{0x21, 'a', 0}},
+		{input: `ld hl, 'ab'`, code: []byte{0x21, 'b', 'a'}},
+		{input: `ld hl, 'あ'`, code: []byte{0x21, 0xa0, 0x82}},
+		{input: `ld hl, 'abc'`, err: errcode.EZ80_OP2_STR},
+		{input: `ld hl, 'あc'`, err: errcode.EZ80_OP2_STR},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New("<eval test>")
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
 func TestInstructionError_LD16(t *testing.T) {
 	tests := []struct {
 		input string
@@ -137,7 +172,7 @@ func TestInstructionError_LD16(t *testing.T) {
 	}{
 		// 0-
 		{input: `ld`, err: errcode.ESYNTAX},
-		{input: `ld hl, 'a'`, err: errcode.EZ80_OP2},
+		// {input: `ld hl, 'a'`, err: errcode.EZ80_OP2}, // 有効オペランド
 		{input: `ld hl, cy`, err: errcode.EZ80_OP2},
 		{input: `fn func\endf\ld hl, fn()`, err: errcode.EZ80_OP2_NULL},
 		{input: `ld hl, sp`, err: errcode.EZ80_OP_REG},
@@ -178,7 +213,7 @@ func TestInstructionError_LD8(t *testing.T) {
 	}{
 		// 0-
 		{input: `ld`, err: errcode.ESYNTAX},
-		{input: `ld a, 'a'`, err: errcode.EZ80_OP2},
+		// {input: `ld a, 'a'`, err: errcode.EZ80_OP2}, // 有効オペランド
 		{input: `ld a, cy`, err: errcode.EZ80_OP2},
 		{input: `fn func\endf\ld a, fn()`, err: errcode.EZ80_OP2_NULL},
 		{input: `ld i, i`, err: errcode.EZ80_OP_REG},

@@ -258,3 +258,21 @@ func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 	}
 	return l
 }
+
+// ld r, n / ld rr, nn の OP2 に指定された文字列を NumberObjectに変換する
+func (e *Evaluator) stringObjToOp2(so *object.StringObject, ctx TContext) object.Object {
+	str, err := e.utf8ToShiftJis(so.Value)
+	if err != nil {
+		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, so.Value), ctx)
+		return object.ERROR
+	}
+	switch len(str) {
+	case 1:
+		return &object.NumberObject{Value: int(str[0])}
+	case 2:
+		return &object.NumberObject{Value: int(str[0])<<8 + int(str[1])}
+	default:
+		e.logger.Error(errcode.EZ80_OP2_STR, ctx)
+		return object.ERROR
+	}
+}
