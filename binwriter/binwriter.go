@@ -5,6 +5,7 @@ import (
 	"io"
 	"slices"
 	"yas80/errcode"
+	"yas80/internal/util"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -174,7 +175,7 @@ func (b *BinWriter) mergeREL(segs []*Segment) []*Segment {
 
 // OrgObject, CodeObject から Segment を作成
 func (b *BinWriter) collectSegemnts() []*Segment {
-	objs := b.flattenObject(b.prog)
+	objs := util.FlattenObject(b.prog)
 	inseg := false // Segment 処理中
 	segs := []*Segment{}
 
@@ -204,19 +205,4 @@ func (b *BinWriter) collectSegemnts() []*Segment {
 		segs = append(segs, seg)
 	}
 	return segs
-}
-
-// prog(*object.BlockObject) を単一階層の slice に変換
-func (b *BinWriter) flattenObject(obj object.Object) []object.Object {
-	objs := []object.Object{}
-
-	switch obj := obj.(type) {
-	case *object.BlockObject:
-		for _, o := range obj.Block {
-			objs = append(objs, b.flattenObject(o)...)
-		}
-	default:
-		objs = append(objs, obj)
-	}
-	return objs
 }
