@@ -612,7 +612,7 @@ expr		: NUMBER
 				if err == nil {
 					$$ = &NumberLiteral{Value: int(n), Context: $1.Context}
 				} else {
-					$$ = &ParseError{Message: fmt.Sprintf(errcode.ENUMBER, $1.Literal), Context: $1.Context}
+					$$ = &ParseError{Message: fmt.Sprintf(errcode.ENUMBER_LITERAL, $1.Literal), Context: $1.Context}
 				}
 			}
 			| string 		{ $$ = &StringLiteral{Value: $1.Literal, Context: $1.Context} }
