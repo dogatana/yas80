@@ -37,12 +37,13 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*o
 	eval := New(logger)
 
 	var obj object.Object
-	var i int
+	pass := 0
 
 	eval.Resolved = true
-	for i = 0; i < 256; i++ {
+	for i := 0; i < 256; i++ {
+		pass++
 		eval.Resolved = true
-		obj = eval.EvalProgram(prog, env)
+		obj = eval.EvalProgram(prog, pass, env)
 		// eval.EvalEnv(env)
 		eval.CheckCyclicError(env)
 		if len(logger.Errors) > 0 {
@@ -60,8 +61,9 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*o
 	// finalize
 	code := CollectCode(obj.(*object.BlockObject).Block)
 	eval.CodeStable = false
-	for i = 0; i < 256 && !eval.CodeStable; i++ {
-		obj = eval.EvalProgram(prog, env)
+	for i := 0; i < 256 && !eval.CodeStable; i++ {
+		pass++
+		obj = eval.EvalProgram(prog, pass, env)
 		if len(logger.Errors) > 0 {
 			return obj.(*object.BlockObject), eval
 

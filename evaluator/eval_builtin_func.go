@@ -184,6 +184,7 @@ func (e *Evaluator) ebfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx 
 		return object.ERROR
 	}
 
+	// 書式文字列
 	var fmts string
 	obj := e.evalExpression(args[0], env, ctx)
 	switch obj := obj.(type) {

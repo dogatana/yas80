@@ -30,10 +30,11 @@ func evaluateInput(testType int, input string, logger *logging.Logger, env objec
 	e := evaluator.New(logger)
 	e.Resolved = true
 	var obj object.Object
-	var i int
-	for i = 0; i < 256; i++ {
+	pass := 0
+	for i := 0; i < 256; i++ {
+		pass++
 		e.Resolved = true
-		obj = e.EvalProgram(prog, env)
+		obj = e.EvalProgram(prog, pass, env)
 		// e.EvalEnv(env)
 		// e.CheckSymbols(env)
 		e.CheckCyclicError(env)
@@ -51,8 +52,9 @@ func evaluateInput(testType int, input string, logger *logging.Logger, env objec
 	// finalize
 	code := evaluator.CollectCode(obj.(*object.BlockObject).Block)
 	codeStable := false
-	for i = 0; i < 256 && !codeStable; i++ {
-		obj = e.EvalProgram(prog, env)
+	for i := 0; i < 256 && !codeStable; i++ {
+		pass++
+		obj = e.EvalProgram(prog, pass, env)
 		newCode := evaluator.CollectCode(obj.(*object.BlockObject).Block)
 		codeStable = bytes.Equal(code, newCode)
 		if !codeStable {

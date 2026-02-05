@@ -128,12 +128,14 @@ func main() {
 	// eval 戦略
 	// 評価後 eval.Resolved が true ならコード生成完了とみなす
 	// true でないなら、規定回数（例: 256 とか 1,024) だけ eval を繰り返す
-	var i int
 	var obj object.Object
-	for i = 0; i < 256; i++ {
+	pass := 0 // 総評価回数
+
+	for i := 0; i < 256; i++ {
+		pass++
 		fmt.Printf("# [#%d] EvalProgrram\n", i)
 		eval.Resolved = true
-		obj = eval.EvalProgram(prog, env)
+		obj = eval.EvalProgram(prog, pass, env)
 		logger.Print()
 		object.PrintEnv(env)
 
@@ -165,7 +167,7 @@ func main() {
 		}
 	}
 	eval.CheckSymbolError(env)
-	fmt.Printf("eval %d times, %d errors, eval.Resolved = %v\n", i, len(logger.Errors), eval.Resolved)
+	fmt.Printf("eval %d times, %d errors, eval.Resolved = %v\n", pass, len(logger.Errors), eval.Resolved)
 	if len(logger.Errors) > 0 || !eval.Resolved {
 		fmt.Print("\n** error or  not resolved")
 		logger.Print()
@@ -180,8 +182,10 @@ func main() {
 	code := evaluator.CollectCode(obj.(*object.BlockObject).Block)
 
 	eval.CodeStable = false
-	for i = 0; i < 256 && !eval.CodeStable; i++ {
-		obj = eval.EvalProgram(prog, env)
+	for i := 0; i < 256 && !eval.CodeStable; i++ {
+		pass++
+		env.Set("$PASS", &object.NumberObject{Value: pass})
+		obj = eval.EvalProgram(prog, pass, env)
 		if len(logger.Errors) > 0 {
 			break
 		}
@@ -192,7 +196,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("finalize %d times, codeStable %v\n", i, eval.CodeStable)
+	fmt.Printf("eval %d times, codeStable %v\n", pass, eval.CodeStable)
 	if len(logger.Errors) > 0 {
 		logger.Print()
 		fmt.Println(prog.String())
