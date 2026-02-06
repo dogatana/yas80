@@ -86,28 +86,27 @@ func (m *WarningMessage) Equal(o *WarningMessage) bool {
 	return m.message == o.message && m.Context.Equal(o.Context)
 }
 
-type InfoMessage struct {
-	message string
-	Context *filecontent.Context
-}
+// type InfoMessage struct {
+// 	message string
+// 	Context *filecontent.Context
+// }
 
-func (m *InfoMessage) Message() string { return m.message }
-func (m *InfoMessage) Error() string {
-	if m.Context == nil {
-		return fmt.Sprintf("[INFO] %s", m.message)
-	} else {
-		return fmt.Sprintf("%q:%d [INFO] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
-	}
-}
-func (m *InfoMessage) Equal(o *InfoMessage) bool {
-	return m.message == o.message && m.Context.Equal(o.Context)
-}
+// func (m *InfoMessage) Message() string { return m.message }
+// func (m *InfoMessage) Error() string {
+// 	if m.Context == nil {
+// 		return fmt.Sprintf("[INFO] %s", m.message)
+// 	} else {
+// 		return fmt.Sprintf("%q:%d [INFO] %s", m.Context.FileContent.Filename, m.Context.Line, m.message)
+// 	}
+// }
+// func (m *InfoMessage) Equal(o *InfoMessage) bool {
+// 	return m.message == o.message && m.Context.Equal(o.Context)
+// }
 
 type Logger struct {
-	Messages   []*Message
-	Errors     []LogMessage
-	Warnings   []LogMessage
-	Infomation []LogMessage
+	messages []*Message
+	Errors   []LogMessage
+	Warnings []LogMessage
 }
 
 func New() *Logger {
@@ -116,7 +115,7 @@ func New() *Logger {
 
 func (l *Logger) Count() (int, int, int) {
 	var e, w, i int
-	for _, m := range l.Messages {
+	for _, m := range l.messages {
 		switch m.Type {
 		case Err:
 			e++
@@ -134,11 +133,24 @@ func (l *Logger) ErrorCount() int {
 	return e
 }
 
+func (l *Logger) GetMessages() []*Message {
+	return l.messages
+}
+func (l *Logger) GetErrors() []*Message {
+	return util.Filter(l.messages, func(m *Message) bool { return m.Type == Err })
+}
+func (l *Logger) GetWarnings() []*Message {
+	return util.Filter(l.messages, func(m *Message) bool { return m.Type == Warn })
+}
+func (l *Logger) GetInformation() []*Message {
+	return util.Filter(l.messages, func(m *Message) bool { return m.Type == Info })
+}
+
 func (l *Logger) Error(msg string, ctx *filecontent.Context) error {
 	err := &ErrorMessage{message: msg, Context: ctx}
 	l.Errors = append(l.Errors, err)
 	m := &Message{Type: Err, Text: msg, Context: ctx}
-	l.Messages = append(l.Messages, m)
+	l.messages = append(l.messages, m)
 	return err
 }
 
@@ -146,15 +158,13 @@ func (l *Logger) Warning(msg string, ctx *filecontent.Context) error {
 	err := &WarningMessage{message: msg, Context: ctx}
 	l.Warnings = append(l.Warnings, err)
 	m := &Message{Type: Warn, Text: msg, Context: ctx}
-	l.Messages = append(l.Messages, m)
+	l.messages = append(l.messages, m)
 	return err
 }
 func (l *Logger) Info(msg string, ctx *filecontent.Context) error {
-	err := &InfoMessage{message: msg, Context: ctx}
-	l.Infomation = append(l.Infomation, err)
 	m := &Message{Type: Info, Text: msg, Context: ctx}
-	l.Messages = append(l.Messages, m)
-	return err
+	l.messages = append(l.messages, m)
+	return m
 }
 
 func messageCompare(a, b *Message) int {
@@ -162,7 +172,7 @@ func messageCompare(a, b *Message) int {
 }
 
 func (l *Logger) Sort() {
-	slices.SortFunc(l.Messages, messageCompare)
+	slices.SortFunc(l.messages, messageCompare)
 }
 
 func (l *Logger) Uniq() {
@@ -175,19 +185,19 @@ func (l *Logger) Print() {
 	// Warning, Information の重複を削除
 	if ec != 0 {
 		fmt.Printf("%d errros\n", ec)
-		for _, m := range util.Filter(l.Messages, func(m *Message) bool { return m.Type == Err }) {
+		for _, m := range util.Filter(l.messages, func(m *Message) bool { return m.Type == Err }) {
 			fmt.Println(m.Error())
 		}
 	}
 	if wc != 0 {
 		fmt.Printf("%d warnings\n", wc)
-		for _, m := range util.Filter(l.Messages, func(m *Message) bool { return m.Type == Warn }) {
+		for _, m := range util.Filter(l.messages, func(m *Message) bool { return m.Type == Warn }) {
 			fmt.Println(m.Error())
 		}
 	}
 	if ic != 0 {
 		fmt.Printf("%d information\n", ic)
-		for _, m := range util.Filter(l.Messages, func(m *Message) bool { return m.Type == Info }) {
+		for _, m := range util.Filter(l.messages, func(m *Message) bool { return m.Type == Info }) {
 			fmt.Println(m.Error())
 		}
 	}
@@ -197,30 +207,29 @@ func (l *Logger) Print() {
 func (l *Logger) RemoveDupe() {
 	l.Errors = l.removeDupedMessage(l.Errors)
 	l.Warnings = l.removeDupedMessage(l.Warnings)
-	l.Infomation = l.removeDupedMessage(l.Infomation)
 	l.removeDupedMessageNew()
 }
 
 // 重複メッセージの削除（Logger.message 版)
 func (l *Logger) removeDupedMessageNew() {
-	if len(l.Messages) < 2 {
+	if len(l.messages) < 2 {
 		return
 	}
-	for i := 0; i < len(l.Messages)-1; i++ {
-		m := l.Messages[i]
+	for i := 0; i < len(l.messages)-1; i++ {
+		m := l.messages[i]
 		if m == nil {
 			continue
 		}
-		for j := i + 1; j < len(l.Messages); j++ {
-			if l.Messages[j] == nil {
+		for j := i + 1; j < len(l.messages); j++ {
+			if l.messages[j] == nil {
 				continue
 			}
-			if m.Equal(l.Messages[j]) {
-				l.Messages[j] = nil
+			if m.Equal(l.messages[j]) {
+				l.messages[j] = nil
 			}
 		}
 	}
-	l.Messages = util.Filter(l.Messages, func(m *Message) bool { return m != nil })
+	l.messages = util.Filter(l.messages, func(m *Message) bool { return m != nil })
 }
 
 // removeDupe のサポート関数
@@ -241,10 +250,6 @@ func (l *Logger) removeDupedMessage(msgs []LogMessage) []LogMessage {
 				}
 			case *WarningMessage:
 				if m.Equal(msgs[j].(*WarningMessage)) {
-					msgs[j] = nil
-				}
-			case *InfoMessage:
-				if m.Equal(msgs[j].(*InfoMessage)) {
 					msgs[j] = nil
 				}
 			}

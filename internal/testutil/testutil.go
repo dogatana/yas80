@@ -46,7 +46,7 @@ func TestLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
 			tn,
 			ename,
 			err,
-			logger.Messages[0])
+			logger.GetMessages()[0])
 	}
 }
 
@@ -54,7 +54,7 @@ func hasMessage(logger *logging.Logger, mt logging.MessageType, expected string)
 	re := regexp.MustCompile(`\.?%.\.?`)
 	ss := re.Split(expected, -1)
 
-	for _, m := range logger.Messages {
+	for _, m := range logger.GetMessages() {
 		if m.Type != mt {
 			continue
 		}

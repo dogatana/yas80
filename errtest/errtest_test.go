@@ -3,6 +3,7 @@ package errtest
 import (
 	"testing"
 	"yas80/errcode"
+	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -29,7 +30,7 @@ func TestErrorConstLabel(t *testing.T) {
 		logger := logging.New()
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
+		testutil.TestLogMessage(t, tn, tt.expected, logger)
 	}
 }
 
@@ -49,7 +50,7 @@ func TestErrorScrope(t *testing.T) {
 		logger := logging.New()
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
+		testutil.TestLogMessage(t, tn, tt.expected, logger)
 	}
 }
 
@@ -72,7 +73,7 @@ func TestErrorFuncCall(t *testing.T) {
 		logger := logging.New()
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
+		testutil.TestLogMessage(t, tn, tt.expected, logger)
 	}
 
 }
@@ -89,6 +90,6 @@ func TestErrorRept(t *testing.T) {
 		logger := logging.New()
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
+		testutil.TestLogMessage(t, tn, tt.expected, logger)
 	}
 }
