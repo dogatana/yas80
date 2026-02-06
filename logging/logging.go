@@ -171,23 +171,24 @@ func (l *Logger) Uniq() {
 
 // logMessage の表示
 func (l *Logger) Print() {
+	ec, wc, ic := l.Count()
 	// Warning, Information の重複を削除
-	if len(l.Errors) != 0 {
-		fmt.Printf("%d errros\n", len(l.Errors))
-		for _, e := range l.Errors {
-			fmt.Println(e.Error())
+	if ec != 0 {
+		fmt.Printf("%d errros\n", ec)
+		for _, m := range util.Filter(l.Messages, func(m *Message) bool { return m.Type == Err }) {
+			fmt.Println(m.Error())
 		}
 	}
-	if len(l.Warnings) != 0 {
-		fmt.Printf("%d warnings\n", len(l.Warnings))
-		for _, e := range l.Warnings {
-			fmt.Println(e.Error())
+	if wc != 0 {
+		fmt.Printf("%d warnings\n", wc)
+		for _, m := range util.Filter(l.Messages, func(m *Message) bool { return m.Type == Warn }) {
+			fmt.Println(m.Error())
 		}
 	}
-	if len(l.Infomation) != 0 {
-		fmt.Printf("%d info\n", len(l.Infomation))
-		for _, e := range l.Infomation {
-			fmt.Println(e.Error())
+	if ic != 0 {
+		fmt.Printf("%d information\n", ic)
+		for _, m := range util.Filter(l.Messages, func(m *Message) bool { return m.Type == Info }) {
+			fmt.Println(m.Error())
 		}
 	}
 }
