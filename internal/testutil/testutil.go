@@ -14,49 +14,53 @@ import (
 func TestLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
 	ename, ok := ErrcodeNames[err]
 	if !ok {
-		t.Fatalf("[%d] errcode の定義が見つからない %q", err)
+		t.Fatalf("[%d] errcode の定義が見つからない %q", tn, err)
 		return
 	}
 
-	var msgs []logging.LogMessage
+	ec, wc, ic := logger.Count()
+	var mt logging.MessageType
 	switch ename[0] {
 	case 'E':
-		msgs = logger.Errors
-		if len(msgs) == 0 {
+		mt = logging.Err
+		if ec == 0 {
 			t.Fatalf("[%d] no error", tn)
 			return
 		}
 	case 'W':
-		msgs = logger.Warnings
-		if len(msgs) == 0 {
+		mt = logging.Warn
+		if wc == 0 {
 			t.Fatalf("[%d] no warning", tn)
 			return
 		}
 	case 'I':
-		msgs = logger.Infomation
-		if len(msgs) == 0 {
+		mt = logging.Info
+		if ic == 0 {
 			t.Fatalf("[%d] no information", tn)
 			return
 		}
 	}
 
-	if !hasMessage(msgs, err) {
+	if !hasMessage(logger, mt, err) {
 		t.Errorf("[%d] not [%s] \"%s\" => \"%s\"",
 			tn,
 			ename,
 			err,
-			msgs[0])
+			logger.Messages[0])
 	}
 }
 
-func hasMessage(messages []logging.LogMessage, expected string) bool {
+func hasMessage(logger *logging.Logger, mt logging.MessageType, expected string) bool {
 	re := regexp.MustCompile(`\.?%.\.?`)
 	ss := re.Split(expected, -1)
 
-	for _, emsg := range messages {
+	for _, m := range logger.Messages {
+		if m.Type != mt {
+			continue
+		}
 		result := true
 		for _, s := range ss {
-			if !strings.Contains(emsg.Message(), s) {
+			if !strings.Contains(m.Text, s) {
 				result = false
 				break
 			}
