@@ -9,6 +9,40 @@ type LogMessage interface {
 	Message() string
 	Error() string
 }
+
+type MessageType int
+
+const (
+	Err = iota
+	Warn
+	Info
+)
+
+var msgTypeName = map[MessageType]string{
+	Err:  "[ERROR]",
+	Warn: "[WARNING]",
+	Info: "[Information]",
+}
+
+type Message struct {
+	Type    MessageType
+	message string
+	Context *filecontent.Context
+}
+
+func (m *Message) Message() string { return msgTypeName[m.Type] + m.message }
+func (m *Message) Error() string {
+	tn := msgTypeName[m.Type]
+	if m.Context == nil {
+		return fmt.Sprintf("%s %s", tn, m.message)
+	} else {
+		return fmt.Sprintf("%q:%d %s %s", m.Context.FileContent.Filename, m.Context.Line, tn, m.message)
+	}
+}
+func (m *Message) Equal(o *Message) bool {
+	return m.Type == o.Type && m.message == o.message && m.Context.Equal(o.Context)
+}
+
 type ErrorMessage struct {
 	message string
 	Context *filecontent.Context
