@@ -404,3 +404,28 @@ func FlattenObject(obj Object) []Object {
 	}
 	return objs
 }
+
+func IsTruthy(obj Object) bool {
+	switch obj := obj.(type) {
+	case *NumberObject:
+		return obj.Value != 0
+	case *StringObject:
+		return obj.Value != ""
+	default:
+		return false
+	}
+}
+
+func CollectCode(objects []Object) []byte {
+	var result []byte
+
+	for _, obj := range objects {
+		switch obj := obj.(type) {
+		case *CodeObject:
+			result = append(result, obj.Code...)
+		case *BlockObject:
+			result = append(result, CollectCode(obj.Block)...)
+		}
+	}
+	return result
+}

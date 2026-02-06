@@ -36,7 +36,7 @@ func TestZ80Instruction(t *testing.T) {
 		testEvalResult(t, tn, "", e)
 
 		logger.Print()
-		result := CollectCode(prog.Block)
+		result := object.CollectCode(prog.Block)
 
 		if err := testutil.BytesEqual(result, expected); err != nil {
 			t.Errorf("[%d] generated code diff %s", tn, err.Error())

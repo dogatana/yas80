@@ -240,8 +240,8 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, 
 // 論理演算 && ||
 func (e *Evaluator) evalLogicalInfixExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
 	var v1, v2 bool
-	v1 = isTruthy(op1)
-	v2 = isTruthy(op2)
+	v1 = object.IsTruthy(op1)
+	v2 = object.IsTruthy(op2)
 	switch opCode {
 	case parser.OR:
 		return &object.NumberObject{Value: boolToInt(v1 || v2), Context: ctx}
@@ -318,7 +318,7 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv
 
 	// 論理否定は非演算子の Truthy を反転して返す
 	if opcode == '!' {
-		return &object.NumberObject{Value: boolToInt(!isTruthy(op)), Context: ctx}
+		return &object.NumberObject{Value: boolToInt(!object.IsTruthy(op)), Context: ctx}
 	}
 
 	// +, -, ~ は数値のみ利用可能

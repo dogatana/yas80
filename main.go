@@ -179,7 +179,7 @@ func main() {
 	// コードが安定するまで規定回数、評価を繰り返す
 	// 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
 	fmt.Println("\n# finalize")
-	code := evaluator.CollectCode(obj.(*object.BlockObject).Block)
+	code := object.CollectCode(obj.(*object.BlockObject).Block)
 
 	eval.CodeStable = false
 	for i := 0; i < 256 && !eval.CodeStable; i++ {
@@ -189,7 +189,7 @@ func main() {
 		if logger.ErrorCount() > 0 {
 			break
 		}
-		newCode := evaluator.CollectCode(obj.(*object.BlockObject).Block)
+		newCode := object.CollectCode(obj.(*object.BlockObject).Block)
 		eval.CodeStable = bytes.Equal(code, newCode)
 		if !eval.CodeStable {
 			code = newCode

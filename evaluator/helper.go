@@ -110,31 +110,6 @@ func boolToInt(value bool) int {
 	}
 }
 
-func isTruthy(obj object.Object) bool {
-	switch obj := obj.(type) {
-	case *object.NumberObject:
-		return obj.Value != 0
-	case *object.StringObject:
-		return obj.Value != ""
-	default:
-		return false
-	}
-}
-
-func CollectCode(objects []object.Object) []byte {
-	var result []byte
-
-	for _, obj := range objects {
-		switch obj := obj.(type) {
-		case *object.CodeObject:
-			result = append(result, obj.Code...)
-		case *object.BlockObject:
-			result = append(result, CollectCode(obj.Block)...)
-		}
-	}
-	return result
-}
-
 // シンボル結合処理
 func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TContext) bool {
 	switch expr := (*ptr).(type) {

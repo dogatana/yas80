@@ -615,7 +615,7 @@ func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, checkExitM bool, e
 		return object.ERROR
 	}
 
-	if isTruthy(obj) {
+	if object.IsTruthy(obj) {
 		if stmt.Consequence == nil {
 			return object.NULL
 		}

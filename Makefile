@@ -38,7 +38,7 @@ YACC = parser/parser.y
 PARSER = parser/parser.go
 PATCH = parser/patch_parser.py
 YOUT = parser/y.output
-TESTDIR = ./binwriter ./errtest ./evaluator ./filecontent ./parser
+TESTDIR = ./binwriter ./errtest ./evaluator ./filecontent ./parser ./lister
 
 	  
 main.exe: ${SRC} 

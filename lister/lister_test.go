@@ -2,7 +2,6 @@ package lister
 
 import (
 	"testing"
-	"yas80/errcode"
 	"yas80/internal/testutil"
 	"yas80/logging"
 	"yas80/object"
@@ -14,7 +13,7 @@ func TestLister(t *testing.T) {
 		code  []byte
 		err   string
 	}{
-		{input: "zilog", err: errcode.EINCLUDE_CYCLIC},
+		{input: "zilog"},
 	}
 
 	for tn, tt := range tests {

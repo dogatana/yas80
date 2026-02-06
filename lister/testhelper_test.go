@@ -50,7 +50,7 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env object.En
 	}
 
 	// finalize
-	code := evaluator.CollectCode(obj.(*object.BlockObject).Block)
+	code := object.CollectCode(obj.(*object.BlockObject).Block)
 	eval.CodeStable = false
 	for i := 0; i < 256 && !eval.CodeStable; i++ {
 		pass++
@@ -59,7 +59,7 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env object.En
 			return obj.(*object.BlockObject), eval
 
 		}
-		newCode := evaluator.CollectCode(obj.(*object.BlockObject).Block)
+		newCode := object.CollectCode(obj.(*object.BlockObject).Block)
 		eval.CodeStable = bytes.Equal(code, newCode)
 		if !eval.CodeStable {
 			code = newCode
@@ -102,7 +102,7 @@ func testCodeResult(t *testing.T, tn int, expected []byte, prog *object.BlockObj
 	if len(expected) == 0 {
 		return
 	}
-	code := evaluator.CollectCode(prog.Block)
+	code := object.CollectCode(prog.Block)
 	if err := testutil.BytesEqual(code, expected); err != nil {
 		t.Errorf("[%d] generated code diff %s", tn, err.Error())
 	}
