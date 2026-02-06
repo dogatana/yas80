@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"yas80/filecontent"
+	"yas80/internal/util"
 )
 
 type LogMessage interface {
@@ -40,8 +41,15 @@ func (m *Message) Error() string {
 		return fmt.Sprintf("%q:%d %s %s", m.Context.FileContent.Filename, m.Context.Line, tn, m.message)
 	}
 }
+
+// 2 つのメッセージが等しいかどうか（メソッド）
 func (m *Message) Equal(o *Message) bool {
-	return m.Type == o.Type && m.message == o.message && m.Context.Equal(o.Context)
+	return Equal(m, o)
+}
+
+// 2 つのメッセージが等しいかどうか（関数）
+func Equal(a, b *Message) bool {
+	return a.Type == b.Type && a.message == b.message && a.Context.Equal(b.Context)
 }
 
 type ErrorMessage struct {
@@ -189,6 +197,29 @@ func (l *Logger) RemoveDupe() {
 	l.Errors = l.removeDupedMessage(l.Errors)
 	l.Warnings = l.removeDupedMessage(l.Warnings)
 	l.Infomation = l.removeDupedMessage(l.Infomation)
+	l.removeDupedMessageNew()
+}
+
+// 重複メッセージの削除（Logger.message 版)
+func (l *Logger) removeDupedMessageNew() {
+	if len(l.messages) < 2 {
+		return
+	}
+	for i := 0; i < len(l.messages)-1; i++ {
+		m := l.messages[i]
+		if m == nil {
+			continue
+		}
+		for j := i + 1; j < len(l.messages); j++ {
+			if l.messages[j] == nil {
+				continue
+			}
+			if m.Equal(l.messages[j]) {
+				l.messages[j] = nil
+			}
+		}
+	}
+	l.messages = util.Filter(l.messages, func(m *Message) bool { return m != nil })
 }
 
 // removeDupe のサポート関数
