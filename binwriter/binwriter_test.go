@@ -200,12 +200,12 @@ func TestRemoveDuplicateMessages(t *testing.T) {
 			t.Errorf("[%d], %s", tn, err.Error())
 		}
 
-		if len(logger.Warnings) != 2 {
-			t.Errorf("[%d], logger should have 2 messages. got %d", tn, len(logger.Warnings))
+		if _, w, _ := logger.Count(); w != 2 {
+			t.Errorf("[%d], logger should have 2 messages. got %d", tn, w)
 		}
 		logger.RemoveDupe()
-		if len(logger.Warnings) != 1 {
-			t.Errorf("[%d], logger should have 1 messages. got %d", tn, len(logger.Warnings))
+		if _, w, _ := logger.Count(); w != 1 {
+			t.Errorf("[%d], logger should have 1 messages. got %d", tn, w)
 		}
 	}
 }
