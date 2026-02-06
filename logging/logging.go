@@ -2,6 +2,7 @@ package logging
 
 import (
 	"fmt"
+	"slices"
 	"yas80/filecontent"
 )
 
@@ -95,6 +96,7 @@ func (m *InfoMessage) Equal(o *InfoMessage) bool {
 }
 
 type Logger struct {
+	messages   []*Message
 	Errors     []LogMessage
 	Warnings   []LogMessage
 	Infomation []LogMessage
@@ -104,29 +106,59 @@ func New() *Logger {
 	return &Logger{}
 }
 
+func (l *Logger) Count() (int, int, int) {
+	var e, w, i int
+	for _, m := range l.messages {
+		switch m.Type {
+		case Err:
+			e++
+		case Warn:
+			w++
+		case Info:
+			i++
+		}
+	}
+	return e, w, i
+}
+
 func (l *Logger) ErrorCount() int {
-	return len(l.Errors)
+	e, _, _ := l.Count()
+	return e
 }
 
 func (l *Logger) Error(msg string, ctx *filecontent.Context) error {
 	err := &ErrorMessage{message: msg, Context: ctx}
 	l.Errors = append(l.Errors, err)
+	m := &Message{Type: Err, message: msg, Context: ctx}
+	l.messages = append(l.messages, m)
 	return err
 }
 
 func (l *Logger) Warning(msg string, ctx *filecontent.Context) error {
 	err := &WarningMessage{message: msg, Context: ctx}
 	l.Warnings = append(l.Warnings, err)
+	m := &Message{Type: Warn, message: msg, Context: ctx}
+	l.messages = append(l.messages, m)
 	return err
 }
 func (l *Logger) Info(msg string, ctx *filecontent.Context) error {
 	err := &InfoMessage{message: msg, Context: ctx}
 	l.Infomation = append(l.Infomation, err)
+	m := &Message{Type: Info, message: msg, Context: ctx}
+	l.messages = append(l.messages, m)
 	return err
 }
 
-func (l *Logger) Count() (int, int, int) {
-	return len(l.Errors), len(l.Warnings), len(l.Infomation)
+func messageCompare(a, b *Message) int {
+	return 0
+}
+
+func (l *Logger) Sort() {
+	slices.SortFunc(l.messages, messageCompare)
+}
+
+func (l *Logger) Uniq() {
+
 }
 
 // logMessage の表示
