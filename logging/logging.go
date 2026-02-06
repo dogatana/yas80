@@ -19,9 +19,9 @@ const (
 )
 
 var msgTypeName = map[MessageType]string{
-	Err:  "[ERROR]",
-	Warn: "[WARNING]",
-	Info: "[Information]",
+	Err:  "[ERR]",
+	Warn: "[WARN]",
+	Info: "[INFO]",
 }
 
 type Message struct {
