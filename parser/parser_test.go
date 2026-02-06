@@ -70,8 +70,8 @@ func TestParseNumberLiteralError(t *testing.T) {
 			}
 		}
 
-		if len(l.logger.Errors) > 0 {
-			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
+		if ec := l.logger.ErrorCount(); ec > 0 {
+			t.Fatalf("[%d] %d errors", tn, ec)
 		}
 		if len(prog.Block) == 0 {
 			t.Fatalf("[%d] %d statements", tn, len(prog.Block))
@@ -113,8 +113,8 @@ func TestParseStringLiteral(t *testing.T) {
 			}
 		}
 
-		if len(l.logger.Errors) > 0 {
-			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
+		if ec := l.logger.ErrorCount(); ec > 0 {
+			t.Fatalf("[%d] %d errors", tn, ec)
 		}
 		stmt := progHasOnlyOneStatement(t, tn, prog)
 		as := testAssignStatement(t, tn, stmt)

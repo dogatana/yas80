@@ -208,8 +208,8 @@ func TestParseExpressionError(t *testing.T) {
 			}
 		}
 
-		if len(l.logger.Errors) > 0 {
-			t.Errorf("[%d] %d errors", tn, len(l.logger.Errors))
+		if ec := l.logger.ErrorCount(); ec > 0 {
+			t.Errorf("[%d] %d errors", tn, ec)
 		}
 		if len(prog.Block) == 0 {
 			t.Errorf("[%d] %d statements", tn, len(prog.Block))

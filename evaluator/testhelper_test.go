@@ -86,9 +86,9 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*o
 
 func testEvalResult(t *testing.T, tn int, err string, eval *Evaluator) {
 	if err == "" {
-		if len(eval.logger.Errors) > 0 {
+		if ec := eval.logger.ErrorCount(); ec > 0 {
 			eval.logger.Print()
-			t.Fatalf("[%d] EvalProgram() %d errors", tn, len(eval.logger.Errors))
+			t.Fatalf("[%d] EvalProgram() %d errors", tn, ec)
 		}
 		if !eval.Resolved {
 			t.Fatalf("[%d] eval.Resolved false", tn)

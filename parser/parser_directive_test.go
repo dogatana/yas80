@@ -353,8 +353,8 @@ func TestParseDataStatement(t *testing.T) {
 				continue
 			}
 		}
-		if len(l.logger.Errors) > 0 {
-			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
+		if ec := l.logger.ErrorCount(); ec > 0 {
+			t.Fatalf("[%d] %d errors", tn, ec)
 		}
 
 		stmt := progHasOnlyOneStatement(t, tn, prog)
@@ -413,8 +413,8 @@ func TestParseDataStoreStatement(t *testing.T) {
 				continue
 			}
 		}
-		if len(l.logger.Errors) > 0 {
-			t.Fatalf("[%d] %d errors", tn, len(l.logger.Errors))
+		if ec := l.logger.ErrorCount(); ec > 0 {
+			t.Fatalf("[%d] %d errors", tn, ec)
 		}
 
 		stmt := progHasOnlyOneStatement(t, tn, prog)

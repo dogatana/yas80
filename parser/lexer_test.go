@@ -591,7 +591,7 @@ func TestLexError(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		testInputEnd(t, tn, l)
 
-		if len(l.logger.Errors) == 0 {
+		if l.logger.ErrorCount() == 0 {
 			t.Fatalf("[%d] no errors", tn)
 		}
 		testutil.TestLogMessage(t, tn, tt.err, l.logger)
