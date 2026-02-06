@@ -26,7 +26,7 @@ func TestErrorConstLabel(t *testing.T) {
 		{`const abc = def + 1 \ const def = xyz + 2 \ const xyz = abc + 3`, errcode.ESYM_CYCLIC},
 	}
 	for tn, tt := range tests {
-		logger := logging.New("test")
+		logger := logging.New()
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -46,7 +46,7 @@ func TestErrorScrope(t *testing.T) {
 		{`test func arg \ if arg \ const @abc = 1 \ endif\ ld a, @abc \ endf \ _ = test(1)`, errcode.ESCOPE_MACRO},
 	}
 	for tn, tt := range tests {
-		logger := logging.New("test")
+		logger := logging.New()
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -69,7 +69,7 @@ func TestErrorFuncCall(t *testing.T) {
 		{`const abc = 1 \ _=abc()`, errcode.EFUNC_NOT_FUNC},
 	}
 	for tn, tt := range tests {
-		logger := logging.New("test")
+		logger := logging.New()
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)
@@ -86,7 +86,7 @@ func TestErrorRept(t *testing.T) {
 		{`rept a \ nop \ endr`, errcode.EREPT_COUNT},
 	}
 	for tn, tt := range tests {
-		logger := logging.New("test")
+		logger := logging.New()
 		env := object.NewEnvironment(nil)
 		evaluateInput(TEST_ERROR, tt.input, logger, env)
 		testMessage(t, TEST_ERROR, tn, logger, tt.expected)

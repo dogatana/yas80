@@ -50,7 +50,7 @@ func main() {
 
 	index := 0
 
-	logger := logging.New(fcs[0].Filename) // TODO: yas80 でも良い？
+	logger := logging.New()
 	l := parser.NewLexer(logger, func() *filecontent.FileContent {
 		if index < len(fcs) {
 			fc := fcs[index]

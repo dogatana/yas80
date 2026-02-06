@@ -45,7 +45,7 @@ func TestLabelStatement(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, "", e)
 
@@ -73,7 +73,7 @@ func TestConstStatement(t *testing.T) {
 	}
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -158,7 +158,7 @@ func TestProcStatement(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -232,7 +232,7 @@ func TestEnumStatement(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -283,7 +283,7 @@ func TestVarAssignStatement(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -338,7 +338,7 @@ func TestIfStatement(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, "", e)
 
@@ -379,7 +379,7 @@ func TestOrgStatement(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		// error, warning, information

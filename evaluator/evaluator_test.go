@@ -32,9 +32,9 @@ func TestAssembleFile(t *testing.T) {
 	for tn, tt := range tests {
 		path := testutil.GetTestFilePath(t, tt.input+".asm")
 		env := object.NewEnvironment(nil)
-		logger := logging.New(path)
+		logger := logging.New()
 
-		code, _ := evalFile(logger, env)
+		code, _ := evalFile(path, logger, env)
 		if tt.err != "" {
 			testutil.TestLogMessage(t, tn, tt.err, logger)
 			continue

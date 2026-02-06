@@ -26,7 +26,7 @@ func TestErrorMacroDef(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 
 		// error, warning, information
@@ -56,7 +56,7 @@ func TestErrorMacroCall(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 
 		// error, warning, information
@@ -78,7 +78,7 @@ func TestWarningMacroCall(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 
 		// error, warning, information
@@ -186,7 +186,7 @@ func TestExitm(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		input := tt.input
 
 		prog, e := evalInput(input, logger, env)
@@ -228,7 +228,7 @@ func TestMacroIf(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		input := tt.input
 
 		prog, e := evalInput(input, logger, env)
@@ -283,7 +283,7 @@ func TestMacroConstVar(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -358,7 +358,7 @@ func TestMacroLabel(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -415,7 +415,7 @@ func TestMacroData(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -467,7 +467,7 @@ func TestReptArray(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -516,7 +516,7 @@ func TestMacroArray(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -606,7 +606,7 @@ func TestMacroReptCombination(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)

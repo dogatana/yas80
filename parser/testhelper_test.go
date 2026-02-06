@@ -8,9 +8,8 @@ import (
 )
 
 func newLexerForTest(input string) *Lexer {
-	file := "<string>"
-	logger := logging.New(file)
-	fc, _ := filecontent.NewFromString(file, input)
+	logger := logging.New()
+	fc, _ := filecontent.NewFromString("text", input)
 	lex := NewLexer(logger, func() *filecontent.FileContent {
 		ret := fc
 		fc = nil

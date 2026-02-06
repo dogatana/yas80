@@ -18,12 +18,12 @@ type symValue struct {
 }
 
 func evalInput(input string, logger *logging.Logger, env TEnv) (*object.BlockObject, *Evaluator) {
-	prog := parseTextForTest(input, logger)
+	prog := parseTextForTest(input, "testdata/text", logger) // testdata/*.json を読み込むため
 	return evalProg(prog, logger, env)
 }
 
-func evalFile(logger *logging.Logger, env TEnv) ([]byte, bool) {
-	prog := parseFileForTest(logger)
+func evalFile(filename string, logger *logging.Logger, env TEnv) ([]byte, bool) {
+	prog := parseFileForTest(filename, logger)
 	obj, _ := evalProg(prog, logger, env)
 
 	bw := binwriter.New(obj, 0, logger)
@@ -106,10 +106,10 @@ func testEvalResult(t *testing.T, tn int, err string, eval *Evaluator) {
 	}
 }
 
-func parseTextForTest(input string, logger *logging.Logger) *parser.BlockStatement {
+func parseTextForTest(input string, filename string, logger *logging.Logger) *parser.BlockStatement {
 	var prog *parser.BlockStatement
 
-	fc, _ := filecontent.NewFromString(logger.Filename, input)
+	fc, _ := filecontent.NewFromString(filename, input)
 
 	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
 		ret := fc
@@ -125,10 +125,10 @@ func parseTextForTest(input string, logger *logging.Logger) *parser.BlockStateme
 	return prog
 }
 
-func parseFileForTest(logger *logging.Logger) *parser.BlockStatement {
+func parseFileForTest(filename string, logger *logging.Logger) *parser.BlockStatement {
 	var prog *parser.BlockStatement
 
-	fc, err := filecontent.NewFromFile(logger.Filename)
+	fc, err := filecontent.NewFromFile(filename)
 	if err != nil {
 		fmt.Println("parseFileForTest", err.Error())
 

@@ -45,7 +45,7 @@ func TestBinWriterGapAndSortSegment(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<binwrite>")
+		logger := logging.New()
 		prog, _ := evalInput(tt.input, logger, env)
 		code, ok := codeFromObj(prog, tt.fill, logger)
 
@@ -88,7 +88,7 @@ func TestBinWriterAbsAndRel(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<binwrite>")
+		logger := logging.New()
 		prog, _ := evalInput(tt.input, logger, env)
 		code, ok := codeFromObj(prog, tt.fill, logger)
 
@@ -145,7 +145,7 @@ func TestBinWriterMultiFiles(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<binwrite>")
+		logger := logging.New()
 		prog, _ := evalInput(tt.input, logger, env)
 		code, ok := codeFromObj(prog, tt.fill, logger)
 
@@ -182,7 +182,7 @@ func TestRemoveDuplicateMessages(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<binwrite>")
+		logger := logging.New()
 		prog, _ := evalInput(tt.input, logger, env)
 		code, ok := codeFromObj(prog, tt.fill, logger)
 

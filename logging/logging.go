@@ -64,11 +64,10 @@ type Logger struct {
 	Errors     []LogMessage
 	Warnings   []LogMessage
 	Infomation []LogMessage
-	Filename   string
 }
 
-func New(filename string) *Logger {
-	return &Logger{Filename: filename}
+func New() *Logger {
+	return &Logger{}
 }
 
 func (l *Logger) Error(msg string, ctx *filecontent.Context) error {

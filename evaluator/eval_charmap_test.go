@@ -36,7 +36,7 @@ func TestCharmapDef(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("testdata/test.asm") // testdata/ 下の json を読むため
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -128,7 +128,7 @@ func TestCharmapApply(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("testdata/test.asm")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)

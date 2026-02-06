@@ -30,7 +30,7 @@ func TestFunc(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, "", e)
 
@@ -56,7 +56,7 @@ func TestFunction(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, "", e)
 
@@ -95,7 +95,7 @@ func TestFuncErrorWarning(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -150,7 +150,7 @@ func TestClosure(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, "", e)
 
@@ -183,7 +183,7 @@ func TestFibFunc(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, "", e)
 

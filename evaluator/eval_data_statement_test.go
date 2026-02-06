@@ -56,7 +56,7 @@ func TestDataStoreStatement(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -115,7 +115,7 @@ func TestDataStoreStatementError(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
@@ -201,7 +201,7 @@ func TestDataStatement(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)

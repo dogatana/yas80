@@ -28,7 +28,7 @@ func TestZ80Instruction(t *testing.T) {
 
 	for tn, base := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		input := string(testutil.ReadTestDataFile(t, base+".asm"))
 		expected := testutil.ReadTestDataFile(t, base+".bin")
 
@@ -64,7 +64,7 @@ func testInstructionDefault(t *testing.T) {
 		}
 
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, _ := evalInput(tt.input, logger, env)
 
 		// エラー発生時のデフォルトコードのチェックのため、発生エラーは無視する
@@ -114,7 +114,7 @@ func TestInstructionAmbiguous(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -150,7 +150,7 @@ func TestInstruction_LD_STR(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -190,7 +190,7 @@ func TestInstructionError_LD16(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -233,7 +233,7 @@ func TestInstructionError_LD8(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -270,7 +270,7 @@ func TestInstructionError_LDRegIndirect(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -306,7 +306,7 @@ func TestInstructionError_LDAddrIndirect(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -347,7 +347,7 @@ func TestInstructionError_JP_JR_DJNZ(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -400,7 +400,7 @@ func TestInstructionError_CALL_RET_RST(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -452,7 +452,7 @@ func TestInstructionError_IN_OUT(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -490,7 +490,7 @@ func TestInstructionError_BIT_SET_RES(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -525,7 +525,7 @@ func TestInstructionError_RLC(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -560,7 +560,7 @@ func TestInstructionError_IM(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -598,7 +598,7 @@ func TestInstructionError_EX(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -638,7 +638,7 @@ func TestInstructionError_INC_DEC(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -673,7 +673,7 @@ func TestInstructionError_PUSH_POP(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -717,7 +717,7 @@ func TestInstructionError_ADD8(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -756,7 +756,7 @@ func TestInstructionError_ADD16(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 

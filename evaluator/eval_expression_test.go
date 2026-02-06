@@ -20,7 +20,7 @@ func TestEvalExpressionError(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -87,7 +87,7 @@ func TestEvalInfixExpression(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -127,7 +127,7 @@ func TestEvalInfixExpressionError(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -168,7 +168,7 @@ func TestEvalPrefixExpression(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -204,7 +204,7 @@ func TestEvalPrefixExpressionError(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -246,7 +246,7 @@ func TestIndexExpression(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
@@ -289,7 +289,7 @@ func TestRegIndirectExpression(t *testing.T) {
 
 	for tn, tt := range tests {
 		env := object.NewEnvironment(nil)
-		logger := logging.New("<eval test>")
+		logger := logging.New()
 		_, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)
 
