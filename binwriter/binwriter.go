@@ -41,7 +41,7 @@ func New(prog object.Object, fill int, logger *logging.Logger) *BinWriter {
 
 func (b *BinWriter) Write(w io.Writer) bool {
 	b.allocate()
-	if len(b.logger.Errors) > 0 {
+	if b.logger.ErrorCount() > 0 {
 		return false
 	}
 	if len(b.segs) == 0 {

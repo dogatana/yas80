@@ -46,7 +46,7 @@ func evaluateInput(testType int, input string, logger *logging.Logger, env objec
 		}
 	}
 	e.CheckSymbolError(env)
-	if len(logger.Errors) > 0 || !e.Resolved {
+	if logger.ErrorCount() > 0 || !e.Resolved {
 		return
 	}
 	// finalize

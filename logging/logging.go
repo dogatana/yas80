@@ -70,6 +70,10 @@ func New() *Logger {
 	return &Logger{}
 }
 
+func (l *Logger) ErrorCount() int {
+	return len(l.Errors)
+}
+
 func (l *Logger) Error(msg string, ctx *filecontent.Context) error {
 	err := &ErrorMessage{message: msg, Context: ctx}
 	l.Errors = append(l.Errors, err)

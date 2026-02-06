@@ -46,7 +46,7 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*o
 		obj = eval.EvalProgram(prog, pass, env)
 		// eval.EvalEnv(env)
 		eval.CheckCyclicError(env)
-		if len(logger.Errors) > 0 {
+		if logger.ErrorCount() > 0 {
 			return &object.BlockObject{}, eval
 		}
 		if eval.Resolved {
@@ -54,7 +54,7 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*o
 		}
 	}
 	eval.CheckSymbolError(env)
-	if len(logger.Errors) > 0 || !eval.Resolved {
+	if logger.ErrorCount() > 0 || !eval.Resolved {
 		return obj.(*object.BlockObject), eval
 	}
 
@@ -64,7 +64,7 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*o
 	for i := 0; i < 256 && !eval.CodeStable; i++ {
 		pass++
 		obj = eval.EvalProgram(prog, pass, env)
-		if len(logger.Errors) > 0 {
+		if logger.ErrorCount() > 0 {
 			return obj.(*object.BlockObject), eval
 
 		}
@@ -117,7 +117,7 @@ func parseTextForTest(input string, filename string, logger *logging.Logger) *pa
 		return ret
 	})
 	prog = parser.Parse(lex)
-	if len(logger.Errors) > 0 {
+	if logger.ErrorCount() > 0 {
 		return prog
 	}
 
@@ -140,7 +140,7 @@ func parseFileForTest(filename string, logger *logging.Logger) *parser.BlockStat
 		return ret
 	})
 	prog = parser.Parse(lex)
-	if len(logger.Errors) > 0 {
+	if logger.ErrorCount() > 0 {
 		return prog
 	}
 

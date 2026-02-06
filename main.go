@@ -156,7 +156,7 @@ func main() {
 		// eval.CheckSymbols(env)
 		// 循環参照のエラーチェックは実施
 		eval.CheckCyclicError(env)
-		if len(logger.Errors) > 0 {
+		if logger.ErrorCount() > 0 {
 			fmt.Println("*** abort")
 			logger.Print()
 			os.Exit(1)
@@ -167,8 +167,8 @@ func main() {
 		}
 	}
 	eval.CheckSymbolError(env)
-	fmt.Printf("eval %d times, %d errors, eval.Resolved = %v\n", pass, len(logger.Errors), eval.Resolved)
-	if len(logger.Errors) > 0 || !eval.Resolved {
+	fmt.Printf("eval %d times, %d errors, eval.Resolved = %v\n", pass, logger.ErrorCount(), eval.Resolved)
+	if logger.ErrorCount() > 0 || !eval.Resolved {
 		fmt.Print("\n** error or  not resolved")
 		logger.Print()
 		os.Exit(1)
@@ -186,7 +186,7 @@ func main() {
 		pass++
 		env.Set("$PASS", &object.NumberObject{Value: pass})
 		obj = eval.EvalProgram(prog, pass, env)
-		if len(logger.Errors) > 0 {
+		if logger.ErrorCount() > 0 {
 			break
 		}
 		newCode := evaluator.CollectCode(obj.(*object.BlockObject).Block)
@@ -197,7 +197,7 @@ func main() {
 	}
 
 	fmt.Printf("eval %d times, codeStable %v\n", pass, eval.CodeStable)
-	if len(logger.Errors) > 0 {
+	if logger.ErrorCount() > 0 {
 		logger.Print()
 		fmt.Println(prog.String())
 		object.PrintEnv(env)
