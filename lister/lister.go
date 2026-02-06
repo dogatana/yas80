@@ -12,6 +12,28 @@ import (
 	"yas80/parser"
 )
 
+// レイアウト  36
+// [ 6] 行番号
+// [ 2]
+// [ 4] アドレス
+// [ 2]
+// [16] 8バイトデデータ
+// [ 2]
+// [ 2] サイクル
+// [ 1]
+// [ 1] 展開マーク(+)
+
+// レイアウト 40
+// [ 5] 行番号
+// [ 2]
+// [ 4] アドレス
+// [ 1]
+// [23] 8バイトデデータ
+// [ 1]
+// [ 2] サイクル
+// [ 1]
+// [ 1] 展開マーク(+)
+
 type Lister struct {
 	pnodes *parser.BlockStatement
 	pobj   *object.BlockObject
@@ -52,28 +74,35 @@ func (l *Lister) ProgramList(out io.Writer) {
 			fc = ctx.FileContent
 		}
 
-		// CodeObject の行までソース行を進める
+		// CodeObject の行までソース行のみリスト出力
 		for lnum < ctx.Line {
 			sline, err = fc.GetLine(lnum)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			fmt.Printf("%6d  %30s\t%s\n", lnum, "", sline)
+			fmt.Printf("%5d %30s%s\n", lnum, "", sline)
 			lnum++
 		}
 
+		// ソース行取得
 		sline, err = fc.GetLine(lnum)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
+		// リスト出力
 		lines := l.codeToLines(co)
 		fmt.Println(lines[0] + sline)
 		for _, line := range lines[1:] {
 			fmt.Println(line)
 		}
+		lnum++
+	}
+	for lnum <= fc.LineCount() {
+		sline, _ = fc.GetLine(lnum)
+		fmt.Printf("%5d %30s%s\n", lnum, "", sline)
 		lnum++
 	}
 	w.Flush()
@@ -89,16 +118,16 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 		var j int
 		var buf bytes.Buffer
 		for j = 0; j < 8 && i+j < size; j++ {
-			buf.WriteString(fmt.Sprintf("%02x", co.Code[i+j]))
+			buf.WriteString(fmt.Sprintf("%02x ", co.Code[i+j]))
 		}
 		for j < 8 {
-			buf.WriteString("  ")
+			buf.WriteString("   ")
 			j++
 		}
 		if i == 0 {
-			lines = append(lines, fmt.Sprintf("%6d  %04x  %-16s  [%2d]\t", co.Context.Line, addr, buf.String(), co.CZ80))
+			lines = append(lines, fmt.Sprintf("%5d  %04x %s %2d  ", co.Context.Line, addr, buf.String(), co.CZ80))
 		} else {
-			lines = append(lines, fmt.Sprintf("        %04x  %-16s  [%2d]\t", addr, buf.String(), co.CZ80))
+			lines = append(lines, fmt.Sprintf("       %04x %s %2d  ", addr, buf.String(), co.CZ80))
 		}
 		addr += 8
 	}

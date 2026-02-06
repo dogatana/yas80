@@ -41,6 +41,8 @@ func (fc *FileContent) GetLine(line int) (string, error) {
 	return fc.lines[line-1], nil
 }
 
+func (fc *FileContent) LineCount() int { return len(fc.lines) }
+
 func NewFromString(filename string, content string) (*FileContent, error) {
 	return &FileContent{Filename: filename, Content: []byte(content)}, nil
 }
