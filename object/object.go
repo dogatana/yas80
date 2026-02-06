@@ -389,3 +389,18 @@ func (o *ArrayObject) String() string {
 
 	return out.String()
 }
+
+// prog(*object.BlockObject) を単一階層の slice に変換
+func FlattenObject(obj Object) []Object {
+	objs := []Object{}
+
+	switch obj := obj.(type) {
+	case *BlockObject:
+		for _, o := range obj.Block {
+			objs = append(objs, FlattenObject(o)...)
+		}
+	default:
+		objs = append(objs, obj)
+	}
+	return objs
+}

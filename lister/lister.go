@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"yas80/filecontent"
-	"yas80/internal/util"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -44,7 +43,7 @@ func New(pnode *parser.BlockStatement, pobj *object.BlockObject) *Lister {
 }
 
 func (l *Lister) ProgramList(out io.Writer) {
-	objs := util.FlattenObject(l.pobj)
+	objs := object.FlattenObject(l.pobj)
 
 	var (
 		fc    *filecontent.FileContent

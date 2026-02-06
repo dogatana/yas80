@@ -5,7 +5,6 @@ import (
 	"io"
 	"slices"
 	"yas80/errcode"
-	"yas80/internal/util"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -175,7 +174,7 @@ func (b *BinWriter) mergeREL(segs []*Segment) []*Segment {
 
 // OrgObject, CodeObject から Segment を作成
 func (b *BinWriter) collectSegemnts() []*Segment {
-	objs := util.FlattenObject(b.prog)
+	objs := object.FlattenObject(b.prog)
 	inseg := false // Segment 処理中
 	segs := []*Segment{}
 
