@@ -34,16 +34,23 @@ import (
 // [ 1] 展開マーク(+)
 
 type Lister struct {
-	pnodes *parser.BlockStatement
-	pobj   *object.BlockObject
+	nodes   *parser.BlockStatement
+	objects []object.Object
+	fcMap   map[string]*filecontent.FileContent
 }
 
 func New(pnode *parser.BlockStatement, pobj *object.BlockObject) *Lister {
-	return &Lister{pnodes: pnode, pobj: pobj}
+	l := &Lister{nodes: pnode}
+	l.objects = object.FlattenObject(pobj)
+	l.collectFileContent()
+	if len(l.fcMap) == 0 {
+		fmt.Printf("len(fcMap) %d\n", len(l.fcMap))
+		os.Exit(1)
+	}
+	return l
 }
 
 func (l *Lister) ProgramList(out io.Writer) {
-	objs := object.FlattenObject(l.pobj)
 
 	var (
 		fc    *filecontent.FileContent
@@ -54,13 +61,19 @@ func (l *Lister) ProgramList(out io.Writer) {
 
 	w := bufio.NewWriter(out)
 
-	for _, obj := range objs {
+	for _, obj := range l.objects {
 		if obj.Type() == object.OBJ_FILE {
 			file := obj.(*object.FileObject).Filename
 			// (1)ファイル名出力
 			fmt.Fprintf(w, "%s:\n", file)
+			var ok bool
+			fc, ok = l.fcMap[file]
+			if !ok {
+				panic(fmt.Sprintf("filecontent not found for %s", file))
+			}
 			continue
 		}
+		fmt.Printf("fc %#v\n", fc)
 
 		var co *object.CodeObject
 		co, ok := obj.(*object.CodeObject)
@@ -108,6 +121,7 @@ func (l *Lister) ProgramList(out io.Writer) {
 	w.Flush()
 }
 
+// CodeObject を []string へ変換
 func (l *Lister) codeToLines(co *object.CodeObject) []string {
 	lines := []string{}
 
@@ -132,6 +146,16 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 		addr += 8
 	}
 	return lines
+}
+
+// objects 内の CodeObject から FileContent を抽出
+func (l *Lister) collectFileContent() {
+	l.fcMap = map[string]*filecontent.FileContent{}
+	for _, o := range l.objects {
+		if co, ok := o.(*object.CodeObject); ok {
+			l.fcMap[co.Context.FileContent.Filename] = co.Context.FileContent
+		}
+	}
 }
 
 func printStatement(w io.Writer, stmt parser.Statement) {

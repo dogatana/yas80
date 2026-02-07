@@ -13,6 +13,8 @@ func TestLister(t *testing.T) {
 		expected string
 	}{
 		{input: "zilog.asm", expected: "zilog.txt"},
+		{input: "ds32.asm", expected: "ds32.txt"},
+		// {input: "inc.asm", expected: "ds32.txt"},
 	}
 
 	for tn, tt := range tests {
