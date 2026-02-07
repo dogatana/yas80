@@ -14,10 +14,13 @@ import (
 )
 
 func evalFile(filename string, logger *logging.Logger, env object.Environment) []byte {
-	prog := parseFileForTest(filename, logger)
+	prog, lexer := parseFileForTest(filename, logger)
 	obj, _ := evalProg(prog, logger, env)
 
-	lister := New(prog, obj)
+	for k := range lexer.FcMap {
+		fmt.Printf("file: %s\n", k)
+	}
+	lister := New(prog, obj, lexer.FcMap)
 
 	var buf bytes.Buffer
 	lister.ProgramList(&buf)
@@ -81,7 +84,7 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env object.En
 	}
 }
 
-func parseFileForTest(filename string, logger *logging.Logger) *parser.BlockStatement {
+func parseFileForTest(filename string, logger *logging.Logger) (*parser.BlockStatement, *parser.Lexer) {
 	var prog *parser.BlockStatement
 
 	fc, err := filecontent.NewFromFile(filename)
@@ -89,18 +92,18 @@ func parseFileForTest(filename string, logger *logging.Logger) *parser.BlockStat
 		fmt.Println("parseFileForTest", err.Error())
 	}
 
-	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
+	lexer := parser.NewLexer(logger, func() *filecontent.FileContent {
 		ret := fc
 		fc = nil
 		return ret
 	})
-	prog = parser.Parse(lex)
+	prog = parser.Parse(lexer)
 	if logger.ErrorCount() > 0 {
-		return prog
+		return prog, lexer
 	}
 
 	prog = parser.PreProrocess(logger, prog)
-	return prog
+	return prog, lexer
 }
 
 // リストファイル読み込み

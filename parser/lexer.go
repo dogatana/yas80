@@ -34,9 +34,11 @@ type Lexer struct {
 	lctx     *LexerContext
 
 	lexState    int
-	including   map[string]bool // 循環 include 検査用
 	fileContent *filecontent.FileContent
-	stack       stackType
+
+	stack     stackType                           // include ファイル処理用
+	including map[string]bool                     // 循環 include 検査用
+	FcMap     map[string]*filecontent.FileContent // lister 用
 }
 
 func NewLexer(logger *logging.Logger, callback func() *filecontent.FileContent) *Lexer {
@@ -45,6 +47,7 @@ func NewLexer(logger *logging.Logger, callback func() *filecontent.FileContent) 
 		callback:  callback,
 		program:   &BlockStatement{},
 		including: map[string]bool{},
+		FcMap:     map[string]*filecontent.FileContent{},
 	}
 	return l
 }
@@ -80,8 +83,14 @@ func (l *Lexer) Push(filename string, fc *filecontent.FileContent, ctx *filecont
 	l.including[abs] = true
 	l.stack.push(l.lctx)
 	l.fileContent = fc
+	l.registerFileContent()
 	l.lexState = 1
 	return nil
+}
+
+// Lister 用に include を含むアセンブルファイルを map へ登録
+func (l *Lexer) registerFileContent() {
+	l.FcMap[l.fileContent.Filename] = l.fileContent
 }
 
 // var fileContent *filecontent.FileContent
@@ -100,6 +109,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 				l.lexState = 9
 				break
 			}
+			l.registerFileContent()
 			l.lexState++
 
 		case 1:

@@ -14,7 +14,7 @@ func TestLister(t *testing.T) {
 	}{
 		{input: "zilog.asm", expected: "zilog.txt"},
 		{input: "ds32.asm", expected: "ds32.txt"},
-		// {input: "inc.asm", expected: "ds32.txt"},
+		{input: "inc.asm", expected: "ds32.txt"},
 	}
 
 	for tn, tt := range tests {
@@ -23,15 +23,22 @@ func TestLister(t *testing.T) {
 
 		path := filepath.FromSlash("testdata/" + tt.input)
 		list := evalFile(path, logger, env)
+		if ec := logger.ErrorCount(); ec != 0 {
+			t.Errorf("[%d] %d errors ", tn, ec)
+			continue
+		}
 		if len(list) == 0 {
+			logger.Print()
 			t.Errorf("[%d] no list", tn)
 			continue
 		}
 		expected, err := readListFile("testdata/" + tt.expected)
 		if err != nil {
+			logger.Print()
 			t.Errorf("[%d] readListFile error %s", tn, err.Error())
 		}
 		if err := linesEqual(list, expected); err != nil {
+			logger.Print()
 			t.Errorf("[%d] %s", tn, err.Error())
 		}
 

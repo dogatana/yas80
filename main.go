@@ -230,7 +230,10 @@ func main() {
 	}
 
 	fmt.Println("-- list")
-	lister := lister.New(prog, obj.(*object.BlockObject))
+	for f := range l.FcMap {
+		fmt.Printf("file %s\n", f)
+	}
+	lister := lister.New(prog, obj.(*object.BlockObject), l.FcMap)
 	lister.ProgramList(os.Stdout)
 }
 

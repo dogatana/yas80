@@ -39,14 +39,9 @@ type Lister struct {
 	fcMap   map[string]*filecontent.FileContent
 }
 
-func New(pnode *parser.BlockStatement, pobj *object.BlockObject) *Lister {
-	l := &Lister{nodes: pnode}
+func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent) *Lister {
+	l := &Lister{nodes: pnode, fcMap: fcmap}
 	l.objects = object.FlattenObject(pobj)
-	l.collectFileContent()
-	if len(l.fcMap) == 0 {
-		fmt.Printf("len(fcMap) %d\n", len(l.fcMap))
-		os.Exit(1)
-	}
 	return l
 }
 
@@ -71,9 +66,12 @@ func (l *Lister) ProgramList(out io.Writer) {
 			if !ok {
 				panic(fmt.Sprintf("filecontent not found for %s", file))
 			}
+			if fc.Filename != file {
+				panic(fmt.Sprintf("FILE %s, fc.Filename %s", file, fc.Filename))
+			}
 			continue
 		}
-		fmt.Printf("fc %#v\n", fc)
+		// fmt.Printf("fc %#v\n", fc)
 
 		var co *object.CodeObject
 		co, ok := obj.(*object.CodeObject)
@@ -113,6 +111,11 @@ func (l *Lister) ProgramList(out io.Writer) {
 		lnum++
 	}
 
+	if fc == nil {
+		fmt.Println("f nil")
+		w.Flush()
+		return
+	}
 	for lnum <= fc.LineCount() {
 		sline, _ = fc.GetLine(lnum)
 		fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", sline)
@@ -146,16 +149,6 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 		addr += 8
 	}
 	return lines
-}
-
-// objects 内の CodeObject から FileContent を抽出
-func (l *Lister) collectFileContent() {
-	l.fcMap = map[string]*filecontent.FileContent{}
-	for _, o := range l.objects {
-		if co, ok := o.(*object.CodeObject); ok {
-			l.fcMap[co.Context.FileContent.Filename] = co.Context.FileContent
-		}
-	}
 }
 
 func printStatement(w io.Writer, stmt parser.Statement) {
