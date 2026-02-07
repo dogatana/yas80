@@ -3,24 +3,30 @@ package lister
 import (
 	"bytes"
 	"fmt"
-	"testing"
-	"yas80/binwriter"
+	"os"
+	"strings"
 	"yas80/evaluator"
 	"yas80/filecontent"
-	"yas80/internal/testutil"
+	"yas80/internal/util"
 	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
 )
 
-func evalFile(filename string, logger *logging.Logger, env object.Environment) ([]byte, bool) {
+func evalFile(filename string, logger *logging.Logger, env object.Environment) []byte {
 	prog := parseFileForTest(filename, logger)
 	obj, _ := evalProg(prog, logger, env)
 
-	bw := binwriter.New(obj, 0, logger)
+	lister := New(prog, obj)
+
 	var buf bytes.Buffer
-	ok := bw.Write(&buf)
-	return buf.Bytes(), ok
+	lister.ProgramList(&buf)
+	return buf.Bytes()
+
+	// bw := binwriter.New(obj, 0, logger)
+	// var buf bytes.Buffer
+	// ok := bw.Write(&buf)
+	// return buf.Bytes(), ok
 }
 
 func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env object.Environment) (*object.BlockObject, *evaluator.Evaluator) {
@@ -81,7 +87,6 @@ func parseFileForTest(filename string, logger *logging.Logger) *parser.BlockStat
 	fc, err := filecontent.NewFromFile(filename)
 	if err != nil {
 		fmt.Println("parseFileForTest", err.Error())
-
 	}
 
 	lex := parser.NewLexer(logger, func() *filecontent.FileContent {
@@ -98,12 +103,39 @@ func parseFileForTest(filename string, logger *logging.Logger) *parser.BlockStat
 	return prog
 }
 
-func testCodeResult(t *testing.T, tn int, expected []byte, prog *object.BlockObject) {
-	if len(expected) == 0 {
-		return
+// リストファイル読み込み
+func readListFile(filename string) ([]byte, error) {
+	data, err := os.ReadFile(filename)
+	return data, err
+}
+
+// []byte 内の CR/LF を LF に置換
+func replaceCRLF(in []byte) []byte {
+	return bytes.ReplaceAll(in, []byte{0x0d, 0x0a}, []byte{0xa})
+}
+
+func linesEqual(a, b []byte) error {
+	var err error
+	al := strings.Split(string(replaceCRLF(a)), "\n")
+	bl := strings.Split(string(replaceCRLF(b)), "\n")
+
+	// 文字列末尾の空白（タブ、スペース）を削除
+	trim := func(s string) string { return strings.TrimRight(s, "\t ") }
+	al = util.Map(al, trim)
+	bl = util.Map(al, trim)
+
+	if len(al) != len(bl) {
+		err = fmt.Errorf("line count %d %d", len(al), len(bl))
 	}
-	code := object.CollectCode(prog.Block)
-	if err := testutil.BytesEqual(code, expected); err != nil {
-		t.Errorf("[%d] generated code diff %s", tn, err.Error())
+	for i := range min(len(al), len(bl)) {
+		if al[i] != bl[i] {
+			fmt.Printf("a[%d] %s\n", i, al[i])
+			fmt.Printf("b[%d] %s\n", i, al[i])
+			err = fmt.Errorf("line %d\n%s\n%s", i, al[i], bl[i])
+		}
 	}
+	if err != nil {
+		os.WriteFile("out.txt", a, 0o644)
+	}
+	return err
 }

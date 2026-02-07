@@ -58,7 +58,7 @@ func (l *Lister) ProgramList(out io.Writer) {
 		if obj.Type() == object.OBJ_FILE {
 			file := obj.(*object.FileObject).Filename
 			// (1)ファイル名出力
-			fmt.Printf("%s:\n", file)
+			fmt.Fprintf(w, "%s:\n", file)
 			continue
 		}
 
@@ -80,7 +80,7 @@ func (l *Lister) ProgramList(out io.Writer) {
 				fmt.Println(err)
 				os.Exit(1)
 			}
-			fmt.Printf("%5d %30s%s\n", lnum, "", sline)
+			fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", sline)
 			lnum++
 		}
 
@@ -93,15 +93,16 @@ func (l *Lister) ProgramList(out io.Writer) {
 
 		// リスト出力
 		lines := l.codeToLines(co)
-		fmt.Println(lines[0] + sline)
+		fmt.Fprintln(w, lines[0]+sline)
 		for _, line := range lines[1:] {
-			fmt.Println(line)
+			fmt.Fprintln(w, line)
 		}
 		lnum++
 	}
+
 	for lnum <= fc.LineCount() {
 		sline, _ = fc.GetLine(lnum)
-		fmt.Printf("%5d %30s%s\n", lnum, "", sline)
+		fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", sline)
 		lnum++
 	}
 	w.Flush()

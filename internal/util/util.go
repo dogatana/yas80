@@ -32,6 +32,15 @@ func Count[T any](s []T, f func(T) bool) int {
 	return out
 }
 
+// Map
+func Map[T any](s []T, f func(T) T) []T {
+	out := make([]T, len(s))
+	for i, v := range s {
+		out[i] = f(v)
+	}
+	return out
+}
+
 // utf-8 []byte を Shift-JIS []byte へ変換
 func ShiftJisToUtf8(input []byte) ([]byte, error) {
 	// Shift_JIS → UTF-8
