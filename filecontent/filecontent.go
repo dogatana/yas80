@@ -8,9 +8,7 @@ import (
 	"os"
 	"strings"
 	"unicode/utf8"
-
-	"golang.org/x/text/encoding/japanese"
-	"golang.org/x/text/transform"
+	"yas80/internal/util"
 )
 
 type FileContent struct {
@@ -69,7 +67,7 @@ func NewFromFile(filename string) (*FileContent, error) {
 
 	if !utf8.Valid(data) {
 		// cp932 と仮定し utf8 へ変換
-		if data, err = shiftJisToUtf8(data); err != nil {
+		if data, err = util.ShiftJisToUtf8(data); err != nil {
 			return nil, err
 		}
 	}
@@ -93,18 +91,4 @@ func checkFile(filename string) error {
 		return fmt.Errorf("not a file: %s", filename)
 	}
 	return nil
-}
-
-func shiftJisToUtf8(input []byte) ([]byte, error) {
-	// Shift_JIS → UTF-8
-	reader := transform.NewReader(bytes.NewReader(input), japanese.ShiftJIS.NewDecoder())
-	data, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, err
-	}
-	// u+fffd があれば正しく変換できていない
-	if strings.ContainsRune(string(data), '\ufffd') {
-		return nil, fmt.Errorf("unknown encoding")
-	}
-	return data, err
 }

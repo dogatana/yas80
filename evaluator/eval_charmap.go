@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"yas80/errcode"
+	"yas80/internal/util"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -198,7 +199,7 @@ func (e *Evaluator) applyCharmap(cmap *object.CharamapObject, expr *parser.FuncC
 		case defChar >= 0:
 			bstr = append(bstr, defCode...)
 		case defChar == -2:
-			if s, err := e.utf8ToShiftJis(string(c)); err == nil {
+			if s, err := util.Utf8ToShiftJis(string(c)); err == nil {
 				bstr = append(bstr, s...)
 			} else {
 				e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, string(c)), ctx)

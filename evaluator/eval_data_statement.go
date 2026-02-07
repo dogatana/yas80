@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"yas80/errcode"
 	"yas80/filecontent"
+	"yas80/internal/util"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -205,7 +206,7 @@ func (e *Evaluator) stringToCode(obj *object.StringObject, size int, ctx TContex
 	}
 
 	// utf8 -> sjis
-	s, err := e.utf8ToShiftJis(obj.Value)
+	s, err := util.Utf8ToShiftJis(obj.Value)
 	if err != nil {
 		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, obj.Value), ctx)
 		return nil

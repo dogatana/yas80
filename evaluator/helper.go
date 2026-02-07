@@ -2,14 +2,11 @@ package evaluator
 
 import (
 	"fmt"
-	"io"
 	"strings"
 	"yas80/errcode"
+	"yas80/internal/util"
 	"yas80/object"
 	"yas80/parser"
-
-	"golang.org/x/text/encoding/japanese"
-	"golang.org/x/text/transform"
 )
 
 // 各種 object 判定
@@ -200,16 +197,6 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 	}
 }
 
-// utf-8 string を Shift-JIS []byte へ変換
-func (e *Evaluator) utf8ToShiftJis(input string) ([]byte, error) {
-	reader := transform.NewReader(strings.NewReader(input), japanese.ShiftJIS.NewEncoder())
-	data, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, err
-	}
-	return data, err
-}
-
 // parser.Expression -> parser.Ident - >parser.Label を評価・環境登録し object.SymbolObject を返す
 func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) object.Object {
 	id, ok := expr.(*parser.Ident)
@@ -236,7 +223,7 @@ func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 
 // ld r, n / ld rr, nn の OP2 に指定された文字列を NumberObjectに変換する
 func (e *Evaluator) stringObjToOp2(so *object.StringObject, ctx TContext) object.Object {
-	str, err := e.utf8ToShiftJis(so.Value)
+	str, err := util.Utf8ToShiftJis(so.Value)
 	if err != nil {
 		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, so.Value), ctx)
 		return object.ERROR
