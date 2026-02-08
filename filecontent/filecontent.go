@@ -2,7 +2,6 @@ package filecontent
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -34,7 +33,7 @@ func (fc *FileContent) GetLine(line int) (string, error) {
 		// fc.Content = nil // ガベージに回す
 	}
 	if line < 1 || line > len(fc.lines) {
-		return "", errors.New("out of range")
+		return "", fmt.Errorf("out of range %d / %d", line, len(fc.lines))
 	}
 	return fc.lines[line-1], nil
 }

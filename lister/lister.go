@@ -34,14 +34,21 @@ import (
 // [ 1] 展開マーク(+)
 
 type Lister struct {
-	nodes   *parser.BlockStatement
-	objects []object.Object
-	fcMap   map[string]*filecontent.FileContent
+	nodes       *parser.BlockStatement
+	objects     []object.Object
+	fcMap       map[string]*filecontent.FileContent
+	fcProcessed map[string]int
 }
 
 func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent) *Lister {
 	l := &Lister{nodes: pnode, fcMap: fcmap}
 	l.objects = object.FlattenObject(pobj)
+
+	// fcProcessed の初期化
+	l.fcProcessed = map[string]int{}
+	for f := range l.fcMap {
+		l.fcProcessed[f] = 0
+	}
 	return l
 }
 
@@ -52,13 +59,18 @@ func (l *Lister) ProgramList(out io.Writer) {
 		sline string
 		err   error
 	)
-	lnum := 1
+
+	var lnum int // 行番号
 
 	w := bufio.NewWriter(out)
 
 	for _, obj := range l.objects {
 		if obj.Type() == object.OBJ_FILE {
 			file := obj.(*object.FileObject).Filename
+			if fc != nil && lnum < fc.LineCount() {
+				// リスト処理中なら処理済みの行番号を保存しておく
+				l.fcProcessed[fc.Filename] = lnum
+			}
 			// (1)ファイル名出力
 			fmt.Fprintf(w, "%s:\n", file)
 			var ok bool
@@ -69,6 +81,10 @@ func (l *Lister) ProgramList(out io.Writer) {
 			if fc.Filename != file {
 				panic(fmt.Sprintf("FILE %s, fc.Filename %s", file, fc.Filename))
 			}
+			lnum = l.fcProcessed[file] + 1
+			// if lnum > fc.LineCount() {
+			// lnum = 1
+			// }
 			continue
 		}
 		// fmt.Printf("fc %#v\n", fc)
