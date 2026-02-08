@@ -124,6 +124,8 @@ statement   : EOL { $$ = nil }
 						$$ = &ParseError{Message: fmt.Sprintf(errcode.EFILE_NOT_FOUND, inc.Filename), Context: inc.Context}
 					} else if err := yylex.Push(inc.Filename, fc, inc.Context); err != nil {
 						$$ = &ParseError{Message: err.Error(), Context: inc.Context}
+					} else {
+						$$ = $1
 					}
 				} else {
 					$$ = $1 

@@ -72,8 +72,8 @@ func (o *FileObject) String() string {
 
 // value - list ファイル出力用
 type CommentObject struct {
-	Comments []string
-	Context  *filecontent.Context
+	Text    string
+	Context *filecontent.Context
 }
 
 func (o *CommentObject) Type() ObjectType { return OBJ_COMMENT }
@@ -91,7 +91,7 @@ func (o *CommentObject) String() string {
 			out.WriteString(fmt.Sprintf("(%2d) ", o.Context.Source.Line))
 		}
 	}
-	out.WriteString(strings.Join(o.Comments, "\n"))
+	out.WriteString(o.Text)
 	return out.String()
 }
 

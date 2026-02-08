@@ -37,7 +37,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 
 	// INCLUDE
 	case *parser.IncludeStatement:
-		return object.NULL // TODO
+		return &object.CommentObject{Text: "", Context: stmt.Context}
 
 	// PROC
 	case *parser.ProcStatement:
@@ -131,7 +131,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 
 	// comment
 	case *parser.CommentStatement:
-		return &object.CommentObject{Comments: []string{stmt.Text}, Context: stmt.Context}
+		return &object.CommentObject{Text: stmt.Text, Context: stmt.Context}
 
 	// システム変数設定
 	case *parser.SetSysVarStatement:
@@ -149,7 +149,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 
 		env.Set(stmt.Name, v)
 		comment := fmt.Sprintf("%s = %s", stmt.Name, v.String())
-		return &object.CommentObject{Comments: []string{comment}, Context: stmt.Context}
+		return &object.CommentObject{Text: comment, Context: stmt.Context}
 
 	// enum
 	case *parser.EnumStatement:
