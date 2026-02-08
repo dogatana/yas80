@@ -28,17 +28,26 @@ func (fc *FileContent) String() string {
 
 // 指定行を取得
 func (fc *FileContent) GetLine(line int) (string, error) {
-	if fc.lines == nil {
-		fc.lines = strings.Split(string(fc.Content), "\n")
-		// fc.Content = nil // ガベージに回す
-	}
+	fc.setupLines()
+
 	if line < 1 || line > len(fc.lines) {
 		return "", fmt.Errorf("out of range %d / %d", line, len(fc.lines))
 	}
 	return fc.lines[line-1], nil
 }
 
-func (fc *FileContent) LineCount() int { return len(fc.lines) }
+// Content []byte から lines []string を生成
+func (fc *FileContent) setupLines() {
+	if fc.lines == nil {
+		fc.lines = strings.Split(string(fc.Content), "\n")
+		// fc.Content = nil // ガベージコレクタ処理用に回す
+	}
+}
+
+func (fc *FileContent) LineCount() int {
+	fc.setupLines()
+	return len(fc.lines)
+}
 
 func NewFromString(filename string, content string) (*FileContent, error) {
 	return &FileContent{Filename: filename, Content: []byte(content)}, nil
