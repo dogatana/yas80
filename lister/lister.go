@@ -43,11 +43,12 @@ type Lister struct {
 
 func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent) *Lister {
 	l := &Lister{nodes: pnode, fcMap: fcmap}
-	l.fMap = object.BuildGroupMap(object.FlattenObject(pobj))
+	l.objects = object.FlattenObject(pobj)
+	// l.fMap = object.BuildGroupMap(object.FlattenObject(pobj))
 
-	fmt.Println("-- FileMap start")
-	l.fMap.Print()
-	fmt.Println("-- FileMap end")
+	// fmt.Println("-- FileMap start")
+	// l.fMap.Print()
+	// fmt.Println("-- FileMap end")
 
 	// fcProcessed の初期化
 	l.fcProcessed = map[string]int{}

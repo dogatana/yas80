@@ -492,7 +492,6 @@ func BuildGroupMap(objects []Object) FileMap {
 				objs = append(objs, obj)
 				lm.Set(obj.Context.Offset, objs)
 			}
-
 		}
 	}
 	return fmap
