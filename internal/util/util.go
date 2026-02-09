@@ -41,6 +41,41 @@ func Map[T any](s []T, f func(T) T) []T {
 	return out
 }
 
+// Stack
+type Stack[T any] struct {
+	data []T
+}
+
+func NewStack[T any]() *Stack[T] {
+	return &Stack[T]{}
+}
+
+func (s *Stack[T]) Push(v T) {
+	s.data = append(s.data, v)
+}
+func (s *Stack[T]) Pop() (T, bool) {
+	if len(s.data) == 0 {
+		var zero T
+		return zero, false
+	}
+	v := s.data[len(s.data)-1]
+	s.data = s.data[:len(s.data)-1]
+	return v, true
+}
+func (s *Stack[T]) Len() int {
+	return len(s.data)
+}
+func (s *Stack[T]) Empty() bool {
+	return len(s.data) == 0
+}
+func (s *Stack[T]) Top() (T, bool) {
+	if len(s.data) == 0 {
+		var zero T
+		return zero, false
+	}
+	return s.data[len(s.data)-1], true
+}
+
 // utf-8 []byte を Shift-JIS []byte へ変換
 func ShiftJisToUtf8(input []byte) ([]byte, error) {
 	// Shift_JIS → UTF-8
