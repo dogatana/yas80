@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"yas80/filecontent"
+	"yas80/internal/util"
 	"yas80/parser"
 )
 
@@ -433,4 +434,66 @@ func CollectCode(objects []Object) []byte {
 		}
 	}
 	return result
+}
+
+// 同一ファイルの LineOffset map
+type FileMap map[string]*util.OrderedMap[int, *util.OrderedMap[int, []Object]]
+
+func (fm FileMap) Print() {
+	for name, lm := range fm {
+		for _, line := range lm.Keys() {
+			om, _ := lm.Get(line)
+			for _, ofs := range om.Keys() {
+				objs, _ := om.Get(ofs)
+				fmt.Printf("%s [%d,%d] %d objects\n", name, line, ofs, len(objs))
+				for _, o := range objs {
+					fmt.Println(o.String())
+				}
+			}
+		}
+	}
+}
+
+// ファイルを Grouup の map
+func BuildGroupMap(objects []Object) FileMap {
+	fmap := map[string]*util.OrderedMap[int, *util.OrderedMap[int, []Object]]{}
+
+	var name string
+	for _, obj := range objects {
+		switch obj := obj.(type) {
+		case *FileObject:
+			name = obj.Filename
+			if _, ok := fmap[name]; !ok {
+				fmap[name] = util.NewOrderedMap[int, *util.OrderedMap[int, []Object]]()
+			}
+		case *CodeObject:
+			fm, _ := fmap[name]
+			if _, ok := fm.Get(obj.Context.Line); !ok {
+				lm := util.NewOrderedMap[int, []Object]()
+				fm.Set(obj.Context.Line, lm)
+			}
+			lm, _ := fm.Get(obj.Context.Line)
+			if objs, ok := lm.Get(obj.Context.Offset); !ok {
+				lm.Set(obj.Context.Offset, []Object{obj})
+			} else {
+				objs = append(objs, obj)
+				lm.Set(obj.Context.Offset, objs)
+			}
+		case *CommentObject:
+			fm, _ := fmap[name]
+			if _, ok := fm.Get(obj.Context.Line); !ok {
+				lm := util.NewOrderedMap[int, []Object]()
+				fm.Set(obj.Context.Line, lm)
+			}
+			lm, _ := fm.Get(obj.Context.Line)
+			if objs, ok := lm.Get(obj.Context.Offset); !ok {
+				lm.Set(obj.Context.Offset, []Object{obj})
+			} else {
+				objs = append(objs, obj)
+				lm.Set(obj.Context.Offset, objs)
+			}
+
+		}
+	}
+	return fmap
 }

@@ -76,6 +76,29 @@ func (s *Stack[T]) Top() (T, bool) {
 	return s.data[len(s.data)-1], true
 }
 
+// Orderd Map
+type OrderedMap[K comparable, V any] struct {
+	keys []K
+	M    map[K]V
+}
+
+func NewOrderedMap[K comparable, V any]() *OrderedMap[K, V] {
+	return &OrderedMap[K, V]{M: make(map[K]V)}
+}
+
+func (o *OrderedMap[K, V]) Set(k K, v V) {
+	if _, exists := o.M[k]; !exists {
+		o.keys = append(o.keys, k)
+	}
+	o.M[k] = v
+}
+
+func (o *OrderedMap[K, V]) Keys() []K { return o.keys }
+func (o *OrderedMap[K, V]) Get(k K) (V, bool) {
+	v, ok := o.M[k]
+	return v, ok
+}
+
 // utf-8 []byte を Shift-JIS []byte へ変換
 func ShiftJisToUtf8(input []byte) ([]byte, error) {
 	// Shift_JIS → UTF-8

@@ -38,11 +38,16 @@ type Lister struct {
 	objects     []object.Object
 	fcMap       map[string]*filecontent.FileContent
 	fcProcessed map[string]int
+	fMap        object.FileMap
 }
 
 func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent) *Lister {
 	l := &Lister{nodes: pnode, fcMap: fcmap}
-	l.objects = object.FlattenObject(pobj)
+	l.fMap = object.BuildGroupMap(object.FlattenObject(pobj))
+
+	fmt.Println("-- FileMap start")
+	l.fMap.Print()
+	fmt.Println("-- FileMap end")
 
 	// fcProcessed の初期化
 	l.fcProcessed = map[string]int{}
@@ -50,6 +55,181 @@ func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[strin
 		l.fcProcessed[f] = 0
 	}
 	return l
+}
+
+func (l *Lister) List(out io.Writer) {
+	// l.objects を iterate する関数
+	objIter := func() func() object.Object {
+		index := 0
+		return func() object.Object {
+			if index < len(l.objects) {
+				v := l.objects[index]
+				index++
+				return v
+			} else {
+				return nil
+			}
+		}
+	}
+	iter := objIter()
+
+	var (
+		fc    *filecontent.FileContent
+		sline string
+		err   error
+	)
+
+	var lnum int // 行番号
+
+	w := bufio.NewWriter(out)
+
+	var obj object.Object
+
+	state := 0
+
+LOOP:
+	for {
+		switch state {
+		case 0: // FileObject 取得
+			for {
+				if obj = iter(); obj == nil {
+					state = 9
+				}
+				if o, ok := obj.(*object.FileObject); ok {
+					fc, _ = l.fcMap[o.Filename]
+					lnum = 1
+					state++
+					break
+				}
+			}
+		case 1: // Object.取得＆解析
+			if obj = iter(); obj == nil {
+				state = 9
+				break
+			}
+			switch obj := obj.(type) {
+			case *object.CodeObject:
+				// ctx.Line までソース表示
+				for lnum < obj.Context.Line {
+					sline, _ = fc.GetLine(lnum)
+					fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", sline)
+					lnum++
+				}
+				// ソース取得
+				sline, _ = fc.GetLine(lnum)
+				// code 行取得
+				lines := l.codeToLines(obj)
+				fmt.Fprintln(w, lines[0]+sline)
+				for _, line := range lines[1:] {
+					fmt.Fprintln(w, line)
+				}
+			case *object.CommentObject:
+				// ctx.Line までソース表示
+				for lnum < obj.Context.Line {
+					sline, _ = fc.GetLine(lnum)
+					fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", sline)
+					lnum++
+				}
+				// ソース取得
+				sline, _ = fc.GetLine(lnum)
+				fmt.Fprintf(w, "%5d %30s%s\n", lnum, obj.Text, sline)
+
+			case *object.FileObject:
+				if fc != nil && obj.Included {
+					// 処理中をファイルを push
+					fmt.Printf("push %s\n", fc.Filename)
+				}
+				fc, _ = l.fcMap[obj.Filename]
+				lnum = 1
+				state = 1
+			}
+
+		case 9: // ソースの残りを表示
+			for {
+				sline, err = fc.GetLine(lnum)
+				if err != nil {
+					break LOOP
+				}
+				fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", sline)
+				lnum++
+			}
+
+		}
+	}
+	for _, obj := range l.objects {
+		if obj.Type() == object.OBJ_FILE {
+			file := obj.(*object.FileObject).Filename
+			if fc != nil && lnum < fc.LineCount() {
+				// リスト処理中なら処理済みの行番号を保存しておく
+				l.fcProcessed[fc.Filename] = lnum
+			}
+			// (1)ファイル名出力
+			fmt.Fprintf(w, "%s:\n", file)
+			var ok bool
+			fc, ok = l.fcMap[file]
+			if !ok {
+				panic(fmt.Sprintf("filecontent not found for %s", file))
+			}
+			if fc.Filename != file {
+				panic(fmt.Sprintf("FILE %s, fc.Filename %s", file, fc.Filename))
+			}
+			lnum = l.fcProcessed[file] + 1
+			// if lnum > fc.LineCount() {
+			// lnum = 1
+			// }
+			continue
+		}
+		// fmt.Printf("fc %#v\n", fc)
+
+		var co *object.CodeObject
+		co, ok := obj.(*object.CodeObject)
+		if !ok || len(co.Code) == 0 {
+			continue
+		}
+		ctx := co.Context
+
+		if fc == nil {
+			fc = ctx.FileContent
+		}
+
+		// CodeObject の行までソース行のみリスト出力
+		for lnum < ctx.Line {
+			sline, err = fc.GetLine(lnum)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", sline)
+			lnum++
+		}
+
+		// ソース行取得
+		sline, err = fc.GetLine(lnum)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// リスト出力
+		lines := l.codeToLines(co)
+		fmt.Fprintln(w, lines[0]+sline)
+		for _, line := range lines[1:] {
+			fmt.Fprintln(w, line)
+		}
+		lnum++
+	}
+
+	if fc == nil {
+		fmt.Println("f nil")
+		w.Flush()
+		return
+	}
+	for lnum <= fc.LineCount() {
+		sline, _ = fc.GetLine(lnum)
+		fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", sline)
+		lnum++
+	}
+	w.Flush()
 }
 
 func (l *Lister) ProgramList(out io.Writer) {
