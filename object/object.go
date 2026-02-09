@@ -63,11 +63,16 @@ func (o *ValueObject) String() string {
 // file
 type FileObject struct {
 	Filename string
+	Included bool
 }
 
 func (o *FileObject) Type() ObjectType { return OBJ_FILE }
 func (o *FileObject) String() string {
-	return "FILE " + o.Filename
+	out := "FILE " + o.Filename
+	if o.Included {
+		out += "(included)"
+	}
+	return out
 }
 
 // value - list ファイル出力用
