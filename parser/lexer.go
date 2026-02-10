@@ -121,7 +121,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 				l.lctx = lctx
 
 				// return FILE
-				tok := Token{TokenType: FILE, Literal: lctx.filename}
+				tok := Token{TokenType: FILE, TokenSubType: TokenSubType(lctx.lineNumber), Literal: lctx.filename}
 				lval.token = tok
 
 				l.lexState++

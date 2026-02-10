@@ -98,7 +98,7 @@ program		: { }
 			;
 
 statement   : EOL { $$ = nil }
-			| FILE	{ $$ = &FileStatement{Filename: $1.Literal}}
+			| FILE	{ $$ = &FileStatement{Filename: $1.Literal, Line: int($1.TokenSubType)} }
 			| ident_expr ':'  EOL 
 			{
 				if $1.NodeType() == NODE_ERROR {

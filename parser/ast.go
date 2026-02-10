@@ -140,13 +140,14 @@ const (
 // file
 type FileStatement struct {
 	Filename string
+	Line     int
 }
 
 func (s *FileStatement) NodeType() NodeType                   { return NODE_FILE }
 func (s *FileStatement) GetContext() *filecontent.Context     { return nil }
 func (s *FileStatement) ReplaceContext(_ filecontent.Context) {}
 func (s *FileStatement) String() string {
-	return "FILE " + s.Filename
+	return fmt.Sprintf("FILE %q:%d", s.Filename, s.Line)
 }
 
 // include

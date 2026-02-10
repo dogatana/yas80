@@ -65,11 +65,12 @@ func (o *ValueObject) String() string {
 type FileObject struct {
 	Filename string
 	Included bool
+	Line     int
 }
 
 func (o *FileObject) Type() ObjectType { return OBJ_FILE }
 func (o *FileObject) String() string {
-	out := "FILE " + o.Filename
+	out := fmt.Sprintf("FILE %q:%d", o.Filename, o.Line)
 	if o.Included {
 		out += "(included)"
 	}

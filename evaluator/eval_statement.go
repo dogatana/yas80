@@ -128,7 +128,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 
 	// file
 	case *parser.FileStatement:
-		return &object.FileObject{Filename: stmt.Filename}
+		return &object.FileObject{Filename: stmt.Filename, Line: stmt.Line}
 
 	// comment
 	case *parser.CommentStatement:
