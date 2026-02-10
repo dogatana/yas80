@@ -203,7 +203,8 @@ func main() {
 		fmt.Printf("file %s\n", f)
 	}
 	lister := lister.New(prog, obj.(*object.BlockObject), l.FcMap)
-	lister.ProgramList(os.Stdout)
+	lister.List(os.Stdout)
+	// lister.ProgramList(os.Stdout)
 }
 
 func printObjects(objs []object.Object) {

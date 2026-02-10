@@ -436,19 +436,16 @@ func CollectCode(objects []Object) []byte {
 	return result
 }
 
-// 同一ファイルの LineOffset map
-type FileMap map[string]*util.OrderedMap[int, *util.OrderedMap[int, []Object]]
+// map[ファイル名][行番号] []Object
+type FileMap map[string]*util.OrderedMap[int, []Object]
 
 func (fm FileMap) Print() {
 	for name, lm := range fm {
 		for _, line := range lm.Keys() {
-			om, _ := lm.Get(line)
-			for _, ofs := range om.Keys() {
-				objs, _ := om.Get(ofs)
-				fmt.Printf("%s [%d,%d] %d objects\n", name, line, ofs, len(objs))
-				for _, o := range objs {
-					fmt.Println(o.String())
-				}
+			objs, _ := lm.Get(line)
+			fmt.Printf("%s [%d] %d objects\n", name, line, len(objs))
+			for _, o := range objs {
+				fmt.Println(o.String())
 			}
 		}
 	}
@@ -456,7 +453,7 @@ func (fm FileMap) Print() {
 
 // ファイルを Grouup の map
 func BuildGroupMap(objects []Object) FileMap {
-	fmap := map[string]*util.OrderedMap[int, *util.OrderedMap[int, []Object]]{}
+	fmap := map[string]*util.OrderedMap[int, []Object]{}
 
 	var name string
 	for _, obj := range objects {
@@ -464,35 +461,79 @@ func BuildGroupMap(objects []Object) FileMap {
 		case *FileObject:
 			name = obj.Filename
 			if _, ok := fmap[name]; !ok {
-				fmap[name] = util.NewOrderedMap[int, *util.OrderedMap[int, []Object]]()
+				fmap[name] = util.NewOrderedMap[int, []Object]()
 			}
 		case *CodeObject:
 			fm, _ := fmap[name]
-			if _, ok := fm.Get(obj.Context.Line); !ok {
-				lm := util.NewOrderedMap[int, []Object]()
-				fm.Set(obj.Context.Line, lm)
-			}
-			lm, _ := fm.Get(obj.Context.Line)
-			if objs, ok := lm.Get(obj.Context.Offset); !ok {
-				lm.Set(obj.Context.Offset, []Object{obj})
+			if objs, ok := fm.Get(obj.Context.Line); !ok {
+				fm.Set(obj.Context.Line, []Object{obj})
 			} else {
 				objs = append(objs, obj)
-				lm.Set(obj.Context.Offset, objs)
+				fm.Set(obj.Context.Line, []Object{obj})
 			}
 		case *CommentObject:
 			fm, _ := fmap[name]
-			if _, ok := fm.Get(obj.Context.Line); !ok {
-				lm := util.NewOrderedMap[int, []Object]()
-				fm.Set(obj.Context.Line, lm)
-			}
-			lm, _ := fm.Get(obj.Context.Line)
-			if objs, ok := lm.Get(obj.Context.Offset); !ok {
-				lm.Set(obj.Context.Offset, []Object{obj})
+			if objs, ok := fm.Get(obj.Context.Line); !ok {
+				fm.Set(obj.Context.Line, []Object{obj})
 			} else {
 				objs = append(objs, obj)
-				lm.Set(obj.Context.Offset, objs)
+				fm.Set(obj.Context.Line, []Object{obj})
 			}
 		}
 	}
 	return fmap
+}
+
+type FileBlock struct {
+	Filename    string
+	Line        int
+	LineObjects *util.OrderedMap[int, []Object]
+}
+
+func (fb *FileBlock) Print() {
+	fmt.Printf("%s: %d\n", fb.Filename, fb.Line)
+	for _, line := range fb.LineObjects.Keys() {
+		objs, _ := fb.LineObjects.Get(line)
+		fmt.Printf("%d: %d objects\n", line, len(objs))
+		for _, o := range objs {
+			fmt.Println(o.String())
+		}
+	}
+}
+
+// ファイルを Grouup の map
+func BuildFileBlock(objects []Object) []*FileBlock {
+	blocks := []*FileBlock{}
+
+	var fb *FileBlock
+	for _, obj := range objects {
+		switch obj := obj.(type) {
+		case *FileObject:
+			if fb != nil {
+				blocks = append(blocks, fb)
+			}
+			lo := util.NewOrderedMap[int, []Object]()
+			fb = &FileBlock{Filename: obj.Filename, Line: obj.Line, LineObjects: lo}
+
+		case *CodeObject:
+			line := obj.Context.Line
+			if objs, ok := fb.LineObjects.Get(line); !ok {
+				fb.LineObjects.Set(line, []Object{obj})
+			} else {
+				objs = append(objs, obj)
+				fb.LineObjects.Set(line, objs)
+			}
+
+		case *CommentObject:
+			line := obj.Context.Line
+			if objs, ok := fb.LineObjects.Get(line); !ok {
+				fb.LineObjects.Set(line, []Object{obj})
+			} else {
+				objs = append(objs, obj)
+				fb.LineObjects.Set(line, objs)
+			}
+		}
+	}
+	blocks = append(blocks, fb)
+	return blocks
 }
