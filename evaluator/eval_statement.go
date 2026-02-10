@@ -38,7 +38,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	// INCLUDE
 	case *parser.IncludeStatement:
 		// return &object.FileObject{Filename: stmt.Filename, Included: true}
-		return &object.CommentObject{Text: fmt.Sprintf("include %q", stmt.Filename)}
+		return &object.CommentObject{Text: fmt.Sprintf("include %q", stmt.Filename), Context: stmt.Context}
 
 	// PROC
 	case *parser.ProcStatement:
