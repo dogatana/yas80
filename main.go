@@ -60,61 +60,26 @@ func main() {
 		return nil
 	})
 
-	// lexer debug
-	if opt.Lexdebug {
-		for {
-			tok := l.NextToken()
-			fmt.Println(tok.String())
-			if tok.TokenType == 0 {
-				logger.Print()
-				os.Exit(0)
-			}
-		}
-	}
-
 	parser.SetYYDebug(opt.YYdebug)
 
 	// 構文解析開始
 	fmt.Println("# parse")
 	prog := parser.Parse(l)
 
-	// 構文解析直後の AST 表示
-	if opt.Astdebug > 0 {
-		logger.Print()
-		fmt.Println("--")
-		for i, s := range prog.Block {
-			fmt.Printf("%d: %#v\n", i, s)
-		}
-		fmt.Println("--")
-		fmt.Println(prog.String())
-		if opt.Astdebug == 1 {
-			os.Exit(0)
-		}
-	}
-
 	// プリプロセス
 	fmt.Println("# preprocess")
 	prog = parser.PreProrocess(logger, prog)
 
-	// プリプロセス直後の AST 表示
-	if opt.Astdebug > 1 {
-		fmt.Println("--")
-		for i, s := range prog.Block {
-			fmt.Printf("%d: %#v\n", i, s)
-		}
-		fmt.Println("--")
-		fmt.Println(prog.String())
-		os.Exit(0)
-	}
-
 	// AST 表示
 	fmt.Println("# ast")
-	if len(prog.Block) == 0 {
-		fmt.Print("no statements detected")
-	} else {
-		fmt.Println(prog.String())
+	if opt.Astdebug != 0 {
+		if len(prog.Block) == 0 {
+			fmt.Print("no statements detected")
+		} else {
+			fmt.Println(prog.String())
+		}
+		fmt.Println("")
 	}
-	fmt.Println("")
 
 	// env 作成
 	env := object.NewEnvironment(nil)
@@ -133,11 +98,13 @@ func main() {
 
 	for i := 0; i < 256; i++ {
 		pass++
-		fmt.Printf("# [#%d] EvalProgrram\n", i)
+		fmt.Printf("# [%d] EvalProgrram\n", i)
 		eval.Resolved = true
 		obj = eval.EvalProgram(prog, pass, env)
-		logger.Print()
-		object.PrintEnv(env)
+		if opt.Evaldebug > 0 {
+			logger.Print()
+			object.PrintEnv(env)
+		}
 
 		if obj == object.ERROR {
 			fmt.Printf("*** evaluate program returns ERROR")
@@ -150,7 +117,9 @@ func main() {
 			os.Exit(1)
 
 		}
-		showResult(i, prog, obj, env)
+		if opt.Evaldebug > 0 {
+			showResult(i, prog, obj, env)
+		}
 		// $ の評価ができないので、EvalEnvは実行しない
 		// eval.EvalEnv(env)
 		// eval.CheckSymbols(env)

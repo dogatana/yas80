@@ -3,7 +3,6 @@ package options
 import "flag"
 
 type Option struct {
-	Lexdebug  bool
 	Astdebug  int
 	YYdebug   int
 	Evaldebug int
@@ -17,7 +16,6 @@ func Parse() Option {
 	var opt Option
 
 	// debug flag
-	flag.BoolVar(&opt.Lexdebug, "lexdebug", false, "lexer debug(bool)")
 	flag.IntVar(&opt.YYdebug, "yydebug", 0, "YYDebug(int)")
 	flag.IntVar(&opt.Astdebug, "astdebug", 0, "parser debug(int)")
 	flag.IntVar(&opt.Evaldebug, "evaldebug", 0, "evaluator debug(int)")
