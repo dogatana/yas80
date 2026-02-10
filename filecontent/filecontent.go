@@ -86,6 +86,9 @@ func NewFromFile(filename string) (*FileContent, error) {
 	}
 	// CR/LF を LF へ
 	data = bytes.ReplaceAll(data, []byte{13, 10}, []byte{10})
+	if data[len(data)-1] != 10 {
+		data = append(data, 10)
+	}
 	return &FileContent{Filename: filename, Content: data}, nil
 }
 
