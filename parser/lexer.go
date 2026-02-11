@@ -79,7 +79,8 @@ func (l *Lexer) Push(filename string, fc *filecontent.FileContent, ctx *filecont
 
 // Lister 用に include を含むアセンブルファイルを map へ登録
 func (l *Lexer) registerFileContent() {
-	l.FcMap[l.fileContent.Filename] = l.fileContent
+	name := util.SlashPath(l.fileContent.Filename) // 登録キーは  / 区切りの path とする
+	l.FcMap[name] = l.fileContent
 }
 
 // var fileContent *filecontent.FileContent

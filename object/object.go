@@ -501,7 +501,7 @@ func (fb *FileBlock) Print() {
 	}
 }
 
-// ファイルを Grouup の map
+// 評価結果を FileBlock のスライスにして返す
 func BuildFileBlock(objects []Object) []*FileBlock {
 	blocks := []*FileBlock{}
 
@@ -513,7 +513,8 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 				blocks = append(blocks, fb)
 			}
 			lo := util.NewOrderedMap[int, []Object]()
-			fb = &FileBlock{Filename: obj.Filename, Line: obj.Line, LineObjects: lo}
+			name := util.SlashPath(obj.Filename) // path を / 区切りとする
+			fb = &FileBlock{Filename: name, Line: obj.Line, LineObjects: lo}
 
 		case *CodeObject:
 			line := obj.Context.Line

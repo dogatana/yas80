@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/text/encoding/japanese"
@@ -97,6 +98,12 @@ func (o *OrderedMap[K, V]) Keys() []K { return o.keys }
 func (o *OrderedMap[K, V]) Get(k K) (V, bool) {
 	v, ok := o.M[k]
 	return v, ok
+}
+
+// path 区切りを / にして返す
+func SlashPath(path string) string {
+	p := filepath.FromSlash(path)
+	return filepath.ToSlash((p))
 }
 
 // utf-8 []byte を Shift-JIS []byte へ変換
