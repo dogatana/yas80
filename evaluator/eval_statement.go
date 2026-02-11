@@ -457,23 +457,39 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env TEnv) ob
 		names := removeSelfName(v.Names, name)
 		sym := object.NewConstSymbol(name, node.Value, object.NULL, names, node.Context)
 		env.Set(name, sym)
-		return &object.ValueObject{Value: object.NULL, Context: node.Context}
+		return object.NULL
 
 	case *object.NumberObject:
 		// NumberObject の copy を値とする Symbol を作成し環境へ登録
 		val := *v // copy
 		sym := object.NewConstSymbol(name, node.Value, &val, []string{}, node.Context)
 		env.Set(name, sym)
-		return &object.ValueObject{Value: v, Context: node.Context}
+		text := fmt.Sprintf("%04x(%d)", v.Value, v.Value)
+		return &object.TextObject{Text: text, Context: node.Context}
 
 	case *object.StringObject:
 		// StringObject の copy を値とする Symbol を作成し環境へ登録
 		val := *v // copy
 		sym := object.NewConstSymbol(name, node.Value, &val, []string{}, node.Context)
 		env.Set(name, sym)
-		return &object.ValueObject{Value: v, Context: node.Context}
+		text := fmt.Sprintf("%q", v.Value)
+		return &object.TextObject{Text: text, Context: node.Context}
 
-	case *object.RegisterObject, *object.FlagObject, *object.FunctionObject, *object.ArrayObject:
+	case *object.RegisterObject:
+		// 値を SymbolObject として環境へ登録
+		sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
+		env.Set(name, sym)
+		text := parser.TokenLiteral(v.Register)
+		return &object.TextObject{Text: text, Context: node.Context}
+
+	case *object.FlagObject:
+		// 値を SymbolObject として環境へ登録
+		sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
+		env.Set(name, sym)
+		text := parser.TokenLiteral(v.Flag)
+		return &object.TextObject{Text: text, Context: node.Context}
+
+	case *object.FunctionObject, *object.ArrayObject:
 		// 値を SymbolObject として環境へ登録
 		sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
 		env.Set(name, sym)

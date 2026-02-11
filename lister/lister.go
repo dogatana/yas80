@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"yas80/filecontent"
+	"yas80/internal/util"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -41,7 +42,9 @@ import (
 // リスト出力の書式指定文字列
 const (
 	// 行
-	fmtSrcOnly = "%5d%41s%c %s\n" // 行番号、展開マーク、ソース行
+	fmtSrc = "%5d%41s%c %s\n" // 行番号、展開マーク、ソース行
+
+	fmtText = "%5d       %s   %c %s\n" // 行番号、TextObject.Text、展開マーク、ソース行
 
 	fmtCode1 = "%5d  %04x %-25s[%2s]     %c "   // 行番号、コード（コード出力の最初の行は行番号あり）
 	fmtCode2 = "       %04x %-25s[%2s]     %c " // 行番号なし、コード（コード出力2行目以降）
@@ -98,7 +101,7 @@ func (l *Lister) List(out io.Writer) {
 				if err != nil {
 					panic(fmt.Sprintf("GetLine(%d)", lnum))
 				}
-				fmt.Fprintf(w, fmtSrcOnly, lnum, "", ' ', src)
+				fmt.Fprintf(w, fmtSrc, lnum, "", ' ', src)
 				lnum++
 			}
 			src, err = fc.GetLine(lnum)
@@ -111,16 +114,26 @@ func (l *Lister) List(out io.Writer) {
 						text, _ = fc.GetLine(obj.Context.Line)
 					}
 					if obj.Context.Offset == 0 {
-						fmt.Fprintf(w, fmtSrcOnly, lnum, "", ' ', text)
+						fmt.Fprintf(w, fmtSrc, lnum, "", ' ', text)
 					} else {
-						fmt.Fprintf(w, fmtSrcOnly, lnum, "", '+', text)
+						fmt.Fprintf(w, fmtSrc, lnum, "", '+', text)
 					}
+
+				case *object.TextObject:
+					text := util.TruncateWithEllipsis(obj.Text, 31)
+					if obj.Context.Offset == 0 {
+						fmt.Fprintf(w, fmtText, lnum, text, ' ', src)
+					} else {
+						fmt.Fprintf(w, fmtText, lnum, text, '+', src)
+					}
+
 				case *object.CodeObject:
 					lines := l.codeToLines(obj)
 					fmt.Fprintln(w, lines[0]+src)
 					for _, line := range lines[1:] {
 						fmt.Fprintln(w, line)
 					}
+
 				}
 			}
 			lnum++

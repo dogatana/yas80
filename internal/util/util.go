@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/mattn/go-runewidth"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"
 )
@@ -129,4 +130,39 @@ func Utf8ToShiftJis(input string) ([]byte, error) {
 		return nil, err
 	}
 	return out, err
+}
+
+// TextObject を表示幅（34）に合わせて切り詰める
+func TruncateWithEllipsis(s string, width int) string {
+	rw := runewidth.StringWidth(s)
+	if rw <= width {
+		return s + strings.Repeat(" ", width-rw)
+	}
+
+	// 省略記号 "..." の幅は 3
+	limit := width - 3
+	if limit <= 0 {
+		// 幅が小さすぎる場合は "..." のみ返す
+		return "..."
+	}
+
+	out := ""
+	w := 0
+
+LOOP:
+	for _, r := range s {
+		rw := runewidth.RuneWidth(r)
+		switch {
+		case w+rw > limit:
+			out += "... "
+			break LOOP
+		case w+rw == limit:
+			out += string(r) + "..."
+			break LOOP
+		default:
+			out += string(r)
+			w += rw
+		}
+	}
+	return out
 }

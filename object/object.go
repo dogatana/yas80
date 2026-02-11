@@ -32,7 +32,8 @@ const (
 	OBJ_SYMBOL
 	OBJ_EXITM
 	OBJ_VALUE
-	OBJ_FILE
+	OBJ_TEXT // OBJ_VALUE を代替する Lister 用 Object
+	OBJ_FILE // 入力ファイル（include含む）変更通知用 Object
 	OBJ_COMMENT
 	OBJ_ARRAY
 )
@@ -59,6 +60,17 @@ type ValueObject struct {
 func (o *ValueObject) Type() ObjectType { return OBJ_VALUE }
 func (o *ValueObject) String() string {
 	return fmt.Sprintf("VALUE(%s)", o.Value.String())
+}
+
+// text - list ファイル出力用
+type TextObject struct {
+	Text    string
+	Context *filecontent.Context
+}
+
+func (o *TextObject) Type() ObjectType { return OBJ_TEXT }
+func (o *TextObject) String() string {
+	return fmt.Sprintf("TEXT %s", o.Text)
 }
 
 // file
@@ -521,6 +533,15 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 			}
 
 		case *CommentObject:
+			line := obj.Context.Line
+			if objs, ok := fb.LineObjects.Get(line); !ok {
+				fb.LineObjects.Set(line, []Object{obj})
+			} else {
+				objs = append(objs, obj)
+				fb.LineObjects.Set(line, objs)
+			}
+
+		case *TextObject:
 			line := obj.Context.Line
 			if objs, ok := fb.LineObjects.Get(line); !ok {
 				fb.LineObjects.Set(line, []Object{obj})

@@ -29,7 +29,8 @@ SRC = main.go \
 	filecontent/filecontent.go filecontent/context.go \
 	lister/lister.go \
 	binwriter/binwriter.go \
-	options/options.go 
+	options/options.go \
+	internal/util/util.go
 
 
 
