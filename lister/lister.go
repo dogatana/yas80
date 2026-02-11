@@ -40,9 +40,11 @@ import (
 
 // リスト出力の書式指定文字列
 const (
-	fmtSrcOnly = "%5d%43s%s"                      // 行番号、ソース行
-	fmtCode1   = "%5d  %04x %-25s[%2s]     %c "   // 行番号、コード（コード出力の最初の行は行番号あり）
-	fmtCode2   = "       %04x %-25s[%2s]     %c " // 行番号なし、コード（コード出力2行目以降）
+	// 行
+	fmtSrcOnly = "%5d%41s%c %s\n" // 行番号、展開マーク、ソース行
+
+	fmtCode1 = "%5d  %04x %-25s[%2s]     %c "   // 行番号、コード（コード出力の最初の行は行番号あり）
+	fmtCode2 = "       %04x %-25s[%2s]     %c " // 行番号なし、コード（コード出力2行目以降）
 )
 
 type Lister struct {
@@ -65,11 +67,11 @@ func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[strin
 
 	// []*FileBlock の収集
 	fblocks := object.BuildFileBlock(l.objects)
-	// fmt.Println("-- FileBlocks start")
-	// for _, fb := range fblocks {
-	// 	fb.Print()
-	// }
-	// fmt.Println("-- FileBlocks end")
+	fmt.Println("-- FileBlocks start")
+	for _, fb := range fblocks {
+		fb.Print()
+	}
+	fmt.Println("-- FileBlocks end")
 	l.fblocks = fblocks
 
 	return l
@@ -78,11 +80,14 @@ func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[strin
 func (l *Lister) List(out io.Writer) {
 	w := bufio.NewWriter(out)
 
+	var lnum int // ソース行番号
+	var fc *filecontent.FileContent
+
 	for _, fb := range l.fblocks {
 		// (1)ファイル名出力
 		fmt.Fprintf(w, "%s:\n", fb.Filename)
-		lnum := fb.Line
-		fc := l.fcMap[fb.Filename]
+		lnum = fb.Line
+		fc = l.fcMap[fb.Filename]
 		var src string
 		var err error
 
@@ -93,7 +98,7 @@ func (l *Lister) List(out io.Writer) {
 				if err != nil {
 					panic(fmt.Sprintf("GetLine(%d)", lnum))
 				}
-				fmt.Fprintf(w, fmtSrcOnly, lnum, "", src+"\n")
+				fmt.Fprintf(w, fmtSrcOnly, lnum, "", ' ', src)
 				lnum++
 			}
 			src, err = fc.GetLine(lnum)
@@ -101,8 +106,11 @@ func (l *Lister) List(out io.Writer) {
 			for _, obj := range objs {
 				switch obj := obj.(type) {
 				case *object.CommentObject:
-					fmt.Fprintf(w, "%5d %35s%s\n", lnum, "", src)
-					// fmt.Fprintf(w, "%5d %30s%s\n", lnum, obj.Text, src)
+					if obj.Context.Offset == 0 {
+						fmt.Fprintf(w, fmtSrcOnly, lnum, "", ' ', obj.Text)
+					} else {
+						fmt.Fprintf(w, fmtSrcOnly, lnum, "", '+', obj.Text)
+					}
 				case *object.CodeObject:
 					lines := l.codeToLines(obj)
 					fmt.Fprintln(w, lines[0]+src)
@@ -113,16 +121,15 @@ func (l *Lister) List(out io.Writer) {
 			}
 			lnum++
 		}
-		// ソースの残りを表示 TODO:コード生成ないので不要か？
-		for lnum <= fc.LineCount() {
-			src, err := fc.GetLine(lnum)
-			if err != nil {
-				panic(fmt.Sprintf("GetLine(%d/%d)", lnum, fc.LineCount()))
-			}
-			fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", src)
-			lnum++
-
+	}
+	// ソースの残りを表示 TODO:コード生成ないので不要か？
+	for lnum <= fc.LineCount() {
+		src, err := fc.GetLine(lnum)
+		if err != nil {
+			panic(fmt.Sprintf("GetLine(%d/%d)", lnum, fc.LineCount()))
 		}
+		fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", src)
+		lnum++
 	}
 	w.Flush()
 }
