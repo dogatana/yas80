@@ -108,7 +108,6 @@ func (l *Lexer) Lex(lval *yySymType) int {
 
 			l.lctx = lctx
 			l.isEOF = false
-			l.nextChar()
 
 			l.lexState++
 
@@ -124,6 +123,10 @@ func (l *Lexer) Lex(lval *yySymType) int {
 				tok := Token{TokenType: FILE, TokenSubType: TokenSubType(lctx.lineNumber), Literal: lctx.filename}
 				lval.token = tok
 
+				// lctx がファイル先頭なら 1文字進める
+				if l.lctx.index == 0 {
+					l.nextChar()
+				}
 				l.lexState++
 				return int(tok.TokenType)
 			}
