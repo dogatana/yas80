@@ -23,7 +23,7 @@ func evalFile(filename string, logger *logging.Logger, env object.Environment) [
 	lister := New(prog, obj, lexer.FcMap)
 
 	var buf bytes.Buffer
-	lister.ProgramList(&buf)
+	lister.List(&buf)
 	return buf.Bytes()
 
 	// bw := binwriter.New(obj, 0, logger)

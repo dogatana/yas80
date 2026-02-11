@@ -204,7 +204,6 @@ func main() {
 	}
 	lister := lister.New(prog, obj.(*object.BlockObject), l.FcMap)
 	lister.List(os.Stdout)
-	// lister.ProgramList(os.Stdout)
 }
 
 func printObjects(objs []object.Object) {
