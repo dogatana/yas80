@@ -32,6 +32,19 @@ import (
 // [ 1]
 // [ 1] 展開マーク(+)
 
+// [5:行番号][2][4:addr][1][23:code][2][4:CZ80][2][3][1:+][1][srouce]  full
+// [5:行番号][30                   ][11             ][1:+][1][source]  code1
+// [5       ][30                   ][11             ][1:+][1][source]  code2
+// [5:行番号][41                                    ][1:+][1][source]  value
+// [5:行番号][41                                    ][1:+][1][comment]
+
+// リスト出力の書式指定文字列
+const (
+	fmtSrcOnly = "%5d%43s%s"                      // 行番号、ソース行
+	fmtCode1   = "%5d  %04x %-25s[%2s]     %c "   // 行番号、コード（コード出力の最初の行は行番号あり）
+	fmtCode2   = "       %04x %-25s[%2s]     %c " // 行番号なし、コード（コード出力2行目以降）
+)
+
 type Lister struct {
 	nodes   *parser.BlockStatement
 	objects []object.Object
@@ -51,12 +64,12 @@ func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[strin
 	// fmt.Println("-- FileMap end")
 
 	// []*FileBlock の収集
-	fmt.Println("-- FileBlocks start")
 	fblocks := object.BuildFileBlock(l.objects)
-	for _, fb := range fblocks {
-		fb.Print()
-	}
-	fmt.Println("-- FileBlocks end")
+	// fmt.Println("-- FileBlocks start")
+	// for _, fb := range fblocks {
+	// 	fb.Print()
+	// }
+	// fmt.Println("-- FileBlocks end")
 	l.fblocks = fblocks
 
 	return l
@@ -80,7 +93,7 @@ func (l *Lister) List(out io.Writer) {
 				if err != nil {
 					panic(fmt.Sprintf("GetLine(%d)", lnum))
 				}
-				fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", src)
+				fmt.Fprintf(w, fmtSrcOnly, lnum, "", src+"\n")
 				lnum++
 			}
 			src, err = fc.GetLine(lnum)
@@ -100,6 +113,16 @@ func (l *Lister) List(out io.Writer) {
 			}
 			lnum++
 		}
+		// ソースの残りを表示 TODO:コード生成ないので不要か？
+		for lnum <= fc.LineCount() {
+			src, err := fc.GetLine(lnum)
+			if err != nil {
+				panic(fmt.Sprintf("GetLine(%d/%d)", lnum, fc.LineCount()))
+			}
+			fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", src)
+			lnum++
+
+		}
 	}
 	w.Flush()
 }
@@ -110,6 +133,14 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 
 	size := len(co.Code)
 	addr := co.Addr
+	cycle := "  "
+	if co.CZ80 != 0 {
+		cycle = fmt.Sprintf("%2d", co.CZ80)
+	}
+	exp := ' '
+	if co.Context.Offset != 0 {
+		exp = '+'
+	}
 
 	for i := 0; i < size; i += 8 {
 		var j int
@@ -117,14 +148,10 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 		for j = 0; j < 8 && i+j < size; j++ {
 			buf.WriteString(fmt.Sprintf("%02x ", co.Code[i+j]))
 		}
-		for j < 8 {
-			buf.WriteString("   ")
-			j++
-		}
 		if i == 0 {
-			lines = append(lines, fmt.Sprintf("%5d  %04x %s %2d  ", co.Context.Line, addr, buf.String(), co.CZ80))
+			lines = append(lines, fmt.Sprintf(fmtCode1, co.Context.Line, addr, buf.String(), cycle, exp))
 		} else {
-			lines = append(lines, fmt.Sprintf("       %04x %s %2d  ", addr, buf.String(), co.CZ80))
+			lines = append(lines, fmt.Sprintf(fmtCode2, addr, buf.String(), cycle, exp))
 		}
 		addr += 8
 	}
