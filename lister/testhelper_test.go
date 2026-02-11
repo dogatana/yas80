@@ -2,6 +2,7 @@ package lister
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -118,27 +119,27 @@ func replaceCRLF(in []byte) []byte {
 }
 
 func linesEqual(a, b []byte) error {
-	var err error
+	errs := []error{}
 	al := strings.Split(string(replaceCRLF(a)), "\n")
 	bl := strings.Split(string(replaceCRLF(b)), "\n")
 
 	// 文字列末尾の空白（タブ、スペース）を削除
 	trim := func(s string) string { return strings.TrimRight(s, "\t ") }
 	al = util.Map(al, trim)
-	bl = util.Map(al, trim)
+	bl = util.Map(bl, trim)
 
 	if len(al) != len(bl) {
-		err = fmt.Errorf("line count %d %d", len(al), len(bl))
+		errs = append(errs, fmt.Errorf("line count %d %d", len(al), len(bl)))
 	}
 	for i := range min(len(al), len(bl)) {
 		if al[i] != bl[i] {
 			fmt.Printf("a[%d] %s\n", i, al[i])
 			fmt.Printf("b[%d] %s\n", i, al[i])
-			err = fmt.Errorf("line %d\n%s\n%s", i, al[i], bl[i])
+			errs = append(errs, fmt.Errorf("line %d\n%s\n%s", i, al[i], bl[i]))
 		}
 	}
-	if err != nil {
-		os.WriteFile("out.txt", a, 0o644)
-	}
-	return err
+	// if err != nil {
+	// 	os.WriteFile("out.txt", a, 0o644)
+	// }
+	return errors.Join(errs...)
 }
