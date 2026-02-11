@@ -30,5 +30,6 @@ internal/testutil/errcode_names.go
 
 *.md
 !README.md
+!lister/testdata/*.txt
 
 parser.go

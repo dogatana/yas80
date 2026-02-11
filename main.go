@@ -113,6 +113,7 @@ func main() {
 
 		ec, _, _ := logger.Count()
 		if ec != 0 {
+			logger.Print()
 			fmt.Println("*** Error")
 			os.Exit(1)
 

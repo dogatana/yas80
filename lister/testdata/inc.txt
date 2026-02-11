@@ -1,0 +1,24 @@
+testdata/inc.asm:
+    1  0000 3e 00                    [ 7]       ld a, 0
+    2                                           include "included.asm"
+testdata/included.asm:
+    1  0002 3e 01                    [ 7]       ld a, 1
+    2  0004 21 01 00                 [10]       ld hl, 1
+testdata/inc.asm:
+    3                                           include "included.asm"
+testdata/included.asm:
+    1  0007 3e 01                    [ 7]       ld a, 1
+    2  0009 21 01 00                 [10]       ld hl, 1
+testdata/inc.asm:
+    4                                           include "included.asm"
+testdata/included.asm:
+    1  000c 3e 01                    [ 7]       ld a, 1
+    2  000e 21 01 00                 [10]       ld hl, 1
+testdata/inc.asm:
+    5                                           include "included.asm"
+testdata/included.asm:
+    1  0011 3e 01                    [ 7]       ld a, 1
+    2  0013 21 01 00                 [10]       ld hl, 1
+testdata/inc.asm:
+    6  0016 21 00 00                 [10]       ld hl, 0
+    7                               

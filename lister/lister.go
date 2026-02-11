@@ -106,10 +106,14 @@ func (l *Lister) List(out io.Writer) {
 			for _, obj := range objs {
 				switch obj := obj.(type) {
 				case *object.CommentObject:
+					text := obj.Text
+					if text == "$INCLUDE" {
+						text, _ = fc.GetLine(obj.Context.Line)
+					}
 					if obj.Context.Offset == 0 {
-						fmt.Fprintf(w, fmtSrcOnly, lnum, "", ' ', obj.Text)
+						fmt.Fprintf(w, fmtSrcOnly, lnum, "", ' ', text)
 					} else {
-						fmt.Fprintf(w, fmtSrcOnly, lnum, "", '+', obj.Text)
+						fmt.Fprintf(w, fmtSrcOnly, lnum, "", '+', text)
 					}
 				case *object.CodeObject:
 					lines := l.codeToLines(obj)
