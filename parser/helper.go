@@ -288,8 +288,17 @@ func PrintNode(stmt Statement, indent int) {
 		for _, s := range stmt.Block {
 			PrintNode(s, indent+1)
 		}
+	case *IfStatement:
+		fmt.Printf("%s%s %T\n", stmt.GetContext().String(), strings.Repeat(" ", indent*2), stmt)
+		fmt.Printf("%s%s [true]\n", stmt.GetContext().String(), strings.Repeat(" ", indent*2))
+		if stmt.Consequence != nil {
+			PrintNode(stmt.Consequence.(Statement), indent+1)
+		}
+		fmt.Printf("%s%s [false]\n", stmt.GetContext().String(), strings.Repeat(" ", indent*2))
+		if stmt.Alternative != nil {
+			PrintNode(stmt.Alternative.(Statement), indent+1)
+		}
 	default:
-		fmt.Printf("%s%s %T %s\n",
-			strings.Repeat(" ", indent*2), stmt.GetContext().String(), stmt, stmt.String())
+		fmt.Printf("%s%s %T %s\n", stmt.GetContext().String(), strings.Repeat(" ", indent*2), stmt, stmt.String())
 	}
 }

@@ -68,6 +68,12 @@ func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[strin
 	// l.fMap.Print()
 	// fmt.Println("-- FileMap end")
 
+	fmt.Println("-- objects start")
+	for _, o := range l.objects {
+		fmt.Println(o.String())
+	}
+	fmt.Println("-- objects end")
+
 	// []*FileBlock の収集
 	fblocks := object.BuildFileBlock(l.objects)
 	fmt.Println("-- FileBlocks start")
