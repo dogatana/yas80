@@ -104,7 +104,7 @@ func (l *Lister) List(out io.Writer) {
 				fmt.Fprintf(w, fmtSrc, lnum, "", ' ', src)
 				lnum++
 			}
-			src, err = fc.GetLine(lnum)
+			// src, err = fc.GetLine(lnum)
 			objs, _ := fb.LineObjects.Get(ln)
 			for _, obj := range objs {
 				switch obj := obj.(type) {
@@ -112,11 +112,7 @@ func (l *Lister) List(out io.Writer) {
 					text := obj.Text
 					if text == nil {
 						// Context の指すソース行を取得
-						text, _ = fc.GetLine(obj.Context.Line)
-						if obj.Context.Offset != 0 && obj.Context.Source != nil {
-							ctx := obj.Context.Source
-							text, _ = ctx.FileContent.GetLine(ctx.Line)
-						}
+						text = obj.Context.GetLine()
 					}
 					if obj.Context.Offset == 0 {
 						fmt.Fprintf(w, fmtSrc, lnum, "", ' ', text)
@@ -125,6 +121,7 @@ func (l *Lister) List(out io.Writer) {
 					}
 
 				case *object.TextObject:
+					src = obj.Context.GetLine()
 					text := util.TruncateWithEllipsis(obj.Text, 31)
 					if obj.Context.Offset == 0 {
 						fmt.Fprintf(w, fmtText, lnum, text, ' ', src)
@@ -133,10 +130,7 @@ func (l *Lister) List(out io.Writer) {
 					}
 
 				case *object.CodeObject:
-					if obj.Context.Offset != 0 && obj.Context.Source != nil {
-						ctx := obj.Context.Source
-						src, _ = ctx.FileContent.GetLine(ctx.Line)
-					}
+					src = obj.Context.GetLine()
 					lines := l.codeToLines(obj)
 					fmt.Fprintln(w, lines[0]+src)
 					for _, line := range lines[1:] {

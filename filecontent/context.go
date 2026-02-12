@@ -26,3 +26,19 @@ func (c *Context) String() string {
 func (c *Context) Equal(o *Context) bool {
 	return c.FileContent == o.FileContent && c.Line == o.Line && c.Index == o.Index && c.Offset == o.Offset
 }
+
+// Context の示す行を取得
+func (c *Context) GetLine() string {
+	if c == nil {
+		return "<Context nil>"
+	}
+	if c.Offset == 0 {
+		s, _ := c.FileContent.GetLine(c.Line)
+		return s
+	}
+	if c.Source != nil {
+		s, _ := c.Source.FileContent.GetLine(c.Source.Line)
+		return s
+	}
+	return "<Context.Source nil>"
+}
