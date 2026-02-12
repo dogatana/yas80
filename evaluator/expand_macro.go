@@ -46,7 +46,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	}
 
 	// ENDM コメント追加
-	cs := &parser.CommentStatement{Text: "ENDM", Context: ectx}
+	cs := &parser.CommentStatement{Text: fmt.Sprintf("endm(%s)", mcall.Name), Context: ectx}
 	stmts = append(stmts, cs)
 
 	mbc := &parser.MacroBlockStatement{Name: mcall.Name, Block: stmts, Context: mcall.Context}
