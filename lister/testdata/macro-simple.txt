@@ -1,0 +1,30 @@
+testdata/macro-simple.asm:
+    1                                           tm1 macro arg
+    2                                             ld a, arg
+    3                                               tm2 arg
+    4                                             ld a, arg + 1
+    5                                           endm
+    6                                           
+    7                                           tm2 macro arg
+    8                                             ld hl, arg
+    9                                             ret
+   10                                           endm
+   11                                           
+   12                                           tm1 1
+   12  0000 3e 01                    [ 7]     +   ld a, arg
+   12                                         +     tm2 arg
+   12  0002 21 01 00                 [10]     +   ld hl, arg
+   12  0005 c9                       [10]     +   ret
+   12                                         + endm(TM2)
+   12  0006 3e 02                    [ 7]     +   ld a, arg + 1
+   12                                         + endm(TM1)
+   13                                           
+   14                                           tm1 10
+   14  0008 3e 0a                    [ 7]     +   ld a, arg
+   14                                         +     tm2 arg
+   14  000a 21 0a 00                 [10]     +   ld hl, arg
+   14  000d c9                       [10]     +   ret
+   14                                         + endm(TM2)
+   14  000e 3e 0b                    [ 7]     +   ld a, arg + 1
+   14                                         + endm(TM1)
+   15                               
