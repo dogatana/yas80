@@ -37,8 +37,8 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 
 	// INCLUDE
 	case *parser.IncludeStatement:
-		// Liser 用に特別なコメントを仕込む
-		return &object.CommentObject{Text: "$INCLUDE", Context: stmt.Context}
+		// ソースを表示するため nil とする
+		return &object.CommentObject{Text: nil, Context: stmt.Context}
 
 	// PROC
 	case *parser.ProcStatement:

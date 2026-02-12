@@ -11,6 +11,9 @@ type Context struct {
 }
 
 func (c *Context) String() string {
+	if c == nil {
+		return "  :  (  )"
+	}
 	ret := fmt.Sprintf("%2d:%2d", c.Line, c.Offset)
 	if c.Source == nil {
 		ret += "(  )"

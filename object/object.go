@@ -86,7 +86,7 @@ func (o *FileObject) String() string {
 
 // value - list ファイル出力用
 type CommentObject struct {
-	Text    string
+	Text    any
 	Context *filecontent.Context
 }
 
@@ -104,7 +104,11 @@ func (o *CommentObject) String() string {
 	} else {
 		out.WriteString("comt   :  (  ) ")
 	}
-	out.WriteString(o.Text)
+	if o.Text == nil {
+		out.WriteString("<source>")
+	} else {
+		out.WriteString(o.Text.(string))
+	}
 	return out.String()
 }
 

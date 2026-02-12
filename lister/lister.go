@@ -110,7 +110,7 @@ func (l *Lister) List(out io.Writer) {
 				switch obj := obj.(type) {
 				case *object.CommentObject:
 					text := obj.Text
-					if text == "$INCLUDE" {
+					if text == nil {
 						text, _ = fc.GetLine(obj.Context.Line)
 					}
 					if obj.Context.Offset == 0 {
