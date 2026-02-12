@@ -277,11 +277,19 @@ func loadIncludeFile(base, target string) (*filecontent.FileContent, error) {
 
 // AST の表示
 func PrintNode(stmt Statement, indent int) {
-	if bs, ok := stmt.(*BlockStatement); ok {
-		for _, s := range bs.Block {
+	switch stmt := stmt.(type) {
+	case *BlockStatement:
+		fmt.Printf("%s[BlockStataement]\n", strings.Repeat(" ", indent*2))
+		for _, s := range stmt.Block {
 			PrintNode(s, indent+1)
 		}
-		return
+	case *MacroBlockStatement:
+		fmt.Printf("%s[MacroBlockStataement %s %d]\n", strings.Repeat(" ", indent*2), stmt.Name, stmt.End)
+		for _, s := range stmt.Block {
+			PrintNode(s, indent+1)
+		}
+	default:
+		fmt.Printf("%s%s %T %s\n",
+			strings.Repeat(" ", indent*2), stmt.GetContext().String(), stmt, stmt.String())
 	}
-	fmt.Printf("%s %T %s\n", stmt.GetContext().String(), stmt, stmt.String())
 }

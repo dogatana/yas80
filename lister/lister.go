@@ -111,7 +111,12 @@ func (l *Lister) List(out io.Writer) {
 				case *object.CommentObject:
 					text := obj.Text
 					if text == nil {
+						// Context の指すソース行を取得
 						text, _ = fc.GetLine(obj.Context.Line)
+						if obj.Context.Offset != 0 && obj.Context.Source != nil {
+							ctx := obj.Context.Source
+							text, _ = ctx.FileContent.GetLine(ctx.Line)
+						}
 					}
 					if obj.Context.Offset == 0 {
 						fmt.Fprintf(w, fmtSrc, lnum, "", ' ', text)
@@ -128,6 +133,10 @@ func (l *Lister) List(out io.Writer) {
 					}
 
 				case *object.CodeObject:
+					if obj.Context.Offset != 0 && obj.Context.Source != nil {
+						ctx := obj.Context.Source
+						src, _ = ctx.FileContent.GetLine(ctx.Line)
+					}
 					lines := l.codeToLines(obj)
 					fmt.Fprintln(w, lines[0]+src)
 					for _, line := range lines[1:] {

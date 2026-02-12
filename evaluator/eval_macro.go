@@ -145,11 +145,7 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Statement, checkExitM bo
 	}
 
 	block := stmt.Block
-	comment := stmt.Name
-	if comment == "REPT" {
-		comment = fmt.Sprintf("REPT (%d)", stmt.Count)
-	}
-	co := &object.CommentObject{Text: comment, Context: stmt.Context}
+	co := &object.CommentObject{Text: nil, Context: stmt.Context} // ソース行を表示のめ Text は nil
 	objects = append(objects, co)
 
 	for _, node := range block {
