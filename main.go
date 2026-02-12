@@ -174,8 +174,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("-- objects")
-	printObjects(obj.(*object.BlockObject).Block)
+	fmt.Println("-- ast")
+	parser.PrintNode(prog, 0)
+
+	// fmt.Println("-- objects")
+	// printObjects(obj.(*object.BlockObject).Block)
 
 	fmt.Println("-- binwriter")
 

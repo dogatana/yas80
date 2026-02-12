@@ -274,3 +274,14 @@ func loadIncludeFile(base, target string) (*filecontent.FileContent, error) {
 	path := filepath.Join(dir, target)
 	return filecontent.NewFromFile(path)
 }
+
+// AST の表示
+func PrintNode(stmt Statement, indent int) {
+	if bs, ok := stmt.(*BlockStatement); ok {
+		for _, s := range bs.Block {
+			PrintNode(s, indent+1)
+		}
+		return
+	}
+	fmt.Printf("%s %T %s\n", stmt.GetContext().String(), stmt, stmt.String())
+}
