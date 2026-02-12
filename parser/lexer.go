@@ -169,6 +169,7 @@ func (l *Lexer) Error(msg string, ctx *filecontent.Context) {
 func (l *Lexer) NextToken() Token {
 	var literal string
 	var ch rune
+	var tok Token
 
 LINE_CONT:
 	// 空白をスキップ
@@ -186,8 +187,9 @@ LINE_CONT:
 		for l.lctx.curChar != '\n' && l.lctx.curChar != EOF {
 			l.nextChar()
 		}
+		tok = Token{TokenType: EOL, Literal: "\\n", Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: EOL, Literal: "\\n", Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.lctx.curChar == '\\' && l.peekChar() == '\n':
 		// 行継続
@@ -203,8 +205,9 @@ LINE_CONT:
 
 	case l.lctx.curChar == '\n':
 		// EOL
+		tok = Token{TokenType: EOL, Literal: "\\n", Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: EOL, Literal: "\\n", Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.lctx.curChar == '"' || l.lctx.curChar == '\'':
 		// 文字列リテラル
@@ -218,14 +221,16 @@ LINE_CONT:
 	case l.lctx.curChar == '+' || l.lctx.curChar == '-' || l.lctx.curChar == '^':
 		// ADDSUB
 		ch := l.lctx.curChar
+		tok = Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: ADDSUB, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.lctx.curChar == '*' || l.lctx.curChar == '/':
 		// MULDIV（%は数値リテラルとの識別のため別処理）
 		ch := l.lctx.curChar
+		tok = Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case twoCharTokenChars[l.lctx.curChar]:
 		// 2 文字トークン
@@ -236,14 +241,16 @@ LINE_CONT:
 	case oneCharTokenChars[l.lctx.curChar]:
 		// 1文字トークン
 		ch = l.lctx.curChar
+		tok = Token{TokenType: TokenType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: TokenType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.lctx.curChar == '~':
 		// 単項演算子（ここでは ~ のみ。'!', '-' はパーサ側で判定
 		ch = l.lctx.curChar
+		tok = Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: UNARY, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
+		return tok
 
 	// case l.lctx.curChar == '$' && l.isXDigit(l.peekChar()):
 	// 	// 16進数リテラル($)
@@ -256,12 +263,13 @@ LINE_CONT:
 		// システム識別子($)
 		l.nextChar()
 		literal = "$" + l.readWord()
-		l.nextChar()
 		if l.isHexString(string(literal[1:])) && literal[1] != '_' {
-			return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
+			tok = Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 		} else {
-			return Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+			tok = Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 		}
+		l.nextChar()
+		return tok
 
 	case l.lctx.curChar == '$':
 		// $ ローケーションカウンタ
@@ -273,14 +281,16 @@ LINE_CONT:
 		// 2進数リテラル(%)
 		l.nextChar()
 		literal = "%" + l.readBinString()
+		tok = Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.lctx.curChar == '%':
 		// % 演算子
 		ch := l.lctx.curChar
+		tok = Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: MULDIV, TokenSubType: TokenSubType(ch), Literal: string(ch), Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.lctx.curChar == '0' && (l.peekChar() == 'x' || l.peekChar() == 'X'):
 		// 16進数リテラル(0x)
@@ -292,8 +302,9 @@ LINE_CONT:
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
 		literal += l.readHexString()
+		tok = Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.lctx.curChar == '0' && (l.peekChar() == 'b' || l.peekChar() == 'B'):
 		// 2数リテラル(0b)
@@ -305,8 +316,9 @@ LINE_CONT:
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
 		literal += l.readBinString()
+		tok = Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.lctx.curChar == '0' && (l.peekChar() == 'o' || l.peekChar() == 'O'):
 		// 8数リテラル(0o)
@@ -318,8 +330,9 @@ LINE_CONT:
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
 		literal += l.readOctString()
+		tok = Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.isDigit(l.lctx.curChar):
 		// 10進リテラル, 16進リテラル（末尾 h）
@@ -328,8 +341,9 @@ LINE_CONT:
 		ch := l.lctx.curChar
 		if l.isHexString(literal) && (ch == 'h' || ch == 'H') {
 			literal += string(ch)
+			tok = Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 			l.nextChar()
-			return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
+			return tok
 		}
 		return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
 
@@ -340,8 +354,9 @@ LINE_CONT:
 			// LABEL abc.def
 			l.nextChar()
 			literal += l.readWord()
+			tok = Token{TokenType: DOT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 			l.nextChar()
-			return Token{TokenType: DOT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+			return tok
 		}
 		if strings.ToUpper(literal) == "AF" && l.peekChar() == '\'' {
 			literal += "'"
@@ -364,8 +379,9 @@ LINE_CONT:
 		}
 
 		// これ以外は IDENT
+		tok = Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+		return tok
 
 	case l.lctx.curChar == '@' || l.lctx.curChar == '.':
 		// AT_IDENT, LOCAL_IDENT
@@ -382,8 +398,9 @@ LINE_CONT:
 
 	default:
 		literal = string(l.lctx.curChar)
+		tok = Token{TokenType: INVALID, Literal: literal, Context: l.lctx.toContext(l.start)}
 		l.nextChar()
-		return Token{TokenType: INVALID, Literal: literal, Context: l.lctx.toContext(l.start)}
+		return tok
 	}
 }
 
