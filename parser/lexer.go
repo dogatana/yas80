@@ -189,6 +189,7 @@ LINE_CONT:
 		}
 		tok = Token{TokenType: EOL, Literal: "\\n", Context: l.lctx.toContext(l.start)}
 		l.nextChar()
+		l.lctx.lineNumber++
 		return tok
 
 	case l.lctx.curChar == '\\' && l.peekChar() == '\n':
