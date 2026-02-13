@@ -295,7 +295,8 @@ directive	: CONST ident_expr '=' expr
 					$$ = &IfStatement{
 						Condition: $3,
 						Consequence: &BlockStatement{Block: []Statement{&ExitmStatement{Context: ctx}}},
-						Alternative:  &BlockStatement{Block: []Statement{}}}
+						Alternative:  &BlockStatement{Block: []Statement{}},
+						Context: $1.Context}
 				}
 			}
 			| datadef	{ $$ = $1 }
