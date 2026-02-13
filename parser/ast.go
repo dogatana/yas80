@@ -104,6 +104,9 @@ func (s *NullStatement) NodeType() NodeType               { return NODE_NULL }
 func (s *NullStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *NullStatement) String() string                   { return "NullStatement" }
 func (s *NullStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -116,6 +119,9 @@ type ParseError struct {
 
 func (s *ParseError) GetContext() *filecontent.Context { return s.Context }
 func (s *ParseError) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -159,6 +165,9 @@ type IncludeStatement struct {
 func (s *IncludeStatement) NodeType() NodeType               { return NODE_INCLUDE }
 func (s *IncludeStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *IncludeStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -177,6 +186,9 @@ type CharmapStatement struct {
 func (s *CharmapStatement) NodeType() NodeType               { return NODE_CHARMAP_STMT }
 func (s *CharmapStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *CharmapStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -197,6 +209,9 @@ type OrgStatement struct {
 
 func (s *OrgStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *OrgStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -217,6 +232,9 @@ type LabelStatement struct {
 
 func (s *LabelStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *LabelStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -234,6 +252,9 @@ type ProcStatement struct {
 
 func (s *ProcStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *ProcStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -250,6 +271,9 @@ type ProcBlockStatement struct {
 func (s *ProcBlockStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *ProcBlockStatement) NodeType() NodeType               { return NODE_PROC_BLOCK_STMT }
 func (s *ProcBlockStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -275,6 +299,9 @@ type EnumStatement struct {
 func (s *EnumStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *EnumStatement) NodeType() NodeType               { return NODE_ENUM_STMT }
 func (s *EnumStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -314,6 +341,9 @@ type EnumElement struct {
 func (s *EnumElement) GetContext() *filecontent.Context { return s.Context }
 func (s *EnumElement) NodeType() NodeType               { return NODE_ENUM_ELEMENT }
 func (s *EnumElement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -336,6 +366,9 @@ type ReptStatement struct {
 func (s *ReptStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *ReptStatement) NodeType() NodeType               { return NODE_REPT_STMT }
 func (s *ReptStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -363,6 +396,9 @@ type SetSysVarStatement struct {
 func (s *SetSysVarStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *SetSysVarStatement) NodeType() NodeType               { return NODE_SET_SYSVAR_STMT }
 func (s *SetSysVarStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -381,6 +417,9 @@ type IfStatement struct {
 func (s *IfStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *IfStatement) NodeType() NodeType               { return NODE_IF_STMT }
 func (s *IfStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -421,6 +460,9 @@ type FuncStatement struct {
 func (s *FuncStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *FuncStatement) NodeType() NodeType               { return NODE_FUNC_STMT }
 func (s *FuncStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -446,6 +488,9 @@ type MacroStatement struct {
 func (s *MacroStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *MacroStatement) NodeType() NodeType               { return NODE_MACRO_STMT }
 func (s *MacroStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -469,6 +514,9 @@ type MacroCallStatement struct {
 func (s *MacroCallStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *MacroCallStatement) NodeType() NodeType               { return NODE_MACRO_CALL_STMT }
 func (s *MacroCallStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -511,11 +559,10 @@ type MacroBlockStatement struct {
 func (s *MacroBlockStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *MacroBlockStatement) NodeType() NodeType               { return NODE_MACRO_BLOCK_STMT }
 func (s *MacroBlockStatement) ReplaceContext(ctx filecontent.Context) {
-	if s.Context.Source == nil {
-		ctx.Source = s.Context
-	} else {
-		ctx.Source = s.Context.Source
+	if s.Context.Source != nil {
+		return
 	}
+	ctx.Source = s.Context
 	s.Context = &ctx
 }
 func (s *MacroBlockStatement) String() string {
@@ -540,6 +587,9 @@ type ConstStatement struct {
 func (s *ConstStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *ConstStatement) NodeType() NodeType               { return NODE_CONST_STMT }
 func (s *ConstStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -564,6 +614,9 @@ type VariableStatement struct {
 func (s *VariableStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *VariableStatement) NodeType() NodeType               { return NODE_VAR_STMT }
 func (s *VariableStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -588,6 +641,9 @@ type AssignStatement struct {
 func (s *AssignStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *AssignStatement) NodeType() NodeType               { return NODE_ASSIGN_STMT }
 func (s *AssignStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -609,6 +665,9 @@ type ExitmStatement struct {
 func (s *ExitmStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *ExitmStatement) NodeType() NodeType               { return NODE_EXITM_STMT }
 func (s *ExitmStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -623,6 +682,9 @@ type ReturnStatement struct {
 func (s *ReturnStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *ReturnStatement) NodeType() NodeType               { return NODE_RETURN_STMT }
 func (s *ReturnStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -644,6 +706,9 @@ type DataStatement struct {
 func (s *DataStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *DataStatement) NodeType() NodeType               { return NODE_DATA_STMT }
 func (s *DataStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -662,6 +727,9 @@ type DataStoreStatement struct {
 func (s *DataStoreStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *DataStoreStatement) NodeType() NodeType               { return NODE_DATA_STORE_STMT }
 func (s *DataStoreStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -690,6 +758,9 @@ func (s *Z80Instruction) NodeType() NodeType {
 	return NodeType(s.InstType)
 }
 func (s *Z80Instruction) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
@@ -724,6 +795,9 @@ type CommentStatement struct {
 func (s *CommentStatement) GetContext() *filecontent.Context { return s.Context }
 func (s *CommentStatement) NodeType() NodeType               { return NODE_COMMENT_STMT }
 func (s *CommentStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
