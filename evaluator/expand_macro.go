@@ -21,7 +21,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 
 	for _, stmt := range macro.Body.Block {
 		news := e.mangleNamesInStatement(stmt, mfn, ectx)
-		news.ReplaceContext(*ectx)
+		// news.ReplaceContext(*ectx)
 
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
@@ -30,7 +30,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 				continue
 			}
 			mbs := obj.(*object.StatementObject).Statement.(*parser.MacroBlockStatement)
-			mbs.ReplaceContext(*ectx) // struct(not *struct)
+			// mbs.ReplaceContext(*ectx) // struct(not *struct)
 			stmts = append(stmts, mbs)
 
 		case *parser.ReptStatement:
@@ -49,10 +49,12 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	cs := &parser.CommentStatement{Text: fmt.Sprintf("endm(%s)", mcall.Name), Context: ectx}
 	stmts = append(stmts, cs)
 
+	// トップレベルの mbc は Context 置き換えしない
 	mbc := &parser.MacroBlockStatement{Name: mcall.Name, Block: stmts, Context: mcall.Context}
+	for _, s := range stmts {
+		e.replaceContext(s, ectx)
+	}
 
-	e.replaceContext(mbc, ectx)
-	parser.PrintNode(mbc, 0)
 	return &object.StatementObject{Statement: mbc}
 }
 
@@ -63,10 +65,12 @@ func (e *Evaluator) replaceContext(stmt parser.Statement, ectx TContext) {
 	}
 	switch stmt := stmt.(type) {
 	case *parser.IfStatement:
+		stmt.ReplaceContext(*ectx)
 		e.replaceContext(stmt.Consequence.(parser.Statement), ectx)
 		e.replaceContext(stmt.Alternative.(parser.Statement), ectx)
 
 	case *parser.MacroBlockStatement:
+		stmt.ReplaceContext(*ectx)
 		for _, s := range stmt.Block {
 			e.replaceContext(s, ectx)
 		}
