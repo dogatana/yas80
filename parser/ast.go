@@ -359,7 +359,7 @@ func (s *EnumElement) String() string {
 type ReptStatement struct {
 	MaxCount Expression
 	Block    *BlockStatement
-	End      int // ENDR 行
+	Start    int // REPT 行
 	Context  *filecontent.Context
 }
 
@@ -550,9 +550,9 @@ type MacroBlockStatement struct {
 	Name    string // マクロ名 もしくは "REPT"
 	Index   int    // REPT 用
 	Count   int    // REPT 用
+	Start   int    // REPT 行
 	Value   any    // REPT 用 Expression/Object
 	Block   []Statement
-	End     int // ENDR/ENDM 行
 	Context *filecontent.Context
 }
 
@@ -788,7 +788,7 @@ func (s *Z80Instruction) String() string {
 
 // Return 文
 type CommentStatement struct {
-	Text    string
+	Text    any
 	Context *filecontent.Context
 }
 
@@ -801,7 +801,14 @@ func (s *CommentStatement) ReplaceContext(ctx filecontent.Context) {
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
-func (s *CommentStatement) String() string { return s.Text }
+func (s *CommentStatement) String() string {
+	if s.Text == nil {
+		return "<source>"
+	} else {
+		t, _ := s.Text.(string)
+		return t
+	}
+}
 
 // これ以降は 式 (Exspression)
 

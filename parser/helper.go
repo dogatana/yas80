@@ -284,7 +284,7 @@ func PrintNode(stmt Statement, indent int) {
 			PrintNode(s, indent+1)
 		}
 	case *MacroBlockStatement:
-		fmt.Printf("%s[MacroBlockStataement %s %d]\n", strings.Repeat(" ", indent*2), stmt.Name, stmt.End)
+		fmt.Printf("%s[MacroBlockStataement %s %d]\n", strings.Repeat(" ", indent*2), stmt.Name, stmt.Start)
 		for _, s := range stmt.Block {
 			PrintNode(s, indent+1)
 		}

@@ -118,10 +118,10 @@ func replaceCRLF(in []byte) []byte {
 	return bytes.ReplaceAll(in, []byte{0x0d, 0x0a}, []byte{0xa})
 }
 
-func linesEqual(a, b []byte) error {
+func linesEqual(result, expected []byte) error {
 	errs := []error{}
-	al := strings.Split(string(replaceCRLF(a)), "\n")
-	bl := strings.Split(string(replaceCRLF(b)), "\n")
+	al := strings.Split(string(replaceCRLF(result)), "\n")
+	bl := strings.Split(string(replaceCRLF(expected)), "\n")
 
 	// 文字列末尾の空白（タブ、スペース）を削除
 	trim := func(s string) string { return strings.TrimRight(s, "\t ") }
@@ -131,15 +131,21 @@ func linesEqual(a, b []byte) error {
 	if len(al) != len(bl) {
 		errs = append(errs, fmt.Errorf("line count %d %d", len(al), len(bl)))
 	}
-	for i := range min(len(al), len(bl)) {
-		if al[i] != bl[i] {
-			fmt.Printf("a[%d] %s\n", i, al[i])
-			fmt.Printf("b[%d] %s\n", i, al[i])
+	for i := range max(len(al), len(bl)) {
+		switch {
+		case i >= len(bl):
+			fmt.Printf("result only [%d] %q\n", i, al[i])
+		case i >= len(al):
+			fmt.Printf("expected only [%d] %q\n", i, al[i])
+		case al[i] != bl[i]:
+			fmt.Printf("result[%d] %s\n", i, al[i])
+			fmt.Printf("expected[%d] %s\n", i, al[i])
 			errs = append(errs, fmt.Errorf("line %d\n%s\n%s", i, al[i], bl[i]))
 		}
 	}
-	// if err != nil {
-	// 	os.WriteFile("out.txt", a, 0o644)
-	// }
+
+	if len(errs) > 0 {
+		os.WriteFile("out.txt", result, 0o644)
+	}
 	return errors.Join(errs...)
 }

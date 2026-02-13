@@ -17,6 +17,8 @@ func TestLister(t *testing.T) {
 		{input: "inc.asm", expected: "inc.txt"},
 		{input: "macro-simple.asm", expected: "macro-simple.txt"},
 		{input: "macro-if.asm", expected: "macro-if.txt"},
+		{input: "rept.asm", expected: "rept.txt"},
+		{input: "rept-exitm.asm", expected: "rept-exitm.txt"},
 	}
 
 	for tn, tt := range tests {

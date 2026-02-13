@@ -144,10 +144,19 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Statement, checkExitM bo
 		env = object.NewMacroEnvironment(env)
 	}
 
-	block := stmt.Block
-	co := &object.CommentObject{Text: nil, Context: stmt.Context} // ソース行を表示のめ Text は nil
-	objects = append(objects, co)
+	if stmt.Name != "REPT" {
+		co := &object.CommentObject{Text: nil, Context: stmt.Context} // MACRO 呼出し行を表示
+		objects = append(objects, co)
+	} else if stmt.Context.Source == nil { // トップレベルの ENDR 行のみ表示する
+		ctx := *stmt.Context
+		ctx.Line = stmt.Start // トップレベルの場合、Offset が0のため、この代入は利用されない
+		ec := *stmt.Context
+		ec.Source = &ctx
+		co := &object.CommentObject{Text: nil, Context: &ec} // ソース行を表示のため Text は nil
+		objects = append(objects, co)
+	}
 
+	block := stmt.Block
 	for _, node := range block {
 	EVAL_AGAIN:
 		switch stmt := node.(type) {
@@ -284,6 +293,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, _ bool, ectx T
 	mb := &parser.MacroBlockStatement{
 		Name:    "REPT",
 		Count:   num,
+		Start:   stmt.Start,
 		Context: stmt.Context,
 	}
 
@@ -321,8 +331,6 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, _ bool, ectx T
 		bs.Block = append(bs.Block, objs.(*object.StatemetnsObject).Statements...)
 		mb.Block = append(mb.Block, bs)
 	}
-
-	mb.Block = append(mb.Block, &parser.CommentStatement{Text: "ENDR", Context: ectx})
 
 	return &object.StatementObject{Statement: mb}
 }

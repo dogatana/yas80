@@ -199,7 +199,7 @@ directive	: CONST ident_expr '=' expr
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else {
-					$$ = &ReptStatement{MaxCount: $2, Block: $4, End: $5.Context.Line, Context: $1.Context}
+					$$ = &ReptStatement{MaxCount: $2, Block: $4, Start: $1.Context.Line, Context: $5.Context}
 				}
 			}
 			| IF expr EOL block_statement elseifs ENDIF
