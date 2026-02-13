@@ -1,0 +1,40 @@
+testdata/macro-if.asm:
+    1                                           t1 macro arg 
+    2                                            t2 arg
+    3                                           endm 
+    4                                           
+    5                                           t2 macro arg
+    6                                            t3 arg
+    7                                           endm
+    8                                           
+    9                                           t3 macro arg
+   10                                             t4 arg
+   11                                           endm
+   12                                           
+   13                                           t4 macro arg
+   14                                             if arg > 0
+   15                                               ld a, arg
+   16                                             else
+   17                                               ld hl, arg
+   18                                             endif
+   19                                           endm
+   20                                           
+   21                                           t1 0
+   21                                         +  t2 arg
+   21                                         +  t3 arg
+   21                                         +   t4 arg
+   21  0000 21 00 00                 [10]     +     ld hl, arg
+   21                                         + endm(T4)
+   21                                         + endm(T3)
+   21                                         + endm(T2)
+   21                                         + endm(T1)
+   22                                           t1 1
+   22                                         +  t2 arg
+   22                                         +  t3 arg
+   22                                         +   t4 arg
+   22  0003 3e 01                    [ 7]     +     ld a, arg
+   22                                         + endm(T4)
+   22                                         + endm(T3)
+   22                                         + endm(T2)
+   22                                         + endm(T1)
+   23                               
