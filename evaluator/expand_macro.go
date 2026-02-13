@@ -50,7 +50,35 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	stmts = append(stmts, cs)
 
 	mbc := &parser.MacroBlockStatement{Name: mcall.Name, Block: stmts, Context: mcall.Context}
+
+	e.replaceContext(mbc, ectx)
+	parser.PrintNode(mbc, 0)
 	return &object.StatementObject{Statement: mbc}
+}
+
+// マクロ展開後の MacroBlockStatement 内の Statement.Context を置き換える
+func (e *Evaluator) replaceContext(stmt parser.Statement, ectx TContext) {
+	if stmt == nil {
+		return
+	}
+	switch stmt := stmt.(type) {
+	case *parser.IfStatement:
+		e.replaceContext(stmt.Consequence.(parser.Statement), ectx)
+		e.replaceContext(stmt.Alternative.(parser.Statement), ectx)
+
+	case *parser.MacroBlockStatement:
+		for _, s := range stmt.Block {
+			e.replaceContext(s, ectx)
+		}
+
+	case *parser.BlockStatement:
+		for _, s := range stmt.Block {
+			e.replaceContext(s, ectx)
+		}
+
+	default:
+		stmt.ReplaceContext(*ectx)
+	}
 }
 
 func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx TContext) object.Object {
