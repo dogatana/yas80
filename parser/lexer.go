@@ -207,6 +207,7 @@ LINE_CONT:
 		// EOL
 		tok = Token{TokenType: EOL, Literal: "\\n", Context: l.lctx.toContext(l.start)}
 		l.nextChar()
+		l.lctx.lineNumber++
 		return tok
 
 	case l.lctx.curChar == '"' || l.lctx.curChar == '\'':
@@ -484,9 +485,9 @@ func (l *Lexer) nextChar() {
 	start := l.lctx.index
 	l.lctx.index += l.charSize(l.lctx.fileContent.Content[l.lctx.index])
 	l.lctx.curChar = []rune(string(l.lctx.fileContent.Content[start:l.lctx.index]))[0]
-	if l.lctx.curChar == '\n' {
-		l.lctx.lineNumber++
-	}
+	// if l.lctx.curChar == '\n' {
+	// 	l.lctx.lineNumber++
+	// }
 }
 
 func (l *Lexer) peekChar() rune {
