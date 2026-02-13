@@ -58,9 +58,13 @@ func NewFromReader(filename string, reader io.Reader) (*FileContent, error) {
 	if err != nil {
 		return nil, err
 	}
+	data, err = formatBytesInput(data)
+	if err != nil {
+		return nil, err
+	}
 	return &FileContent{Filename: filename, Content: data}, nil
-
 }
+
 func NewFromFile(filename string) (*FileContent, error) {
 	var data []byte
 	var err error
@@ -72,6 +76,16 @@ func NewFromFile(filename string) (*FileContent, error) {
 	if data, err = os.ReadFile(filename); err != nil {
 		return nil, err
 	}
+
+	if data, err = formatBytesInput(data); err != nil {
+		return nil, err
+	}
+
+	return &FileContent{Filename: filename, Content: data}, nil
+}
+
+func formatBytesInput(data []byte) ([]byte, error) {
+	var err error
 
 	if !utf8.Valid(data) {
 		// cp932 と仮定し utf8 へ変換
@@ -89,7 +103,8 @@ func NewFromFile(filename string) (*FileContent, error) {
 	if data[len(data)-1] != 10 {
 		data = append(data, 10)
 	}
-	return &FileContent{Filename: filename, Content: data}, nil
+
+	return data, nil
 }
 
 func checkFile(filename string) error {
