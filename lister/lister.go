@@ -154,7 +154,7 @@ func (l *Lister) List(out io.Writer) {
 		if err != nil {
 			panic(fmt.Sprintf("GetLine(%d/%d)", lnum, fc.LineCount()))
 		}
-		fmt.Fprintf(w, "%5d %30s%s\n", lnum, "", src)
+		fmt.Fprintf(w, fmtSrc, lnum, "", ' ', src)
 		lnum++
 	}
 	w.Flush()
