@@ -6,6 +6,7 @@ import (
 	"strings"
 	"yas80/filecontent"
 	"yas80/internal/util"
+	"yas80/logging"
 	"yas80/parser"
 )
 
@@ -164,6 +165,7 @@ func (o *NullObject) String() string   { return "NULL" }
 
 // Error
 type ErrorObject struct {
+	Message *logging.Message
 }
 
 func (o *ErrorObject) Type() ObjectType { return OBJ_ERROR }

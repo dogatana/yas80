@@ -56,7 +56,7 @@ func TestBinWriterGapAndSortSegment(t *testing.T) {
 		}
 
 		if !ok {
-			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].Error())
+			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].String())
 		}
 
 		if err := testutil.BytesEqual(code, tt.code); err != nil {
@@ -99,7 +99,7 @@ func TestBinWriterAbsAndRel(t *testing.T) {
 		}
 
 		if !ok {
-			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].Error())
+			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].String())
 		}
 
 		if err := testutil.BytesEqual(code, tt.code); err != nil {
@@ -156,7 +156,7 @@ func TestBinWriterMultiFiles(t *testing.T) {
 		}
 
 		if !ok {
-			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].Error())
+			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].String())
 		}
 
 		if err := testutil.BytesEqual(code, tt.code); err != nil {
@@ -193,7 +193,7 @@ func TestRemoveDuplicateMessages(t *testing.T) {
 		}
 
 		if !ok {
-			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].Error())
+			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].String())
 		}
 
 		if err := testutil.BytesEqual(code, tt.code); err != nil {

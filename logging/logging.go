@@ -6,11 +6,6 @@ import (
 	"yas80/internal/util"
 )
 
-type LogMessage interface {
-	Message() string
-	Error() string
-}
-
 type MessageType int
 
 const (
@@ -32,7 +27,7 @@ type Message struct {
 }
 
 func (m *Message) Message() string { return msgTypeName[m.Type] + m.Text }
-func (m *Message) Error() string {
+func (m *Message) String() string {
 	tn := msgTypeName[m.Type]
 	if m.Context == nil {
 		return fmt.Sprintf("%s %s", tn, m.Text)
@@ -100,21 +95,21 @@ func (l *Logger) GetInformation() []*Message {
 }
 
 // Error 追加
-func (l *Logger) Error(msg string, ctx *filecontent.Context) error {
+func (l *Logger) Error(msg string, ctx *filecontent.Context) *Message {
 	m := &Message{Type: Err, Text: msg, Context: ctx}
 	l.messages = append(l.messages, m)
 	return m
 }
 
 // Warning 追加
-func (l *Logger) Warning(msg string, ctx *filecontent.Context) error {
+func (l *Logger) Warning(msg string, ctx *filecontent.Context) *Message {
 	m := &Message{Type: Warn, Text: msg, Context: ctx}
 	l.messages = append(l.messages, m)
 	return m
 }
 
 // Information 追加
-func (l *Logger) Info(msg string, ctx *filecontent.Context) error {
+func (l *Logger) Info(msg string, ctx *filecontent.Context) *Message {
 	m := &Message{Type: Info, Text: msg, Context: ctx}
 	l.messages = append(l.messages, m)
 	return m
@@ -127,19 +122,19 @@ func (l *Logger) Print() {
 	if ec != 0 {
 		fmt.Printf("%d errros\n", ec)
 		for _, m := range util.Filter(l.messages, func(m *Message) bool { return m.Type == Err }) {
-			fmt.Println(m.Error())
+			fmt.Println(m)
 		}
 	}
 	if wc != 0 {
 		fmt.Printf("%d warnings\n", wc)
 		for _, m := range util.Filter(l.messages, func(m *Message) bool { return m.Type == Warn }) {
-			fmt.Println(m.Error())
+			fmt.Println(m)
 		}
 	}
 	if ic != 0 {
 		fmt.Printf("%d information\n", ic)
 		for _, m := range util.Filter(l.messages, func(m *Message) bool { return m.Type == Info }) {
-			fmt.Println(m.Error())
+			fmt.Println(m)
 		}
 	}
 }
