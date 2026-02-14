@@ -19,6 +19,7 @@ func TestLister(t *testing.T) {
 		{input: "macro-if.asm", expected: "macro-if.txt"},
 		{input: "rept.asm", expected: "rept.txt"},
 		{input: "rept-exitm.asm", expected: "rept-exitm.txt"},
+		{input: "macro-rept.asm", expected: "macro-rept.txt"},
 	}
 
 	for tn, tt := range tests {
@@ -26,7 +27,11 @@ func TestLister(t *testing.T) {
 		logger := logging.New()
 
 		path := filepath.FromSlash("testdata/" + tt.input)
-		list := evalFile(path, logger, env)
+		list, err := evalFile(path, logger, env)
+		if err != nil {
+			t.Errorf("[%d] %s", tn, err)
+			continue
+		}
 		if ec := logger.ErrorCount(); ec != 0 {
 			t.Errorf("[%d] %d errors ", tn, ec)
 			continue
@@ -40,6 +45,7 @@ func TestLister(t *testing.T) {
 		if err != nil {
 			logger.Print()
 			t.Errorf("[%d] readListFile error %s", tn, err.Error())
+			continue
 		}
 		if err := linesEqual(list, expected); err != nil {
 			logger.Print()

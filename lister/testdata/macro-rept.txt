@@ -1,0 +1,58 @@
+testdata/macro-rept.asm:
+    1                                           t1 macro arg 
+    2                                            t2 arg
+    3                                           endm 
+    4                                           
+    5                                           t2 macro arg
+    6                                            t3 arg
+    7                                           endm
+    8                                           
+    9                                           t3 macro arg
+   10                                             t4 arg
+   11                                           endm
+   12                                           
+   13                                           t4 macro arg
+   14                                              if arg > 0
+   15                                               rept [arg, 255]
+   16                                                 ld a, $v
+   17                                               endr
+   18                                             else
+   19                                               rept [arg, $ffff]
+   20                                                 ld hl, $v
+   21                                               endr
+   22                                             endif
+   23                                           endm
+   24                                           
+   25                                           t1 0
+   25                                         +  t2 arg
+   25                                         +  t3 arg
+   25                                         +   t4 arg
+   25                                         + $COUNT = 2(0x2)
+   25                                         + $I = 0(0x0)
+   25                                         + $V = 0(0x0)
+   25  0000 21 00 00                 [10]     +       ld hl, $v
+   25                                         + $COUNT = 2(0x2)
+   25                                         + $I = 1(0x1)
+   25                                         + $V = 65535(0xffff)
+   25  0003 21 ff ff                 [10]     +       ld hl, $v
+   25                                         + endm(T4)
+   25                                         + endm(T3)
+   25                                         + endm(T2)
+   25                                         + endm(T1)
+   26                                           t1 1
+   26                                         +  t2 arg
+   26                                         +  t3 arg
+   26                                         +   t4 arg
+   26                                         + $COUNT = 2(0x2)
+   26                                         + $I = 0(0x0)
+   26                                         + $V = 1(0x1)
+   26  0006 3e 01                    [ 7]     +       ld a, $v
+   26                                         + $COUNT = 2(0x2)
+   26                                         + $I = 1(0x1)
+   26                                         + $V = 255(0xff)
+   26  0008 3e ff                    [ 7]     +       ld a, $v
+   26                                         + endm(T4)
+   26                                         + endm(T3)
+   26                                         + endm(T2)
+   26                                         + endm(T1)
+   27                                           

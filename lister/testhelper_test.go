@@ -14,8 +14,11 @@ import (
 	"yas80/parser"
 )
 
-func evalFile(filename string, logger *logging.Logger, env object.Environment) []byte {
-	prog, lexer := parseFileForTest(filename, logger)
+func evalFile(filename string, logger *logging.Logger, env object.Environment) ([]byte, error) {
+	prog, lexer, err := parseFileForTest(filename, logger)
+	if err != nil {
+		return nil, err
+	}
 	obj, _ := evalProg(prog, logger, env)
 
 	for k := range lexer.FcMap {
@@ -25,7 +28,7 @@ func evalFile(filename string, logger *logging.Logger, env object.Environment) [
 
 	var buf bytes.Buffer
 	lister.List(&buf)
-	return buf.Bytes()
+	return buf.Bytes(), nil
 
 	// bw := binwriter.New(obj, 0, logger)
 	// var buf bytes.Buffer
@@ -85,12 +88,12 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env object.En
 	}
 }
 
-func parseFileForTest(filename string, logger *logging.Logger) (*parser.BlockStatement, *parser.Lexer) {
+func parseFileForTest(filename string, logger *logging.Logger) (*parser.BlockStatement, *parser.Lexer, error) {
 	var prog *parser.BlockStatement
 
 	fc, err := filecontent.NewFromFile(filename)
 	if err != nil {
-		fmt.Println("parseFileForTest", err.Error())
+		return nil, nil, fmt.Errorf("parseFileForText %s", err.Error())
 	}
 
 	lexer := parser.NewLexer(logger, func() *filecontent.FileContent {
@@ -100,11 +103,11 @@ func parseFileForTest(filename string, logger *logging.Logger) (*parser.BlockSta
 	})
 	prog = parser.Parse(lexer)
 	if logger.ErrorCount() > 0 {
-		return prog, lexer
+		return prog, lexer, nil
 	}
 
 	prog = parser.PreProrocess(logger, prog)
-	return prog, lexer
+	return prog, lexer, nil
 }
 
 // リストファイル読み込み
