@@ -36,6 +36,11 @@ func (m *Message) String() string {
 	}
 }
 
+func (m *Message) LString() string { // Lister 用
+	tn := msgTypeName[m.Type]
+	return tn + " " + m.Text
+}
+
 // 2 つのメッセージが等しいかどうか（メソッド）
 func (m *Message) Equal(o *Message) bool {
 	return Equal(m, o)
