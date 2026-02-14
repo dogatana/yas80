@@ -281,6 +281,16 @@ func buildMangleNamesFunc(args map[string]parser.Expression, seq int, macroName 
 			fn(&newe.Address)
 			*ptr = &newe
 
+		case *parser.ArrayLiteral:
+			newe := *expr
+			items := *newe.Elements
+			items.Expressions = slices.Clone(items.Expressions)
+			for i := range len(items.Expressions) {
+				fn(&items.Expressions[i])
+			}
+			newe.Elements = &items
+			*ptr = &newe
+
 		default:
 		}
 	}
