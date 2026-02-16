@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"yas80/assembler"
 	"yas80/binwriter"
 	"yas80/evaluator"
 	"yas80/filecontent"
@@ -16,8 +17,15 @@ import (
 
 var Option options.Option
 
-// メイン関数
 func main() {
+	opt := options.Parse()
+
+	as := assembler.New(opt)
+	as.Assemble()
+}
+
+// メイン関数
+func old_main() {
 
 	opt := options.Parse()
 
