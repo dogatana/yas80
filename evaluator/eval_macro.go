@@ -119,10 +119,42 @@ func (e *Evaluator) evalMacroCallStatement(stmt *parser.MacroCallStatement, chec
 	return obj
 }
 
+// MacroBlockStatement 評価時に、Context.Offset を連番に設定する
+func replaceOffset(stmt parser.Statement, fn func() int) {
+	if stmt == nil {
+		return
+	}
+	switch stmt := stmt.(type) {
+	case *parser.MacroBlockStatement:
+		if stmt.Context.Offset != 0 {
+			stmt.Context.Offset = fn()
+		}
+		for _, s := range stmt.Block {
+			replaceOffset(s, fn)
+		}
+	case *parser.BlockStatement:
+		for _, s := range stmt.Block {
+			replaceOffset(s, fn)
+		}
+	case *parser.IfStatement:
+		stmt.Context.Offset = fn()
+		replaceOffset(stmt.Consequence.(parser.Statement), fn)
+		replaceOffset(stmt.Alternative.(parser.Statement), fn)
+	default:
+		stmt.GetContext().Offset = fn()
+	}
+}
+
 // 変更版 evalMacroBlockStatement
 func (e *Evaluator) evalMacroBlockStatement(node parser.Statement, checkExitM bool, ectx TContext, env TEnv) object.Object {
 	objects := []object.Object{}
 	stmts := []parser.Statement{}
+
+	if !checkExitM {
+		// TOP レベル
+		fn := makeCounter(0)
+		replaceOffset(node, fn)
+	}
 
 	stmt, ok := node.(*parser.MacroBlockStatement)
 	if !ok {
