@@ -168,10 +168,15 @@ func (a *Assembler) Assemble() {
 	}
 
 	// リストファイル出力
-	fmt.Println("-- log")
+	fmt.Println("-- log start")
 	// LogMessage の重複削除
 	logger.RemoveDupe()
 	logger.Print()
+	fmt.Println("-- log end")
+	fmt.Println("-- message map start")
+	mmap := logger.BuildMessageMap()
+	mmap.Print()
+	fmt.Println("-- message map end")
 
 	fmt.Println("# リストファイル")
 	for f := range lexer.FcMap {
