@@ -77,6 +77,8 @@ func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[strin
 
 	// []*FileBlock の収集
 	fblocks := object.BuildFileBlock(l.objects)
+	// MessageMap を FileBlock に挿入
+	fblocks = object.InsertMessages(fblocks, mmap)
 	l.fblocks = fblocks
 
 	fmt.Println("-- FileBlocks start")
@@ -136,6 +138,9 @@ func (l *Lister) List(out io.Writer) {
 					} else {
 						fmt.Fprintf(w, fmtText, lnum, text, '+', src)
 					}
+
+				case *object.ErrorObject:
+					fmt.Fprintln(w, "    *  "+obj.Message)
 
 				case *object.CodeObject:
 					src = obj.Context.GetLine()

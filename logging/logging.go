@@ -166,25 +166,16 @@ func (l *Logger) RemoveDupe() {
 	l.messages = util.Filter(l.messages, func(m *Message) bool { return m != nil })
 }
 
-// Line,Offset を数値化
-type LinePosition int64
-
-func (lp LinePosition) String() string {
-	line := int(lp >> 32)
-	ofs := int(lp & 0xffffffff)
-	return fmt.Sprintf("%2d:%2d", line, ofs)
-}
-
 // Message Map
-type MessageMap map[string]*util.OrderedMap[LinePosition, []*Message]
+type MessageMap map[string]*util.OrderedMap[int, []*Message]
 
 func (mm *MessageMap) Print() {
 	for file, om := range *mm {
 		fmt.Println(file)
-		for _, lp := range om.Keys() {
-			msgs, _ := om.Get(lp)
+		for _, line := range om.Keys() {
+			msgs, _ := om.Get(line)
 			for _, m := range msgs {
-				fmt.Println(lp.String(), m.LString())
+				fmt.Println(line, m.LString())
 			}
 		}
 	}
@@ -192,24 +183,23 @@ func (mm *MessageMap) Print() {
 
 // Logger.message をファイル毎に分解
 func (l *Logger) BuildMessageMap() MessageMap {
-	mmap := map[string]*util.OrderedMap[LinePosition, []*Message]{}
+	mmap := map[string]*util.OrderedMap[int, []*Message]{}
 
 	for _, msg := range l.messages {
-		file := msg.Context.FileContent.Filename
+		file := util.SlashPath(msg.Context.FileContent.Filename)
 		_, ok := mmap[file]
 		if !ok {
-			mmap[file] = util.NewOrderedMap[LinePosition, []*Message]()
+			mmap[file] = util.NewOrderedMap[int, []*Message]()
 		}
 
-		lp := LinePosition(int64(int32(msg.Context.Line))<<32 + int64(int32(msg.Context.Offset)))
 		om, _ := mmap[file]
-		msgs, ok := om.Get(lp)
+		msgs, ok := om.Get(msg.Context.Line)
 		if ok {
 			msgs = append(msgs, msg)
 		} else {
 			msgs = []*Message{msg}
 		}
-		om.Set(lp, msgs)
+		om.Set(msg.Context.Line, msgs)
 	}
 	return mmap
 }

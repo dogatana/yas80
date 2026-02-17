@@ -3,9 +3,11 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"slices"
 	"strings"
 	"yas80/filecontent"
 	"yas80/internal/util"
+	"yas80/logging"
 	"yas80/parser"
 )
 
@@ -164,6 +166,7 @@ func (o *NullObject) String() string   { return "NULL" }
 
 // Error
 type ErrorObject struct {
+	Message string
 	Context *filecontent.Context
 }
 
@@ -563,4 +566,58 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 	}
 	blocks = append(blocks, fb)
 	return blocks
+}
+
+// アセンブル結果の []Object に Logger.messages を ErrorObject として挿入
+func InsertMessages(fblocks []*FileBlock, mmap logging.MessageMap) []*FileBlock {
+	for _, fb := range fblocks {
+		om, ok := mmap[fb.Filename]
+		if !ok {
+			continue
+		}
+		for _, line := range fb.LineObjects.Keys() {
+			msgs, ok := om.Get(line)
+			if !ok {
+				continue
+			}
+			objs, _ := fb.LineObjects.Get(line)
+			eobjs := util.Map(msgs, func(m *logging.Message) Object {
+				return &ErrorObject{Message: m.LString(), Context: m.Context}
+			})
+			objs = append(objs, eobjs...)
+			slices.SortStableFunc(objs, compareObj)
+			fb.LineObjects.Set(line, objs)
+		}
+	}
+
+	return fblocks
+}
+
+// Object の Line と Offset を取得
+func lineOffset(obj Object) (int, int) {
+	switch obj := obj.(type) {
+	case *CodeObject:
+		return obj.Context.Line, obj.Context.Offset
+	case *CommentObject:
+		return obj.Context.Line, obj.Context.Offset
+	case *TextObject:
+		return obj.Context.Line, obj.Context.Offset
+	case *ErrorObject:
+		return obj.Context.Line, obj.Context.Offset
+	default:
+		panic(fmt.Sprintf("unexpected object type: %T", obj))
+	}
+}
+
+// CodeObject, CommentObject, TextObject を Line と Offset で比較するための関数
+func compareObj(op1, op2 Object) int {
+	l1, s1 := lineOffset(op1)
+	l2, s2 := lineOffset(op2)
+	if l1 != l2 {
+		return l1 - l2
+	} else if s1 != s2 {
+		return s1 - s2
+	} else {
+		return 0
+	}
 }
