@@ -100,7 +100,9 @@ func formatBytesInput(data []byte) ([]byte, error) {
 	}
 	// CR/LF を LF へ
 	data = bytes.ReplaceAll(data, []byte{13, 10}, []byte{10})
-	if data[len(data)-1] != 10 {
+	if len(data) == 0 {
+		data = []byte{10}
+	} else if data[len(data)-1] != 10 {
 		data = append(data, 10)
 	}
 

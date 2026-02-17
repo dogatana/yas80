@@ -143,6 +143,9 @@ func (a *Assembler) Assemble() {
 	var buf bytes.Buffer
 	if bw.Write(&buf) {
 		os.WriteFile("out.bin", buf.Bytes(), 0644)
+	} else {
+		logger.Print()
+		os.Exit(1)
 	}
 
 	// マップファイル出力
