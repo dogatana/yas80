@@ -7,6 +7,7 @@ import (
 	"io"
 	"yas80/filecontent"
 	"yas80/internal/util"
+	"yas80/logging"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -58,7 +59,7 @@ type Lister struct {
 	fblocks []*object.FileBlock
 }
 
-func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent) *Lister {
+func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent, mmap logging.MessageMap) *Lister {
 	l := &Lister{nodes: pnode, fcMap: fcmap}
 	l.objects = object.FlattenObject(pobj)
 

@@ -77,18 +77,6 @@ func (a *Assembler) Assemble() {
 			object.PrintEnv(env)
 		}
 
-		if obj == object.ERROR {
-			fmt.Printf("*** evaluate program returns ERROR")
-			os.Exit(1)
-		}
-
-		ec, _, _ := logger.Count()
-		if ec != 0 {
-			logger.Print()
-			fmt.Println("*** Error")
-			os.Exit(1)
-
-		}
 		if a.option.Evaldebug > 0 {
 			showResult(i, prog, obj, env)
 		}
@@ -98,11 +86,8 @@ func (a *Assembler) Assemble() {
 		// 循環参照のエラーチェックは実施
 		eval.CheckCyclicError(env)
 		if logger.ErrorCount() > 0 {
-			fmt.Println("*** abort")
-			logger.Print()
-			os.Exit(1)
+			break
 		}
-
 		if eval.Resolved {
 			break
 		}
@@ -110,42 +95,42 @@ func (a *Assembler) Assemble() {
 	// 未確定のシボルがないかどうかチェック
 	eval.CheckSymbolError(env)
 
+	// eval step 1 終了状況
 	fmt.Printf("eval %d times, %d errors, eval.Resolved = %v\n", pass, logger.ErrorCount(), eval.Resolved)
-	if logger.ErrorCount() > 0 || !eval.Resolved {
-		fmt.Print("\n** error or  not resolved")
-		logger.Print()
-		os.Exit(1)
-	}
 
-	// eval step 2
-	// 仮コード生成によってラベルアドレスが本来のものと異なる場合があるためコードが安定するまで規定回数評価を繰り返す
-	// 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
-	fmt.Println("\n# finalize")
-	code := object.CollectCode(obj.(*object.BlockObject).Block)
+	if logger.ErrorCount() == 0 && eval.Resolved {
+		// eval step 2
+		// 仮コード生成によってラベルアドレスが本来のものと異なる場合があるため
+		// コードが安定するまで規定回数(16)評価を繰り返す
+		// 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
 
-	eval.CodeStable = false
-	for i := 0; i < 16 && !eval.CodeStable; i++ {
-		pass++
-		env.Set("$PASS", &object.NumberObject{Value: pass})
-		obj = eval.EvalProgram(prog, pass, env)
-		if logger.ErrorCount() > 0 {
-			break
+		fmt.Println("\n# finalize")
+		code := object.CollectCode(obj.(*object.BlockObject).Block)
+
+		eval.CodeStable = false
+		for i := 0; i < 16 && !eval.CodeStable; i++ {
+			pass++
+			env.Set("$PASS", &object.NumberObject{Value: pass})
+			obj = eval.EvalProgram(prog, pass, env)
+			if logger.ErrorCount() > 0 {
+				break
+			}
+			newCode := object.CollectCode(obj.(*object.BlockObject).Block)
+			eval.CodeStable = bytes.Equal(code, newCode)
+			if !eval.CodeStable {
+				code = newCode
+			}
 		}
-		newCode := object.CollectCode(obj.(*object.BlockObject).Block)
-		eval.CodeStable = bytes.Equal(code, newCode)
-		if !eval.CodeStable {
-			code = newCode
-		}
-	}
 
-	fmt.Printf("eval %d times, codeStable %v\n", pass, eval.CodeStable)
+		fmt.Printf("eval %d times, codeStable %v\n", pass, eval.CodeStable)
+	}
+	// 評価完了
 	// if logger.ErrorCount() > 0 {
 	// 	logger.Print()
 	// 	fmt.Println(prog.String())
 	// 	object.PrintEnv(env)
 	// 	os.Exit(1)
 	// }
-	// 評価完了
 
 	fmt.Println("-- ast")
 	parser.PrintNode(prog, 0)
@@ -182,7 +167,7 @@ func (a *Assembler) Assemble() {
 	for f := range lexer.FcMap {
 		fmt.Printf("file %s\n", f)
 	}
-	lister := lister.New(prog, obj.(*object.BlockObject), lexer.FcMap)
+	lister := lister.New(prog, obj.(*object.BlockObject), lexer.FcMap, mmap)
 	lister.List(os.Stdout)
 }
 

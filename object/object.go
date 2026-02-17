@@ -6,7 +6,6 @@ import (
 	"strings"
 	"yas80/filecontent"
 	"yas80/internal/util"
-	"yas80/logging"
 	"yas80/parser"
 )
 
@@ -165,11 +164,16 @@ func (o *NullObject) String() string   { return "NULL" }
 
 // Error
 type ErrorObject struct {
-	Message *logging.Message
+	Context *filecontent.Context
 }
 
 func (o *ErrorObject) Type() ObjectType { return OBJ_ERROR }
-func (o *ErrorObject) String() string   { return "ERROR" }
+func (o *ErrorObject) String() string {
+	if o.Context == nil {
+		return "ERROR"
+	}
+	return fmt.Sprintf("ERROR (%2d:%2d)", o.Context.Line, o.Context.Offset)
+}
 
 // 右辺値で識別子が見つからない場合に使用
 type RefNotFoundObject struct {
