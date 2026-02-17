@@ -35,8 +35,8 @@ func Count[T any](s []T, f func(T) bool) int {
 }
 
 // Map
-func Map[T any](s []T, f func(T) T) []T {
-	out := make([]T, len(s))
+func Map[T1, T2 any](s []T1, f func(T1) T2) []T2 {
+	out := make([]T2, len(s))
 	for i, v := range s {
 		out[i] = f(v)
 	}
