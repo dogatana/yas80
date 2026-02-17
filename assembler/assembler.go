@@ -23,33 +23,12 @@ func New(option options.Option) *Assembler {
 }
 
 // アセンブル実行
-func (a *Assembler) Assemble() {
+func (a *Assembler) Run() {
 	// logger 作成
 	logger := logging.New()
 
-	// lexer 作成
-	iter := makeContentIterFunc(a.option)
-	lexer := parser.NewLexer(logger, iter)
-
 	// 構文解析
-	fmt.Println("# parse")
-	parser.SetYYDebug(a.option.YYdebug) // go-yacc debug flag
-	prog := parser.Parse(lexer)
-
-	// プリプロセス
-	fmt.Println("# preprocess")
-	prog = parser.PreProrocess(logger, prog)
-
-	// 構文解析後 AST 表示
-	fmt.Println("# ast")
-	if a.option.Astdebug != 0 {
-		if len(prog.Block) == 0 {
-			fmt.Print("no statements detected")
-		} else {
-			fmt.Println(prog.String())
-		}
-		fmt.Println("")
-	}
+	prog, fcMap := a.parse(logger)
 
 	// toplevel env 作成
 	env := object.NewEnvironment(nil)
@@ -167,11 +146,39 @@ func (a *Assembler) Assemble() {
 	fmt.Println("-- message map end")
 
 	fmt.Println("# リストファイル")
-	for f := range lexer.FcMap {
+	for f := range fcMap {
 		fmt.Printf("file %s\n", f)
 	}
-	lister := lister.New(prog, obj.(*object.BlockObject), lexer.FcMap, mmap)
+	lister := lister.New(prog, obj.(*object.BlockObject), fcMap, mmap)
 	lister.List(os.Stdout)
+}
+
+// 構文解析とプリプロセス
+func (a *Assembler) parse(logger *logging.Logger) (*parser.BlockStatement, map[string]*filecontent.FileContent) {
+	// lexer 作成
+	iter := makeContentIterFunc(a.option)
+	lexer := parser.NewLexer(logger, iter)
+
+	// 構文解析
+	fmt.Println("# parse")
+	parser.SetYYDebug(a.option.YYdebug) // go-yacc debug flag
+	prog := parser.Parse(lexer)
+
+	// プリプロセス
+	fmt.Println("# preprocess")
+	prog = parser.PreProrocess(logger, prog)
+
+	// 構文解析後 AST 表示
+	fmt.Println("# ast")
+	if a.option.Astdebug != 0 {
+		if len(prog.Block) == 0 {
+			fmt.Print("no statements detected")
+		} else {
+			fmt.Println(prog.String())
+		}
+		fmt.Println("")
+	}
+	return prog, lexer.FcMap
 }
 
 // FileContent iterator func
