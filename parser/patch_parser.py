@@ -37,7 +37,8 @@ patch_data: list[PatchData] = [
     PatchData(
         'res := "syntax error: unexpected " + yyTokname(lookAhead)',
         # 'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected %s(%d, %q)", state, yyTokname(lookAhead), lookAhead, token.Literal)'
-        'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected %s", state, token.String())'
+        # 'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected %s", state, token.String())'
+        'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected \'%s\'", state, token.Literal)'
     ),
     PatchData(
         'yylex.Error(yyErrorMessage(yystate, yytoken))',
@@ -52,9 +53,22 @@ patch_data: list[PatchData] = [
         '\t\t\t' '// }\n',
     ),
     PatchData(
-        '\t' 'res += " or "\n',
-        '\t' 'res += ", "\n',
+        (
+        '\t'	'for i, tok := range expected {\n'
+        '\t\t'      'if i == 0 {\n'
+        '\t\t\t'        'res += ", expecting "\n'
+        '\t\t'      '} else {\n'
+        '\t\t\t' 'res += " or "\n'
+        '\t\t'      '}\n'
+        '\t\t'      'res += yyTokname(tok)\n'
+        '\t'    '}\n'
+        ),
+        '',
     ),
+    # PatchData(
+    #     '\t' 'res += " or "\n',
+    #     '\t' 'res += ", "\n',
+    # ),
     # PatchData(
     #     '__yyfmt__.Printf("char %v in %v\\n", yyTokname(yytoken), yyStatname(yystate))',
     #     '__yyfmt__.Printf("# %d: char %v (%#v)\\n", yystate, yyTokname(yytoken), yyVAL) // # changed'

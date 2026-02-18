@@ -120,6 +120,23 @@ func (l *Logger) Info(msg string, ctx *filecontent.Context) *Message {
 	return m
 }
 
+// 構文解析終了後のメッセージ表示
+func (l *Logger) PrintSyntaxError() {
+	file := ""
+	for _, m := range l.messages {
+		if m.Context == nil {
+			// unexpected EOF など、ファイルコンテキストがないエラーはファイル名を表示しない
+			// fmt.Printf("%s %s\n", msgTypeName[m.Type], m.Text)
+			continue
+		}
+		if m.Context.FileContent.Filename != file {
+			fmt.Printf("%s\n", m.Context.FileContent.Filename)
+			file = m.Context.FileContent.Filename
+		}
+		fmt.Printf("%d: %s %s\n", m.Context.Line, msgTypeName[m.Type], m.Text)
+	}
+}
+
 // logMessage の表示
 func (l *Logger) Print() {
 	ec, wc, ic := l.Count()
