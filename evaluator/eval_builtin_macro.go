@@ -89,5 +89,5 @@ func (e *Evaluator) ebMacroAlign(stmt *parser.MacroCallStatement, env TEnv) obje
 	if err := advanceLocationCounter(env, size); err != nil {
 		e.logger.Error(err.Error(), stmt.Context)
 	}
-	return &object.CodeObject{Code: code, Addr: addr, Context: stmt.Context}
+	return &object.CodeObject{Addr: addr, Code: code, Filled: true, Context: stmt.Context}
 }

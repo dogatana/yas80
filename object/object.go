@@ -133,6 +133,7 @@ func (o *OrgObject) String() string {
 type CodeObject struct {
 	Addr    int
 	Code    []byte
+	Filled  bool // DS 等 fill で埋められた場合
 	CZ80    int
 	CR800   int
 	Context *filecontent.Context

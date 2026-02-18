@@ -95,7 +95,7 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 		}
 	}
 	addr := getLocationCounter(env)
-	return &object.CodeObject{Code: data, Addr: addr, Context: stmt.Context}
+	return &object.CodeObject{Addr: addr, Code: data, Filled: true, Context: stmt.Context}
 }
 
 func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) object.Object {

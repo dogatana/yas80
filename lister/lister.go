@@ -47,7 +47,8 @@ const (
 
 	fmtText = "%5d       %s   %c %s\n" // 行番号、TextObject.Text、展開マーク、ソース行
 
-	fmtCode0 = "%5d  %04x %-25s[  ]     %c %s\n" // 行番号、コード（コード出力の最初の行は行番号あり）
+	fmtCode0 = "%5d  %04x %-25s[  ]     %c %s\n" // len(Code) == 0 の場合
+	fmtCodeF = "%5d  %04x %-25s[  ]     %c "     // DS 等 fill で埋められた場合で len(Code) > 8 の場合
 	fmtCode1 = "%5d  %04x %-25s[%2s]     %c "    // 行番号、コード（コード出力の最初の行は行番号あり）
 	fmtCode2 = "       %04x %-25s[%2s]     %c "  // 行番号なし、コード（コード出力2行目以降）
 )
@@ -192,6 +193,15 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 		exp = '+'
 	}
 
+	if co.Filled && size > 8 {
+		var data string
+		if co.Code[0] == co.Code[1] {
+			data = fmt.Sprintf("%02x ... (%04x bytes)", co.Code[0], len(co.Code))
+		} else {
+			data = fmt.Sprintf("%02x %02x ... (%04x bytes)", co.Code[0], co.Code[1], len(co.Code))
+		}
+		return []string{fmt.Sprintf(fmtCodeF, co.Context.Line, addr, data, exp)}
+	}
 	for i := 0; i < size; i += 8 {
 		var j int
 		var buf bytes.Buffer
