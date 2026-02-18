@@ -580,9 +580,6 @@ func InsertMessages(fblocks []*FileBlock, mmap logging.MessageMap) []*FileBlock 
 
 		for _, line := range lines {
 			objs := []Object{}
-			if !ok {
-				continue
-			}
 			if os, ok := fb.LineObjects.Get(line); ok {
 				objs = append(objs, os...)
 			}
@@ -612,7 +609,7 @@ func uniqueKeys(keys1, keys2 []int) []int {
 		set[line] = true
 	}
 
-	out := make([]int, len(set))
+	out := make([]int, 0, len(set))
 	for line := range set {
 		out = append(out, line)
 	}
@@ -640,8 +637,10 @@ func inserCommentObject(objects []Object) []Object {
 		objs, _ := set.Get(ofs)
 		if e, ok := objs[0].(*ErrorObject); ok {
 			out = append(out, &CommentObject{Text: nil, Context: e.Context}, e)
+			out = append(out, objs[1:]...)
+		} else {
+			out = append(out, objs...)
 		}
-		out = append(out, objs[1:]...)
 	}
 	return out
 }
