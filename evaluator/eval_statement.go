@@ -352,7 +352,12 @@ func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object
 // ラベル定義文
 func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Name, env, stmt.Context)
-	return e.exprToLabel(stmt.Name, env, stmt.Context)
+	addr := getLocationCounter(env)
+	obj := e.exprToLabel(stmt.Name, env, stmt.Context)
+	if isError(obj) {
+		return obj
+	}
+	return &object.CodeObject{Addr: addr, Code: []byte{}, Context: stmt.Context}
 }
 
 // parser.Label 評価&環境登録

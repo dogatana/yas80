@@ -47,8 +47,9 @@ const (
 
 	fmtText = "%5d       %s   %c %s\n" // 行番号、TextObject.Text、展開マーク、ソース行
 
-	fmtCode1 = "%5d  %04x %-25s[%2s]     %c "   // 行番号、コード（コード出力の最初の行は行番号あり）
-	fmtCode2 = "       %04x %-25s[%2s]     %c " // 行番号なし、コード（コード出力2行目以降）
+	fmtCode0 = "%5d  %04x %-25s[  ]     %c %s\n" // 行番号、コード（コード出力の最初の行は行番号あり）
+	fmtCode1 = "%5d  %04x %-25s[%2s]     %c "    // 行番号、コード（コード出力の最初の行は行番号あり）
+	fmtCode2 = "       %04x %-25s[%2s]     %c "  // 行番号なし、コード（コード出力2行目以降）
 )
 
 type Lister struct {
@@ -144,6 +145,15 @@ func (l *Lister) List(out io.Writer) {
 
 				case *object.CodeObject:
 					src = obj.Context.GetLine()
+					if len(obj.Code) == 0 {
+						// コードがない場合は addr, soruce ソース行だけ表示
+						ext := ' '
+						if obj.Context.Offset != 0 {
+							ext = '+'
+						}
+						fmt.Fprintf(w, fmtCode0, obj.Context.Line, obj.Addr, "", ext, src)
+						continue
+					}
 					lines := l.codeToLines(obj)
 					fmt.Fprintln(w, lines[0]+src)
 					for _, line := range lines[1:] {
