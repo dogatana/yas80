@@ -156,8 +156,9 @@ func (a *Assembler) Run() {
 // 構文解析とプリプロセス
 func (a *Assembler) parse(logger *logging.Logger) (*parser.BlockStatement, map[string]*filecontent.FileContent) {
 	// lexer 作成
-	iter := makeContentIterFunc(a.option)
-	lexer := parser.NewLexer(logger, iter)
+	fcs := makeContents(a.option)
+	fn := makeContentIterFunc(fcs)
+	lexer := parser.NewLexer(logger, fn)
 
 	// 構文解析
 	fmt.Println("# parse")
@@ -181,8 +182,8 @@ func (a *Assembler) parse(logger *logging.Logger) (*parser.BlockStatement, map[s
 	return prog, lexer.FcMap
 }
 
-// FileContent iterator func
-func makeContentIterFunc(opt options.Option) func() *filecontent.FileContent {
+// FileContent ファイルコンテンツイテレータ関数を生成
+func makeContents(opt options.Option) []*filecontent.FileContent {
 	fcs := []*filecontent.FileContent{}
 
 	switch {
@@ -208,9 +209,13 @@ func makeContentIterFunc(opt options.Option) func() *filecontent.FileContent {
 			fcs = append(fcs, fc)
 		}
 	}
+	return fcs
+}
 
-	// closure を返す
+// FileContent ファイルコンテンツイテレータ関数を生成
+func makeContentIterFunc(fcs []*filecontent.FileContent) func() *filecontent.FileContent {
 	index := 0
+	// closure を返す
 	return func() *filecontent.FileContent {
 		if index < len(fcs) {
 			fc := fcs[index]

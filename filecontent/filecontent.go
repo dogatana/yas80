@@ -44,6 +44,7 @@ func (fc *FileContent) setupLines() {
 	}
 }
 
+// 総行数を返す
 func (fc *FileContent) LineCount() int {
 	fc.setupLines()
 	return len(fc.lines)
@@ -58,6 +59,7 @@ func NewFromReader(filename string, reader io.Reader) (*FileContent, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	data, err = formatBytesInput(data)
 	if err != nil {
 		return nil, err
@@ -69,11 +71,10 @@ func NewFromFile(filename string) (*FileContent, error) {
 	var data []byte
 	var err error
 
-	if err = checkFile(filename); err != nil {
-		return nil, err
-	}
-
 	if data, err = os.ReadFile(filename); err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("file not found: %s", filename)
+		}
 		return nil, err
 	}
 
@@ -84,6 +85,7 @@ func NewFromFile(filename string) (*FileContent, error) {
 	return &FileContent{Filename: filename, Content: data}, nil
 }
 
+// []byte のエンコード、改行を整形する
 func formatBytesInput(data []byte) ([]byte, error) {
 	var err error
 
@@ -100,6 +102,8 @@ func formatBytesInput(data []byte) ([]byte, error) {
 	}
 	// CR/LF を LF へ
 	data = bytes.ReplaceAll(data, []byte{13, 10}, []byte{10})
+
+	// 最後に改行がなければ追加
 	if len(data) == 0 {
 		data = []byte{10}
 	} else if data[len(data)-1] != 10 {
@@ -107,16 +111,4 @@ func formatBytesInput(data []byte) ([]byte, error) {
 	}
 
 	return data, nil
-}
-
-func checkFile(filename string) error {
-	if st, err := os.Stat(filename); err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("file not found: %s", filename)
-		}
-		return err
-	} else if st.IsDir() {
-		return fmt.Errorf("not a file: %s", filename)
-	}
-	return nil
 }
