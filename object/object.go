@@ -575,22 +575,75 @@ func InsertMessages(fblocks []*FileBlock, mmap logging.MessageMap) []*FileBlock 
 		if !ok {
 			continue
 		}
-		for _, line := range fb.LineObjects.Keys() {
-			msgs, ok := om.Get(line)
+		// 評価結果とLogger.messages の両方に存在する行番号を取得し、ユニークな行番号スライスとする
+		lines := uniqueKeys(fb.LineObjects.Keys(), om.Keys())
+
+		for _, line := range lines {
+			objs := []Object{}
 			if !ok {
 				continue
 			}
-			objs, _ := fb.LineObjects.Get(line)
-			eobjs := util.Map(msgs, func(m *logging.Message) Object {
-				return &ErrorObject{Message: m.LString(), Context: m.Context}
-			})
-			objs = append(objs, eobjs...)
+			if os, ok := fb.LineObjects.Get(line); ok {
+				objs = append(objs, os...)
+			}
+			if msgs, ok := om.Get(line); ok {
+				os := util.Map(msgs, func(m *logging.Message) Object {
+					return &ErrorObject{Message: m.LString(), Context: m.Context}
+				})
+				objs = append(objs, os...)
+			}
+			// Offset も考慮して Stable なソートを行う
 			slices.SortStableFunc(objs, compareObj)
-			fb.LineObjects.Set(line, objs)
+			// 各 Offset の先頭が Message なら CommentObject を挿入
+			fb.LineObjects.Set(line, inserCommentObject(objs))
+		}
+	}
+	return fblocks
+}
+
+// 2 つの行番号のスライスを受け取り、重複を排除してソートした行番号のスライスを返す
+func uniqueKeys(keys1, keys2 []int) []int {
+	set := map[int]bool{}
+
+	for _, line := range keys1 {
+		set[line] = true
+	}
+	for _, line := range keys2 {
+		set[line] = true
+	}
+
+	out := make([]int, len(set))
+	for line := range set {
+		out = append(out, line)
+	}
+	slices.Sort(out)
+	return out
+}
+
+// Offset が同じ obj の先頭が ErrorObject ならソース表示のための CommentObject を挿入
+func inserCommentObject(objects []Object) []Object {
+
+	set := util.NewOrderedMap[int, []Object]()
+
+	// Offset をキーにして obj をグループ化
+	for _, obj := range objects {
+		_, ofs := lineOffset(obj)
+		if so, ok := set.Get(ofs); !ok {
+			set.Set(ofs, []Object{obj})
+		} else {
+			set.Set(ofs, append(so, obj))
 		}
 	}
 
-	return fblocks
+	var out []Object
+	for _, ofs := range set.Keys() {
+		objs, _ := set.Get(ofs)
+		if e, ok := objs[0].(*ErrorObject); ok {
+			out = append(out, &CommentObject{Text: nil, Context: e.Context}, e)
+		}
+		out = append(out, objs[1:]...)
+	}
+	return out
 }
 
 // Object の Line と Offset を取得
@@ -609,7 +662,7 @@ func lineOffset(obj Object) (int, int) {
 	}
 }
 
-// CodeObject, CommentObject, TextObject を Line と Offset で比較するための関数
+// CodeObject, CommentObject, TextObject, ErrorObject を Line と Offset で比較するための関数
 func compareObj(op1, op2 Object) int {
 	l1, s1 := lineOffset(op1)
 	l2, s2 := lineOffset(op2)
