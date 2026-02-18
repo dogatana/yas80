@@ -30,6 +30,12 @@ func (a *Assembler) Run() {
 	// 構文解析
 	prog, fcMap := a.parse(logger)
 
+	// エラーが 1件でもあれば終了
+	if logger.ErrorCount() > 0 {
+		logger.PrintSyntaxError()
+		os.Exit(1)
+	}
+
 	// toplevel env 作成
 	env := object.NewEnvironment(nil)
 
