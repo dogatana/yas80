@@ -114,24 +114,26 @@ func (a *Assembler) Run() {
 	fmt.Println("-- ast")
 	parser.PrintNode(prog, 0)
 
-	// 出力ファイル生成
-	fmt.Println("# 出力ファイル生成")
-	fill, _ := getIntFromEnv(env, "$FILL")
-	bw := binwriter.New(obj, fill, logger)
+	if logger.ErrorCount() == 0 {
+		// 出力ファイル生成
+		fmt.Println("# 出力ファイル生成")
+		fill, _ := getIntFromEnv(env, "$FILL")
+		bw := binwriter.New(obj, fill, logger)
 
-	var buf bytes.Buffer
-	if bw.Write(&buf) {
-		os.WriteFile("out.bin", buf.Bytes(), 0644)
-	} else {
-		logger.Print()
-		os.Exit(1)
-	}
+		var buf bytes.Buffer
+		if bw.Write(&buf) {
+			os.WriteFile("out.bin", buf.Bytes(), 0644)
+		} else {
+			logger.Print()
+			os.Exit(1)
+		}
 
-	// マップファイル出力
-	fmt.Println("# マップファイル出力")
-	if err := bw.WriteMap(os.Stdout); err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
+		// マップファイル出力
+		fmt.Println("# マップファイル出力")
+		if err := bw.WriteMap(os.Stdout); err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
 	}
 
 	// リストファイル出力
