@@ -195,8 +195,8 @@ func makeContents(opt options.Option) []*filecontent.FileContent {
 	fcs := []*filecontent.FileContent{}
 
 	switch {
-	case opt.Line != "":
-		fc, _ := filecontent.NewFromString("line", opt.Line)
+	case opt.Arg:
+		fc, _ := filecontent.NewFromString("line", opt.Args[0])
 		fcs = append(fcs, fc)
 
 	case len(opt.Args) == 0:

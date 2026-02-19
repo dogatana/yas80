@@ -7,4 +7,7 @@ require (
 	golang.org/x/text v0.31.0
 )
 
-require github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
+require (
+	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
+)

@@ -7,6 +7,7 @@ import (
 
 func main() {
 	opt := options.Parse()
+	// opt.Print()
 
 	as := assembler.New(opt)
 	as.Run()
