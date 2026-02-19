@@ -98,13 +98,6 @@ func Parse() Option {
 		os.Exit(0)
 	}
 
-	// if len(opt.Args) == 0 {
-	// 	fmt.Println("input file is required")
-	// 	os.Exit(1)
-	// }
-
-	// setOutput(&opt)
-
 	return opt
 }
 

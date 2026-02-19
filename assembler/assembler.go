@@ -23,12 +23,12 @@ func New(option options.Option) *Assembler {
 }
 
 // アセンブル実行
-func (a *Assembler) Run() {
+func (a *Assembler) Run(fn func() *filecontent.FileContent) {
 	// logger 作成
 	logger := logging.New()
 
 	// 構文解析
-	prog, fcMap := a.parse(logger)
+	prog, fcMap := a.parse(logger, fn)
 
 	// エラーが 1件でもあれば終了
 	if logger.ErrorCount() > 0 {
@@ -162,10 +162,8 @@ func (a *Assembler) Run() {
 }
 
 // 構文解析とプリプロセス
-func (a *Assembler) parse(logger *logging.Logger) (*parser.BlockStatement, map[string]*filecontent.FileContent) {
+func (a *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileContent) (*parser.BlockStatement, map[string]*filecontent.FileContent) {
 	// lexer 作成
-	fcs := makeContents(a.option)
-	fn := makeContentIterFunc(fcs)
 	lexer := parser.NewLexer(logger, fn)
 
 	// 構文解析
@@ -188,50 +186,6 @@ func (a *Assembler) parse(logger *logging.Logger) (*parser.BlockStatement, map[s
 		fmt.Println("")
 	}
 	return prog, lexer.FcMap
-}
-
-// FileContent ファイルコンテンツイテレータ関数を生成
-func makeContents(opt options.Option) []*filecontent.FileContent {
-	fcs := []*filecontent.FileContent{}
-
-	switch {
-	case opt.Arg:
-		fc, _ := filecontent.NewFromString("line", opt.Args[0])
-		fcs = append(fcs, fc)
-
-	case len(opt.Args) == 0:
-		fc, err := filecontent.NewFromReader("stdin", os.Stdin)
-		if err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
-		}
-		fcs = append(fcs, fc)
-
-	case len(opt.Args) > 0:
-		for _, arg := range opt.Args {
-			fc, err := filecontent.NewFromFile(arg)
-			if err != nil {
-				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-			fcs = append(fcs, fc)
-		}
-	}
-	return fcs
-}
-
-// FileContent ファイルコンテンツイテレータ関数を生成
-func makeContentIterFunc(fcs []*filecontent.FileContent) func() *filecontent.FileContent {
-	index := 0
-	// closure を返す
-	return func() *filecontent.FileContent {
-		if index < len(fcs) {
-			fc := fcs[index]
-			index++
-			return fc
-		}
-		return nil
-	}
 }
 
 func printObjects(objs []object.Object) {
