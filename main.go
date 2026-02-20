@@ -32,7 +32,7 @@ func makeContents(opt options.Option) []*filecontent.FileContent {
 	fcs := []*filecontent.FileContent{}
 
 	switch {
-	case opt.Arg: // コマンドライン引数をアセンブル
+	case opt.AsmArg: // コマンドライン引数をアセンブル
 		fc, _ := filecontent.NewFromString("line", opt.Args[0])
 		fcs = append(fcs, fc)
 

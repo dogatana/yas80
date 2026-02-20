@@ -34,7 +34,7 @@ type Option struct {
 	YYdebug   int
 	Evaldebug int
 	Listebug  int
-	Arg       bool
+	AsmArg    bool
 }
 
 func (opt Option) Print() {
@@ -83,7 +83,7 @@ func Parse() Option {
 	// flag.CommandLine.MarkHidden("yy-debug")
 	// flag.CommandLine.MarkHidden("eval-debug")
 	// flag.CommandLine.MarkHidden("list-debug")
-	flag.BoolVarP(&opt.Arg, "arg", "a", false, "assemble Args[0]")
+	flag.BoolVarP(&opt.AsmArg, "arg", "a", false, "assemble Args[0]")
 	// usage をカスタマイズ
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] <input file>\n", progName)
