@@ -270,9 +270,18 @@ func getLastIfStatement(stmt *IfStatement) Node {
 
 // include 処理 TODO: -I オプションの利用
 func loadIncludeFile(base, target string) (*filecontent.FileContent, error) {
-	dir := filepath.Dir(base)
-	path := filepath.Join(dir, target)
-	return filecontent.NewFromFile(path)
+	dirs := make([]string, 0, len(includeDirs)+1)
+
+	dirs = append(dirs, filepath.Dir(base))
+	dirs = append(dirs, includeDirs...)
+
+	for _, dir := range dirs {
+		path := filepath.Join(dir, target)
+		if fc, err := filecontent.NewFromFile(path); err == nil {
+			return fc, nil
+		}
+	}
+	return nil, fmt.Errorf("cannot load %s", base)
 }
 
 // AST の表示

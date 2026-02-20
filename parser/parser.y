@@ -675,10 +675,15 @@ indexed_expr: expr '[' ']'
 
 %%
 
+var includeDirs []string
 
-func Parse(l *Lexer) (*BlockStatement) {
+func Parse(l *Lexer, dirs []string) (*BlockStatement) {
 	// 常に有効
 	yyErrorVerbose = true
+
+	// loadIncludeFile で参照
+	includeDirs = dirs
+	
 	// error トークンでリカバリすると yyParse() は 0 を返すため、戻り値には意味がない
 	yyParse(l)
 	return l.program
