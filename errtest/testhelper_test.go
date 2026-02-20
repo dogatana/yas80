@@ -66,7 +66,7 @@ func parseText(input string, logger *logging.Logger) *parser.BlockStatement {
 		fc = nil
 		return ret
 	})
-	return parser.Parse(lex)
+	return parser.Parse(lex, []string{})
 }
 
 func getCount(logger *logging.Logger) []int {

@@ -116,7 +116,7 @@ func parseTextForTest(input string, filename string, logger *logging.Logger) *pa
 		fc = nil
 		return ret
 	})
-	prog = parser.Parse(lex)
+	prog = parser.Parse(lex, []string{})
 	if logger.ErrorCount() > 0 {
 		return prog
 	}
@@ -139,7 +139,7 @@ func parseFileForTest(filename string, logger *logging.Logger) *parser.BlockStat
 		fc = nil
 		return ret
 	})
-	prog = parser.Parse(lex)
+	prog = parser.Parse(lex, []string{})
 	if logger.ErrorCount() > 0 {
 		return prog
 	}

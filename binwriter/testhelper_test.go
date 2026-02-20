@@ -87,7 +87,7 @@ func parseTextForTest(input any, logger *logging.Logger) *parser.BlockStatement 
 	}
 
 	lex := parser.NewLexer(logger, callback)
-	prog = parser.Parse(lex)
+	prog = parser.Parse(lex, []string{})
 	if logger.ErrorCount() > 0 {
 		return prog
 	}

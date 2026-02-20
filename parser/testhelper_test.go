@@ -23,7 +23,7 @@ func newLexerForTest(input string) *Lexer {
 }
 
 func ParseForTest(t *testing.T, lexer *Lexer, tn int) *BlockStatement {
-	prog := Parse(lexer)
+	prog := Parse(lexer, []string{})
 	return PreProrocess(lexer.logger, prog)
 }
 
