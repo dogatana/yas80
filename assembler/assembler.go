@@ -15,20 +15,20 @@ import (
 )
 
 type Assembler struct {
-	option options.Option
+	options.Option
 }
 
 func New(option options.Option) *Assembler {
-	return &Assembler{option: option}
+	return &Assembler{Option: option}
 }
 
 // アセンブル実行
-func (a *Assembler) Run(fn func() *filecontent.FileContent) {
+func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	// logger 作成
 	logger := logging.New()
 
 	// 構文解析
-	prog, fcMap := a.parse(logger, fn)
+	prog, fcMap := as.parse(logger, fn)
 
 	// エラーが 1件でもあれば終了
 	if logger.ErrorCount() > 0 {
@@ -40,10 +40,10 @@ func (a *Assembler) Run(fn func() *filecontent.FileContent) {
 	env := object.NewEnvironment(nil)
 
 	// システム変数初期値上書き
-	env.Set("$FILL", &object.NumberObject{Value: a.option.Fill})
+	env.Set("$FILL", &object.NumberObject{Value: as.Fill})
 
 	eval := evaluator.New(logger)
-	eval.Debug = a.option.Evaldebug
+	eval.Debug = as.Evaldebug
 
 	// eval step 1
 	// 評価後 eval.Resolved が true ならコード生成完了とみなす
@@ -57,12 +57,12 @@ func (a *Assembler) Run(fn func() *filecontent.FileContent) {
 		fmt.Printf("# [%d] EvalProgrram\n", i)
 		eval.Resolved = true
 		obj = eval.EvalProgram(prog, pass, env)
-		if a.option.Evaldebug > 0 {
+		if as.Evaldebug > 0 {
 			logger.Print()
 			object.PrintEnv(env)
 		}
 
-		if a.option.Evaldebug > 0 {
+		if as.Evaldebug > 0 {
 			showResult(i, prog, obj, env)
 		}
 		// $ の評価ができないので、EvalEnvは実行しない
@@ -162,14 +162,14 @@ func (a *Assembler) Run(fn func() *filecontent.FileContent) {
 }
 
 // 構文解析とプリプロセス
-func (a *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileContent) (*parser.BlockStatement, map[string]*filecontent.FileContent) {
+func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileContent) (*parser.BlockStatement, map[string]*filecontent.FileContent) {
 	// lexer 作成
 	lexer := parser.NewLexer(logger, fn)
 
 	// 構文解析
 	fmt.Println("# parse")
-	parser.SetYYDebug(a.option.YYdebug) // go-yacc debug flag
-	prog := parser.Parse(lexer)
+	parser.SetYYDebug(as.YYdebug) // go-yacc debug flag
+	prog := parser.Parse(lexer, as.IncDirs)
 
 	// プリプロセス
 	fmt.Println("# preprocess")
@@ -177,7 +177,7 @@ func (a *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCon
 
 	// 構文解析後 AST 表示
 	fmt.Println("# ast")
-	if a.option.Astdebug != 0 {
+	if as.Astdebug != 0 {
 		if len(prog.Block) == 0 {
 			fmt.Print("no statements detected")
 		} else {
