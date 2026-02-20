@@ -395,54 +395,54 @@ testdata/zilog.asm:
   394  02cc cb 6f                    [ 8]       BIT 5,A
   395  02ce cb 77                    [ 8]       BIT 6,A
   396  02d0 cb 7f                    [ 8]       BIT 7,A
-  397  02d2 cb 46                    [12]       BIT 0,(HL)
-  398  02d4 cb 4e                    [12]       BIT 1,(HL)
-  399  02d6 cb 56                    [12]       BIT 2,(HL)
-  400  02d8 cb 5e                    [12]       BIT 3,(HL)
-  401  02da cb 66                    [12]       BIT 4,(HL)
-  402  02dc cb 6e                    [12]       BIT 5,(HL)
-  403  02de cb 76                    [12]       BIT 6,(HL)
-  404  02e0 cb 7e                    [12]       BIT 7,(HL)
-  405  02e2 cb 40                    [ 8]       BIT 0,B
-  406  02e4 cb 48                    [ 8]       BIT 1,B
-  407  02e6 cb 50                    [ 8]       BIT 2,B
-  408  02e8 cb 58                    [ 8]       BIT 3,B
-  409  02ea cb 60                    [ 8]       BIT 4,B
-  410  02ec cb 68                    [ 8]       BIT 5,B
-  411  02ee cb 70                    [ 8]       BIT 6,B
-  412  02f0 cb 78                    [ 8]       BIT 7,B
-  413  02f2 cb 46                    [12]       BIT 0,(HL)
-  414  02f4 cb 4e                    [12]       BIT 1,(HL)
-  415  02f6 cb 56                    [12]       BIT 2,(HL)
-  416  02f8 cb 5e                    [12]       BIT 3,(HL)
-  417  02fa cb 66                    [12]       BIT 4,(HL)
-  418  02fc cb 6e                    [12]       BIT 5,(HL)
-  419  02fe cb 76                    [12]       BIT 6,(HL)
-  420  0300 cb 7e                    [12]       BIT 7,(HL)
-  421  0302 cb 41                    [ 8]       BIT 0,C
-  422  0304 cb 49                    [ 8]       BIT 1,C
-  423  0306 cb 51                    [ 8]       BIT 2,C
-  424  0308 cb 59                    [ 8]       BIT 3,C
-  425  030a cb 61                    [ 8]       BIT 4,C
-  426  030c cb 69                    [ 8]       BIT 5,C
-  427  030e cb 71                    [ 8]       BIT 6,C
-  428  0310 cb 79                    [ 8]       BIT 7,C
-  429  0312 cb 46                    [12]       BIT 0,(HL)
-  430  0314 cb 4e                    [12]       BIT 1,(HL)
-  431  0316 cb 56                    [12]       BIT 2,(HL)
-  432  0318 cb 5e                    [12]       BIT 3,(HL)
-  433  031a cb 66                    [12]       BIT 4,(HL)
-  434  031c cb 6e                    [12]       BIT 5,(HL)
-  435  031e cb 76                    [12]       BIT 6,(HL)
-  436  0320 cb 7e                    [12]       BIT 7,(HL)
-  437  0322 cb 42                    [ 8]       BIT 0,D
-  438  0324 cb 4a                    [ 8]       BIT 1,D
-  439  0326 cb 52                    [ 8]       BIT 2,D
-  440  0328 cb 5a                    [ 8]       BIT 3,D
-  441  032a cb 62                    [ 8]       BIT 4,D
-  442  032c cb 6a                    [ 8]       BIT 5,D
-  443  032e cb 72                    [ 8]       BIT 6,D
-  444  0330 cb 7a                    [ 8]       BIT 7,D
+  397  02d2 cb 40                    [ 8]       BIT 0,B
+  398  02d4 cb 48                    [ 8]       BIT 1,B
+  399  02d6 cb 50                    [ 8]       BIT 2,B
+  400  02d8 cb 58                    [ 8]       BIT 3,B
+  401  02da cb 60                    [ 8]       BIT 4,B
+  402  02dc cb 68                    [ 8]       BIT 5,B
+  403  02de cb 70                    [ 8]       BIT 6,B
+  404  02e0 cb 78                    [ 8]       BIT 7,B
+  405  02e2 cb 41                    [ 8]       BIT 0,C
+  406  02e4 cb 49                    [ 8]       BIT 1,C
+  407  02e6 cb 51                    [ 8]       BIT 2,C
+  408  02e8 cb 59                    [ 8]       BIT 3,C
+  409  02ea cb 61                    [ 8]       BIT 4,C
+  410  02ec cb 69                    [ 8]       BIT 5,C
+  411  02ee cb 71                    [ 8]       BIT 6,C
+  412  02f0 cb 79                    [ 8]       BIT 7,C
+  413  02f2 cb 42                    [ 8]       BIT 0,D
+  414  02f4 cb 4a                    [ 8]       BIT 1,D
+  415  02f6 cb 52                    [ 8]       BIT 2,D
+  416  02f8 cb 5a                    [ 8]       BIT 3,D
+  417  02fa cb 62                    [ 8]       BIT 4,D
+  418  02fc cb 6a                    [ 8]       BIT 5,D
+  419  02fe cb 72                    [ 8]       BIT 6,D
+  420  0300 cb 7a                    [ 8]       BIT 7,D
+  421  0302 cb 43                    [ 8]       BIT 0,E
+  422  0304 cb 4b                    [ 8]       BIT 1,E
+  423  0306 cb 53                    [ 8]       BIT 2,E
+  424  0308 cb 5b                    [ 8]       BIT 3,E
+  425  030a cb 63                    [ 8]       BIT 4,E
+  426  030c cb 6b                    [ 8]       BIT 5,E
+  427  030e cb 73                    [ 8]       BIT 6,E
+  428  0310 cb 7b                    [ 8]       BIT 7,E
+  429  0312 cb 44                    [ 8]       BIT 0,H
+  430  0314 cb 4c                    [ 8]       BIT 1,H
+  431  0316 cb 54                    [ 8]       BIT 2,H
+  432  0318 cb 5c                    [ 8]       BIT 3,H
+  433  031a cb 64                    [ 8]       BIT 4,H
+  434  031c cb 6c                    [ 8]       BIT 5,H
+  435  031e cb 74                    [ 8]       BIT 6,H
+  436  0320 cb 7c                    [ 8]       BIT 7,H
+  437  0322 cb 45                    [ 8]       BIT 0,L
+  438  0324 cb 4d                    [ 8]       BIT 1,L
+  439  0326 cb 55                    [ 8]       BIT 2,L
+  440  0328 cb 5d                    [ 8]       BIT 3,L
+  441  032a cb 65                    [ 8]       BIT 4,L
+  442  032c cb 6d                    [ 8]       BIT 5,L
+  443  032e cb 75                    [ 8]       BIT 6,L
+  444  0330 cb 7d                    [ 8]       BIT 7,L
   445  0332 cb 46                    [12]       BIT 0,(HL)
   446  0334 cb 4e                    [12]       BIT 1,(HL)
   447  0336 cb 56                    [12]       BIT 2,(HL)
@@ -451,78 +451,78 @@ testdata/zilog.asm:
   450  033c cb 6e                    [12]       BIT 5,(HL)
   451  033e cb 76                    [12]       BIT 6,(HL)
   452  0340 cb 7e                    [12]       BIT 7,(HL)
-  453  0342 cb 43                    [ 8]       BIT 0,E
-  454  0344 cb 4b                    [ 8]       BIT 1,E
-  455  0346 cb 53                    [ 8]       BIT 2,E
-  456  0348 cb 5b                    [ 8]       BIT 3,E
-  457  034a cb 63                    [ 8]       BIT 4,E
-  458  034c cb 6b                    [ 8]       BIT 5,E
-  459  034e cb 73                    [ 8]       BIT 6,E
-  460  0350 cb 7b                    [ 8]       BIT 7,E
-  461  0352 cb 46                    [12]       BIT 0,(HL)
-  462  0354 cb 4e                    [12]       BIT 1,(HL)
-  463  0356 cb 56                    [12]       BIT 2,(HL)
-  464  0358 cb 5e                    [12]       BIT 3,(HL)
-  465  035a cb 66                    [12]       BIT 4,(HL)
-  466  035c cb 6e                    [12]       BIT 5,(HL)
-  467  035e cb 76                    [12]       BIT 6,(HL)
-  468  0360 cb 7e                    [12]       BIT 7,(HL)
-  469  0362 cb 44                    [ 8]       BIT 0,H
-  470  0364 cb 4c                    [ 8]       BIT 1,H
-  471  0366 cb 54                    [ 8]       BIT 2,H
-  472  0368 cb 5c                    [ 8]       BIT 3,H
-  473  036a cb 64                    [ 8]       BIT 4,H
-  474  036c cb 6c                    [ 8]       BIT 5,H
-  475  036e cb 74                    [ 8]       BIT 6,H
-  476  0370 cb 7c                    [ 8]       BIT 7,H
-  477  0372 cb 46                    [12]       BIT 0,(HL)
-  478  0374 cb 4e                    [12]       BIT 1,(HL)
-  479  0376 cb 56                    [12]       BIT 2,(HL)
-  480  0378 cb 5e                    [12]       BIT 3,(HL)
-  481  037a cb 66                    [12]       BIT 4,(HL)
-  482  037c cb 6e                    [12]       BIT 5,(HL)
-  483  037e cb 76                    [12]       BIT 6,(HL)
-  484  0380 cb 7e                    [12]       BIT 7,(HL)
-  485  0382 cb 45                    [ 8]       BIT 0,L
-  486  0384 cb 4d                    [ 8]       BIT 1,L
-  487  0386 cb 55                    [ 8]       BIT 2,L
-  488  0388 cb 5d                    [ 8]       BIT 3,L
-  489  038a cb 65                    [ 8]       BIT 4,L
-  490  038c cb 6d                    [ 8]       BIT 5,L
-  491  038e cb 75                    [ 8]       BIT 6,L
-  492  0390 cb 7d                    [ 8]       BIT 7,L
-  493  0392 cb 46                    [12]       BIT 0,(HL)
-  494  0394 cb 4e                    [12]       BIT 1,(HL)
-  495  0396 cb 56                    [12]       BIT 2,(HL)
-  496  0398 cb 5e                    [12]       BIT 3,(HL)
-  497  039a cb 66                    [12]       BIT 4,(HL)
-  498  039c cb 6e                    [12]       BIT 5,(HL)
-  499  039e cb 76                    [12]       BIT 6,(HL)
-  500  03a0 cb 7e                    [12]       BIT 7,(HL)
-  501  03a2 dd cb 01 46              [20]       BIT 0,(IX+1)
-  502  03a6 dd cb 01 4e              [20]       BIT 1,(IX+1)
-  503  03aa dd cb 01 56              [20]       BIT 2,(IX+1)
-  504  03ae dd cb 01 5e              [20]       BIT 3,(IX+1)
-  505  03b2 dd cb 01 66              [20]       BIT 4,(IX+1)
-  506  03b6 dd cb 01 6e              [20]       BIT 5,(IX+1)
-  507  03ba dd cb 01 76              [20]       BIT 6,(IX+1)
-  508  03be dd cb 01 7e              [20]       BIT 7,(IX+1)
-  509  03c2 fd cb ff 46              [20]       BIT 0,(IY-1)
-  510  03c6 fd cb ff 4e              [20]       BIT 1,(IY-1)
-  511  03ca fd cb ff 56              [20]       BIT 2,(IY-1)
-  512  03ce fd cb ff 5e              [20]       BIT 3,(IY-1)
-  513  03d2 fd cb ff 66              [20]       BIT 4,(IY-1)
-  514  03d6 fd cb ff 6e              [20]       BIT 5,(IY-1)
-  515  03da fd cb ff 76              [20]       BIT 6,(IY-1)
-  516  03de fd cb ff 7e              [20]       BIT 7,(IY-1)
-  517  03e2 cb c7                    [ 8]       SET 0,A
-  518  03e4 cb cf                    [ 8]       SET 1,A
-  519  03e6 cb d7                    [ 8]       SET 2,A
-  520  03e8 cb df                    [ 8]       SET 3,A
-  521  03ea cb e7                    [ 8]       SET 4,A
-  522  03ec cb ef                    [ 8]       SET 5,A
-  523  03ee cb f7                    [ 8]       SET 6,A
-  524  03f0 cb ff                    [ 8]       SET 7,A
+  453  0342 dd cb 01 46              [20]       BIT 0,(IX+1)
+  454  0346 dd cb 01 4e              [20]       BIT 1,(IX+1)
+  455  034a dd cb 01 56              [20]       BIT 2,(IX+1)
+  456  034e dd cb 01 5e              [20]       BIT 3,(IX+1)
+  457  0352 dd cb 01 66              [20]       BIT 4,(IX+1)
+  458  0356 dd cb 01 6e              [20]       BIT 5,(IX+1)
+  459  035a dd cb 01 76              [20]       BIT 6,(IX+1)
+  460  035e dd cb 01 7e              [20]       BIT 7,(IX+1)
+  461  0362 fd cb ff 46              [20]       BIT 0,(IY-1)
+  462  0366 fd cb ff 4e              [20]       BIT 1,(IY-1)
+  463  036a fd cb ff 56              [20]       BIT 2,(IY-1)
+  464  036e fd cb ff 5e              [20]       BIT 3,(IY-1)
+  465  0372 fd cb ff 66              [20]       BIT 4,(IY-1)
+  466  0376 fd cb ff 6e              [20]       BIT 5,(IY-1)
+  467  037a fd cb ff 76              [20]       BIT 6,(IY-1)
+  468  037e fd cb ff 7e              [20]       BIT 7,(IY-1)
+  469  0382 cb c7                    [ 8]       SET 0,A
+  470  0384 cb cf                    [ 8]       SET 1,A
+  471  0386 cb d7                    [ 8]       SET 2,A
+  472  0388 cb df                    [ 8]       SET 3,A
+  473  038a cb e7                    [ 8]       SET 4,A
+  474  038c cb ef                    [ 8]       SET 5,A
+  475  038e cb f7                    [ 8]       SET 6,A
+  476  0390 cb ff                    [ 8]       SET 7,A
+  477  0392 cb c0                    [ 8]       SET 0,B
+  478  0394 cb c8                    [ 8]       SET 1,B
+  479  0396 cb d0                    [ 8]       SET 2,B
+  480  0398 cb d8                    [ 8]       SET 3,B
+  481  039a cb e0                    [ 8]       SET 4,B
+  482  039c cb e8                    [ 8]       SET 5,B
+  483  039e cb f0                    [ 8]       SET 6,B
+  484  03a0 cb f8                    [ 8]       SET 7,B
+  485  03a2 cb c1                    [ 8]       SET 0,C
+  486  03a4 cb c9                    [ 8]       SET 1,C
+  487  03a6 cb d1                    [ 8]       SET 2,C
+  488  03a8 cb d9                    [ 8]       SET 3,C
+  489  03aa cb e1                    [ 8]       SET 4,C
+  490  03ac cb e9                    [ 8]       SET 5,C
+  491  03ae cb f1                    [ 8]       SET 6,C
+  492  03b0 cb f9                    [ 8]       SET 7,C
+  493  03b2 cb c2                    [ 8]       SET 0,D
+  494  03b4 cb ca                    [ 8]       SET 1,D
+  495  03b6 cb d2                    [ 8]       SET 2,D
+  496  03b8 cb da                    [ 8]       SET 3,D
+  497  03ba cb e2                    [ 8]       SET 4,D
+  498  03bc cb ea                    [ 8]       SET 5,D
+  499  03be cb f2                    [ 8]       SET 6,D
+  500  03c0 cb fa                    [ 8]       SET 7,D
+  501  03c2 cb c3                    [ 8]       SET 0,E
+  502  03c4 cb cb                    [ 8]       SET 1,E
+  503  03c6 cb d3                    [ 8]       SET 2,E
+  504  03c8 cb db                    [ 8]       SET 3,E
+  505  03ca cb e3                    [ 8]       SET 4,E
+  506  03cc cb eb                    [ 8]       SET 5,E
+  507  03ce cb f3                    [ 8]       SET 6,E
+  508  03d0 cb fb                    [ 8]       SET 7,E
+  509  03d2 cb c4                    [ 8]       SET 0,H
+  510  03d4 cb cc                    [ 8]       SET 1,H
+  511  03d6 cb d4                    [ 8]       SET 2,H
+  512  03d8 cb dc                    [ 8]       SET 3,H
+  513  03da cb e4                    [ 8]       SET 4,H
+  514  03dc cb ec                    [ 8]       SET 5,H
+  515  03de cb f4                    [ 8]       SET 6,H
+  516  03e0 cb fc                    [ 8]       SET 7,H
+  517  03e2 cb c5                    [ 8]       SET 0,L
+  518  03e4 cb cd                    [ 8]       SET 1,L
+  519  03e6 cb d5                    [ 8]       SET 2,L
+  520  03e8 cb dd                    [ 8]       SET 3,L
+  521  03ea cb e5                    [ 8]       SET 4,L
+  522  03ec cb ed                    [ 8]       SET 5,L
+  523  03ee cb f5                    [ 8]       SET 6,L
+  524  03f0 cb fd                    [ 8]       SET 7,L
   525  03f2 cb c6                    [15]       SET 0,(HL)
   526  03f4 cb ce                    [15]       SET 1,(HL)
   527  03f6 cb d6                    [15]       SET 2,(HL)
@@ -531,314 +531,170 @@ testdata/zilog.asm:
   530  03fc cb ee                    [15]       SET 5,(HL)
   531  03fe cb f6                    [15]       SET 6,(HL)
   532  0400 cb fe                    [15]       SET 7,(HL)
-  533  0402 cb c0                    [ 8]       SET 0,B
-  534  0404 cb c8                    [ 8]       SET 1,B
-  535  0406 cb d0                    [ 8]       SET 2,B
-  536  0408 cb d8                    [ 8]       SET 3,B
-  537  040a cb e0                    [ 8]       SET 4,B
-  538  040c cb e8                    [ 8]       SET 5,B
-  539  040e cb f0                    [ 8]       SET 6,B
-  540  0410 cb f8                    [ 8]       SET 7,B
-  541  0412 cb c6                    [15]       SET 0,(HL)
-  542  0414 cb ce                    [15]       SET 1,(HL)
-  543  0416 cb d6                    [15]       SET 2,(HL)
-  544  0418 cb de                    [15]       SET 3,(HL)
-  545  041a cb e6                    [15]       SET 4,(HL)
-  546  041c cb ee                    [15]       SET 5,(HL)
-  547  041e cb f6                    [15]       SET 6,(HL)
-  548  0420 cb fe                    [15]       SET 7,(HL)
-  549  0422 cb c1                    [ 8]       SET 0,C
-  550  0424 cb c9                    [ 8]       SET 1,C
-  551  0426 cb d1                    [ 8]       SET 2,C
-  552  0428 cb d9                    [ 8]       SET 3,C
-  553  042a cb e1                    [ 8]       SET 4,C
-  554  042c cb e9                    [ 8]       SET 5,C
-  555  042e cb f1                    [ 8]       SET 6,C
-  556  0430 cb f9                    [ 8]       SET 7,C
-  557  0432 cb c6                    [15]       SET 0,(HL)
-  558  0434 cb ce                    [15]       SET 1,(HL)
-  559  0436 cb d6                    [15]       SET 2,(HL)
-  560  0438 cb de                    [15]       SET 3,(HL)
-  561  043a cb e6                    [15]       SET 4,(HL)
-  562  043c cb ee                    [15]       SET 5,(HL)
-  563  043e cb f6                    [15]       SET 6,(HL)
-  564  0440 cb fe                    [15]       SET 7,(HL)
-  565  0442 cb c2                    [ 8]       SET 0,D
-  566  0444 cb ca                    [ 8]       SET 1,D
-  567  0446 cb d2                    [ 8]       SET 2,D
-  568  0448 cb da                    [ 8]       SET 3,D
-  569  044a cb e2                    [ 8]       SET 4,D
-  570  044c cb ea                    [ 8]       SET 5,D
-  571  044e cb f2                    [ 8]       SET 6,D
-  572  0450 cb fa                    [ 8]       SET 7,D
-  573  0452 cb c6                    [15]       SET 0,(HL)
-  574  0454 cb ce                    [15]       SET 1,(HL)
-  575  0456 cb d6                    [15]       SET 2,(HL)
-  576  0458 cb de                    [15]       SET 3,(HL)
-  577  045a cb e6                    [15]       SET 4,(HL)
-  578  045c cb ee                    [15]       SET 5,(HL)
-  579  045e cb f6                    [15]       SET 6,(HL)
-  580  0460 cb fe                    [15]       SET 7,(HL)
-  581  0462 cb c3                    [ 8]       SET 0,E
-  582  0464 cb cb                    [ 8]       SET 1,E
-  583  0466 cb d3                    [ 8]       SET 2,E
-  584  0468 cb db                    [ 8]       SET 3,E
-  585  046a cb e3                    [ 8]       SET 4,E
-  586  046c cb eb                    [ 8]       SET 5,E
-  587  046e cb f3                    [ 8]       SET 6,E
-  588  0470 cb fb                    [ 8]       SET 7,E
-  589  0472 cb c6                    [15]       SET 0,(HL)
-  590  0474 cb ce                    [15]       SET 1,(HL)
-  591  0476 cb d6                    [15]       SET 2,(HL)
-  592  0478 cb de                    [15]       SET 3,(HL)
-  593  047a cb e6                    [15]       SET 4,(HL)
-  594  047c cb ee                    [15]       SET 5,(HL)
-  595  047e cb f6                    [15]       SET 6,(HL)
-  596  0480 cb fe                    [15]       SET 7,(HL)
-  597  0482 cb c4                    [ 8]       SET 0,H
-  598  0484 cb cc                    [ 8]       SET 1,H
-  599  0486 cb d4                    [ 8]       SET 2,H
-  600  0488 cb dc                    [ 8]       SET 3,H
-  601  048a cb e4                    [ 8]       SET 4,H
-  602  048c cb ec                    [ 8]       SET 5,H
-  603  048e cb f4                    [ 8]       SET 6,H
-  604  0490 cb fc                    [ 8]       SET 7,H
-  605  0492 cb c6                    [15]       SET 0,(HL)
-  606  0494 cb ce                    [15]       SET 1,(HL)
-  607  0496 cb d6                    [15]       SET 2,(HL)
-  608  0498 cb de                    [15]       SET 3,(HL)
-  609  049a cb e6                    [15]       SET 4,(HL)
-  610  049c cb ee                    [15]       SET 5,(HL)
-  611  049e cb f6                    [15]       SET 6,(HL)
-  612  04a0 cb fe                    [15]       SET 7,(HL)
-  613  04a2 cb c5                    [ 8]       SET 0,L
-  614  04a4 cb cd                    [ 8]       SET 1,L
-  615  04a6 cb d5                    [ 8]       SET 2,L
-  616  04a8 cb dd                    [ 8]       SET 3,L
-  617  04aa cb e5                    [ 8]       SET 4,L
-  618  04ac cb ed                    [ 8]       SET 5,L
-  619  04ae cb f5                    [ 8]       SET 6,L
-  620  04b0 cb fd                    [ 8]       SET 7,L
-  621  04b2 cb c6                    [15]       SET 0,(HL)
-  622  04b4 cb ce                    [15]       SET 1,(HL)
-  623  04b6 cb d6                    [15]       SET 2,(HL)
-  624  04b8 cb de                    [15]       SET 3,(HL)
-  625  04ba cb e6                    [15]       SET 4,(HL)
-  626  04bc cb ee                    [15]       SET 5,(HL)
-  627  04be cb f6                    [15]       SET 6,(HL)
-  628  04c0 cb fe                    [15]       SET 7,(HL)
-  629  04c2 dd cb 01 c6              [23]       SET 0,(IX+1)
-  630  04c6 dd cb 01 ce              [23]       SET 1,(IX+1)
-  631  04ca dd cb 01 d6              [23]       SET 2,(IX+1)
-  632  04ce dd cb 01 de              [23]       SET 3,(IX+1)
-  633  04d2 dd cb 01 e6              [23]       SET 4,(IX+1)
-  634  04d6 dd cb 01 ee              [23]       SET 5,(IX+1)
-  635  04da dd cb 01 f6              [23]       SET 6,(IX+1)
-  636  04de dd cb 01 fe              [23]       SET 7,(IX+1)
-  637  04e2 fd cb ff c6              [23]       SET 0,(IY-1)
-  638  04e6 fd cb ff ce              [23]       SET 1,(IY-1)
-  639  04ea fd cb ff d6              [23]       SET 2,(IY-1)
-  640  04ee fd cb ff de              [23]       SET 3,(IY-1)
-  641  04f2 fd cb ff e6              [23]       SET 4,(IY-1)
-  642  04f6 fd cb ff ee              [23]       SET 5,(IY-1)
-  643  04fa fd cb ff f6              [23]       SET 6,(IY-1)
-  644  04fe fd cb ff fe              [23]       SET 7,(IY-1)
-  645  0502 cb 87                    [ 8]       RES 0,A
-  646  0504 cb 8f                    [ 8]       RES 1,A
-  647  0506 cb 97                    [ 8]       RES 2,A
-  648  0508 cb 9f                    [ 8]       RES 3,A
-  649  050a cb a7                    [ 8]       RES 4,A
-  650  050c cb af                    [ 8]       RES 5,A
-  651  050e cb b7                    [ 8]       RES 6,A
-  652  0510 cb bf                    [ 8]       RES 7,A
-  653  0512 cb 86                    [15]       RES 0,(HL)
-  654  0514 cb 8e                    [15]       RES 1,(HL)
-  655  0516 cb 96                    [15]       RES 2,(HL)
-  656  0518 cb 9e                    [15]       RES 3,(HL)
-  657  051a cb a6                    [15]       RES 4,(HL)
-  658  051c cb ae                    [15]       RES 5,(HL)
-  659  051e cb b6                    [15]       RES 6,(HL)
-  660  0520 cb be                    [15]       RES 7,(HL)
-  661  0522 cb 80                    [ 8]       RES 0,B
-  662  0524 cb 88                    [ 8]       RES 1,B
-  663  0526 cb 90                    [ 8]       RES 2,B
-  664  0528 cb 98                    [ 8]       RES 3,B
-  665  052a cb a0                    [ 8]       RES 4,B
-  666  052c cb a8                    [ 8]       RES 5,B
-  667  052e cb b0                    [ 8]       RES 6,B
-  668  0530 cb b8                    [ 8]       RES 7,B
-  669  0532 cb 86                    [15]       RES 0,(HL)
-  670  0534 cb 8e                    [15]       RES 1,(HL)
-  671  0536 cb 96                    [15]       RES 2,(HL)
-  672  0538 cb 9e                    [15]       RES 3,(HL)
-  673  053a cb a6                    [15]       RES 4,(HL)
-  674  053c cb ae                    [15]       RES 5,(HL)
-  675  053e cb b6                    [15]       RES 6,(HL)
-  676  0540 cb be                    [15]       RES 7,(HL)
-  677  0542 cb 81                    [ 8]       RES 0,C
-  678  0544 cb 89                    [ 8]       RES 1,C
-  679  0546 cb 91                    [ 8]       RES 2,C
-  680  0548 cb 99                    [ 8]       RES 3,C
-  681  054a cb a1                    [ 8]       RES 4,C
-  682  054c cb a9                    [ 8]       RES 5,C
-  683  054e cb b1                    [ 8]       RES 6,C
-  684  0550 cb b9                    [ 8]       RES 7,C
-  685  0552 cb 86                    [15]       RES 0,(HL)
-  686  0554 cb 8e                    [15]       RES 1,(HL)
-  687  0556 cb 96                    [15]       RES 2,(HL)
-  688  0558 cb 9e                    [15]       RES 3,(HL)
-  689  055a cb a6                    [15]       RES 4,(HL)
-  690  055c cb ae                    [15]       RES 5,(HL)
-  691  055e cb b6                    [15]       RES 6,(HL)
-  692  0560 cb be                    [15]       RES 7,(HL)
-  693  0562 cb 82                    [ 8]       RES 0,D
-  694  0564 cb 8a                    [ 8]       RES 1,D
-  695  0566 cb 92                    [ 8]       RES 2,D
-  696  0568 cb 9a                    [ 8]       RES 3,D
-  697  056a cb a2                    [ 8]       RES 4,D
-  698  056c cb aa                    [ 8]       RES 5,D
-  699  056e cb b2                    [ 8]       RES 6,D
-  700  0570 cb ba                    [ 8]       RES 7,D
-  701  0572 cb 86                    [15]       RES 0,(HL)
-  702  0574 cb 8e                    [15]       RES 1,(HL)
-  703  0576 cb 96                    [15]       RES 2,(HL)
-  704  0578 cb 9e                    [15]       RES 3,(HL)
-  705  057a cb a6                    [15]       RES 4,(HL)
-  706  057c cb ae                    [15]       RES 5,(HL)
-  707  057e cb b6                    [15]       RES 6,(HL)
-  708  0580 cb be                    [15]       RES 7,(HL)
-  709  0582 cb 83                    [ 8]       RES 0,E
-  710  0584 cb 8b                    [ 8]       RES 1,E
-  711  0586 cb 93                    [ 8]       RES 2,E
-  712  0588 cb 9b                    [ 8]       RES 3,E
-  713  058a cb a3                    [ 8]       RES 4,E
-  714  058c cb ab                    [ 8]       RES 5,E
-  715  058e cb b3                    [ 8]       RES 6,E
-  716  0590 cb bb                    [ 8]       RES 7,E
-  717  0592 cb 86                    [15]       RES 0,(HL)
-  718  0594 cb 8e                    [15]       RES 1,(HL)
-  719  0596 cb 96                    [15]       RES 2,(HL)
-  720  0598 cb 9e                    [15]       RES 3,(HL)
-  721  059a cb a6                    [15]       RES 4,(HL)
-  722  059c cb ae                    [15]       RES 5,(HL)
-  723  059e cb b6                    [15]       RES 6,(HL)
-  724  05a0 cb be                    [15]       RES 7,(HL)
-  725  05a2 cb 84                    [ 8]       RES 0,H
-  726  05a4 cb 8c                    [ 8]       RES 1,H
-  727  05a6 cb 94                    [ 8]       RES 2,H
-  728  05a8 cb 9c                    [ 8]       RES 3,H
-  729  05aa cb a4                    [ 8]       RES 4,H
-  730  05ac cb ac                    [ 8]       RES 5,H
-  731  05ae cb b4                    [ 8]       RES 6,H
-  732  05b0 cb bc                    [ 8]       RES 7,H
-  733  05b2 cb 86                    [15]       RES 0,(HL)
-  734  05b4 cb 8e                    [15]       RES 1,(HL)
-  735  05b6 cb 96                    [15]       RES 2,(HL)
-  736  05b8 cb 9e                    [15]       RES 3,(HL)
-  737  05ba cb a6                    [15]       RES 4,(HL)
-  738  05bc cb ae                    [15]       RES 5,(HL)
-  739  05be cb b6                    [15]       RES 6,(HL)
-  740  05c0 cb be                    [15]       RES 7,(HL)
-  741  05c2 cb 85                    [ 8]       RES 0,L
-  742  05c4 cb 8d                    [ 8]       RES 1,L
-  743  05c6 cb 95                    [ 8]       RES 2,L
-  744  05c8 cb 9d                    [ 8]       RES 3,L
-  745  05ca cb a5                    [ 8]       RES 4,L
-  746  05cc cb ad                    [ 8]       RES 5,L
-  747  05ce cb b5                    [ 8]       RES 6,L
-  748  05d0 cb bd                    [ 8]       RES 7,L
-  749  05d2 cb 86                    [15]       RES 0,(HL)
-  750  05d4 cb 8e                    [15]       RES 1,(HL)
-  751  05d6 cb 96                    [15]       RES 2,(HL)
-  752  05d8 cb 9e                    [15]       RES 3,(HL)
-  753  05da cb a6                    [15]       RES 4,(HL)
-  754  05dc cb ae                    [15]       RES 5,(HL)
-  755  05de cb b6                    [15]       RES 6,(HL)
-  756  05e0 cb be                    [15]       RES 7,(HL)
-  757  05e2 dd cb 01 86              [23]       RES 0,(IX+1)
-  758  05e6 dd cb 01 8e              [23]       RES 1,(IX+1)
-  759  05ea dd cb 01 96              [23]       RES 2,(IX+1)
-  760  05ee dd cb 01 9e              [23]       RES 3,(IX+1)
-  761  05f2 dd cb 01 a6              [23]       RES 4,(IX+1)
-  762  05f6 dd cb 01 ae              [23]       RES 5,(IX+1)
-  763  05fa dd cb 01 b6              [23]       RES 6,(IX+1)
-  764  05fe dd cb 01 be              [23]       RES 7,(IX+1)
-  765  0602 fd cb ff 86              [23]       RES 0,(IY-1)
-  766  0606 fd cb ff 8e              [23]       RES 1,(IY-1)
-  767  060a fd cb ff 96              [23]       RES 2,(IY-1)
-  768  060e fd cb ff 9e              [23]       RES 3,(IY-1)
-  769  0612 fd cb ff a6              [23]       RES 4,(IY-1)
-  770  0616 fd cb ff ae              [23]       RES 5,(IY-1)
-  771  061a fd cb ff b6              [23]       RES 6,(IY-1)
-  772  061e fd cb ff be              [23]       RES 7,(IY-1)
-  773  0622 c3 78 56                 [10]       JP $5678
-  774  0625 c2 78 56                 [10]       JP NZ,$5678
-  775  0628 ca 78 56                 [10]       JP Z,$5678
-  776  062b d2 78 56                 [10]       JP NC,$5678
-  777  062e da 78 56                 [10]       JP C,$5678
-  778  0631 e2 78 56                 [10]       JP PO,$5678
-  779  0634 ea 78 56                 [10]       JP PE,$5678
-  780  0637 f2 78 56                 [10]       JP P,$5678
-  781  063a fa 78 56                 [10]       JP M,$5678
-  782  063d 18 00                    [12]       JR $ + 2
-  783  063f 20 00                    [12]       JR NZ,$ + 2
-  784  0641 28 00                    [12]       JR Z,$ + 2
-  785  0643 30 00                    [12]       JR NC,$ + 2
-  786  0645 38 00                    [12]       JR C,$ + 2
-  787  0647 e9                       [ 4]       JP (HL)
-  788  0648 dd e9                    [ 8]       JP (IX)
-  789  064a fd e9                    [ 8]       JP (IY)
-  790  064c 10 00                    [13]       DJNZ $ + 2
-  791  064e cd 78 56                 [17]       CALL $5678
-  792  0651 c4 78 56                 [17]       CALL NZ,$5678
-  793  0654 cc 78 56                 [17]       CALL Z,$5678
-  794  0657 d4 78 56                 [17]       CALL NC,$5678
-  795  065a dc 78 56                 [17]       CALL C,$5678
-  796  065d e4 78 56                 [17]       CALL PO,$5678
-  797  0660 ec 78 56                 [17]       CALL PE,$5678
-  798  0663 f4 78 56                 [17]       CALL P,$5678
-  799  0666 fc 78 56                 [17]       CALL M,$5678
-  800  0669 c9                       [10]       RET
-  801  066a c0                       [11]       RET NZ
-  802  066b c8                       [11]       RET Z
-  803  066c d0                       [11]       RET NC
-  804  066d d8                       [11]       RET C
-  805  066e e0                       [11]       RET PO
-  806  066f e8                       [11]       RET PE
-  807  0670 f0                       [11]       RET P
-  808  0671 f8                       [11]       RET M
-  809  0672 ed 4d                    [14]       RETI
-  810  0674 ed 45                    [14]       RETN
-  811  0676 c7                       [11]       RST $00
-  812  0677 cf                       [11]       RST $08
-  813  0678 d7                       [11]       RST $10
-  814  0679 df                       [11]       RST $18
-  815  067a e7                       [11]       RST $20
-  816  067b ef                       [11]       RST $28
-  817  067c f7                       [11]       RST $30
-  818  067d ff                       [11]       RST $38
-  819  067e db 12                    [11]       IN A,($12)
-  820  0680 ed 78                    [12]       IN A,(C)
-  821  0682 ed 40                    [12]       IN B,(C)
-  822  0684 ed 48                    [12]       IN C,(C)
-  823  0686 ed 50                    [12]       IN D,(C)
-  824  0688 ed 58                    [12]       IN E,(C)
-  825  068a ed 60                    [12]       IN H,(C)
-  826  068c ed 68                    [12]       IN L,(C)
-  827  068e ed a2                    [16]       INI
-  828  0690 ed b2                    [21]       INIR
-  829  0692 ed aa                    [16]       IND
-  830  0694 ed ba                    [21]       INDR
-  831  0696 d3 12                    [11]       OUT ($12),A
-  832  0698 ed 79                    [12]       OUT (C),A
-  833  069a ed 41                    [12]       OUT (C),B
-  834  069c ed 49                    [12]       OUT (C),C
-  835  069e ed 51                    [12]       OUT (C),D
-  836  06a0 ed 59                    [12]       OUT (C),E
-  837  06a2 ed 61                    [12]       OUT (C),H
-  838  06a4 ed 69                    [12]       OUT (C),L
-  839  06a6 ed a3                    [16]       OUTI
-  840  06a8 ed b3                    [21]       OTIR
-  841  06aa ed ab                    [16]       OUTD
-  842  06ac ed bb                    [21]       OTDR
-  843                               
+  533  0402 dd cb 01 c6              [23]       SET 0,(IX+1)
+  534  0406 dd cb 01 ce              [23]       SET 1,(IX+1)
+  535  040a dd cb 01 d6              [23]       SET 2,(IX+1)
+  536  040e dd cb 01 de              [23]       SET 3,(IX+1)
+  537  0412 dd cb 01 e6              [23]       SET 4,(IX+1)
+  538  0416 dd cb 01 ee              [23]       SET 5,(IX+1)
+  539  041a dd cb 01 f6              [23]       SET 6,(IX+1)
+  540  041e dd cb 01 fe              [23]       SET 7,(IX+1)
+  541  0422 fd cb ff c6              [23]       SET 0,(IY-1)
+  542  0426 fd cb ff ce              [23]       SET 1,(IY-1)
+  543  042a fd cb ff d6              [23]       SET 2,(IY-1)
+  544  042e fd cb ff de              [23]       SET 3,(IY-1)
+  545  0432 fd cb ff e6              [23]       SET 4,(IY-1)
+  546  0436 fd cb ff ee              [23]       SET 5,(IY-1)
+  547  043a fd cb ff f6              [23]       SET 6,(IY-1)
+  548  043e fd cb ff fe              [23]       SET 7,(IY-1)
+  549  0442 cb 87                    [ 8]       RES 0,A
+  550  0444 cb 8f                    [ 8]       RES 1,A
+  551  0446 cb 97                    [ 8]       RES 2,A
+  552  0448 cb 9f                    [ 8]       RES 3,A
+  553  044a cb a7                    [ 8]       RES 4,A
+  554  044c cb af                    [ 8]       RES 5,A
+  555  044e cb b7                    [ 8]       RES 6,A
+  556  0450 cb bf                    [ 8]       RES 7,A
+  557  0452 cb 80                    [ 8]       RES 0,B
+  558  0454 cb 88                    [ 8]       RES 1,B
+  559  0456 cb 90                    [ 8]       RES 2,B
+  560  0458 cb 98                    [ 8]       RES 3,B
+  561  045a cb a0                    [ 8]       RES 4,B
+  562  045c cb a8                    [ 8]       RES 5,B
+  563  045e cb b0                    [ 8]       RES 6,B
+  564  0460 cb b8                    [ 8]       RES 7,B
+  565  0462 cb 81                    [ 8]       RES 0,C
+  566  0464 cb 89                    [ 8]       RES 1,C
+  567  0466 cb 91                    [ 8]       RES 2,C
+  568  0468 cb 99                    [ 8]       RES 3,C
+  569  046a cb a1                    [ 8]       RES 4,C
+  570  046c cb a9                    [ 8]       RES 5,C
+  571  046e cb b1                    [ 8]       RES 6,C
+  572  0470 cb b9                    [ 8]       RES 7,C
+  573  0472 cb 82                    [ 8]       RES 0,D
+  574  0474 cb 8a                    [ 8]       RES 1,D
+  575  0476 cb 92                    [ 8]       RES 2,D
+  576  0478 cb 9a                    [ 8]       RES 3,D
+  577  047a cb a2                    [ 8]       RES 4,D
+  578  047c cb aa                    [ 8]       RES 5,D
+  579  047e cb b2                    [ 8]       RES 6,D
+  580  0480 cb ba                    [ 8]       RES 7,D
+  581  0482 cb 83                    [ 8]       RES 0,E
+  582  0484 cb 8b                    [ 8]       RES 1,E
+  583  0486 cb 93                    [ 8]       RES 2,E
+  584  0488 cb 9b                    [ 8]       RES 3,E
+  585  048a cb a3                    [ 8]       RES 4,E
+  586  048c cb ab                    [ 8]       RES 5,E
+  587  048e cb b3                    [ 8]       RES 6,E
+  588  0490 cb bb                    [ 8]       RES 7,E
+  589  0492 cb 84                    [ 8]       RES 0,H
+  590  0494 cb 8c                    [ 8]       RES 1,H
+  591  0496 cb 94                    [ 8]       RES 2,H
+  592  0498 cb 9c                    [ 8]       RES 3,H
+  593  049a cb a4                    [ 8]       RES 4,H
+  594  049c cb ac                    [ 8]       RES 5,H
+  595  049e cb b4                    [ 8]       RES 6,H
+  596  04a0 cb bc                    [ 8]       RES 7,H
+  597  04a2 cb 85                    [ 8]       RES 0,L
+  598  04a4 cb 8d                    [ 8]       RES 1,L
+  599  04a6 cb 95                    [ 8]       RES 2,L
+  600  04a8 cb 9d                    [ 8]       RES 3,L
+  601  04aa cb a5                    [ 8]       RES 4,L
+  602  04ac cb ad                    [ 8]       RES 5,L
+  603  04ae cb b5                    [ 8]       RES 6,L
+  604  04b0 cb bd                    [ 8]       RES 7,L
+  605  04b2 cb 86                    [15]       RES 0,(HL)
+  606  04b4 cb 8e                    [15]       RES 1,(HL)
+  607  04b6 cb 96                    [15]       RES 2,(HL)
+  608  04b8 cb 9e                    [15]       RES 3,(HL)
+  609  04ba cb a6                    [15]       RES 4,(HL)
+  610  04bc cb ae                    [15]       RES 5,(HL)
+  611  04be cb b6                    [15]       RES 6,(HL)
+  612  04c0 cb be                    [15]       RES 7,(HL)
+  613  04c2 dd cb 01 86              [23]       RES 0,(IX+1)
+  614  04c6 dd cb 01 8e              [23]       RES 1,(IX+1)
+  615  04ca dd cb 01 96              [23]       RES 2,(IX+1)
+  616  04ce dd cb 01 9e              [23]       RES 3,(IX+1)
+  617  04d2 dd cb 01 a6              [23]       RES 4,(IX+1)
+  618  04d6 dd cb 01 ae              [23]       RES 5,(IX+1)
+  619  04da dd cb 01 b6              [23]       RES 6,(IX+1)
+  620  04de dd cb 01 be              [23]       RES 7,(IX+1)
+  621  04e2 fd cb ff 86              [23]       RES 0,(IY-1)
+  622  04e6 fd cb ff 8e              [23]       RES 1,(IY-1)
+  623  04ea fd cb ff 96              [23]       RES 2,(IY-1)
+  624  04ee fd cb ff 9e              [23]       RES 3,(IY-1)
+  625  04f2 fd cb ff a6              [23]       RES 4,(IY-1)
+  626  04f6 fd cb ff ae              [23]       RES 5,(IY-1)
+  627  04fa fd cb ff b6              [23]       RES 6,(IY-1)
+  628  04fe fd cb ff be              [23]       RES 7,(IY-1)
+  629  0502 c3 78 56                 [10]       JP $5678
+  630  0505 c2 78 56                 [10]       JP NZ,$5678
+  631  0508 ca 78 56                 [10]       JP Z,$5678
+  632  050b d2 78 56                 [10]       JP NC,$5678
+  633  050e da 78 56                 [10]       JP C,$5678
+  634  0511 e2 78 56                 [10]       JP PO,$5678
+  635  0514 ea 78 56                 [10]       JP PE,$5678
+  636  0517 f2 78 56                 [10]       JP P,$5678
+  637  051a fa 78 56                 [10]       JP M,$5678
+  638  051d 18 00                    [12]       JR $ + 2
+  639  051f 20 00                    [12]       JR NZ,$ + 2
+  640  0521 28 00                    [12]       JR Z,$ + 2
+  641  0523 30 00                    [12]       JR NC,$ + 2
+  642  0525 38 00                    [12]       JR C,$ + 2
+  643  0527 e9                       [ 4]       JP (HL)
+  644  0528 dd e9                    [ 8]       JP (IX)
+  645  052a fd e9                    [ 8]       JP (IY)
+  646  052c 10 00                    [13]       DJNZ $ + 2
+  647  052e cd 78 56                 [17]       CALL $5678
+  648  0531 c4 78 56                 [17]       CALL NZ,$5678
+  649  0534 cc 78 56                 [17]       CALL Z,$5678
+  650  0537 d4 78 56                 [17]       CALL NC,$5678
+  651  053a dc 78 56                 [17]       CALL C,$5678
+  652  053d e4 78 56                 [17]       CALL PO,$5678
+  653  0540 ec 78 56                 [17]       CALL PE,$5678
+  654  0543 f4 78 56                 [17]       CALL P,$5678
+  655  0546 fc 78 56                 [17]       CALL M,$5678
+  656  0549 c9                       [10]       RET
+  657  054a c0                       [11]       RET NZ
+  658  054b c8                       [11]       RET Z
+  659  054c d0                       [11]       RET NC
+  660  054d d8                       [11]       RET C
+  661  054e e0                       [11]       RET PO
+  662  054f e8                       [11]       RET PE
+  663  0550 f0                       [11]       RET P
+  664  0551 f8                       [11]       RET M
+  665  0552 ed 4d                    [14]       RETI
+  666  0554 ed 45                    [14]       RETN
+  667  0556 c7                       [11]       RST $00
+  668  0557 cf                       [11]       RST $08
+  669  0558 d7                       [11]       RST $10
+  670  0559 df                       [11]       RST $18
+  671  055a e7                       [11]       RST $20
+  672  055b ef                       [11]       RST $28
+  673  055c f7                       [11]       RST $30
+  674  055d ff                       [11]       RST $38
+  675  055e db 12                    [11]       IN A,($12)
+  676  0560 ed 78                    [12]       IN A,(C)
+  677  0562 ed 40                    [12]       IN B,(C)
+  678  0564 ed 48                    [12]       IN C,(C)
+  679  0566 ed 50                    [12]       IN D,(C)
+  680  0568 ed 58                    [12]       IN E,(C)
+  681  056a ed 60                    [12]       IN H,(C)
+  682  056c ed 68                    [12]       IN L,(C)
+  683  056e ed a2                    [16]       INI
+  684  0570 ed b2                    [21]       INIR
+  685  0572 ed aa                    [16]       IND
+  686  0574 ed ba                    [21]       INDR
+  687  0576 d3 12                    [11]       OUT ($12),A
+  688  0578 ed 79                    [12]       OUT (C),A
+  689  057a ed 41                    [12]       OUT (C),B
+  690  057c ed 49                    [12]       OUT (C),C
+  691  057e ed 51                    [12]       OUT (C),D
+  692  0580 ed 59                    [12]       OUT (C),E
+  693  0582 ed 61                    [12]       OUT (C),H
+  694  0584 ed 69                    [12]       OUT (C),L
+  695  0586 ed a3                    [16]       OUTI
+  696  0588 ed b3                    [21]       OTIR
+  697  058a ed ab                    [16]       OUTD
+  698  058c ed bb                    [21]       OTDR
+  699                                           
