@@ -44,57 +44,6 @@ func TestZ80Instruction(t *testing.T) {
 	}
 }
 
-// 一旦テスト中止
-func testInstructionDefault(t *testing.T) {
-	tests := []struct {
-		input string
-		code  []byte
-		syms  []symValue
-		err   string
-	}{
-		// 0-
-		{input: `ld a, VAL`, code: []byte{0x3e, 0}},
-		{input: `ld VAL, a`, code: []byte{0x3e, 0}},
-		{input: `ld hl, VAL`, code: []byte{0x21, 0, 0}},
-	}
-
-	for tn, tt := range tests {
-		if tt.input == "" {
-			continue
-		}
-
-		env := object.NewEnvironment(nil)
-		logger := logging.New()
-		prog, _ := evalInput(tt.input, logger, env)
-
-		// エラー発生時のデフォルトコードのチェックのため、発生エラーは無視する
-		// testEvalResult(t, tn, tt.err, e)
-		// // error, warning, information
-		// if tt.err != "" {
-		// 	testutil.TestLogMessage(t, tn, tt.err, e.logger)
-		// 	continue
-		// }
-
-		// code
-		testCodeResult(t, tn, tt.code, prog)
-
-		// sym
-		obj, ok := env.Get("VAL")
-		if !ok {
-			t.Errorf("[%d] VAL not in env", tn)
-			continue
-		}
-		sym, ok := obj.(*object.SymbolObject)
-		if !ok {
-			t.Errorf("[%d] env[\"VAL\" not SymbolObject", tn)
-			continue
-		}
-		if sym.SymType != object.SYM_UNKNOWN {
-			t.Errorf("[%d] SymType not SYM_UNNOWN. got %d", tn, sym.SymType)
-		}
-	}
-}
-
 func TestInstructionAmbiguous(t *testing.T) {
 	tests := []struct {
 		input string

@@ -8,12 +8,12 @@ import (
 )
 
 func (e *Evaluator) evalZ80_RET(stmt *parser.Z80Instruction, op1, _ object.Object, _ TEnv) object.Object {
-	code := &object.CodeObject{Code: []byte{0xc9}, CZ80: 10, Context: stmt.Context}
 
 	// RET
 	if op1 == nil {
-		return code
+		return &object.CodeObject{Code: []byte{0xc9}, TStates: [2]byte{10, 3}, Context: stmt.Context}
 	}
+
 	// RET cc
 	index := -1
 	switch op1 := op1.(type) {
@@ -22,37 +22,36 @@ func (e *Evaluator) evalZ80_RET(stmt *parser.Z80Instruction, op1, _ object.Objec
 	case *object.RegisterObject: // C レジスタを CY に読み替える
 		index = op1.Register
 	case *object.RefNotFoundObject:
-		return code
+		return op1
 	default:
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
-		return code
+		return object.ERROR
 	}
 
 	flag, ok := Z80FlagIndex[index]
 	if !ok {
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
-		return code
+		return object.ERROR
 	}
 	b := byte(0xc0 | flag<<3)
-	return &object.CodeObject{Code: []byte{b}, CZ80: 11, Context: stmt.Context}
+	return &object.CodeObject{Code: []byte{b}, TStates: [2]byte{11, 3}, Context: stmt.Context}
 }
 
 func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
-	code := &object.CodeObject{Code: []byte{0xcd, 0x00, 0x00}, CZ80: 17, Context: stmt.Context}
 
 	value := 0
 	switch op2 := op2.(type) {
 	case *object.NumberObject:
 		value = op2.Value
 	case *object.RefNotFoundObject:
-		return code
+		return op2
 	default:
 		if op1 == nil {
 			e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		} else {
 			e.logger.Error(errcode.EZ80_OP2, stmt.Context)
 		}
-		return code
+		return object.ERROR
 	}
 
 	// addr check
@@ -62,9 +61,7 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 	}
 
 	// addr set
-	code.Code[1] = byte(addr & 0xff)
-	code.Code[2] = byte((addr >> 8) & 0xff)
-
+	code := &object.CodeObject{Code: []byte{0xcd, byte(addr & 0xff), byte((addr >> 8) & 0xff)}, TStates: [2]byte{17, 5}, Context: stmt.Context}
 	// CALL
 	if op1 == nil {
 		return code
@@ -77,23 +74,24 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 	case *object.RegisterObject: // C レジスタを CY に読み替える
 		flag = op1.Register
 	case *object.RefNotFoundObject:
-		return code
+		return op1
 	default:
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
-		return code
+		return object.ERROR
 	}
 
 	index, ok := Z80FlagIndex[flag]
 	if !ok {
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
-		return code
+		return object.ERROR
 	}
 	code.Code[0] = 0xc4 | index<<3
+	code.TStates = [2]byte{17, 5}
 	return code
 }
 
 func (e *Evaluator) evalZ80_RST(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
-	code := &object.CodeObject{Code: []byte{0xc7}, CZ80: 11, Context: stmt.Context}
+	code := &object.CodeObject{Code: []byte{0xc7}, TStates: [2]byte{11, 4}, Context: stmt.Context}
 
 	addr := 0
 	switch op1 := op1.(type) {
@@ -104,7 +102,7 @@ func (e *Evaluator) evalZ80_RST(stmt *parser.Z80Instruction, op1, op2 object.Obj
 			return object.ERROR
 		}
 	case *object.RefNotFoundObject:
-		return code
+		return op1
 	default:
 		e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		return object.ERROR
@@ -117,41 +115,41 @@ func (e *Evaluator) evalZ80_RST(stmt *parser.Z80Instruction, op1, op2 object.Obj
 }
 
 func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
-	code := &object.CodeObject{Code: []byte{0xc3, 0x00, 0x00}, CZ80: 10, Context: stmt.Context}
 
 	value := 0
 	switch op2 := op2.(type) {
 	case *object.NumberObject:
 		value = op2.Value
+
 	case *object.RefNotFoundObject:
-		return code
+		return op2
 	case *object.RegIndirectObject:
 		// レジスタ間接
-		switch op2.Register {
-		case parser.Z80_REG_HL:
-			code = &object.CodeObject{Code: []byte{0xe9}, CZ80: 4, Context: stmt.Context}
-		case parser.Z80_REG_IX:
-			code = &object.CodeObject{Code: []byte{0xdd, 0xe9}, CZ80: 8, Context: stmt.Context}
-		case parser.Z80_REG_IY:
-			code = &object.CodeObject{Code: []byte{0xfd, 0xe9}, CZ80: 8, Context: stmt.Context}
-		default:
-			e.logger.Error(errcode.EZ80_JP_INDIRECT_REG, stmt.Context)
-			return &object.CodeObject{Code: []byte{0xe9}, CZ80: 4, Context: stmt.Context}
-		}
 		if op2.Displacement != 0 {
 			e.logger.Error(errcode.EZ80_JP_INDIRECT_DISP, stmt.Context)
+			return object.ERROR
 		}
-		return code
+		switch op2.Register {
+		case parser.Z80_REG_HL:
+			return &object.CodeObject{Code: []byte{0xe9}, TStates: [2]byte{4, 1}, Context: stmt.Context}
+		case parser.Z80_REG_IX:
+			return &object.CodeObject{Code: []byte{0xdd, 0xe9}, TStates: [2]byte{8, 2}, Context: stmt.Context}
+		case parser.Z80_REG_IY:
+			return &object.CodeObject{Code: []byte{0xfd, 0xe9}, TStates: [2]byte{8, 2}, Context: stmt.Context}
+		default:
+			e.logger.Error(errcode.EZ80_JP_INDIRECT_REG, stmt.Context)
+			return object.ERROR
+		}
 	case *object.AddrIndirectObject:
 		e.logger.Error(errcode.EZ80_JP_INDIRECT_REG, stmt.Context)
-		return code
+		return object.ERROR
 	default:
 		if op1 == nil {
 			e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		} else {
 			e.logger.Error(errcode.EZ80_OP2, stmt.Context)
 		}
-		return code
+		return object.ERROR
 	}
 
 	// addr check
@@ -160,10 +158,7 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
 	}
 
-	// addr set
-	code.Code[1] = byte(addr & 0xff)
-	code.Code[2] = byte((addr >> 8) & 0xff)
-
+	code := &object.CodeObject{Code: []byte{0xc3, byte(addr & 0xff), byte((addr >> 8) & 0xff)}, TStates: [2]byte{10, 3}, Context: stmt.Context}
 	// JP nn
 	if op1 == nil {
 		return code
@@ -176,47 +171,46 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 	case *object.RegisterObject: // C レジスタを CY に読み替える
 		flag = op1.Register
 	case *object.RefNotFoundObject:
-		return code
+		return op1
 	default:
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
-		return code
+		return object.ERROR
 	}
 
 	index, ok := Z80FlagIndex[flag]
 	if !ok {
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
-		return code
+		return object.ERROR
 	}
 	code.Code[0] = 0xc2 | index<<3
 	return code
 }
 
 func (e *Evaluator) evalZ80_JR(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
-	code := &object.CodeObject{Code: []byte{0x18, 0x00}, CZ80: 12, Context: stmt.Context}
 
 	addr := 0
 	switch op2 := op2.(type) {
 	case *object.NumberObject:
 		addr = op2.Value
 	case *object.RefNotFoundObject:
-		return code
+		return op2
 	default:
 		if op1 == nil {
 			e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		} else {
 			e.logger.Error(errcode.EZ80_OP2, stmt.Context)
 		}
-		return code
+		return object.ERROR
 	}
 
 	// addr set
 	ofs := addr - getLocationCounter(env) - 2
 	if ofs < -128 || ofs > 127 {
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_JR_RANGE, ofs, ofs), stmt.Context)
-		return code
+		return object.ERROR
 	}
 
-	code.Code[1] = byte(ofs)
+	code := &object.CodeObject{Code: []byte{0x18, byte(ofs)}, TStates: [2]byte{12, 3}, Context: stmt.Context}
 
 	// JR e
 	if op1 == nil {
@@ -232,47 +226,43 @@ func (e *Evaluator) evalZ80_JR(stmt *parser.Z80Instruction, op1, op2 object.Obje
 	case *object.RegisterObject: // C レジスタを CY に読み替える
 		flag = op1.Register
 	case *object.RefNotFoundObject:
-		return code
+		return op1
 	default:
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
-		return code
+		return object.ERROR
 	}
 	if flag > parser.Z80_FLAG_C {
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_JR_FLAG, parser.TokenLiteral(flag)), stmt.Context)
-		return code
+		return object.ERROR
 	}
 
 	index, ok := Z80FlagIndex[flag]
 	if !ok {
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
-		return code
+		return object.ERROR
 	}
 	code.Code[0] |= index << 3
 	return code
 }
 
 func (e *Evaluator) evalZ80_DJNZ(stmt *parser.Z80Instruction, op1, _ object.Object, env TEnv) object.Object {
-	code := &object.CodeObject{Code: []byte{0x10, 0x00}, CZ80: 13, Context: stmt.Context}
-
 	addr := 0
 	switch op := op1.(type) {
 	case *object.NumberObject:
 		addr = op.Value
 	case *object.RefNotFoundObject:
-		return code
+		return op
 	default:
 		e.logger.Error(errcode.EZ80_OP, stmt.Context)
-		return code
+		return object.ERROR
 	}
 
 	// addr set
 	ofs := addr - getLocationCounter(env) - 2
 	if ofs < -128 || ofs > 127 {
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_JR_RANGE, ofs, ofs), stmt.Context)
-		return code
+		return object.ERROR
 	}
 
-	code.Code[1] = byte(ofs)
-
-	return code
+	return &object.CodeObject{Code: []byte{0x10, byte(ofs)}, TStates: [2]byte{13, 0}, Context: stmt.Context}
 }

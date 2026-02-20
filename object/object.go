@@ -134,8 +134,7 @@ type CodeObject struct {
 	Addr    int
 	Code    []byte
 	Filled  bool // DS 等 fill で埋められた場合
-	CZ80    int
-	CR800   int
+	TStates [2]byte
 	Context *filecontent.Context
 }
 
@@ -149,7 +148,7 @@ func (o *CodeObject) String() string {
 	} else {
 		out.WriteString(fmt.Sprintf("(%2d)", o.Context.Source.Line))
 	}
-	out.WriteString(fmt.Sprintf(" :%04x: [%2d] ", o.Addr, o.CZ80))
+	out.WriteString(fmt.Sprintf(" :%04x: [%2d] ", o.Addr, o.TStates))
 	for _, b := range o.Code {
 		out.WriteString(fmt.Sprintf("%02x ", b))
 	}

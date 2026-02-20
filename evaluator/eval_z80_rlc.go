@@ -17,7 +17,7 @@ func (e *Evaluator) evalZ80_RLC(stmt *parser.Z80Instruction, op1, op2 object.Obj
 		parser.Z80_INST_SRA: 0x28,
 		parser.Z80_INST_SRL: 0x38,
 	}
-	code := &object.CodeObject{Code: []byte{0xcb, 0x00}, CZ80: 8, Context: stmt.Context}
+	code := &object.CodeObject{Code: []byte{0xcb, 0x00}, TStates: [2]byte{8, 2}, Context: stmt.Context}
 	if b, ok := codeTable[stmt.Opcode]; ok {
 		code.Code[1] = b
 	} else {
@@ -28,14 +28,15 @@ func (e *Evaluator) evalZ80_RLC(stmt *parser.Z80Instruction, op1, op2 object.Obj
 	switch op1 := op1.(type) {
 	case *object.RefNotFoundObject:
 		e.Resolved = false
-		return code
+		return op1
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
-		return code
-	case *object.RegisterObject:
+		return object.ERROR
+
+	case *object.RegisterObject: // OP r
 		if op1.Register < parser.Z80_REG_B || op1.Register > parser.Z80_REG_A {
 			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op1.Register)), stmt.Context)
-			return code
+			return object.ERROR
 		}
 		if index, ok := Z80Reg8Index[op1.Register]; !ok {
 			panic("unexpected register in RLC...")
@@ -43,28 +44,27 @@ func (e *Evaluator) evalZ80_RLC(stmt *parser.Z80Instruction, op1, op2 object.Obj
 			code.Code[1] |= byte(index)
 			return code
 		}
-	case *object.RegIndirectObject:
+	case *object.RegIndirectObject: // OP (HL),(IX+d), (IY+d)
 		code.Code[1] |= 0x06
-		code.CZ80 = 15
+		code.TStates = [2]byte{15, 5}
+
 		switch op1.Register {
 		case parser.Z80_REG_HL:
 			return code
 		case parser.Z80_REG_IX:
-			code.Code[1] |= 0x06
 			code.Code = []byte{0xdd, 0xcb, byte(op1.Displacement), code.Code[1]}
-			code.CZ80 = 23
+			code.TStates = [2]byte{23, 7}
 			return code
 		case parser.Z80_REG_IY:
-			code.Code[1] |= 0x06
 			code.Code = []byte{0xfd, 0xcb, byte(op1.Displacement), code.Code[1]}
-			code.CZ80 = 23
+			code.TStates = [2]byte{23, 7}
 			return code
 		default:
 			e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(op1.Register)), stmt.Context)
-			return code
+			return object.ERROR
 		}
 	default:
 		e.logger.Error(errcode.EZ80_OP, stmt.Context)
-		return code
+		return object.ERROR
 	}
 }

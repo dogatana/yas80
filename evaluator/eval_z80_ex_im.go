@@ -9,24 +9,28 @@ import (
 
 // EX
 func (e *Evaluator) evalZ80_EX(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
-	code := &object.CodeObject{Code: []byte{0xeb}, CZ80: 4, Context: stmt.Context} // EX DE, HL
 	if op1 == nil || op2 == nil {
 		e.logger.Error(errcode.EZ80_OP, stmt.Context)
-		return code
+		return object.ERROR
 	}
-	if isRefNotFound(op1) || isRefNotFound(op2) {
+	if isRefNotFound(op1) {
 		e.Resolved = false
-		return code
+		return op1
+	}
+	if isRefNotFound(op2) {
+		e.Resolved = false
+		return op2
 	}
 	if op1 == object.NULL {
 		e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
-		return code
+		return object.ERROR
 	}
 	if op2 == object.NULL {
 		e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
-		return code
+		return object.ERROR
 	}
 
+	code := &object.CodeObject{Code: []byte{0xeb}, TStates: [2]byte{4, 1}, Context: stmt.Context} // EX DE, HL
 	switch {
 	// EX rr, rr'
 	case op1.Type() == object.OBJ_REGISTER && op2.Type() == object.OBJ_REGISTER:
@@ -34,81 +38,89 @@ func (e *Evaluator) evalZ80_EX(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		reg2 := op2.(*object.RegisterObject)
 		switch {
 		case reg1.Register == parser.Z80_REG_DE && reg2.Register == parser.Z80_REG_HL, reg1.Register == parser.Z80_REG_HL && reg2.Register == parser.Z80_REG_DE:
-			return code
+			return code // EX DE, HL / EX HL, DE
 		case reg1.Register == parser.Z80_REG_AF && reg2.Register == parser.Z80_REG_AFEX, reg1.Register == parser.Z80_REG_AFEX && reg2.Register == parser.Z80_REG_AF:
 			code.Code[0] = 0x08
-			return code
+			return code // EX AF, AF' / EX AF', AF
 		default:
 			e.logger.Error(errcode.EZ80_OP, stmt.Context)
+			return object.ERROR
 		}
+
 	// EX (SP), rr
 	case op1.Type() == object.OBJ_REG_INDIRECT && op2.Type() == object.OBJ_REGISTER:
-		return e.evalExSpReg16(code, op1, op2, stmt.Context)
+		return e.evalExSpReg16(op1, op2, stmt.Context)
+
 	// EX rr, (SP), => EX (SP), rr
 	case op1.Type() == object.OBJ_REGISTER && op2.Type() == object.OBJ_REG_INDIRECT:
-		return e.evalExSpReg16(code, op2, op1, stmt.Context)
+		return e.evalExSpReg16(op2, op1, stmt.Context)
 	}
 
 	e.logger.Error(errcode.EZ80_OP, stmt.Context)
-	return code
+	return object.ERROR
 }
 
-func (e *Evaluator) evalExSpReg16(code *object.CodeObject, op1, op2 object.Object, ctx TContext) object.Object {
-	code.Code[0] = 0xe3
-	code.CZ80 = 19
+func (e *Evaluator) evalExSpReg16(op1, op2 object.Object, ctx TContext) object.Object {
 
 	reg1 := op1.(*object.RegIndirectObject)
 	if reg1.Register != parser.Z80_REG_SP {
 		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(reg1.Register)), ctx)
-		return code // EX (SP), HL
+		return object.ERROR
 	}
+
+	code := &object.CodeObject{Code: []byte{0xe3}, TStates: [2]byte{19, 5}, Context: ctx} // EX (SP), HL
 	reg2 := op2.(*object.RegisterObject)
 	switch reg2.Register {
 	case parser.Z80_REG_HL:
 		return code // EX (SP), HL
 	case parser.Z80_REG_IX:
 		code.Code = []byte{0xdd, 0xe3}
-		code.CZ80 = 23
+		code.TStates = [2]byte{23, 6}
 		return code
 	case parser.Z80_REG_IY:
 		code.Code = []byte{0xfd, 0xe3}
-		code.CZ80 = 23
+		code.TStates = [2]byte{23, 6}
 		return code
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(reg2.Register)), ctx)
-		return code
+		return object.ERROR
 	}
 }
 
-// IM
+// IM n
 func (e *Evaluator) evalZ80_IM(stmt *parser.Z80Instruction, op, _ object.Object, env TEnv) object.Object {
-	code := &object.CodeObject{Code: []byte{0xed, 0x46}, CZ80: 8, Context: stmt.Context}
 
 	// IM n
 	mode := 0
 	switch op := op.(type) {
 	case *object.RefNotFoundObject:
 		e.Resolved = false
-		return code
+		return op
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
 		return object.ERROR
+
 	case *object.NumberObject:
 		mode = op.Value
 		if mode < 0 || mode > 2 {
 			e.logger.Error(fmt.Sprintf(errcode.EZ80_IM_RANGE, mode, mode), stmt.Context)
-			return code
+			return object.ERROR
 		}
+
+		code := &object.CodeObject{Code: []byte{0xed, 0x46}, TStates: [2]byte{8, 3}, Context: stmt.Context}
 		switch mode {
 		case 1:
 			code.Code[1] = 0x56
 		case 2:
 			code.Code[1] = 0x5E
+		default:
+			// IM 0
 		}
 		return code
+
 	default:
 		// op = nil
 		e.logger.Error(errcode.EZ80_OP, stmt.Context)
-		return code
+		return object.ERROR
 	}
 }
