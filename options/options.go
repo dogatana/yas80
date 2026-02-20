@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"yas80/internal/util"
 
 	flag "github.com/spf13/pflag"
 )
@@ -98,7 +99,18 @@ func Parse() Option {
 		os.Exit(0)
 	}
 
+	// -I の値の整形(trim)
+	opt.IncDirs = trimStringSlice(opt.IncDirs)
+
 	return opt
+}
+
+// []string の各要素に対し trim 処理を実行
+func trimStringSlice(strs []string) []string {
+	if len(strs) == 0 {
+		return strs
+	}
+	return util.Map(strs, func(s string) string { return strings.Trim(s, " \t") })
 }
 
 // 出力ファイル名の決定
