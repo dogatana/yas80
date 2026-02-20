@@ -186,7 +186,7 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 	addr := co.Addr
 	cycle := "  "
 	if co.TStates[0] != 0 {
-		cycle = fmt.Sprintf("%2d", co.TStates[1])
+		cycle = fmt.Sprintf("%2d", co.TStates[0])
 	}
 	exp := ' '
 	if co.Context.Offset != 0 {

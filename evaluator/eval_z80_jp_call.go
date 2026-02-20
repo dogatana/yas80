@@ -264,5 +264,5 @@ func (e *Evaluator) evalZ80_DJNZ(stmt *parser.Z80Instruction, op1, _ object.Obje
 		return object.ERROR
 	}
 
-	return &object.CodeObject{Code: []byte{0x10, byte(ofs)}, TStates: [2]byte{13, 0}, Context: stmt.Context}
+	return &object.CodeObject{Code: []byte{0x10, byte(ofs)}, TStates: [2]byte{13, 2}, Context: stmt.Context}
 }
