@@ -18,7 +18,7 @@ func main() {
 	// }
 
 	// setOutput(&opt)
-	// opt.Print()
+	opt.Print()
 
 	fcs := makeContents(opt)
 	iter := makeContentIterFunc(fcs)

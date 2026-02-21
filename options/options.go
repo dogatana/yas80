@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"yas80/internal/util"
 
@@ -17,7 +18,7 @@ const (
 
 type Option struct {
 	IncDirs   []string
-	Constants []string
+	Constants map[string]int
 	AutoProc  bool
 	Fill      int
 	Output    string
@@ -39,7 +40,7 @@ type Option struct {
 
 func (opt Option) Print() {
 	fmt.Printf("IncDirs: %v\n", opt.IncDirs)
-	fmt.Printf("Constants: %v\n", opt.Constants)
+	fmt.Printf("Constants: %+v\n", opt.Constants)
 	fmt.Printf("AutoProc: %v\n", opt.AutoProc)
 	fmt.Printf("Fill: %d\n", opt.Fill)
 	fmt.Printf("Output: %q\n", opt.Output)
@@ -60,8 +61,10 @@ func Parse() Option {
 
 	opt := Option{}
 
+	var defs []string
+
 	flag.StringSliceVarP(&opt.IncDirs, "I", "I", []string{}, "directories to search for iclude")
-	flag.StringSliceVarP(&opt.Constants, "D", "D", []string{}, "define constants")
+	flag.StringSliceVarP(&defs, "D", "D", []string{}, "define constants")
 	flag.StringVarP(&opt.Output, "output", "o", "", "output file name")
 	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
 	flag.BoolVar(&opt.OutMZT, "mzt", false, "output with MZT format")
@@ -98,11 +101,58 @@ func Parse() Option {
 		fmt.Printf("%s version %s\n", progName, progVersion)
 		os.Exit(0)
 	}
+	// -D の値の解析
+	if defs, err := parseDefs(defs); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else {
+		opt.Constants = defs
+	}
 
 	// -I の値の整形(trim)
 	opt.IncDirs = trimStringSlice(opt.IncDirs)
 
 	return opt
+}
+
+// -D の各要素を 名前と値に分割
+func parseDefs(defs []string) (map[string]int, error) {
+	out := map[string]int{}
+
+	for _, s := range defs {
+		if s == "" {
+			continue
+		}
+		name, value, err := parseDef(s)
+		if err != nil {
+			return out, err
+		}
+		if name == "" {
+			continue
+		}
+		out[name] = value
+	}
+	return out, nil
+}
+
+// name or name=value の評価
+func parseDef(input string) (string, int, error) {
+	terms := trimStringSlice(strings.Split(strings.ToUpper(input), "="))
+	if terms[0] == "" {
+		return "", 0, nil
+	}
+	switch len(terms) {
+	case 1:
+		return terms[0], 1, nil
+	case 2:
+		n, err := strconv.ParseInt(terms[1], 0, 0)
+		if err != nil {
+			return "", 0, fmt.Errorf("invalid -D option argment: %s\n", input)
+		}
+		return terms[0], int(n), nil
+	default:
+		return "", 0, fmt.Errorf("invalid -D option argument: %s\n", input)
+	}
 }
 
 // []string の各要素に対し trim 処理を実行
