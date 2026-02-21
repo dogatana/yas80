@@ -131,6 +131,9 @@ func parseDefs(defs []string) (map[string]int, error) {
 		if name == "" {
 			continue
 		}
+		if name[0] == '.' || name[0] == '@' || name[0] == '$' {
+			return out, fmt.Errorf("invalid name: %s", s)
+		}
 		if parser.IsReservedWord(name) {
 			return out, fmt.Errorf("cannot use reserved word: %s", s)
 		}

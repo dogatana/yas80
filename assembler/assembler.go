@@ -39,8 +39,8 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	// toplevel env 作成
 	env := object.NewEnvironment(nil)
 
-	// システム変数初期値上書き
-	env.Set("$FILL", &object.NumberObject{Value: as.Fill})
+	// 環境初期化
+	as.initEnvironment(env)
 
 	eval := evaluator.New(logger)
 	eval.Debug = as.Evaldebug
@@ -186,6 +186,17 @@ func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCo
 		fmt.Println("")
 	}
 	return prog, lexer.FcMap
+}
+
+// 環境初期化
+func (as *Assembler) initEnvironment(env object.Environment) {
+	// システム変数初期値上書き
+	env.Set("$FILL", &object.NumberObject{Value: as.Fill})
+
+	// -D オプションで定義した定数を NumberObject として環境に登録
+	for name, value := range as.Constants {
+		env.Set(name, &object.NumberObject{Value: value})
+	}
 }
 
 func printObjects(objs []object.Object) {
