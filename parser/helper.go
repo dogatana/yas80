@@ -311,3 +311,15 @@ func PrintNode(stmt Statement, indent int) {
 		fmt.Printf("%s%s %T %s\n", stmt.GetContext().String(), strings.Repeat(" ", indent*2), stmt, stmt.String())
 	}
 }
+
+// 文字列が予約語かどうかを返す
+func IsReservedWord(s string) bool {
+	word := strings.ToUpper(s)
+	if _, ok := z80ReservedWords[word]; ok {
+		return true
+	}
+	if _, ok := reservedWords[word]; ok {
+		return true
+	}
+	return false
+}

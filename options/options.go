@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"yas80/internal/util"
+	"yas80/parser"
 
 	flag "github.com/spf13/pflag"
 )
@@ -129,6 +130,9 @@ func parseDefs(defs []string) (map[string]int, error) {
 		}
 		if name == "" {
 			continue
+		}
+		if parser.IsReservedWord(name) {
+			return out, fmt.Errorf("cannot use reserved word: %s", s)
 		}
 		out[name] = value
 	}
