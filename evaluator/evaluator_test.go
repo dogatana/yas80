@@ -27,6 +27,10 @@ func TestAssembleFile(t *testing.T) {
 		{input: "include"},
 		{input: "include-not-found", err: errcode.EFILE_NOT_FOUND},
 		{input: "include-cyclic", err: errcode.EINCLUDE_CYCLIC},
+
+		{input: "zilog"},   // 公開命令
+		{input: "zilog-a"}, // SUB r 等を SUB A, r の揺らぎを許容
+		{input: "ixy-hl"},  // IXH, IXL, IYH, IYL 非公開命令。R800 では公開命令
 	}
 
 	for tn, tt := range tests {

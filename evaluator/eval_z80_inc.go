@@ -30,13 +30,22 @@ func (e *Evaluator) evalZ80_INC_DEC(stmt *parser.Z80Instruction, op, _ object.Ob
 			if stmt.Opcode == parser.Z80_INST_DEC {
 				code.Code[0] = 0x05 // DEC
 			}
-			index, ok := Z80Reg8Index[op.Register]
-			if !ok {
-				e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op.Register)), stmt.Context)
-				return object.ERROR
+			if index, ok := Z80Reg8Index[op.Register]; ok {
+				code.Code[0] |= index << 3
+				return code
 			}
-			code.Code[0] |= index << 3
-			return code
+
+			code.TStates = [2]byte{8, 2}
+			if index, ok := Z80Reg8IndexIX[op.Register]; ok {
+				code.Code = []byte{0xdd, code.Code[0] | index<<3}
+				return code
+			}
+			if index, ok := Z80Reg8IndexIY[op.Register]; ok {
+				code.Code = []byte{0xfd, code.Code[0] | index<<3}
+				return code
+			}
+			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op.Register)), stmt.Context)
+			return object.ERROR
 		}
 		// 16 bit register
 		code := &object.CodeObject{Code: []byte{0x03}, TStates: [2]byte{6, 1}, Context: stmt.Context}

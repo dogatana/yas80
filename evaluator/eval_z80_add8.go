@@ -14,8 +14,8 @@ func (e *Evaluator) evalZ80_ADD8(stmt *parser.Z80Instruction, op1, op2 object.Ob
 	var opcodes = map[int]byte{
 		parser.Z80_INST_ADD: 0x80,
 		parser.Z80_INST_ADC: 0x88,
-		parser.Z80_INST_SBC: 0x98,
 		parser.Z80_INST_SUB: 0x90,
+		parser.Z80_INST_SBC: 0x98,
 		parser.Z80_INST_AND: 0xa0,
 		parser.Z80_INST_OR:  0xb0,
 		parser.Z80_INST_XOR: 0xa8,
@@ -56,12 +56,20 @@ func (e *Evaluator) evalZ80_ADD8(stmt *parser.Z80Instruction, op1, op2 object.Ob
 		}
 		return object.ERROR
 
-	// OP r
 	case *object.RegisterObject:
-		index, ok := Z80Reg8Index[op2.Register]
-		if ok {
+		// OP r
+		if index, ok := Z80Reg8Index[op2.Register]; ok {
 			code.Code[0] |= index
-			return code
+			return code // OP r
+		}
+		code.TStates = [2]byte{8, 2}
+		if index, ok := Z80Reg8IndexIX[op2.Register]; ok {
+			code.Code = []byte{0xdd, code.Code[0] | index}
+			return code // OP p - IXH/IXL
+		}
+		if index, ok := Z80Reg8IndexIY[op2.Register]; ok {
+			code.Code = []byte{0xfd, code.Code[0] | index}
+			return code // OP q - IYH/IYL
 		}
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op2.Register)), stmt.Context)
 		return object.ERROR

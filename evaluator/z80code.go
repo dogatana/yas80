@@ -52,6 +52,26 @@ var Z80Reg8Index map[int]byte = map[int]byte{
 	parser.Z80_REG_A: 7,
 }
 
+var Z80Reg8IndexIX map[int]byte = map[int]byte{
+	parser.Z80_REG_B:   0,
+	parser.Z80_REG_C:   1,
+	parser.Z80_REG_D:   2,
+	parser.Z80_REG_E:   3,
+	parser.Z80_REG_IXH: 4,
+	parser.Z80_REG_IXL: 5,
+	parser.Z80_REG_A:   7,
+}
+
+var Z80Reg8IndexIY map[int]byte = map[int]byte{
+	parser.Z80_REG_B:   0,
+	parser.Z80_REG_C:   1,
+	parser.Z80_REG_D:   2,
+	parser.Z80_REG_E:   3,
+	parser.Z80_REG_IYH: 4,
+	parser.Z80_REG_IYL: 5,
+	parser.Z80_REG_A:   7,
+}
+
 var Z80Reg16IndexSP map[int]byte = map[int]byte{
 	parser.Z80_REG_BC: 0,
 	parser.Z80_REG_DE: 1,
