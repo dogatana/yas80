@@ -108,6 +108,7 @@ const (
 	Z80_INST_OUTD
 	Z80_INST_OTDR
 	Z80_INST_XOR
+	Z80_INST_MUL
 )
 
 var z80ReservedWords map[string]Token = map[string]Token{
@@ -211,6 +212,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"OTIR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OTIR, Literal: "OTIR"},
 	"OUTD": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OUTD, Literal: "OUTD"},
 	"OTDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OTDR, Literal: "OTDR"},
+	"MUL":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_MUL, Literal: "MUL"},
 }
 
 func Z80Opcode2Name(opcode int) string {

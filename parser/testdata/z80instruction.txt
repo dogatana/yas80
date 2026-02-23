@@ -70,3 +70,5 @@
  SRL      ;   arg      ; "SRL"
  SUB      ;   arg      ; "SUB"
  XOR      ;   arg      ; "XOR"
+ MUL
+ 

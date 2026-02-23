@@ -719,3 +719,43 @@ func TestInstructionError_ADD16(t *testing.T) {
 		testCodeResult(t, tn, tt.code, prog)
 	}
 }
+
+func TestInstruction_MUL(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `mul a, b`, code: []byte{0xed, 0xc1}},
+		{input: `mul a, c`, code: []byte{0xed, 0xc9}},
+		{input: `mul a, d`, code: []byte{0xed, 0xd1}},
+		{input: `mul a, e`, code: []byte{0xed, 0xd9}},
+		{input: `mul a, h`, err: errcode.EZ80_OP_REG},
+		{input: `mul l, h`, err: errcode.EZ80_OP_REG},
+
+		{input: `mul hl, bc`, code: []byte{0xed, 0xc3}},
+		{input: `mul hl, sp`, code: []byte{0xed, 0xf3}},
+		{input: `mul hl, de`, err: errcode.EZ80_OP_REG},
+		{input: `mul bc, sp`, err: errcode.EZ80_OP_REG},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}

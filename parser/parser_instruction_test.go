@@ -39,6 +39,7 @@ OUTI
 OTIR
 OUTD
 OTDR
+MUL
 `
 	l := newLexerForTest(input)
 	prog := ParseForTest(t, l, -1)
@@ -123,6 +124,8 @@ IN A, (1)
 IN B, (C)
 OUT (2), A
 OUT (C), B
+MUL A, B
+MUL HL, BC
 `
 	l := newLexerForTest(input)
 	prog := ParseForTest(t, l, -1)
