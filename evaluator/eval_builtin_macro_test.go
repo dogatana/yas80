@@ -1,9 +1,11 @@
 package evaluator
 
 import (
+	"strings"
 	"testing"
 	"yas80/errcode"
 	"yas80/internal/testutil"
+	"yas80/internal/util"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -53,6 +55,78 @@ func TestAlign(t *testing.T) {
 		// error, warning, information
 		if tt.err != "" {
 			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestLogMessage(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{
+			input: `error "this is error"`,
+			err:   "this is error",
+		},
+		{
+			input: `warn "this is warning"`,
+			err:   "this is warning",
+		},
+		{
+			input: `info "this is information"`,
+			err:   "this is information",
+		},
+		{
+			input: `error`,
+			err:   errcode.EEBMAC_ARG_COUNT,
+		},
+		{
+			input: `error 1, 2`,
+			err:   errcode.EEBMAC_ARG_COUNT,
+		},
+		{
+			input: `ds 4 \ align 4 \ ret`,
+			code:  []byte{0x00, 0x00, 0x00, 0x00, 0xc9},
+		},
+		{input: `fn func\endf\ error fn()`, err: errcode.EEBMAC_ARG_NULL},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			// errcode.*
+			if strings.Contains(tt.err, "%") {
+				testutil.TestLogMessage(t, tn, tt.err, e.logger)
+				continue
+			}
+			// error, warn, info マクロ
+			msgs := util.Map(logger.GetMessages(), func(m *logging.Message) string { return m.String() })
+			text := strings.Join(msgs, "\n")
+			if !strings.Contains(text, tt.err) {
+				t.Errorf("[%d] no %q", tn, tt.err)
+			}
 			continue
 		}
 
