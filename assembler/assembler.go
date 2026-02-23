@@ -117,6 +117,9 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	// 	os.Exit(1)
 	// }
 
+	// LogMessage の重複削除
+	logger.RemoveDupe()
+
 	fmt.Println("-- ast")
 	parser.PrintNode(prog, 0)
 
@@ -144,8 +147,6 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 
 	// リストファイル出力
 	fmt.Println("-- log start")
-	// LogMessage の重複削除
-	logger.RemoveDupe()
 	logger.Print()
 	fmt.Println("-- log end")
 	fmt.Println("-- message map start")
