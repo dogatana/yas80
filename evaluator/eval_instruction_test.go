@@ -745,6 +745,50 @@ func TestInstruction_MUL(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
+		env.Set("$R800", &object.NumberObject{Value: 1}) // -R800 有効化
+
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
+func TestInstruction_MUL_on_Z80(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `mul a, b`, err: errcode.ER800},
+		{input: `mul a, c`, err: errcode.ER800},
+		{input: `mul a, d`, err: errcode.ER800},
+		{input: `mul a, e`, err: errcode.ER800},
+		{input: `mul a, h`, err: errcode.ER800},
+		{input: `mul l, h`, err: errcode.ER800},
+
+		{input: `mul hl, bc`, err: errcode.ER800},
+		{input: `mul hl, sp`, err: errcode.ER800},
+		{input: `mul hl, de`, err: errcode.ER800},
+		{input: `mul bc, sp`, err: errcode.ER800},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		env.Set("$R800", &object.NumberObject{Value: 0}) // -R800 無効化
+
 		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 		testEvalResult(t, tn, tt.err, e)

@@ -54,6 +54,7 @@ const (
 )
 
 type Lister struct {
+	tsIndex int
 	nodes   *parser.BlockStatement
 	objects []object.Object
 	fcMap   map[string]*filecontent.FileContent
@@ -61,8 +62,11 @@ type Lister struct {
 	fblocks []*object.FileBlock
 }
 
-func New(pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent, mmap logging.MessageMap) *Lister {
+func New(r800 bool, pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent, mmap logging.MessageMap) *Lister {
 	l := &Lister{nodes: pnode, fcMap: fcmap}
+	if r800 {
+		l.tsIndex = 1
+	}
 	l.objects = object.FlattenObject(pobj)
 
 	// filemap の作成
@@ -185,8 +189,8 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 	size := len(co.Code)
 	addr := co.Addr
 	cycle := "  "
-	if co.TStates[0] != 0 {
-		cycle = fmt.Sprintf("%2d", co.TStates[0])
+	if co.TStates[l.tsIndex] != 0 {
+		cycle = fmt.Sprintf("%2d", co.TStates[l.tsIndex])
 	}
 	exp := ' '
 	if co.Context.Offset != 0 {

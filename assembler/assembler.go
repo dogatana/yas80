@@ -157,7 +157,7 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	for f := range fcMap {
 		fmt.Printf("file %s\n", f)
 	}
-	lister := lister.New(prog, obj.(*object.BlockObject), fcMap, mmap)
+	lister := lister.New(as.R800, prog, obj.(*object.BlockObject), fcMap, mmap)
 	lister.List(os.Stdout)
 }
 
@@ -190,8 +190,14 @@ func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCo
 
 // 環境初期化
 func (as *Assembler) initEnvironment(env object.Environment) {
-	// システム変数初期値上書き
+	// システム変数初期値設定
 	env.Set("$FILL", &object.NumberObject{Value: as.Fill})
+
+	v := 0
+	if as.R800 {
+		v = 1
+	}
+	env.Set("$R800", &object.NumberObject{Value: v})
 
 	// -D オプションで定義した定数を NumberObject として環境に登録
 	for name, value := range as.Constants {

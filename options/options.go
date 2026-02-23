@@ -18,6 +18,7 @@ const (
 )
 
 type Option struct {
+	R800      bool
 	IncDirs   []string
 	Constants map[string]int
 	AutoProc  bool
@@ -40,6 +41,7 @@ type Option struct {
 }
 
 func (opt Option) Print() {
+	fmt.Printf("R800: %v\n", opt.R800)
 	fmt.Printf("IncDirs: %v\n", opt.IncDirs)
 	fmt.Printf("Constants: %+v\n", opt.Constants)
 	fmt.Printf("AutoProc: %v\n", opt.AutoProc)
@@ -64,6 +66,7 @@ func Parse() Option {
 
 	var defs []string
 
+	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
 	flag.StringSliceVarP(&opt.IncDirs, "I", "I", []string{}, "directories to search for iclude")
 	flag.StringSliceVarP(&defs, "D", "D", []string{}, "define constants")
 	flag.StringVarP(&opt.Output, "output", "o", "", "output file name")
@@ -102,6 +105,7 @@ func Parse() Option {
 		fmt.Printf("%s version %s\n", progName, progVersion)
 		os.Exit(0)
 	}
+
 	// -D の値の解析
 	if defs, err := parseDefs(defs); err != nil {
 		fmt.Println(err)

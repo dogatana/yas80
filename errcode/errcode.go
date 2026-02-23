@@ -87,6 +87,8 @@ const (
 	EZ80_PORT_RANGE       = "ポート番号(0-255)が範囲外 %d(0x%x)"
 	EZ80_IM_RANGE         = "0/1/2 のみ有効 %d(0x%x)"
 
+	ER800 = "R800 専用命令のため利用不可"
+
 	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"
 	ESYM_CYCLIC = "シンボル %s の定義が循環参照を含む"
