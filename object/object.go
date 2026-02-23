@@ -512,7 +512,10 @@ type FileBlock struct {
 
 func (fb *FileBlock) Print() {
 	fmt.Printf("%s: %d\n", fb.Filename, fb.Line)
-	for _, line := range fb.LineObjects.Keys() {
+	// 安定ソートしているが、メッセージが append され行番号が逆元する場合があり sort 要
+	lines := fb.LineObjects.Keys()
+	slices.Sort(lines)
+	for _, line := range lines {
 		objs, _ := fb.LineObjects.Get(line)
 		fmt.Printf("%d: %d objects\n", line, len(objs))
 		for _, o := range objs {
