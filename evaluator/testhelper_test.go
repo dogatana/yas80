@@ -34,7 +34,7 @@ func evalFile(filename string, logger *logging.Logger, env TEnv) ([]byte, bool) 
 
 func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*object.BlockObject, *Evaluator) {
 
-	eval := New(logger)
+	eval := New(logger, []string{})
 
 	var obj object.Object
 	pass := 0

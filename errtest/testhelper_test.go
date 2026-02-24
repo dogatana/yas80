@@ -22,7 +22,7 @@ func evaluateInput(testType int, input string, logger *logging.Logger, env objec
 		return
 	}
 
-	e := evaluator.New(logger)
+	e := evaluator.New(logger, []string{})
 	e.Resolved = true
 	var obj object.Object
 	pass := 0

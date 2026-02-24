@@ -2,6 +2,8 @@ package evaluator
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"yas80/errcode"
 	"yas80/internal/util"
@@ -237,4 +239,21 @@ func (e *Evaluator) stringObjToOp2(so *object.StringObject, ctx TContext) object
 		e.logger.Error(errcode.EZ80_OP2_STR, ctx)
 		return object.ERROR
 	}
+}
+
+// incbin charmap ファイル読み込み
+func (e *Evaluator) readFile(name string) ([]byte, error) {
+	dirs := make([]string, 0, len(e.incDirs)+1)
+
+	dirs = append(dirs, filepath.Dir(name))
+	dirs = append(dirs, e.incDirs...)
+
+	base := filepath.Base(name)
+	for _, dir := range dirs {
+		path := filepath.Join(dir, base)
+		if content, err := os.ReadFile(path); err == nil {
+			return content, nil
+		}
+	}
+	return nil, fmt.Errorf("cannot read %s", name)
 }

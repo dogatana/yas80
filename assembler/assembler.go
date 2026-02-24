@@ -42,7 +42,7 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	// 環境初期化
 	as.initEnvironment(env)
 
-	eval := evaluator.New(logger)
+	eval := evaluator.New(logger, as.IncDirs)
 	eval.Debug = as.Evaldebug
 
 	// eval step 1
@@ -193,6 +193,8 @@ func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCo
 func (as *Assembler) initEnvironment(env object.Environment) {
 	// システム変数初期値設定
 	env.Set("$FILL", &object.NumberObject{Value: as.Fill})
+	env.Set("$CMAP_ERR", &object.NumberObject{Value: -1})
+	env.Set("$CMAP_THRU", &object.NumberObject{Value: -2})
 
 	v := 0
 	if as.R800 {

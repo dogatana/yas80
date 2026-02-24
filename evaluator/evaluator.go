@@ -12,10 +12,11 @@ type Evaluator struct {
 	Resolved   bool
 	CodeStable bool
 	Counter    func() int
+	incDirs    []string
 }
 
-func New(logger *logging.Logger) *Evaluator {
-	return &Evaluator{logger: logger, Resolved: true, Counter: makeCounter(0)}
+func New(logger *logging.Logger, incDirs []string) *Evaluator {
+	return &Evaluator{logger: logger, Resolved: true, Counter: makeCounter(0), incDirs: incDirs}
 }
 
 // start + 1 から順次生成するカウンタ関数を返す

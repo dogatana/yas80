@@ -12,7 +12,7 @@ import (
 func evalInput(input any, logger *logging.Logger, env object.Environment) (*object.BlockObject, *evaluator.Evaluator) {
 	prog := parseTextForTest(input, logger)
 
-	eval := evaluator.New(logger)
+	eval := evaluator.New(logger, []string{})
 
 	var obj object.Object
 	pass := 0
