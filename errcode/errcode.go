@@ -26,6 +26,9 @@ const (
 	ECHARMAP_VALUE      = "CHARMAP を適用できない値"
 	ECHARMAP_NOT_DEF    = "CHARMAP に文字 '%c' の定義がない"
 
+	ESETMAP_NOT_A_CHAR  = "文字数が1でない"
+	ESETMAP_ARRAY_EMPTY = "配列要素数が 0"
+
 	EADDRESS_OVERFLOW = "アドレスオバーフロー $%x"
 
 	ESTR_CTRL      = "文字列リテラルに制御文字を含めることは不可"

@@ -2,6 +2,7 @@ package evaluator
 
 import (
 	"fmt"
+	"strings"
 	"yas80/errcode"
 	"yas80/logging"
 	"yas80/object"
@@ -21,6 +22,8 @@ func (e *Evaluator) evalBuiltinMacro(stmt *parser.MacroCallStatement, env TEnv) 
 		return e.ebMacroLogMessage(logging.Info, stmt, env), true
 	case "INCBIN":
 		return e.ebMacroIncBin(stmt, env), true
+	case "SETMAP":
+		return e.ebMacroSetMap(stmt, env), true
 	}
 	return object.NULL, false
 
@@ -196,6 +199,89 @@ func (e *Evaluator) ebMacroIncBin(stmt *parser.MacroCallStatement, env TEnv) obj
 	}
 
 	return co
+}
+
+func (e *Evaluator) ebMacroSetMap(stmt *parser.MacroCallStatement, env TEnv) object.Object {
+
+	args := stmt.Args.Expressions
+	if len(args) != 3 {
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_COUNT, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+
+	// charmap の取得
+	var cmap *object.CharamapObject
+	obj := e.evalExpression(args[0], env, stmt.Context)
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		return obj
+	case *object.NullObject:
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_NULL, stmt.Name), stmt.Context)
+		return object.ERROR
+
+	case *object.CharamapObject:
+		cmap = obj
+
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_VALUE, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+
+	var str string
+	obj = e.evalMacroStringArg(stmt.Name, args[1], env, stmt.Context)
+	if obj, ok := obj.(*object.StringObject); !ok {
+		return obj
+	} else {
+		str = obj.Value
+	}
+
+	// 文字数チェック
+	runes := []rune(str)
+	if len(runes) != 1 {
+		e.logger.Error(errcode.ESETMAP_NOT_A_CHAR, stmt.Context)
+		return object.ERROR
+	}
+
+	// 配列取得
+	var values []byte
+
+	obj = e.evalExpression(args[2], env, stmt.Context)
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		return obj
+	case *object.NullObject:
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_NULL, stmt.Name), stmt.Context)
+		return object.ERROR
+
+	case *object.ArrayObject:
+		if len(obj.Values) == 0 {
+			e.logger.Error(errcode.ESETMAP_ARRAY_EMPTY, stmt.Context)
+			return object.ERROR
+		}
+		values = make([]byte, len(obj.Values))
+		for i, v := range obj.Values {
+			if v, ok := v.(*object.NumberObject); ok {
+				values[i] = byte(v.Value & 0xff)
+			} else {
+				e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_VALUE, stmt.Name), stmt.Context)
+				return object.ERROR
+			}
+		}
+
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_VALUE, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+
+	// 置き換え実施
+	cmap.Cmap[str] = values
+
+	atext := strings.ReplaceAll(fmt.Sprint(values), " ", ", ")
+	return &object.TextObject{Text: fmt.Sprintf("%q = %s", str, atext), Context: stmt.Context}
 }
 
 // マクロ引数を StringObject として評価
