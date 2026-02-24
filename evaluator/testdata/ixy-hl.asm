@@ -62,52 +62,41 @@
     ADD A, IXL
     ADD A, IYH
     ADD A, IYL
+
+    ADC A, IXH
+    ADC A, IXL
+    ADC A, IYH
+    ADC A, IYL
+
     SUB IXH
     SUB IXL
     SUB IYH
     SUB IYL
+
     SBC A, IXH
     SBC A, IXL
     SBC A, IYH
     SBC A, IYL
+
     AND IXH
     AND IXL
     AND IYH
     AND IYL
+
     OR IXH
     OR IXL
     OR IYH
     OR IYL
+
     XOR IXH
     XOR IXL
     XOR IYH
     XOR IYL
+
     CP IXH
     CP IXL
     CP IYH
     CP IYL
-
-; with A
-    SUB A, IXH
-    SUB A, IXL
-    SUB A, IYH
-    SUB A, IYL
-    AND A, IXH
-    AND A, IXL
-    AND A, IYH
-    AND A, IYL
-    OR A, IXH
-    OR A, IXL
-    OR A, IYH
-    OR A, IYL
-    XOR A, IXH
-    XOR A, IXL
-    XOR A, IYH
-    XOR A, IYL
-    CP A, IXH
-    CP A, IXL
-    CP A, IYH
-    CP A, IYL
 
     INC IXH
     INC IXL
@@ -118,3 +107,30 @@
     DEC IXL
     DEC IYH
     DEC IYL
+
+; with A
+    SUB A, IXH
+    SUB A, IXL
+    SUB A, IYH
+    SUB A, IYL
+
+    AND A, IXH
+    AND A, IXL
+    AND A, IYH
+    AND A, IYL
+
+    OR A, IXH
+    OR A, IXL
+    OR A, IYH
+    OR A, IYL
+
+    XOR A, IXH
+    XOR A, IXL
+    XOR A, IYH
+    XOR A, IYL
+
+    CP A, IXH
+    CP A, IXL
+    CP A, IYH
+    CP A, IYL
+
