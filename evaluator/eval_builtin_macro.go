@@ -189,7 +189,7 @@ func (e *Evaluator) ebMacroIncBin(stmt *parser.MacroCallStatement, env TEnv) obj
 			}
 		}
 	}
-	co := &object.CodeObject{Addr: getLocationCounter(env), Code: code, Context: stmt.Context}
+	co := &object.CodeObject{Addr: getLocationCounter(env), Code: code, IncBin: true, Context: stmt.Context}
 	env.Set("$RSIZE", &object.NumberObject{Value: co.Size()})
 	if err := advanceLocationCounter(env, co.Size()); err != nil {
 		e.logger.Error(err.Error(), stmt.Context)

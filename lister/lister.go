@@ -197,6 +197,7 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 		exp = '+'
 	}
 
+	// DS 等で確保された領域が 8 バイト超なら省略形で表示
 	if co.Filled && size > 8 {
 		var data string
 		if co.Code[0] == co.Code[1] {
@@ -218,6 +219,16 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 			lines = append(lines, fmt.Sprintf(fmtCode2, addr, buf.String(), cycle, exp))
 		}
 		addr += 8
+	}
+
+	// INCBIN のデータで3行以上なら省略形で表示
+	if co.IncBin && len(lines) <= 2 {
+		return lines
+	} else if co.IncBin {
+		return []string{
+			lines[0],
+			fmt.Sprintf("%12s... (%04x bytes total)", "", co.Size()),
+			lines[len(lines)-1]}
 	}
 	return lines
 }

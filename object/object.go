@@ -134,6 +134,7 @@ type CodeObject struct {
 	Addr    int
 	Code    []byte
 	Filled  bool // DS 等 fill で埋められた場合
+	IncBin  bool // INCBIN で読み込まれた場合
 	TStates [2]byte
 	Context *filecontent.Context
 }
