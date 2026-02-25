@@ -157,46 +157,57 @@ func TestIncBin(t *testing.T) {
 		{
 			input: `incbin "inc.bin"`,
 			code:  bin,
+			syms:  []symValue{{"$RSIZE", len(bin)}},
 		},
 		{
 			input: `incbin "inc.bin", 0x80`,
 			code:  bin[0x80:],
+			syms:  []symValue{{"$RSIZE", 0x80}},
 		},
 		{
 			input: `incbin "inc.bin", 0, 0x80`,
 			code:  bin[:0x80],
+			syms:  []symValue{{"$RSIZE", 0x80}},
 		},
 		{
 			input: `incbin "inc.bin", 0x40, 0x40`,
 			code:  bin[0x40:0x80],
+			syms:  []symValue{{"$RSIZE", 0x40}},
 		},
 		{
 			input: `incbin "inc.bin", 0x200`,
 			code:  []byte{},
+			syms:  []symValue{{"$RSIZE", 0}},
 		},
 		{
 			input: `incbin "inc.bin", 0x80, 0x100`,
 			code:  bin[0x80:],
+			syms:  []symValue{{"$RSIZE", 0x80}},
 		},
 		{
 			input: `incbin 123`,
 			err:   errcode.EEBMAC_ARG_VALUE,
+			syms:  []symValue{{"$RSIZE", -1}},
 		},
 		{
 			input: `fn func\endf\incbin fn()`,
 			err:   errcode.EEBMAC_ARG_NULL,
+			syms:  []symValue{{"$RSIZE", -1}},
 		},
 		{
 			input: `incbin`,
 			err:   errcode.EEBMAC_ARG_COUNT,
+			syms:  []symValue{{"$RSIZE", -1}},
 		},
 		{
 			input: `incbin "inc.bin", 1, 2, 3`,
 			err:   errcode.EEBMAC_ARG_COUNT,
+			syms:  []symValue{{"$RSIZE", -1}},
 		},
 		{
 			input: `incbin "inc-not-found.bin"`,
 			err:   errcode.EFILE_NOT_FOUND,
+			syms:  []symValue{{"$RSIZE", -1}},
 		},
 	}
 
@@ -209,6 +220,17 @@ func TestIncBin(t *testing.T) {
 		prog, e := evalInput(tt.input, logger, env)
 
 		testEvalResult(t, tn, tt.err, e)
+
+		// check system variables
+		for _, s := range tt.syms {
+			num, ok := e.getNumberFromEnv(s.name, env)
+			if !ok {
+				t.Errorf("[%d] %s not found in env", tn, s.name)
+			}
+			if num.Value != s.expected {
+				t.Errorf("[%d] %s is not %v. bot %v", tn, s.name, s.expected, num.Value)
+			}
+		}
 
 		// error, warning, information
 		if tt.err != "" {
@@ -229,10 +251,5 @@ func TestIncBin(t *testing.T) {
 		// code
 		testCodeResult(t, tn, tt.code, prog)
 
-		// syms
-		getter := func(name string) (*object.SymbolObject, bool) {
-			return e.getSymbolFromEnv(name, env)
-		}
-		testSymValues(t, tn, tt.syms, getter)
 	}
 }

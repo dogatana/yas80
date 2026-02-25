@@ -29,6 +29,7 @@ func (e *Evaluator) evalBuiltinMacro(stmt *parser.MacroCallStatement, env TEnv) 
 
 }
 
+// align n, fill
 func (e *Evaluator) ebMacroAlign(stmt *parser.MacroCallStatement, env TEnv) object.Object {
 	args := stmt.Args.Expressions
 
@@ -105,6 +106,7 @@ func (e *Evaluator) ebMacroAlign(stmt *parser.MacroCallStatement, env TEnv) obje
 	return &object.CodeObject{Addr: addr, Code: code, Filled: true, Context: stmt.Context}
 }
 
+// error/warn/info
 func (e *Evaluator) ebMacroLogMessage(msgType int, stmt *parser.MacroCallStatement, env TEnv) object.Object {
 
 	args := stmt.Args.Expressions
@@ -135,7 +137,12 @@ func (e *Evaluator) ebMacroLogMessage(msgType int, stmt *parser.MacroCallStateme
 
 // incbin "file", [start, [length]]
 func (e *Evaluator) ebMacroIncBin(stmt *parser.MacroCallStatement, env TEnv) object.Object {
-	env.Set("$RSIZE", &object.NumberObject{Value: -1})
+	// $RSIZE 初期化
+	if obj, ok := env.Get("$RSIZE"); !ok {
+		env.Set("$RSIZE", &object.NumberObject{Value: -1})
+	} else {
+		obj.(*object.NumberObject).Value = -1
+	}
 
 	args := stmt.Args.Expressions
 	if len(args) < 1 || len(args) > 3 {
@@ -194,7 +201,11 @@ func (e *Evaluator) ebMacroIncBin(stmt *parser.MacroCallStatement, env TEnv) obj
 		}
 	}
 	co := &object.CodeObject{Addr: getLocationCounter(env), Code: code, IncBin: true, Context: stmt.Context}
-	env.Set("$RSIZE", &object.NumberObject{Value: co.Size()})
+
+	// $RSIZE 更新
+	o, _ := env.Get("$RSIZE")
+	o.(*object.NumberObject).Value = co.Size()
+
 	if err := advanceLocationCounter(env, co.Size()); err != nil {
 		e.logger.Error(err.Error(), stmt.Context)
 	}
@@ -202,6 +213,7 @@ func (e *Evaluator) ebMacroIncBin(stmt *parser.MacroCallStatement, env TEnv) obj
 	return co
 }
 
+// setmap "c", [b1, b2]
 func (e *Evaluator) ebMacroSetMap(stmt *parser.MacroCallStatement, env TEnv) object.Object {
 
 	args := stmt.Args.Expressions

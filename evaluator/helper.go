@@ -156,6 +156,19 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TCon
 	}
 }
 
+// ENV から NumberObject を取得する（システム変数用）
+func (e *Evaluator) getNumberFromEnv(name string, env TEnv) (*object.NumberObject, bool) {
+	obj, ok := env.Get(name)
+	if !ok {
+		return nil, false
+	}
+	if obj, ok := obj.(*object.NumberObject); ok {
+		return obj, true
+	}
+	return nil, false
+}
+
+// ENV から SymbolObject を取得する
 func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObject, bool) {
 	names := strings.Split(name, ".")
 	if len(names) == 1 {
