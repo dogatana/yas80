@@ -30,7 +30,7 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	// 構文解析
 	prog, fcMap := as.parse(logger, fn)
 
-	// エラーが 1件でもあれば終了
+	// 構文解析でエラーがあれば終了
 	if logger.ErrorCount() > 0 {
 		logger.PrintSyntaxError()
 		os.Exit(1)
@@ -45,67 +45,19 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	eval := evaluator.New(logger, as.IncDirs)
 	eval.Debug = as.Evaldebug
 
+	// 総評価回数 1...
+	pass := 0
 	// eval step 1
-	// 評価後 eval.Resolved が true ならコード生成完了とみなす
-	// true でないなら、規定回数（256) だけ eval を繰り返す
-	var obj object.Object
-	pass := 0 // 総評価回数
+	obj, pass := as.evalStage1(eval, pass, logger, prog, env)
 
-	for i := range 256 {
-		pass++
-
-		fmt.Printf("# [%d] EvalProgrram\n", i)
-		eval.Resolved = true
-		obj = eval.EvalProgram(prog, pass, env)
-		if as.Evaldebug > 0 {
-			logger.Print()
-			object.PrintEnv(env)
-		}
-
-		if as.Evaldebug > 0 {
-			showResult(i, prog, obj, env)
-		}
-		// $ の評価ができないので、EvalEnvは実行しない
-		// eval.EvalEnv(env)
-		// eval.CheckSymbols(env)
-		// 循環参照のエラーチェックは実施
-		eval.CheckCyclicError(env)
-		if logger.ErrorCount() > 0 {
-			break
-		}
-		if eval.Resolved {
-			break
-		}
-	}
 	// 未確定のシボルがないかどうかチェック
 	eval.CheckSymbolError(env)
 
-	// eval step 1 終了状況
+	// eval stage 1 終了状況
 	fmt.Printf("eval %d times, %d errors, eval.Resolved = %v\n", pass, logger.ErrorCount(), eval.Resolved)
 
 	if logger.ErrorCount() == 0 && eval.Resolved {
-		// eval step 2
-		// 仮コード生成によってラベルアドレスが本来のものと異なる場合があるため
-		// コードが安定するまで規定回数(16)評価を繰り返す
-		// 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
-
-		fmt.Println("\n# finalize")
-		code := object.CollectCode(obj.(*object.BlockObject).Block)
-
-		eval.CodeStable = false
-		for i := 0; i < 16 && !eval.CodeStable; i++ {
-			pass++
-			env.Set("$PASS", &object.NumberObject{Value: pass})
-			obj = eval.EvalProgram(prog, pass, env)
-			if logger.ErrorCount() > 0 {
-				break
-			}
-			newCode := object.CollectCode(obj.(*object.BlockObject).Block)
-			eval.CodeStable = bytes.Equal(code, newCode)
-			if !eval.CodeStable {
-				code = newCode
-			}
-		}
+		obj, pass = as.evalStage2(eval, pass, logger, prog, env, obj)
 
 		fmt.Printf("eval %d times, codeStable %v\n", pass, eval.CodeStable)
 	}
@@ -130,22 +82,35 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 		bw := binwriter.New(obj, fill, logger)
 
 		var buf bytes.Buffer
-		if bw.Write(&buf) {
-			os.WriteFile("out.bin", buf.Bytes(), 0644)
-		} else {
+		if !bw.Write(&buf) {
 			logger.Print()
+			os.Exit(1)
+		}
+		if err := os.WriteFile(as.Output, buf.Bytes(), 0644); err != nil {
+			fmt.Println(err)
 			os.Exit(1)
 		}
 
 		// マップファイル出力
-		fmt.Println("# マップファイル出力")
-		if err := bw.WriteMap(os.Stdout); err != nil {
-			fmt.Println(err.Error())
-			os.Exit(1)
+		if as.MapFile != "" {
+			fmt.Println("# マップファイル出力")
+			buf.Reset()
+			if err := bw.WriteMap(&buf); err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+			if err := os.WriteFile(as.MapFile, buf.Bytes(), 0644); err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
 		}
 	}
 
 	// リストファイル出力
+	if as.ListFile == "" {
+		return
+	}
+
 	fmt.Println("-- log start")
 	logger.Print()
 	fmt.Println("-- log end")
@@ -154,12 +119,17 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	mmap.Print()
 	fmt.Println("-- message map end")
 
-	fmt.Println("# リストファイル")
 	for f := range fcMap {
 		fmt.Printf("file %s\n", f)
 	}
 	lister := lister.New(as.R800, prog, obj.(*object.BlockObject), fcMap, mmap)
-	lister.List(os.Stdout)
+
+	var buf bytes.Buffer
+	lister.List(&buf)
+	if err := os.WriteFile(as.ListFile, buf.Bytes(), 0644); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 // 構文解析とプリプロセス
@@ -187,6 +157,66 @@ func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCo
 		fmt.Println("")
 	}
 	return prog, lexer.FcMap
+}
+
+// eval step 1
+// 評価後 eval.Resolved が true ならコード生成完了とみなす
+// true でないなら、規定回数（256) だけ eval を繰り返す
+func (as *Assembler) evalStage1(eval *evaluator.Evaluator, pass int, logger *logging.Logger, prog *parser.BlockStatement, env object.Environment) (object.Object, int) {
+	fmt.Println("\n# eval stage 1")
+	var obj object.Object
+
+	for i := range 256 {
+		pass++
+
+		eval.Resolved = true
+		obj = eval.EvalProgram(prog, pass, env)
+		if as.Evaldebug > 0 {
+			logger.Print()
+			object.PrintEnv(env)
+		}
+
+		if as.Evaldebug > 0 {
+			showResult(i, prog, obj, env)
+		}
+		// $ の評価ができないので、EvalEnvは実行しない
+		// eval.EvalEnv(env)
+		// eval.CheckSymbols(env)
+		// 循環参照のエラーチェックは実施
+		eval.CheckCyclicError(env)
+		if logger.ErrorCount() > 0 {
+			break
+		}
+		if eval.Resolved {
+			break
+		}
+	}
+	return obj, pass
+}
+
+// eval step 2
+// 仮コード生成によってラベルアドレスが本来のものと異なる場合があるため
+// コードが安定するまで規定回数(16)評価を繰り返す
+// 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
+func (as *Assembler) evalStage2(eval *evaluator.Evaluator, pass int, logger *logging.Logger, prog *parser.BlockStatement, env object.Environment, obj object.Object) (object.Object, int) {
+	fmt.Println("\n# eval stage 2")
+	code := object.CollectCode(obj.(*object.BlockObject).Block)
+
+	eval.CodeStable = false
+	for i := 0; i < 16 && !eval.CodeStable; i++ {
+		pass++
+		env.Set("$PASS", &object.NumberObject{Value: pass})
+		obj = eval.EvalProgram(prog, pass, env)
+		if logger.ErrorCount() > 0 {
+			break
+		}
+		newCode := object.CollectCode(obj.(*object.BlockObject).Block)
+		eval.CodeStable = bytes.Equal(code, newCode)
+		if !eval.CodeStable {
+			code = newCode
+		}
+	}
+	return obj, pass
 }
 
 // 環境初期化

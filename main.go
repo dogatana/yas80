@@ -11,18 +11,17 @@ import (
 func main() {
 	opt := options.Parse()
 
-	// opt.Print()
 	if !opt.Stdin && len(opt.Args) == 0 {
 		fmt.Println("no input files")
 		os.Exit(1)
 	}
 
-	// setOutput(&opt)
 	fcs := makeContents(opt)
 	iter := makeContentIterFunc(fcs)
 
 	as := assembler.New(opt)
 	as.Run(iter)
+	os.Exit(0)
 }
 
 // opt の内容に応じた []*filecontent.FileContent を生成
