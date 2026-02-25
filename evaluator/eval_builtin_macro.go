@@ -271,6 +271,7 @@ func (e *Evaluator) ebMacroSetMap(stmt *parser.MacroCallStatement, env TEnv) obj
 		return object.ERROR
 
 	case *object.ArrayObject:
+		// 配列が空
 		if len(obj.Values) == 0 {
 			e.logger.Error(errcode.ESETMAP_ARRAY_EMPTY, stmt.Context)
 			return object.ERROR

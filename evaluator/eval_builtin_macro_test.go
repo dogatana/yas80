@@ -253,3 +253,84 @@ func TestIncBin(t *testing.T) {
 
 	}
 }
+
+func TestSetMap(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{
+			input: `charmap cmap, '{ "a": [1] }', -2 \ setmap cmap, "a", [2] \ db cmap('abc')`,
+			code:  []byte{2, 0x62, 0x63},
+		},
+		{
+			input: `charmap cmap, '{ "a": [1] }', -2 \ setmap cmap, "b", [2] \ db cmap('abc')`,
+			code:  []byte{1, 2, 0x63},
+		},
+		{
+			input: `charmap cmap, '{ "a": [1] }', -2 \ setmap cmap, "b", [2, 3, 4] \ db cmap('abc')`,
+			code:  []byte{1, 2, 3, 4, 0x63},
+		},
+		{
+			input: `charmap cmap, '{ "a": [1] }', -2 \ setmap cmap, "あ", [2] \ db cmap('aあc')`,
+			code:  []byte{1, 2, 0x63},
+		},
+		{
+			input: `charmap cmap, '{ "a": [1] }', -2 \ setmap cmap, "ab", [2] \ db cmap('abc')`,
+			err:   errcode.ESETMAP_NOT_A_CHAR,
+		},
+		{
+			input: `charmap cmap, '{ "a": [1] }', -2 \ setmap cmap, "", [2] \ db cmap('abc')`,
+			err:   errcode.ESETMAP_NOT_A_CHAR,
+		},
+		{
+			input: `charmap cmap, '{ "a": [1] }', -2 \ setmap cmap, "a", [] \ db cmap('abc')`,
+			err:   errcode.ESETMAP_ARRAY_EMPTY,
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// check system variables
+		for _, s := range tt.syms {
+			num, ok := e.getNumberFromEnv(s.name, env)
+			if !ok {
+				t.Errorf("[%d] %s not found in env", tn, s.name)
+			}
+			if num.Value != s.expected {
+				t.Errorf("[%d] %s is not %v. bot %v", tn, s.name, s.expected, num.Value)
+			}
+		}
+
+		// error, warning, information
+		if tt.err != "" {
+			// errcode.*
+			if strings.Contains(tt.err, "%") {
+				testutil.TestLogMessage(t, tn, tt.err, e.logger)
+				continue
+			}
+			// error, warn, info マクロ
+			msgs := util.Map(logger.GetMessages(), func(m *logging.Message) string { return m.String() })
+			text := strings.Join(msgs, "\n")
+			if !strings.Contains(text, tt.err) {
+				t.Errorf("[%d] no %q", tn, tt.err)
+			}
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+	}
+}

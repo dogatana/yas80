@@ -26,8 +26,8 @@ const (
 	ECHARMAP_VALUE      = "CHARMAP を適用できない値"
 	ECHARMAP_NOT_DEF    = "CHARMAP に文字 '%c' の定義がない"
 
-	ESETMAP_NOT_A_CHAR  = "文字数が1でない"
-	ESETMAP_ARRAY_EMPTY = "配列要素数が 0"
+	ESETMAP_NOT_A_CHAR  = "文字列の文字数が 1 でない"
+	ESETMAP_ARRAY_EMPTY = "空の配列が指定された"
 
 	EADDRESS_OVERFLOW = "アドレスオバーフロー $%x"
 
