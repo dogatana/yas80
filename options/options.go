@@ -120,6 +120,38 @@ func Parse() Option {
 	// -I の値の整形(trim)
 	opt.IncDirs = trimStringSlice(opt.IncDirs)
 
+	// .lst, .map, .sym のオプション引数を削除する
+	fmt.Println("args", opt.Args)
+	fmt.Println("list", opt.List)
+	removeOptionValues(&opt)
+	fmt.Println("args", opt.Args)
+	fmt.Println("list", opt.List)
+
+	if !opt.Stdin && len(opt.Args) == 0 {
+		fmt.Println("no input files")
+		os.Exit(1)
+	}
+
+	// 出力ファイル名
+	setOutput(&opt)
+
+	var base string
+	if opt.Stdin {
+		base = "stdin"
+	} else {
+		base = opt.Args[0]
+	}
+
+	if opt.List == ".lst" {
+		opt.List = replaceExt(base, ".lst")
+	}
+	if opt.Map == ".map" {
+		opt.Map = replaceExt(base, ".map")
+	}
+	if opt.Sym == ".sym" {
+		opt.Sym = replaceExt(base, ".sym")
+	}
+
 	return opt
 }
 
@@ -203,13 +235,20 @@ func setOutput(opt *Option) {
 			fmt.Println("multiple output format is specified")
 			os.Exit(1)
 		}
+
+		var file string
+		if len(opt.Args) == 0 && opt.Stdin {
+			file = "stdin"
+		} else {
+			file = opt.Args[0]
+		}
 		switch {
 		case opt.OutBIN:
-			opt.Output = replaceExt(opt.Args[0], ".bin")
+			opt.Output = replaceExt(file, ".bin")
 		case opt.OutMZT:
-			opt.Output = replaceExt(opt.Args[0], ".mzt")
+			opt.Output = replaceExt(file, ".mzt")
 		case opt.OutT88:
-			opt.Output = replaceExt(opt.Args[0], ".t88")
+			opt.Output = replaceExt(file, ".t88")
 		default:
 			panic("unreachable")
 		}
@@ -264,8 +303,36 @@ func setOutput(opt *Option) {
 	}
 }
 
+func removeOptionValues(opt *Option) {
+	rs := []string{}
+	if opt.List != "" && opt.List != ".lst" {
+		rs = append(rs, opt.List)
+	}
+	if opt.Map != "" && opt.Map != ".map" {
+		rs = append(rs, opt.Map)
+	}
+	if opt.Sym != "" && opt.Sym != ".sym" {
+		rs = append(rs, opt.Sym)
+	}
+
+	args := util.Filter(opt.Args, func(s string) bool {
+		for _, r := range rs {
+			if s == r {
+				return false
+			}
+		}
+		return true
+	})
+
+	opt.Args = args
+}
+
 // 拡張子を置き換える
 func replaceExt(filename, newExt string) string {
 	ext := filepath.Ext(filename)
-	return filename[:len(filename)-len(ext)] + newExt
+	if ext == "" {
+		return filename + newExt // 元々拡張子がなければそのまま新拡張子を追加
+	} else {
+		return filename[:len(filename)-len(ext)] + newExt
+	}
 }
