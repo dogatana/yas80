@@ -33,6 +33,7 @@ type Option struct {
 	Args      []string
 	Version   bool
 	// for debug
+	Stdin     bool
 	Astdebug  int
 	YYdebug   int
 	Evaldebug int
@@ -66,7 +67,6 @@ func Parse() Option {
 
 	var defs []string
 
-	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
 	flag.StringSliceVarP(&opt.IncDirs, "I", "I", []string{}, "directories to search for iclude")
 	flag.StringSliceVarP(&defs, "D", "D", []string{}, "define constants")
 	flag.StringVarP(&opt.Output, "output", "o", "", "output file name")
@@ -74,26 +74,29 @@ func Parse() Option {
 	flag.BoolVar(&opt.OutMZT, "mzt", false, "output with MZT format")
 	flag.BoolVar(&opt.OutT88, "t88", false, "output with T88 format")
 	flag.StringVarP(&opt.List, "list", "l", "", "list file name")
-	flag.Lookup("list").NoOptDefVal = "<<input>>.lst"
+	flag.Lookup("list").NoOptDefVal = ".lst"
 	flag.StringVarP(&opt.Map, "map", "m", "", "map file name")
-	flag.Lookup("map").NoOptDefVal = "<<input>>.map"
+	flag.Lookup("map").NoOptDefVal = ".map"
 	flag.StringVarP(&opt.Sym, "sym", "s", "", "symbol file name")
-	flag.Lookup("sym").NoOptDefVal = "<<input>>.sym"
+	flag.Lookup("sym").NoOptDefVal = ".sym"
 	flag.BoolVar(&opt.AutoProc, "auto-proc", false, "generate PROC from normal label")
+	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
 	flag.BoolVarP(&opt.Version, "version", "v", false, "print version")
 	// 以下デバッグ用非表示オプション
-	flag.IntVar(&opt.Astdebug, "ast-debug", 0, "debug level for Parse")
-	flag.IntVar(&opt.YYdebug, "yy-debug", 0, "debug level for go-yacc")
-	flag.IntVar(&opt.Evaldebug, "eval-debug", 0, "debug level for Evaluator")
-	flag.IntVar(&opt.Listebug, "list-debug", 0, "debug level for Lister")
-	// flag.CommandLine.MarkHidden("ast-debug")
-	// flag.CommandLine.MarkHidden("yy-debug")
-	// flag.CommandLine.MarkHidden("eval-debug")
-	// flag.CommandLine.MarkHidden("list-debug")
+	flag.BoolVar(&opt.Stdin, "stdin", false, "assemble stdin")
+	flag.IntVar(&opt.Astdebug, "astdebug", 0, "debug level for Parse")
+	flag.IntVar(&opt.YYdebug, "yydebug", 0, "debug level for go-yacc")
+	flag.IntVar(&opt.Evaldebug, "evaldebug", 0, "debug level for Evaluator")
+	flag.IntVar(&opt.Listebug, "listdebug", 0, "debug level for Lister")
+	// flag.CommandLine.MarkHidden("stdin")
+	// flag.CommandLine.MarkHidden("astdebug")
+	// flag.CommandLine.MarkHidden("yydebug")
+	// flag.CommandLine.MarkHidden("evaldebug")
+	// flag.CommandLine.MarkHidden("listdebug")
 	flag.BoolVarP(&opt.AsmArg, "arg", "a", false, "assemble Args[0]")
 	// usage をカスタマイズ
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: %s [options] <input file>\n", progName)
+		fmt.Fprintf(os.Stderr, "Usage: %s [options] file [file...]\n", progName)
 		fmt.Fprintf(os.Stderr, "Options:\n")
 		flag.PrintDefaults()
 	}

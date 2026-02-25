@@ -11,15 +11,13 @@ import (
 func main() {
 	opt := options.Parse()
 
-	// stdin からの入力を受け付けるため、引数チェックを無効にしておく
-	// if len(opt.Args) == 0 {
-	// 	fmt.Println("input file is required")
-	// 	os.Exit(1)
-	// }
+	// opt.Print()
+	if !opt.Stdin && len(opt.Args) == 0 {
+		fmt.Println("no input files")
+		os.Exit(1)
+	}
 
 	// setOutput(&opt)
-	opt.Print()
-
 	fcs := makeContents(opt)
 	iter := makeContentIterFunc(fcs)
 
