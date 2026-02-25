@@ -27,9 +27,12 @@ type Option struct {
 	OutMZT    bool
 	OutT88    bool
 	OutBIN    bool
-	List      string
-	Map       string
-	Sym       string
+	outList   bool   // List 出力の有無
+	ListFile  string // List ファイル名
+	outMap    bool   // map 出力の有無
+	MapFile   string // map ファイル名
+	outSym    bool   // symbol 出力の有無
+	SymFile   string // sym フィル名
 	Args      []string
 	Version   bool
 	// for debug
@@ -51,9 +54,9 @@ func (opt Option) Print() {
 	fmt.Printf("OutMZT: %v\n", opt.OutMZT)
 	fmt.Printf("OutT88: %v\n", opt.OutT88)
 	fmt.Printf("OutBIN: %v\n", opt.OutBIN)
-	fmt.Printf("List: %q\n", opt.List)
-	fmt.Printf("Map: %q\n", opt.Map)
-	fmt.Printf("Sym: %q\n", opt.Sym)
+	fmt.Printf("ListFile: %q\n", opt.ListFile)
+	fmt.Printf("MapFile: %q\n", opt.MapFile)
+	fmt.Printf("SymFile: %q\n", opt.SymFile)
 	fmt.Printf("Args: %v\n", opt.Args)
 	fmt.Printf("AstDebug: %d\n", opt.Astdebug)
 	fmt.Printf("YYDebug: %d\n", opt.YYdebug)
@@ -73,12 +76,16 @@ func Parse() Option {
 	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
 	flag.BoolVar(&opt.OutMZT, "mzt", false, "output with MZT format")
 	flag.BoolVar(&opt.OutT88, "t88", false, "output with T88 format")
-	flag.StringVarP(&opt.List, "list", "l", "", "list file name")
-	flag.Lookup("list").NoOptDefVal = ".lst"
-	flag.StringVarP(&opt.Map, "map", "m", "", "map file name")
-	flag.Lookup("map").NoOptDefVal = ".map"
-	flag.StringVarP(&opt.Sym, "sym", "s", "", "symbol file name")
-	flag.Lookup("sym").NoOptDefVal = ".sym"
+
+	flag.BoolVarP(&opt.outList, "l", "l", false, "generate list file")
+	flag.StringVar(&opt.ListFile, "list", "", "list filename")
+
+	flag.BoolVarP(&opt.outMap, "m", "m", false, "generate map file")
+	flag.StringVar(&opt.MapFile, "map", "", "map filename")
+
+	flag.BoolVarP(&opt.outSym, "s", "s", false, "generate symbol file")
+	flag.StringVar(&opt.SymFile, "sym", "", "symbol filename")
+
 	flag.BoolVar(&opt.AutoProc, "auto-proc", false, "generate PROC from normal label")
 	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
 	flag.BoolVarP(&opt.Version, "version", "v", false, "print version")
@@ -120,13 +127,6 @@ func Parse() Option {
 	// -I の値の整形(trim)
 	opt.IncDirs = trimStringSlice(opt.IncDirs)
 
-	// .lst, .map, .sym のオプション引数を削除する
-	fmt.Println("args", opt.Args)
-	fmt.Println("list", opt.List)
-	removeOptionValues(&opt)
-	fmt.Println("args", opt.Args)
-	fmt.Println("list", opt.List)
-
 	if !opt.Stdin && len(opt.Args) == 0 {
 		fmt.Println("no input files")
 		os.Exit(1)
@@ -142,14 +142,14 @@ func Parse() Option {
 		base = opt.Args[0]
 	}
 
-	if opt.List == ".lst" {
-		opt.List = replaceExt(base, ".lst")
+	if opt.outList && opt.ListFile == "" {
+		opt.ListFile = replaceExt(base, ".lst")
 	}
-	if opt.Map == ".map" {
-		opt.Map = replaceExt(base, ".map")
+	if opt.outMap && opt.MapFile == "" {
+		opt.MapFile = replaceExt(base, ".map")
 	}
-	if opt.Sym == ".sym" {
-		opt.Sym = replaceExt(base, ".sym")
+	if opt.outSym && opt.SymFile == "" {
+		opt.SymFile = replaceExt(base, ".sym")
 	}
 
 	return opt
@@ -301,30 +301,6 @@ func setOutput(opt *Option) {
 			os.Exit(1)
 		}
 	}
-}
-
-func removeOptionValues(opt *Option) {
-	rs := []string{}
-	if opt.List != "" && opt.List != ".lst" {
-		rs = append(rs, opt.List)
-	}
-	if opt.Map != "" && opt.Map != ".map" {
-		rs = append(rs, opt.Map)
-	}
-	if opt.Sym != "" && opt.Sym != ".sym" {
-		rs = append(rs, opt.Sym)
-	}
-
-	args := util.Filter(opt.Args, func(s string) bool {
-		for _, r := range rs {
-			if s == r {
-				return false
-			}
-		}
-		return true
-	})
-
-	opt.Args = args
 }
 
 // 拡張子を置き換える
