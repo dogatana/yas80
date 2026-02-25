@@ -104,7 +104,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 
 	// 代入文
 	case *parser.AssignStatement:
-		return e.evalAsignStatement(stmt, env)
+		return e.evalAssignStatement(stmt, env)
 
 	// if
 	case *parser.IfStatement:
@@ -579,7 +579,7 @@ func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TE
 }
 
 // 代入
-func (e *Evaluator) evalAsignStatement(stmt *parser.AssignStatement, env TEnv) object.Object {
+func (e *Evaluator) evalAssignStatement(stmt *parser.AssignStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Left, env, stmt.Context)
 	e.concatenateSymbol(&stmt.Value, env, stmt.Context)
 
