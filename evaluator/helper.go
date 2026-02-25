@@ -255,5 +255,5 @@ func (e *Evaluator) readFile(name string) ([]byte, error) {
 			return content, nil
 		}
 	}
-	return nil, fmt.Errorf("cannot read %s", name)
+	return nil, fmt.Errorf(errcode.EFILE_NOT_FOUND, name)
 }
