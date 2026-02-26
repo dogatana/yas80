@@ -57,9 +57,9 @@
 
 | Assembler | Version | File Size (byte) |
 |  -- | -- | --: |
-| yas80 | 0.1.0 (prototype) |    `4,757,504`  |
-| z80asm(z88dk) |Z80 Macro Assembler 22110-51889e5300-20231220 | `32,393,835` |
-| ailz80asm |  1.0.31.0 | `68,322,858` |
+| yas80 | 0.1.0 (prototype) |    4,757,504  |
+| z80asm(z88dk) |Z80 Macro Assembler 22110-51889e5300-20231220 | 32,393,835 |
+| ailz80asm |  1.0.31.0 | 68,322,858 |
 
 ### 計測結果
 
@@ -78,33 +78,33 @@
     <td rowspan="3"><a href="testdata/all.asm">testdata/all.asm</td>
     <td rowspan="3" style="text-align:center">100</td>
     <td>yas80</td>
-    <td><code>  4.560</code></td>
-    <td><code>  0.046</code></td>
+    <td>  4.560</td>
+    <td>  0.046</td>
   </tr>
   <tr>
     <td>z80asm(z88dk)</td>
-    <td><code> 15.411</code></td>
-    <td><code>  0.154</code></td>
+    <td> 15.411</td>
+    <td>  0.154</td>
   </tr>
     <td>ailz80asm</td>
-    <td><code>106.820</code></td>
-    <td><code>  1.048</code></td>
+    <td>106.820</td>
+    <td>  1.048</td>
   </tr>
   <tr>
     <td rowspan="3"><a href="testdata/label.asm">testdata/label.asm</td>
     <td rowspan="3" style="text-align:center">100</td>
     <td>yas80</td>
-    <td><code>  6.414</code></td>
-    <td><code>  0.064</code></td>
+    <td>  6.414</td>
+    <td>  0.064</td>
   </tr>
   <tr>
     <td>z80asm(z88dk)</td>
-    <td><code> 27.126</code></td>
-    <td><code>  0.271</code></td>
+    <td> 27.126</td>
+    <td>  0.271</td>
   </tr>
     <td>ailz80asm</td>
-    <td><code>680.028</code></td>
-    <td><code>  6.800</code></td>
+    <td>680.028</td>
+    <td>  6.800</td>
   </tr>
 
 </tbody>
