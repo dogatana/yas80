@@ -73,7 +73,6 @@ func Parse() Option {
 	flag.StringSliceVarP(&opt.IncDirs, "I", "I", []string{}, "directories to search for iclude")
 	flag.StringSliceVarP(&defs, "D", "D", []string{}, "define constants")
 	flag.StringVarP(&opt.Output, "output", "o", "", "output file name")
-	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
 	flag.BoolVar(&opt.OutMZT, "mzt", false, "output with MZT format")
 	flag.BoolVar(&opt.OutT88, "t88", false, "output with T88 format")
 
@@ -88,6 +87,7 @@ func Parse() Option {
 
 	flag.BoolVar(&opt.AutoProc, "auto-proc", false, "generate PROC from normal label")
 	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
+	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
 	flag.BoolVarP(&opt.Version, "version", "v", false, "print version")
 	// 以下デバッグ用非表示オプション
 	flag.BoolVar(&opt.Stdin, "stdin", false, "assemble stdin")
