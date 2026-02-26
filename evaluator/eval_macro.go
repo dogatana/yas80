@@ -140,6 +140,9 @@ func replaceOffset(stmt parser.Statement, fn func() int) {
 		stmt.Context.Offset = fn()
 		replaceOffset(stmt.Consequence.(parser.Statement), fn)
 		replaceOffset(stmt.Alternative.(parser.Statement), fn)
+
+	case *parser.FileStatement:
+		// do nothing
 	default:
 		stmt.GetContext().Offset = fn()
 	}
