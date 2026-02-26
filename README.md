@@ -75,7 +75,7 @@
 </thead>
 <tbody>
   <tr>
-    <td rowspan="3"><a href="testdata/all.asm">testdata/all.asm</td>
+    <td rowspan="3"><a href="testdata/big.asm">testdata/big.asm</td>
     <td rowspan="3" style="text-align:center">100</td>
     <td>yas80</td>
     <td>  4.560</td>
