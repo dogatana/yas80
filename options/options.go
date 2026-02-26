@@ -37,10 +37,10 @@ type Option struct {
 	Version   bool
 	// for debug
 	Stdin     bool
-	Astdebug  int
+	AstDebug  int
 	YYdebug   int
-	Evaldebug int
-	Listebug  int
+	EvalDebug int
+	ListDebug int
 	AsmArg    bool
 }
 
@@ -58,10 +58,10 @@ func (opt Option) Print() {
 	fmt.Printf("MapFile: %q\n", opt.MapFile)
 	fmt.Printf("SymFile: %q\n", opt.SymFile)
 	fmt.Printf("Args: %v\n", opt.Args)
-	fmt.Printf("AstDebug: %d\n", opt.Astdebug)
+	fmt.Printf("AstDebug: %d\n", opt.AstDebug)
 	fmt.Printf("YYDebug: %d\n", opt.YYdebug)
-	fmt.Printf("EvalDebug: %d\n", opt.Evaldebug)
-	fmt.Printf("ListDebug: %d\n", opt.Listebug)
+	fmt.Printf("EvalDebug: %d\n", opt.EvalDebug)
+	fmt.Printf("ListDebug: %d\n", opt.ListDebug)
 }
 
 func Parse() Option {
@@ -91,10 +91,10 @@ func Parse() Option {
 	flag.BoolVarP(&opt.Version, "version", "v", false, "print version")
 	// 以下デバッグ用非表示オプション
 	flag.BoolVar(&opt.Stdin, "stdin", false, "assemble stdin")
-	flag.IntVar(&opt.Astdebug, "astdebug", 0, "debug level for Parse")
+	flag.IntVar(&opt.AstDebug, "astdebug", 0, "debug level for Parse")
 	flag.IntVar(&opt.YYdebug, "yydebug", 0, "debug level for go-yacc")
-	flag.IntVar(&opt.Evaldebug, "evaldebug", 0, "debug level for Evaluator")
-	flag.IntVar(&opt.Listebug, "listdebug", 0, "debug level for Lister")
+	flag.IntVar(&opt.EvalDebug, "evaldebug", 0, "debug level for Evaluator")
+	flag.IntVar(&opt.ListDebug, "listdebug", 0, "debug level for Lister")
 	// flag.CommandLine.MarkHidden("stdin")
 	// flag.CommandLine.MarkHidden("astdebug")
 	// flag.CommandLine.MarkHidden("yydebug")

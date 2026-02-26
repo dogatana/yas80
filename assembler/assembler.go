@@ -43,7 +43,7 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	as.initEnvironment(env)
 
 	eval := evaluator.New(logger, as.IncDirs)
-	eval.Debug = as.Evaldebug
+	eval.Debug = as.EvalDebug
 
 	// 総評価回数 1...
 	pass := 0
@@ -72,8 +72,10 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	// LogMessage の重複削除
 	logger.RemoveDupe()
 
-	fmt.Println("-- ast")
-	parser.PrintNode(prog, 0)
+	if as.ListDebug > 0 {
+		fmt.Println("-- ast")
+		parser.PrintNode(prog, 0)
+	}
 
 	if logger.ErrorCount() == 0 {
 		// 出力ファイル生成
@@ -114,13 +116,15 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	fmt.Println("-- log start")
 	logger.Print()
 	fmt.Println("-- log end")
-	fmt.Println("-- message map start")
 	mmap := logger.BuildMessageMap()
-	mmap.Print()
-	fmt.Println("-- message map end")
+	if as.ListDebug > 0 {
+		fmt.Println("-- message map start")
+		mmap.Print()
+		fmt.Println("-- message map end")
 
-	for f := range fcMap {
-		fmt.Printf("file %s\n", f)
+		for f := range fcMap {
+			fmt.Printf("file %s\n", f)
+		}
 	}
 	lister := lister.New(as.R800, prog, obj.(*object.BlockObject), fcMap, mmap)
 
@@ -148,7 +152,7 @@ func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCo
 
 	// 構文解析後 AST 表示
 	fmt.Println("# ast")
-	if as.Astdebug != 0 {
+	if as.AstDebug != 0 {
 		if len(prog.Block) == 0 {
 			fmt.Print("no statements detected")
 		} else {
@@ -171,12 +175,12 @@ func (as *Assembler) evalStage1(eval *evaluator.Evaluator, pass int, logger *log
 
 		eval.Resolved = true
 		obj = eval.EvalProgram(prog, pass, env)
-		if as.Evaldebug > 0 {
+		if as.EvalDebug > 0 {
 			logger.Print()
 			object.PrintEnv(env)
 		}
 
-		if as.Evaldebug > 0 {
+		if as.EvalDebug > 0 {
 			showResult(i, prog, obj, env)
 		}
 		// $ の評価ができないので、EvalEnvは実行しない
