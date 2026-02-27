@@ -24,11 +24,6 @@ func (ctx *LexerContext) toContext(start int) *filecontent.Context {
 	return &filecontent.Context{FileContent: ctx.fileContent, Line: ctx.lineNumber, Index: start}
 }
 
-type contextValue struct {
-	context *LexerContext
-	include bool
-}
-
 // 最低限必要な構造体を定義
 type Lexer struct {
 	callback func() *filecontent.FileContent

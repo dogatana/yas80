@@ -58,7 +58,6 @@ type Lister struct {
 	nodes   *parser.BlockStatement
 	objects []object.Object
 	fcMap   map[string]*filecontent.FileContent
-	fMap    object.FileMap
 	fblocks []*object.FileBlock
 }
 
@@ -68,12 +67,6 @@ func New(r800 bool, pnode *parser.BlockStatement, pobj *object.BlockObject, fcma
 		l.tsIndex = 1
 	}
 	l.objects = object.FlattenObject(pobj)
-
-	// filemap の作成
-	// l.fMap = object.BuildGroupMap(object.FlattenObject(pobj))
-	// fmt.Println("-- FileMap start")
-	// l.fMap.Print()
-	// fmt.Println("-- FileMap end")
 
 	fmt.Println("-- objects start")
 	for _, o := range l.objects {
@@ -231,56 +224,4 @@ func (l *Lister) codeToLines(co *object.CodeObject) []string {
 			lines[len(lines)-1]}
 	}
 	return lines
-}
-
-func printStatement(w io.Writer, stmt parser.Statement) {
-	// fmt.Fprintf(w, "%T\n", stmt)
-
-	switch stmt := stmt.(type) {
-	case *parser.MacroBlockStatement:
-		printLineHead(w, stmt.Context)
-		fmt.Fprintln(w, stmt.Name)
-
-		for _, s := range stmt.Block {
-			printStatement(w, s)
-		}
-	case *parser.BlockStatement:
-		for _, s := range stmt.Block {
-			printStatement(w, s)
-		}
-	default:
-		ctx := stmt.GetContext()
-		printLineHead(w, ctx)
-		fmt.Fprintln(w, stmt.String())
-	}
-}
-
-func printLineHead(w io.Writer, ctx *filecontent.Context) {
-	printExpand(w, ctx)
-	printContext(w, ctx)
-}
-
-func printExpand(w io.Writer, ctx *filecontent.Context) {
-	if ctx == nil {
-		fmt.Fprint(w, " ? ")
-		return
-	}
-	if ctx.Offset == 0 {
-		fmt.Fprint(w, "   ")
-	} else {
-		fmt.Fprint(w, " + ")
-	}
-}
-
-func printContext(w io.Writer, ctx *filecontent.Context) {
-	if ctx == nil {
-		fmt.Fprint(w, "--:-- (  ) ")
-		return
-	}
-	fmt.Fprintf(w, "%2d:%2d ", ctx.Line, ctx.Offset)
-	if ctx.Source == nil {
-		fmt.Fprint(w, "(  ) ")
-	} else {
-		fmt.Fprintf(w, "(%2d) ", ctx.Source.Line)
-	}
 }

@@ -209,7 +209,7 @@ func (l *Logger) BuildMessageMap() MessageMap {
 			mmap[file] = util.NewOrderedMap[int, []*Message]()
 		}
 
-		om, _ := mmap[file]
+		om := mmap[file]
 		msgs, ok := om.Get(msg.Context.Line)
 		if ok {
 			msgs = append(msgs, msg)

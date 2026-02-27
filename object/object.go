@@ -481,39 +481,6 @@ func (fm FileMap) Print() {
 	}
 }
 
-// ファイルを Grouup の map
-func BuildGroupMap(objects []Object) FileMap {
-	fmap := map[string]*util.OrderedMap[int, []Object]{}
-
-	var name string
-	for _, obj := range objects {
-		switch obj := obj.(type) {
-		case *FileObject:
-			name = obj.Filename
-			if _, ok := fmap[name]; !ok {
-				fmap[name] = util.NewOrderedMap[int, []Object]()
-			}
-		case *CodeObject:
-			fm, _ := fmap[name]
-			if objs, ok := fm.Get(obj.Context.Line); !ok {
-				fm.Set(obj.Context.Line, []Object{obj})
-			} else {
-				objs = append(objs, obj)
-				fm.Set(obj.Context.Line, []Object{obj})
-			}
-		case *CommentObject:
-			fm, _ := fmap[name]
-			if objs, ok := fm.Get(obj.Context.Line); !ok {
-				fm.Set(obj.Context.Line, []Object{obj})
-			} else {
-				objs = append(objs, obj)
-				fm.Set(obj.Context.Line, []Object{obj})
-			}
-		}
-	}
-	return fmap
-}
-
 type FileBlock struct {
 	Filename    string
 	Line        int

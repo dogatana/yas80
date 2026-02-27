@@ -278,18 +278,6 @@ func printObjects(objs []object.Object) {
 	}
 }
 
-func getIntFromEnv(env object.Environment, name string) (int, bool) {
-	obj, ok := env.Get(name)
-	if !ok {
-		return 0, false
-	}
-	num, ok := obj.(*object.NumberObject)
-	if !ok {
-		return 0, false
-	}
-	return num.Value, true
-}
-
 func showResult(count int, prog *parser.BlockStatement, obj object.Object, env object.Environment) {
 	path := ""
 	if count >= 0 {

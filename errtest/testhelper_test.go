@@ -26,7 +26,7 @@ func evaluateInput(testType int, input string, logger *logging.Logger, env objec
 	e.Resolved = true
 	var obj object.Object
 	pass := 0
-	for _ = range 256 {
+	for range 256 {
 		pass++
 		e.Resolved = true
 		obj = e.EvalProgram(prog, pass, env)

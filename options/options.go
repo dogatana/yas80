@@ -208,11 +208,11 @@ func parseDef(input string) (string, int, error) {
 	case 2:
 		n, err := strconv.ParseInt(terms[1], 0, 0)
 		if err != nil {
-			return "", 0, fmt.Errorf("invalid -D option argment: %s\n", input)
+			return "", 0, fmt.Errorf("invalid -D option argment: %s", input)
 		}
 		return terms[0], int(n), nil
 	default:
-		return "", 0, fmt.Errorf("invalid -D option argument: %s\n", input)
+		return "", 0, fmt.Errorf("invalid -D option argument: %s", input)
 	}
 }
 
