@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path/filepath"
 	"yas80/binwriter"
 	"yas80/evaluator"
 	"yas80/filecontent"
@@ -58,7 +59,6 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 
 	if logger.ErrorCount() == 0 && eval.Resolved {
 		obj, pass = as.evalStage2(eval, pass, logger, prog, env, obj)
-
 		fmt.Printf("eval %d times, codeStable %v\n", pass, eval.CodeStable)
 	}
 	// 評価完了
@@ -77,14 +77,25 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 		parser.PrintNode(prog, 0)
 	}
 
+	logger.Print()
 	if logger.ErrorCount() == 0 {
 		// 出力ファイル生成
 		fmt.Println("# 出力ファイル生成")
-		fill, _ := getIntFromEnv(env, "$FILL")
+		fill := as.Fill
 		bw := binwriter.New(obj, fill, logger)
 
 		var buf bytes.Buffer
-		if !bw.Write(&buf) {
+		var ok bool
+		switch {
+		case as.OutBIN:
+			ok = bw.WriteBin(&buf)
+		case as.OutMZT:
+			ok = bw.WriteMzt(&buf, filepath.Base(as.Output), -1)
+		case as.OutT88:
+			fmt.Printf("T88 not yet implemented")
+			os.Exit(1)
+		}
+		if !ok {
 			logger.Print()
 			os.Exit(1)
 		}

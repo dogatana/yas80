@@ -100,7 +100,7 @@ func codeFromObj(obj object.Object, fill int, logger *logging.Logger) ([]byte, b
 	bw := New(obj, fill, logger)
 
 	var buf bytes.Buffer
-	ok := bw.Write(&buf)
+	ok := bw.WriteBin(&buf)
 
 	return buf.Bytes(), ok
 }

@@ -1,6 +1,7 @@
 package binwriter
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"slices"
@@ -38,7 +39,8 @@ func New(prog object.Object, fill int, logger *logging.Logger) *BinWriter {
 	return &BinWriter{prog: prog.(*object.BlockObject), fill: fill, logger: logger}
 }
 
-func (b *BinWriter) Write(w io.Writer) bool {
+// BIN 形式の出力
+func (b *BinWriter) WriteBin(w io.Writer) bool {
 	b.allocate()
 	if b.logger.ErrorCount() > 0 {
 		return false
@@ -48,6 +50,50 @@ func (b *BinWriter) Write(w io.Writer) bool {
 		return false
 	}
 	b.write(w)
+	return true
+}
+
+// MZT 形式の出力
+func (b *BinWriter) WriteMzt(w io.Writer, name string, start int) bool {
+	var buf bytes.Buffer
+	if !b.WriteBin(&buf) {
+		return false
+	}
+	data := buf.Bytes()
+
+	// header
+	header := make([]byte, 128)
+
+	// mode
+	header[0] = 0x01
+	// title
+	title := bytes.Repeat([]byte{0x0d}, 16)
+	bname := []byte(name)
+	copy(title, bname[:min(16, len(bname))])
+	copy(header[1:], title)
+	// size
+	size := len(data)
+	header[0x12] = byte(size & 0xff)
+	header[0x13] = byte((size >> 8) & 0xff)
+	// load
+	load := b.segs[0].addr
+	header[0x14] = byte(load & 0xff)
+	header[0x15] = byte((load >> 8) & 0xff)
+	// start
+	if start < 0 {
+		start = load
+	}
+	header[0x16] = byte(start & 0xff)
+	header[0x17] = byte((start >> 8) & 0xff)
+
+	if s, err := w.Write(header); err != nil || s != len(header) {
+		b.logger.Error(fmt.Sprintf(errcode.EBW_WRITE, err.Error()), nil)
+		return false
+	}
+	if s, err := w.Write(data); err != nil || s != len(data) {
+		b.logger.Error(fmt.Sprintf(errcode.EBW_WRITE, err.Error()), nil)
+		return false
+	}
 	return true
 }
 

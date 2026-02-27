@@ -28,7 +28,7 @@ func evalFile(filename string, logger *logging.Logger, env TEnv) ([]byte, bool) 
 
 	bw := binwriter.New(obj, 0, logger)
 	var buf bytes.Buffer
-	ok := bw.Write(&buf)
+	ok := bw.WriteBin(&buf)
 	return buf.Bytes(), ok
 }
 

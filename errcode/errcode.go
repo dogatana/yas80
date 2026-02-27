@@ -185,6 +185,7 @@ const (
 	// BinWriter
 	EBW_OVERLAPPED = "ORG $%x と ORG $%x の範囲が重複"
 	EBW_NULL       = "コード生成なし"
+	EBW_WRITE      = "ファイル書込みエラー: %s"
 
 	// warning
 	WROUND_BYTE = "数値 '%d(0x%x)' をバイト範囲(-128 - 255)に丸めました"
