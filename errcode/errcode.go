@@ -196,6 +196,8 @@ const (
 	WSCOPE_FUNC  = "FUNC 内では無効 %T"
 	WSCOPE_PROC  = "PROC では無効"
 
+	WBW_LOAD_NAME = "Load name が ASCII 以外の文字を含んでいるので OUTPUT で代替"
+
 	// infromation
 	// ILABEL_LOCAL = "[I]ローカルラベルには ':' は不要"
 )

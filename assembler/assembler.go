@@ -90,11 +90,18 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 		case as.OutBIN:
 			ok = bw.WriteBin(&buf)
 		case as.OutMZT:
-			ok = bw.WriteMzt(&buf, filepath.Base(as.Output), as.StartAddr)
+			var name string
+			if as.LoadName == "" {
+				name = filepath.Base(as.Output)
+			} else {
+				name = as.LoadName
+			}
+			ok = bw.WriteMzt(&buf, name, as.StartAddr)
 		case as.OutT88:
-			fmt.Printf("T88 not yet implemented")
-			os.Exit(1)
+			logger.Error("T88 not yet implemented", nil)
+			ok = false
 		}
+
 		if !ok {
 			logger.Print()
 			os.Exit(1)

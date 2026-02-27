@@ -26,6 +26,7 @@ type Option struct {
 	OutT88 bool
 	OutBIN bool
 
+	LoadName  string
 	StartAddr int
 	AutoProc  bool
 	Fill      int
@@ -58,6 +59,7 @@ func (opt Option) Print() {
 	fmt.Printf("OutT88: %v\n", opt.OutT88)
 	fmt.Printf("OutBIN: %v\n", opt.OutBIN)
 
+	fmt.Printf("LoadName: %v\n", opt.LoadName)
 	fmt.Printf("StartAddr: %v\n", opt.StartAddr)
 	fmt.Printf("AutoProc: %v\n", opt.AutoProc)
 	fmt.Printf("Fill: %d\n", opt.Fill)
@@ -87,6 +89,7 @@ func Parse() Option {
 	flag.BoolVar(&opt.OutT88, "t88", false, "output with T88 format")
 
 	flag.IntVar(&opt.StartAddr, "start-addr", -1, "program start address")
+	flag.StringVar(&opt.LoadName, "load-name", "", "load file name for MZT")
 	flag.BoolVar(&opt.AutoProc, "auto-proc", false, "generate PROC from normal label")
 	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
 	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")

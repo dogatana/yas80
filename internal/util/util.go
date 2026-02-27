@@ -166,3 +166,13 @@ LOOP:
 	}
 	return out
 }
+
+// 文字列が ASCII 0x20-0x7e の範囲がどうかを返す
+func IsAsciiString(name string) bool {
+	for _, c := range name {
+		if c < ' ' || c > 0x7e {
+			return false
+		}
+	}
+	return true
+}

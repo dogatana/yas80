@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"yas80/errcode"
+	"yas80/internal/util"
 	"yas80/logging"
 	"yas80/object"
 )
@@ -66,11 +68,15 @@ func (b *BinWriter) WriteMzt(w io.Writer, name string, start int) bool {
 
 	// mode
 	header[0] = 0x01
-	// title
-	title := bytes.Repeat([]byte{0x0d}, 16)
-	bname := []byte(name)
-	copy(title, bname[:min(16, len(bname))])
-	copy(header[1:], title)
+	// load name
+	// アスキー文字のみ有効項
+	if !util.IsAsciiString(name) {
+		b.logger.Warning(errcode.WBW_LOAD_NAME, nil)
+		name = "OUTPUT"
+	}
+	name += strings.Repeat(" ", 15) // 16文字に足りない場合空白で埋める
+	copy(header[1:], []byte(name[:16]))
+	header[0x11] = 0x0d
 	// size
 	size := len(data)
 	header[0x12] = byte(size & 0xff)
