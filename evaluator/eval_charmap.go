@@ -106,7 +106,7 @@ func (e *Evaluator) loadCharmapJson(filename string, stmt *parser.CharmapStateme
 		// ファイル読み込み
 		var err error
 		// text, err = os.ReadFile(path)
-		text, err = e.readFile(path)
+		text, err = e.readFile(stmt.Context.FileContent.Filename, path)
 		if err != nil {
 			e.logger.Error(fmt.Sprintf(errcode.ECHARMAP_READ, filename, err.Error()), stmt.Context)
 			return nil

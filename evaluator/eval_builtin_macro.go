@@ -177,7 +177,7 @@ func (e *Evaluator) ebMacroIncBin(stmt *parser.MacroCallStatement, env TEnv) obj
 		}
 	}
 
-	data, err := e.readFile(file)
+	data, err := e.readFile(stmt.Context.FileContent.Filename, file)
 	if err != nil {
 		e.logger.Error(err.Error(), stmt.Context)
 		return object.ERROR

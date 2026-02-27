@@ -255,10 +255,10 @@ func (e *Evaluator) stringObjToOp2(so *object.StringObject, ctx TContext) object
 }
 
 // incbin charmap ファイル読み込み
-func (e *Evaluator) readFile(name string) ([]byte, error) {
+func (e *Evaluator) readFile(from, name string) ([]byte, error) {
 	dirs := make([]string, 0, len(e.incDirs)+1)
 
-	dirs = append(dirs, filepath.Dir(name))
+	dirs = append(dirs, filepath.Dir(from))
 	dirs = append(dirs, e.incDirs...)
 
 	base := filepath.Base(name)
