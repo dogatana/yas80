@@ -18,23 +18,28 @@ const (
 )
 
 type Option struct {
-	R800      bool
 	IncDirs   []string
 	Constants map[string]int
+
+	Output string
+	OutMZT bool
+	OutT88 bool
+	OutBIN bool
+
+	StartAddr int
 	AutoProc  bool
 	Fill      int
-	Output    string
-	OutMZT    bool
-	OutT88    bool
-	OutBIN    bool
-	outList   bool   // List 出力の有無
-	ListFile  string // List ファイル名
-	outMap    bool   // map 出力の有無
-	MapFile   string // map ファイル名
-	outSym    bool   // symbol 出力の有無
-	SymFile   string // sym フィル名
-	Args      []string
-	Version   bool
+	R800      bool
+
+	outList  bool   // List 出力の有無
+	ListFile string // List ファイル名
+	outMap   bool   // map 出力の有無
+	MapFile  string // map ファイル名
+	outSym   bool   // symbol 出力の有無
+	SymFile  string // sym フィル名
+
+	Args    []string
+	Version bool
 	// for debug
 	Stdin     bool
 	AstDebug  int
@@ -45,18 +50,23 @@ type Option struct {
 }
 
 func (opt Option) Print() {
-	fmt.Printf("R800: %v\n", opt.R800)
 	fmt.Printf("IncDirs: %v\n", opt.IncDirs)
 	fmt.Printf("Constants: %+v\n", opt.Constants)
-	fmt.Printf("AutoProc: %v\n", opt.AutoProc)
-	fmt.Printf("Fill: %d\n", opt.Fill)
+
 	fmt.Printf("Output: %q\n", opt.Output)
 	fmt.Printf("OutMZT: %v\n", opt.OutMZT)
 	fmt.Printf("OutT88: %v\n", opt.OutT88)
 	fmt.Printf("OutBIN: %v\n", opt.OutBIN)
+
+	fmt.Printf("StartAddr: %v\n", opt.StartAddr)
+	fmt.Printf("AutoProc: %v\n", opt.AutoProc)
+	fmt.Printf("Fill: %d\n", opt.Fill)
+	fmt.Printf("R800: %v\n", opt.R800)
+
 	fmt.Printf("ListFile: %q\n", opt.ListFile)
 	fmt.Printf("MapFile: %q\n", opt.MapFile)
 	fmt.Printf("SymFile: %q\n", opt.SymFile)
+
 	fmt.Printf("Args: %v\n", opt.Args)
 	fmt.Printf("AstDebug: %d\n", opt.AstDebug)
 	fmt.Printf("YYDebug: %d\n", opt.YYdebug)
@@ -76,6 +86,11 @@ func Parse() Option {
 	flag.BoolVar(&opt.OutMZT, "mzt", false, "output with MZT format")
 	flag.BoolVar(&opt.OutT88, "t88", false, "output with T88 format")
 
+	flag.IntVar(&opt.StartAddr, "start-addr", -1, "program start address")
+	flag.BoolVar(&opt.AutoProc, "auto-proc", false, "generate PROC from normal label")
+	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
+	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
+
 	flag.BoolVarP(&opt.outList, "l", "l", false, "generate list file")
 	flag.StringVar(&opt.ListFile, "list", "", "list filename")
 
@@ -85,9 +100,6 @@ func Parse() Option {
 	flag.BoolVarP(&opt.outSym, "s", "s", false, "generate symbol file")
 	flag.StringVar(&opt.SymFile, "sym", "", "symbol filename")
 
-	flag.BoolVar(&opt.AutoProc, "auto-proc", false, "generate PROC from normal label")
-	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
-	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
 	flag.BoolVarP(&opt.Version, "version", "v", false, "print version")
 	// 以下デバッグ用非表示オプション
 	flag.BoolVar(&opt.Stdin, "stdin", false, "assemble stdin")

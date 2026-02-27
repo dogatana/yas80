@@ -90,7 +90,7 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 		case as.OutBIN:
 			ok = bw.WriteBin(&buf)
 		case as.OutMZT:
-			ok = bw.WriteMzt(&buf, filepath.Base(as.Output), -1)
+			ok = bw.WriteMzt(&buf, filepath.Base(as.Output), as.StartAddr)
 		case as.OutT88:
 			fmt.Printf("T88 not yet implemented")
 			os.Exit(1)
