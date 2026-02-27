@@ -1,25 +1,23 @@
 # yas80 - Yet Another Assembler for Z80 and R800
 
-<div style="color:red;font-size:2em;font-weight:bold">UNDER CONSTRUCTION </div> 
+# UNDER CONSTRUCTION 
 
 ## 主な特長
 
 - マルチパスアセンブラ
-  - 1st stage
-    - 未定義シンボルの解決まで最大 256 回の評価
-  - 2nd staget
-    - 生成コードが安定するまで評価
+  - 1st stage - 未定義シンボルの解決規定回数評価
+  - 2nd stage - 生成コードの安定度評価
 - 行書式
   - マルチステートメント
   - 継続行
   - 連続する文字列リテラルの結合
 - スコープ管理
-  - .name スコープ内
-  - @name マクロ内
+  - PROC
+  - マクロ
 - 関数
-  - 複数行の定義
-  - 1行 = 1式 の関数定義シンタックスシュガー
-  - 値として利用可能
+  - 複数行
+  - 単一行のシンタックスシュガー
+  - 値として参照可能
   - クロージャ
 - シンボル
   - 定数
@@ -27,21 +25,22 @@
   - シンボル結合演算子（##）
 - ORG による生成コードの配置指定
 - マクロ制御 EXITM
-  - 後置 IF シンタクスシュガー（EXITM IF expr）
+  - 後置 IF シンタクスシュガー
+  - MACRO, REPT
 - CHARAMAP
   - JSON ファイルの他、直接 JSON 文字列で生成
-  - SETMAP によるロード後の CHARMAP の修正
-  - CHARAMP に未定義の文字に対する挙動の選択
+  - SETMAP による定義済み CHARMAP の更新
+  - 未定義の文字に対する挙動選択
     - エラー（デフォルト）
     - 特定の文字へ置き換え
     - 元の文字コードのまま
-- 配列リテラルの利用
+- 配列リテラル
   - 可変長マクロ引数
-  - REPT + 配列リテラルで配列要素を値としたマクロ展開
-- Z80 命令
-  - Z80 CPU Users Manual 掲載の命令 ( IN Flags, (C) を除く)
+  - REPT + 配列リテラル
+- Z80
+  - [Z80 Family CPU User Manual](https://www.zilog.com/docs/z80/z80cpu_um.pdf) 
   - IXH, IXL, IYH, IYL 非公開命令
-- R800 対応
+- R800 
   - MUL 命令（mulub, muluw）
   - T States を出力（リストファイル）
 
@@ -53,65 +52,45 @@
 
 ## パフォーマンス
 
-###  計測対象
+###  計測対象アセンブラ
 
-| Assembler | Version | File Size (byte) |
+| アセンブラ| バージョン | ファイルサイズ |
 |  -- | -- | --: |
 | yas80 | 0.1.0 (prototype) |    4,757,504  |
+| z80as | 0.12 | 172,032 |
+| tools80 | Release 6.48 (Ver. 6.6.66) | (jar) 186,306 |
 | z80asm(z88dk) |Z80 Macro Assembler 22110-51889e5300-20231220 | 32,393,835 |
 | ailz80asm |  1.0.31.0 | 68,322,858 |
 
+### 計測対象ソース
+
+| ソースファイル | 内容 |
+| -- | -- | 
+| [testdata/big.asm](testdata/big.asm) | Z80 公開命令を含むファイルを 45 回 include |
+| [testdata/label.asm](label/big.asm) | big.asm を展開し、全命令行（32,295行）にラベルを付けたもの |
+
 ### 計測結果
 
-<table>
-<thead>
-  <tr>
-    <th>Source</th>
-    <th>Execution Count</th>
-    <th>Asselmber</th>
-    <th>Total Execution Time (sec)</th>
-    <th>Avarege Execution Time (sec)</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td rowspan="3"><a href="testdata/big.asm">testdata/big.asm</td>
-    <td rowspan="3" style="text-align:center">100</td>
-    <td>yas80</td>
-    <td>  4.560</td>
-    <td>  0.046</td>
-  </tr>
-  <tr>
-    <td>z80asm(z88dk)</td>
-    <td> 15.411</td>
-    <td>  0.154</td>
-  </tr>
-    <td>ailz80asm</td>
-    <td>106.820</td>
-    <td>  1.048</td>
-  </tr>
-  <tr>
-    <td rowspan="3"><a href="testdata/label.asm">testdata/label.asm</td>
-    <td rowspan="3" style="text-align:center">100</td>
-    <td>yas80</td>
-    <td>  6.414</td>
-    <td>  0.064</td>
-  </tr>
-  <tr>
-    <td>z80asm(z88dk)</td>
-    <td> 27.126</td>
-    <td>  0.271</td>
-  </tr>
-    <td>ailz80asm</td>
-    <td>680.028</td>
-    <td>  6.800</td>
-  </tr>
-</tbody>
-</table>
+#### [testdata/big.asm](testdata/big.asm)  100 回アセンブル
 
-- all.asm は include を含み、展開後 32,295 行の命令文となる
-- label.asm は all.asm を展開した 32,295 行全てにラベルを付与したもの
-- 生成ファイルはどちらも 65,510 byte
+|アセンブラ | 総実行時間（秒）| 平均実行時間 |
+| -- | --: | --: |
+| yas80        |   4.379 | 0.044 |
+| z80as        |   1.579 | 0.016 | 
+| z80asm(z88dk)|  15.072 | 0.151 |
+| tools80      |  40.184 | 0.402 |
+| ailz80asm    | 104.192 | 1.042 |
+
+#### [testdata/label.asm](testdata/label.asm)  10 回アセンブル
+
+|アセンブラ | 総実行時間（秒）| 平均実行時間 |
+| -- | --: | --: |
+| yas80        |   0.644 | 0.064 |
+| z80as        |   0.258 | 0.026 | 
+| z80asm(z88dk)|   2.721 | 0.272 |
+| tools80      |  24.633 | 0.246 |
+| ailz80asm    |  62.493 | 6.249 |
+
 
 ## ライセンス
 

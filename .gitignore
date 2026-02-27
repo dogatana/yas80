@@ -18,6 +18,7 @@ venv/
 *.o
 *.lst
 *.lis
+*.jar
 
 doc/
 
