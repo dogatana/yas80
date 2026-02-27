@@ -160,6 +160,14 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 		}
 		return obj
 
+	// end
+	case *parser.EndStatement:
+		obj := e.evalEndStatement(stmt, env)
+		if isError(obj) {
+			return object.ERROR
+		}
+		return obj
+
 	// Null
 	case *parser.NullStatement:
 		return object.NULL
@@ -347,6 +355,30 @@ func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object
 	}
 	initLocationCounter(env, addr)
 	return &object.OrgObject{Addr: addr, AllocType: int(stmt.AllocType)}
+}
+
+// END
+func (e *Evaluator) evalEndStatement(stmt *parser.EndStatement, env TEnv) object.Object {
+	if stmt.Start == nil {
+		return &object.EndObject{Start: -1}
+	}
+
+	e.concatenateSymbol(&stmt.Start, env, stmt.Context)
+	obj := e.evalExpression(stmt.Start, env, stmt.Context)
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject, *object.NullObject:
+		e.logger.Error(errcode.EEND_NULL, stmt.Context)
+		return object.ERROR
+
+	case *object.NumberObject:
+		return &object.EndObject{Start: obj.Value}
+
+	default:
+		e.logger.Error(errcode.EEND_VALUE, stmt.Context)
+		return object.ERROR
+	}
 }
 
 // ラベル定義文

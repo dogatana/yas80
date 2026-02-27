@@ -102,6 +102,10 @@ const (
 	EORG_NULL  = "アドレスが未確定"
 	EORG_VALUE = "アドレス指定誤り"
 
+	// END
+	EEND_NULL  = "開始アドレスが未確定"
+	EEND_VALUE = "開始アドレス指定誤り"
+
 	// CONST/EQU
 	ECONST_DUP  = "CONST/EQU '%s' は定義済み"
 	ECONST_USED = "%s を CONST/EQU として再定義不可"

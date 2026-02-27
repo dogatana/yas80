@@ -48,6 +48,7 @@ const (
 	NODE_DATA_STMT
 	NODE_DATA_STORE_STMT
 	NODE_COMMENT_STMT
+	NODE_END_STMT
 
 	// expression
 	NODE_EXPR
@@ -222,6 +223,29 @@ func (s *OrgStatement) String() string {
 		ret += ", REL"
 	}
 	return ret
+}
+
+// END
+type EndStatement struct {
+	Start   Expression
+	Context *filecontent.Context
+}
+
+func (s *EndStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *EndStatement) ReplaceContext(ctx filecontent.Context) {
+	if s.Context.Source != nil {
+		return
+	}
+	ctx.Source = s.Context
+	s.Context = &ctx
+}
+func (s *EndStatement) NodeType() NodeType { return NODE_END_STMT }
+func (s *EndStatement) String() string {
+	if s.Start == nil {
+		return "END"
+	} else {
+		return "END " + s.Start.String()
+	}
 }
 
 // ラベル - 独立した文として生成

@@ -64,8 +64,9 @@ var _ = __yyfmt__.Sprintf
 %token<token> FUNC ENDF RETURN
 %token<token> PROC ENDP
 %token<token> ENUM ENDE
-%token<token> BLOCK ENDB
-%token<token> FOR ENDFOR
+// %token<token> BLOCK ENDB // 予約
+// %token<token> FOR ENDFOR // 予約
+%token<token> END
 
 %token<token>  '(' ')' ',' '<' '>' '~' '!' '^' '|' '+' '-' '*' '/' '&' ':' '[' ']' '=' '%'
 
@@ -93,6 +94,10 @@ program		: { }
 				} else {
 					prog := yylex.(*Lexer).program
 					prog.Block = append(prog.Block, $2)
+					if $2.NodeType() == NODE_END_STMT {
+						return 0
+						// YYACCEPT
+					}
 				}
 			}
 			;
@@ -129,6 +134,16 @@ statement   : EOL { $$ = nil }
 					}
 				} else {
 					$$ = $1 
+				}
+			}
+			| END EOL {
+				$$ = &EndStatement{Start: nil, Context: $1.Context}
+			}
+			| END expr EOL {
+				if $2.NodeType() == NODE_ERROR {
+					$$ = $2.(*ParseError)
+				} else {
+					$$ = &EndStatement{Start: $2, Context: $1.Context}
 				}
 			}
 			| error EOL
