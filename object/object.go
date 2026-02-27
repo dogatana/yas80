@@ -158,7 +158,7 @@ func (o *CodeObject) String() string {
 	} else {
 		out.WriteString(fmt.Sprintf("(%2d)", o.Context.Source.Line))
 	}
-	out.WriteString(fmt.Sprintf(" :%04x: [%2d] ", o.Addr, o.TStates))
+	out.WriteString(fmt.Sprintf(" :%04x: [%2d,%2d] ", o.Addr, o.TStates[0], o.TStates[1]))
 	for _, b := range o.Code {
 		out.WriteString(fmt.Sprintf("%02x ", b))
 	}
