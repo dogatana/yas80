@@ -34,16 +34,17 @@ type BinWriter struct {
 	prog   *object.BlockObject
 	segs   []*Segment // 配置済み Segment
 	fill   int
+	start  int // 実行開始アドレス
 	logger *logging.Logger
 }
 
 func New(prog object.Object, fill int, logger *logging.Logger) *BinWriter {
-	return &BinWriter{prog: prog.(*object.BlockObject), fill: fill, logger: logger}
+	return &BinWriter{prog: prog.(*object.BlockObject), fill: fill, start: -1, logger: logger}
 }
 
 // BIN 形式の出力
 func (b *BinWriter) WriteBin(w io.Writer) bool {
-	b.allocate()
+	b.allocateSegments()
 	if b.logger.ErrorCount() > 0 {
 		return false
 	}
@@ -67,7 +68,8 @@ func (b *BinWriter) WriteMzt(w io.Writer, name string, start int) bool {
 	header := make([]byte, 128)
 
 	// mode
-	header[0] = 0x01
+	header[0] = 0x01 // 固定
+
 	// load name
 	// アスキー文字のみ有効項
 	if !util.IsAsciiString(name) {
@@ -77,25 +79,38 @@ func (b *BinWriter) WriteMzt(w io.Writer, name string, start int) bool {
 	name += strings.Repeat(" ", 15) // 16文字に足りない場合空白で埋める
 	copy(header[1:], []byte(name[:16]))
 	header[0x11] = 0x0d
-	// size
+
+	// binary size
 	size := len(data)
 	header[0x12] = byte(size & 0xff)
 	header[0x13] = byte((size >> 8) & 0xff)
-	// load
+
+	// load addr
 	load := b.segs[0].addr
 	header[0x14] = byte(load & 0xff)
 	header[0x15] = byte((load >> 8) & 0xff)
-	// start
-	if start < 0 {
+
+	// start addr
+	switch {
+	case start == -1 && b.start == -1: // オプション指定なし、END 指定なし
 		start = load
+	case start == -1 && b.start != -1: // オプション指定なし、END 指定あり
+		start = b.start
+	case start != -1: // オプション指定あり
+		// do nothing
+	default:
+		panic("cannot define start")
 	}
 	header[0x16] = byte(start & 0xff)
 	header[0x17] = byte((start >> 8) & 0xff)
 
+	// mzt header
 	if s, err := w.Write(header); err != nil || s != len(header) {
 		b.logger.Error(fmt.Sprintf(errcode.EBW_WRITE, err.Error()), nil)
 		return false
 	}
+
+	// binary data
 	if s, err := w.Write(data); err != nil || s != len(data) {
 		b.logger.Error(fmt.Sprintf(errcode.EBW_WRITE, err.Error()), nil)
 		return false
@@ -151,7 +166,7 @@ func (b *BinWriter) write(w io.Writer) error {
 }
 
 // Segment を割り付ける
-func (b *BinWriter) allocate() {
+func (b *BinWriter) allocateSegments() {
 	segs := b.collectSegemnts()
 
 	// 有効 Segment なし
@@ -250,6 +265,10 @@ func (b *BinWriter) collectSegemnts() []*Segment {
 			}
 			seg = &Segment{addr: o.Addr, code: []byte{}, allocType: o.AllocType}
 			inseg = true
+		case *object.EndObject:
+			if o.Start != -1 {
+				b.start = o.Start // 開始アドレスの更新
+			}
 		}
 	}
 	if inseg {
