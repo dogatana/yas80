@@ -72,6 +72,33 @@ func hasMessage(logger *logging.Logger, mt logging.MessageType, expected string)
 	return false
 }
 
+func CopyFile(dst, src string) error {
+	data, err := os.ReadFile(src)
+	if err != err {
+		return err
+	}
+	err = os.WriteFile(dst, data, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// go.mod のあるディレクトリを返す
+func ProjectRoot() string {
+	dir, _ := os.Getwd()
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			panic("go.mod not found")
+		}
+		dir = parent
+	}
+}
+
 // testdata フォルダ内のファイル内容を返す
 func ReadTestDataFile(t *testing.T, filename string) []byte {
 	_, file, _, ok := runtime.Caller(1)
@@ -95,6 +122,20 @@ func GetTestFilePath(t *testing.T, filename string) string {
 	return filepath.Join(filepath.Dir(file), "testdata", filename)
 }
 
+// ファイル比較
+func FileEqual(f1, f2 string) error {
+	b1, err := os.ReadFile(f1)
+	if err != nil {
+		return err
+	}
+	b2, err := os.ReadFile(f2)
+	if err != nil {
+		return err
+	}
+	return BytesEqual(b1, b2)
+}
+
+// []byte 比較
 func BytesEqual(v1, v2 []byte) error {
 	if len(v1) != len(v2) {
 		return fmt.Errorf("size diff got 0x%x. expected 0x%x", len(v1), len(v2))

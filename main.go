@@ -16,12 +16,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	run(opt)
+	os.Exit(0)
+}
+
+// main をテスト可能とするため、別関数へ
+func run(opt options.Option) {
 	fcs := makeContents(opt)
 	iter := makeContentIterFunc(fcs)
 
 	as := assembler.New(opt)
 	as.Run(iter)
-	os.Exit(0)
 }
 
 // opt の内容に応じた []*filecontent.FileContent を生成
