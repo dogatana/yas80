@@ -21,6 +21,8 @@ venv/
 *.jar
 *.mzt
 *.t88
+*.bat
+*.pdf
 
 doc/
 
