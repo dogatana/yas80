@@ -100,6 +100,8 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 		case as.OutT88:
 			logger.Error("T88 not yet implemented", nil)
 			ok = false
+		default:
+			panic("no output format specified")
 		}
 
 		if !ok {

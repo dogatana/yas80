@@ -76,7 +76,7 @@ func (b *BinWriter) WriteMzt(w io.Writer, name string, start int) bool {
 		b.logger.Warning(errcode.WBW_LOAD_NAME, nil)
 		name = "OUTPUT"
 	}
-	name += strings.Repeat(" ", 15) // 16文字に足りない場合空白で埋める
+	name += "\r" + strings.Repeat(" ", 15) // 16文字に足りない場合空白で埋める
 	copy(header[1:], []byte(name[:16]))
 	header[0x11] = 0x0d
 
