@@ -27,6 +27,7 @@ venv/
 doc/
 
 parser/rules.go
+parser/parser.go
 internal/testutil/errcode_names.go
 
 .vscode/launch.json
@@ -37,4 +38,3 @@ internal/testutil/errcode_names.go
 !README.md
 !lister/testdata/*.txt
 
-parser.go

@@ -114,24 +114,23 @@
     SUB A, IYH
     SUB A, IYL
 
-; ailz80asm はアセンブルエラーになる
-;    AND A, IXH
-;    AND A, IXL
-;    AND A, IYH
-;    AND A, IYL
-;
-;    OR A, IXH
-;    OR A, IXL
-;    OR A, IYH
-;    OR A, IYL
-;
-;    XOR A, IXH
-;    XOR A, IXL
-;    XOR A, IYH
-;    XOR A, IYL
-;
-;    CP A, IXH
-;    CP A, IXL
-;    CP A, IYH
-;    CP A, IYL
+    AND A, IXH
+    AND A, IXL
+    AND A, IYH
+    AND A, IYL
+
+    OR A, IXH
+    OR A, IXL
+    OR A, IYH
+    OR A, IYL
+
+    XOR A, IXH
+    XOR A, IXL
+    XOR A, IYH
+    XOR A, IYL
+
+    CP A, IXH
+    CP A, IXL
+    CP A, IYH
+    CP A, IYL
 

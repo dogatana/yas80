@@ -374,13 +374,13 @@
 ; ABC IX, pp
     ADD IX,BC
     ADD IX,DE
-;    ADD IX,IX ; ailz80asm はアセンブルエラー
+    ADD IX,IX
     ADD IX,SP
     
 ; ABC IY, rr
     ADD IY,BC
     ADD IY,DE
-;    ADD IY,IY ; ailz80asm はアセンブルエラー
+    ADD IY,IY
     ADD IY,SP
     
 ; INC ss

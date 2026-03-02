@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"testing"
 	"yas80/internal/testutil"
@@ -13,24 +12,35 @@ func TestOutputBIN(t *testing.T) {
 	// 入力ファイルを一時フォルダに移して実行
 	outdir := t.TempDir()
 
-	in := "zilog.asm"
-	out := "zilog.bin"
-	testsrc := filepath.Join(outdir, in)
-
-	testutil.CopyFile(testsrc, filepath.Join("testdata", in))
-
-	result := filepath.Join(outdir, out)
-	opt := options.Option{
-		Args:   []string{testsrc},
-		OutBIN: true,
-		Output: result,
+	tests := []struct {
+		in, out string
+	}{
+		{"zilog.asm", "zilog.bin"},
+		{"zilog-a.asm", "zilog-a.bin"},
+		{"ixy-hl.asm", "ixy-hl.bin"},
 	}
-	run(opt)
 
-	expected := filepath.Join("testdata", out)
-	if err := testutil.FileEqual(result, expected); err != nil {
-		fmt.Println(err)
-		t.Error(err)
+	for _, tt := range tests {
+
+		in := tt.in
+		out := tt.out
+		testsrc := filepath.Join(outdir, in)
+
+		testutil.CopyFile(testsrc, filepath.Join("testdata", in))
+
+		result := filepath.Join(outdir, out)
+		opt := options.Option{
+			Args:   []string{testsrc},
+			OutBIN: true,
+			Output: result,
+		}
+		run(opt)
+
+		expected := filepath.Join("testdata", out)
+		if err := testutil.FileEqual(result, expected); err != nil {
+			fmt.Println(err)
+			t.Error(err)
+		}
 	}
 }
 
@@ -38,63 +48,31 @@ func TestOutputMZT(t *testing.T) {
 	// 入力ファイルを一時フォルダに移して実行
 	outdir := t.TempDir()
 
-	in := "zilog.asm"
-	out := "zilog.mzt"
-	testsrc := filepath.Join(outdir, in)
-	testutil.CopyFile(testsrc, filepath.Join("testdata", in))
-
-	result := filepath.Join(outdir, out)
-	opt := options.Option{
-		Args:   []string{filepath.Join(outdir, in)},
-		OutMZT: true,
-		Output: result,
-	}
-	run(opt)
-
-	expected := filepath.Join("testdata", out)
-	if err := testutil.FileEqual(result, expected); err != nil {
-		fmt.Println(err)
-		t.Error(err)
-	}
-}
-
-func TestOutputMZTwithLongName(t *testing.T) {
-	// 入力ファイルを一時フォルダに移して実行
-	outdir := t.TempDir()
-
-	in := "zilog.asm"
-	out := "zilooooooooooooooooooooooooooooog.mzt"
-	testsrc := filepath.Join(outdir, in)
-	testutil.CopyFile(testsrc, filepath.Join("testdata", in))
-
-	result := filepath.Join(outdir, out)
-	opt := options.Option{
-		Args:   []string{filepath.Join(outdir, in)},
-		OutMZT: true,
-		Output: result,
-	}
-	run(opt)
-
-	name, _ := getMztNameBody(result)
-	if name == "" {
-		t.Error("no valid MZT")
-	}
-	if name != out[:16] {
-		t.Errorf("name in MZT is not expected %q\ngot %q", out[:16], name)
-	}
-}
-
-func getMztNameBody(filename string) (string, []byte) {
-	data, err := os.ReadFile(filename)
-	if err != nil {
-		return "", nil
+	tests := []struct {
+		in, out string
+	}{
+		{"name.asm", "name.mzt"},
+		{"a_very_long_filename.asm", "a_very_long_filename.mzt"},
 	}
 
-	ofs := 1
-	for ofs < 0x12 && data[ofs] != 0x0d {
-		ofs++
-	}
-	name := string(data[1:ofs])
+	for _, tt := range tests {
+		in := tt.in
+		out := tt.out
+		testsrc := filepath.Join(outdir, in)
+		testutil.CopyFile(testsrc, filepath.Join("testdata", in))
 
-	return name, data[0x80:]
+		result := filepath.Join(outdir, out)
+		opt := options.Option{
+			Args:   []string{filepath.Join(outdir, in)},
+			OutMZT: true,
+			Output: result,
+		}
+		run(opt)
+
+		expected := filepath.Join("testdata", out)
+		if err := testutil.FileEqual(result, expected); err != nil {
+			fmt.Println(err)
+			t.Error(err)
+		}
+	}
 }
