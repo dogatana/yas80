@@ -98,8 +98,13 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 			}
 			ok = bw.WriteMzt(&buf, name, as.StartAddr)
 		case as.OutT88:
-			logger.Error("T88 not yet implemented", nil)
-			ok = false
+			var name string
+			if as.LoadName == "" {
+				name = filepath.Base(as.Output)
+			} else {
+				name = as.LoadName
+			}
+			ok = bw.WriteT88(&buf, name)
 		default:
 			panic("no output format specified")
 		}

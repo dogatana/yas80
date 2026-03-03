@@ -56,6 +56,153 @@ func (b *BinWriter) WriteBin(w io.Writer) bool {
 	return true
 }
 
+// T88 形式の出力
+func (b *BinWriter) WriteT88(w io.Writer, name string) bool {
+	var buf bytes.Buffer
+	if !b.WriteBin(&buf) {
+		return false
+	}
+	data := buf.Bytes()
+
+	t88size := 24 + 6 + 12*3 + 25 + 12                        // magic + VER/BLANK/SPACE/MARK/DATA(name)/MARK
+	t88size += 16 + 4 + (len(data)+254)/255*3 + len(data) + 3 // start addr + data w/metadata + end
+	t88size += 12*3 + 4                                       // MARK/SPACE/BLANK/ENd
+	t88 := make([]byte, 0, t88size)
+
+	// magic
+	t88 = append(t88, []byte("PC-8801 Tape Image(T88)\x00")...)
+
+	// VER
+	t88 = append(t88, []byte{0x01, 0x00, 0x02, 0x00, 0x00, 0x01}...)
+
+	// BLANK
+	tick := 0
+	tksize := 0x01e0
+	t88 = append(t88, t88FixedSizeTag(0x0100, tick, tksize)...)
+	tick += tksize
+
+	// SPACE
+	tksize = 0x12c0
+	t88 = append(t88, t88FixedSizeTag(0x0102, tick, tksize)...)
+	tick += tksize
+
+	// MARK
+	tksize = 0x2ee0
+	t88 = append(t88, t88FixedSizeTag(0x0103, tick, tksize)...)
+	tick += tksize
+
+	// DATA - load name
+	var ln string
+	if !util.IsAsciiString(name) { // アスキー文字のみ有効項
+		b.logger.Warning(errcode.WBW_LOAD_NAME, nil)
+		ln = "$$$T88BIN"
+	} else {
+		ln = ("$$$" + name + "      ")[:9] // 6 文字のみ有効。足りない場合は空白で埋める
+	}
+	tksize = 9 * 44
+	t88 = append(t88, 0x01, 0x01, 0x15, 0x00)   // id, size
+	t88 = append(t88, intToBytes(tick, 4)...)   // tick
+	t88 = append(t88, intToBytes(tksize, 4)...) // tick length
+	t88 = append(t88, 0x09, 0x00, 0xcc, 0x01)   // data size, attr
+	t88 = append(t88, []byte(ln)...)            // load name
+	tick += tksize
+
+	// MARK
+	tksize = 0x03c0
+	t88 = append(t88, t88FixedSizeTag(0x0103, tick, tksize)...)
+	tick += tksize
+
+	// DATA - binary
+	addr := b.segs[0].addr // load addr
+	tag := t88DataTag(data, tick, addr)
+	t88 = append(t88, tag...)
+	tick += int(tag[8]) + int(tag[9])*256 // 生成済みの tag length
+
+	// MARK
+	tksize = 0x1860
+	t88 = append(t88, t88FixedSizeTag(0x0103, tick, tksize)...)
+	tick += tksize
+
+	// SPACE
+	tksize = 0x2ee0
+	t88 = append(t88, t88FixedSizeTag(0x0102, tick, tksize)...)
+	tick += tksize
+
+	// BLANK
+	tksize = 0x3fc0
+	t88 = append(t88, t88FixedSizeTag(0x0100, tick, tksize)...)
+
+	// END
+	t88 = append(t88, 0, 0, 0, 0)
+
+	if s, err := w.Write(t88); err != nil || s != len(t88) {
+		b.logger.Error(fmt.Sprintf(errcode.EBW_WRITE, err.Error()), nil)
+		return false
+	}
+	return true
+}
+
+// 固定長 tag BLANK/SPACE/MARK を生成
+func t88FixedSizeTag(tag, tick, tksize int) []byte {
+	out := []byte{byte(tag & 0xff), byte(tag >> 8), 0x08, 0x00} // tag size == 8
+	out = append(out, intToBytes(tick, 4)...)
+	out = append(out, intToBytes(tksize, 4)...)
+	return out
+}
+
+// DATA tag を生成
+func t88DataTag(data []byte, tick, addr int) []byte {
+	recSize := 7 + (len(data)+254)/255*3 + len(data) // ':' 以降の record size
+	tagSize := recSize + 12
+
+	out := make([]byte, 0, recSize+16)
+	out = append(out, 0x01, 0x01, byte(tagSize&0xff), byte((tagSize>>8)&0xff)) // id, size
+	out = append(out, intToBytes(tick, 4)...)                                  // tick
+	out = append(out, intToBytes(recSize*44, 4)...)                            // tick length
+	out = append(out, byte(recSize&0xff), byte((recSize>>8)&0xff), 0xcc, 0x01) // data size, attr
+	slow := byte(addr & 0xff)
+	shigh := byte((addr >> 8) & 0xff)
+	out = append(out, ':', slow, shigh, slow+shigh) // start addr
+	for ofs := 0; ofs < len(data); ofs += 255 {
+		out = append(out, bytesToRecord(data[ofs:min(ofs+255, len(data))])...)
+	}
+	out = append(out, ':', 0, 0)
+	return out
+}
+
+// 最大 255 の []byte を 3a レコードに変換する
+func bytesToRecord(data []byte) []byte {
+	if len(data) > 255 {
+		panic(fmt.Sprintf("exceeds max data length 0x%x", len(data)))
+	}
+	out := make([]byte, len(data)+3)
+	out[0] = ':'
+	out[1] = byte(len(data))
+	copy(out[2:], data)
+	csum := byteSum(out[1 : len(out)-1])
+	out[len(out)-1] = csum
+	return out
+}
+
+// []byte の合計を byte として返す
+func byteSum(data []byte) byte {
+	var total byte
+	for _, b := range data {
+		total += b
+	}
+	return total
+}
+
+// tick, tick length -> []byte 変換ヘルパ関数
+func intToBytes(data, size int) []byte {
+	out := make([]byte, size)
+	for i := range size {
+		out[i] = byte(data & 0xff)
+		data >>= 8
+	}
+	return out
+}
+
 // MZT 形式の出力
 func (b *BinWriter) WriteMzt(w io.Writer, name string, start int) bool {
 	var buf bytes.Buffer
