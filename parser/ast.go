@@ -381,6 +381,7 @@ func (s *EnumElement) String() string {
 
 // rept statment
 type ReptStatement struct {
+	Label    Expression
 	MaxCount Expression
 	Block    *BlockStatement
 	Start    int // REPT 行
@@ -530,6 +531,7 @@ func (s *MacroStatement) String() string {
 
 // macro 呼出し Parse 後
 type MacroCallStatement struct {
+	Label   Expression
 	Name    string
 	Args    *ExpressionList
 	Context *filecontent.Context
@@ -571,6 +573,7 @@ func (s *BlockStatement) String() string {
 
 // macro block statement
 type MacroBlockStatement struct {
+	Label   Expression
 	Name    string // マクロ名 もしくは "REPT"
 	Index   int    // REPT 用
 	Count   int    // REPT 用

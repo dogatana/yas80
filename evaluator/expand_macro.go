@@ -50,7 +50,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 	stmts = append(stmts, cs)
 
 	// トップレベルの mbc は Context 置き換えしない
-	mbc := &parser.MacroBlockStatement{Name: mcall.Name, Block: stmts, Context: mcall.Context}
+	mbc := &parser.MacroBlockStatement{Label: mcall.Label, Name: mcall.Name, Block: stmts, Context: mcall.Context}
 	for _, s := range stmts {
 		e.replaceContext(s, ectx)
 	}

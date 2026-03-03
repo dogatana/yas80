@@ -217,6 +217,14 @@ directive	: CONST ident_expr '=' expr
 					$$ = &ReptStatement{MaxCount: $2, Block: $4, Start: $1.Context.Line, Context: $5.Context}
 				}
 			}
+			| ident_expr ':' REPT expr EOL block_statement ENDR
+			{
+				if $4.NodeType() == NODE_ERROR {
+					$$ = $4.(*ParseError)
+				} else {
+					$$ = &ReptStatement{Label: $1, MaxCount: $4, Block: $6, Start: $3.Context.Line, Context: $7.Context}
+				}
+			}
 			| IF expr EOL block_statement elseifs ENDIF
 			{
 				if $2.NodeType() == NODE_ERROR && $5.NodeType() == NODE_ERROR{
@@ -299,6 +307,10 @@ directive	: CONST ident_expr '=' expr
 			| IDENT expr_list 
 			{
 				$$ = &MacroCallStatement{Name: strings.ToUpper($1.Literal), Args: $2, Context: $1.Context}
+			}
+			| ident_expr ':' IDENT expr_list
+			{
+				$$ = &MacroCallStatement{Label: $1, Name: strings.ToUpper($3.Literal), Args: $4	, Context: $3.Context}
 			}
 			| EXITM			{ $$ = &ExitmStatement{Context: $1.Context}}
 			| EXITM IF expr

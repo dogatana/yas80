@@ -164,6 +164,15 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Statement, checkExitM bo
 		panic("invalid node type in evalMacroBlockStatement")
 	}
 
+	// Label
+	if stmt.Label != nil {
+		e.concatenateSymbol(&stmt.Label, env, stmt.Context)
+		obj := e.exprToLabel(stmt.Label, env, stmt.Context)
+		if isError(obj) {
+			return object.ERROR
+		}
+	}
+
 	if e.Debug == 6 {
 		fmt.Println("----- mbs start")
 		fmt.Printf("%s: ", stmt.Context.String())
@@ -326,6 +335,7 @@ func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, _ bool, ectx T
 	}
 
 	mb := &parser.MacroBlockStatement{
+		Label:   stmt.Label,
 		Name:    "REPT",
 		Count:   num,
 		Start:   stmt.Start,
