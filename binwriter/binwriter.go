@@ -162,7 +162,8 @@ func t88DataTag(data []byte, tick, addr int) []byte {
 	out = append(out, byte(recSize&0xff), byte((recSize>>8)&0xff), 0xcc, 0x01) // data size, attr
 	slow := byte(addr & 0xff)
 	shigh := byte((addr >> 8) & 0xff)
-	out = append(out, ':', slow, shigh, slow+shigh) // start addr
+	out = append(out, ':', shigh, slow, byte(0x100-int(slow+shigh))) // load addr
+
 	for ofs := 0; ofs < len(data); ofs += 255 {
 		out = append(out, bytesToRecord(data[ofs:min(ofs+255, len(data))])...)
 	}
