@@ -35,7 +35,7 @@ func PreProrocess(prog *BlockStatement) *BlockStatement {
 			label = &StringLiteral{Value: stmt.Name}
 		case *MacroCallStatement:
 			label = stmt.Label
-		case *DataStatement:
+		case *DataDefineStatement:
 			label = stmt.Label
 		case *DataStoreStatement:
 			label = stmt.Label
@@ -115,7 +115,7 @@ func removeLabel(stmt Statement) {
 	// case *MacroStatement:
 	case *MacroCallStatement:
 		stmt.Label = nil
-	case *DataStatement:
+	case *DataDefineStatement:
 		stmt.Label = nil
 	case *DataStoreStatement:
 		stmt.Label = nil

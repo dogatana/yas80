@@ -331,12 +331,12 @@ func TestParseDataStatement(t *testing.T) {
 		length   int
 		err      string
 	}{
-		{"db 1", NODE_DATA_STMT, 1, 1, ""},
-		{"db 1,2,3", NODE_DATA_STMT, 1, 3, ""},
-		{"dw 1", NODE_DATA_STMT, 2, 1, ""},
-		{"dw 1,2,3", NODE_DATA_STMT, 2, 3, ""},
-		{"dd 1", NODE_DATA_STMT, 0, 1, ""},
-		{"dd 1,2,3", NODE_DATA_STMT, 0, 3, ""},
+		{"db 1", NODE_DATA_DEF_STMT, 1, 1, ""},
+		{"db 1,2,3", NODE_DATA_DEF_STMT, 1, 3, ""},
+		{"dw 1", NODE_DATA_DEF_STMT, 2, 1, ""},
+		{"dw 1,2,3", NODE_DATA_DEF_STMT, 2, 3, ""},
+		{"dd 1", NODE_DATA_DEF_STMT, 0, 1, ""},
+		{"dd 1,2,3", NODE_DATA_DEF_STMT, 0, 3, ""},
 		{input: "db", err: errcode.ESYNTAX},
 		{input: "dw", err: errcode.ESYNTAX},
 		{input: "dd", err: errcode.ESYNTAX},
@@ -363,7 +363,7 @@ func TestParseDataStatement(t *testing.T) {
 			t.Errorf("[%d] NodeType not %s. got %s", tn, TokenLiteral(int(tt.NodeType)), TokenLiteral(int(stmt.NodeType())))
 		}
 
-		ds := stmt.(*DataStatement)
+		ds := stmt.(*DataDefineStatement)
 		if ds.Size != tt.size {
 			t.Errorf("[%d] Size not %d. got %d", tn, tt.size, ds.Size)
 		}

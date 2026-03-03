@@ -187,7 +187,7 @@ func (e *Evaluator) mangleNamesInStatement(stmt parser.Statement, replace func(p
 		replace(&news.FillValue)
 		return &news
 
-	case *parser.DataStatement:
+	case *parser.DataDefineStatement:
 		news := *stmt
 		replace(&news.Label)
 		for i := 0; i < len(news.Values); i++ {

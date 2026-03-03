@@ -329,7 +329,7 @@ directive	: CONST ident_expr '=' expr
 			| datadef	{ $$ = $1 }
 			| ident_expr datadef	
 			{ 
-				data := $2.(*DataStatement)
+				data := $2.(*DataDefineStatement)
 				data.Label = $1
 				$$ = data
 			}
@@ -378,7 +378,7 @@ datadef		: DATA expr
 					case DD:
 						size = 0
 					}
-					$$ = &DataStatement{Size: size, Values: []Expression{$2}, Context: $1.Context}
+					$$ = &DataDefineStatement{Size: size, Values: []Expression{$2}, Context: $1.Context}
 				}
 			}
 			| datadef ',' expr
@@ -386,7 +386,7 @@ datadef		: DATA expr
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3.(*ParseError)
 				} else {
-					s := $1.(*DataStatement)
+					s := $1.(*DataDefineStatement)
 					s.Values = append(s.Values, $3)
 					$$ = s
 				}

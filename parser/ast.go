@@ -45,7 +45,7 @@ const (
 	NODE_MACRO_BLOCK_STMT
 	NODE_EXPANDED_MACRO_CALL_STMT
 	NODE_SET_SYSVAR_STMT
-	NODE_DATA_STMT
+	NODE_DATA_DEF_STMT
 	NODE_DATA_STORE_STMT
 	NODE_COMMENT_STMT
 	NODE_END_STMT
@@ -723,23 +723,23 @@ func (s *ReturnStatement) String() string {
 	return str
 }
 
-type DataStatement struct {
+type DataDefineStatement struct {
 	Label   Expression
 	Size    int
 	Values  []Expression
 	Context *filecontent.Context
 }
 
-func (s *DataStatement) GetContext() *filecontent.Context { return s.Context }
-func (s *DataStatement) NodeType() NodeType               { return NODE_DATA_STMT }
-func (s *DataStatement) ReplaceContext(ctx filecontent.Context) {
+func (s *DataDefineStatement) GetContext() *filecontent.Context { return s.Context }
+func (s *DataDefineStatement) NodeType() NodeType               { return NODE_DATA_DEF_STMT }
+func (s *DataDefineStatement) ReplaceContext(ctx filecontent.Context) {
 	if s.Context.Source != nil {
 		return
 	}
 	ctx.Source = s.Context
 	s.Context = &ctx
 }
-func (s *DataStatement) String() string {
+func (s *DataDefineStatement) String() string {
 	return fmt.Sprintf("DATA [size: %d, len: %d]", s.Size, len(s.Values))
 }
 

@@ -98,7 +98,7 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 	return &object.CodeObject{Addr: addr, Code: data, Filled: true, Context: stmt.Context}
 }
 
-func (e *Evaluator) evalDataStatement(stmt *parser.DataStatement, env TEnv) object.Object {
+func (e *Evaluator) evalDataDefineStatement(stmt *parser.DataDefineStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Label, env, stmt.Context)
 	for i := range stmt.Values {
 		e.concatenateSymbol(&stmt.Values[i], env, stmt.Context)

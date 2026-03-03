@@ -64,8 +64,8 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 		return obj
 
 	// DB/DW/DD
-	case *parser.DataStatement:
-		obj := e.evalDataStatement(stmt, env)
+	case *parser.DataDefineStatement:
+		obj := e.evalDataDefineStatement(stmt, env)
 		if isError(obj) {
 			return object.ERROR
 		}
