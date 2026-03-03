@@ -17,6 +17,7 @@ const (
 	Z80_REG_IYL
 	Z80_REG_I
 	Z80_REG_R
+	Z80_REG_F // IN F,(C) のみ
 
 	// 16bit Register
 	Z80_REG_SP
@@ -125,6 +126,7 @@ var z80ReservedWords map[string]Token = map[string]Token{
 	"IYL": {TokenType: Z80_REG8, TokenSubType: Z80_REG_IYL, Literal: "IYL"},
 	"I":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_I, Literal: "I"},
 	"R":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_R, Literal: "R"},
+	"F":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_F, Literal: "F"},
 
 	"SP":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_SP, Literal: "SP"},
 	"IX":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_IX, Literal: "IX"},

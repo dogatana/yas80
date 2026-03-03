@@ -30,7 +30,7 @@ func (e *Evaluator) evalZ80_IN(stmt *parser.Z80Instruction, op1, op2 object.Obje
 			e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(port.Register)), stmt.Context)
 			return object.ERROR
 		}
-		if index, ok := Z80Reg8Index[reg.Register]; !ok {
+		if index, ok := Z80Reg8IndexIN[reg.Register]; !ok {
 			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(reg.Register)), stmt.Context)
 			return object.ERROR
 		} else {

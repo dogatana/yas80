@@ -34,6 +34,7 @@ var (
 	Z80_REG_IYL = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_IYL}
 	Z80_REG_I   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_I}
 	Z80_REG_R   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_R}
+	Z80_REG_F   = &RegisterObject{RegisterType: parser.Z80_REG8, Register: parser.Z80_REG_F}
 
 	Z80_REG_SP   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_SP}
 	Z80_REG_IX   = &RegisterObject{RegisterType: parser.Z80_REG16, Register: parser.Z80_REG_IX}
@@ -69,6 +70,7 @@ var Z80RegisterFlagObjects map[int]Object = map[int]Object{
 	parser.Z80_REG_IYL: Z80_REG_IYL,
 	parser.Z80_REG_I:   Z80_REG_I,
 	parser.Z80_REG_R:   Z80_REG_R,
+	parser.Z80_REG_F:   Z80_REG_F,
 
 	parser.Z80_REG_SP:   Z80_REG_SP,
 	parser.Z80_REG_IX:   Z80_REG_IX,

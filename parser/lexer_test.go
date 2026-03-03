@@ -305,6 +305,7 @@ func TestLexZ80REG8(t *testing.T) {
 		{"IYL", Z80_REG_IYL},
 		{"I", Z80_REG_I},
 		{"R", Z80_REG_R},
+		{"F", Z80_REG_F},
 	}
 
 	for tn, tt := range tests {
@@ -372,7 +373,7 @@ func TestLexZ80FLAG(t *testing.T) {
 		{"NZ", Z80_FLAG_NZ},
 		{"PO", Z80_FLAG_PO},
 		{"PE", Z80_FLAG_PE},
-		{"p", Z80_FLAG_P},
+		{"P", Z80_FLAG_P},
 		{"M", Z80_FLAG_M},
 	}
 
