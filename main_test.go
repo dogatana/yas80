@@ -76,3 +76,31 @@ func TestOutputMZT(t *testing.T) {
 		}
 	}
 }
+
+func TestOutputT88(t *testing.T) {
+	tests := []struct {
+		in, out, ref string
+	}{
+		{"inc.asm", "incdat.t88", "dle.t88"},
+	}
+
+	for _, tt := range tests {
+		in := tt.in
+		out := tt.out
+		ref := tt.ref
+
+		result := filepath.Join("testdata", out)
+		opt := options.Option{
+			Args:   []string{filepath.Join("testdata", in)},
+			OutT88: true,
+			Output: result,
+		}
+		run(opt)
+
+		expected := filepath.Join("testdata", ref)
+		if err := testutil.FileEqual(result, expected); err != nil {
+			fmt.Println(err)
+			t.Error(err)
+		}
+	}
+}
