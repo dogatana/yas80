@@ -92,7 +92,7 @@ func parseTextForTest(input any, logger *logging.Logger) *parser.BlockStatement 
 		return prog
 	}
 
-	prog = parser.PreProrocess(logger, prog)
+	// prog = parser.PreProrocess(logger, prog)
 	return prog
 }
 

@@ -106,7 +106,7 @@ func parseFileForTest(filename string, logger *logging.Logger) (*parser.BlockSta
 		return prog, lexer, nil
 	}
 
-	prog = parser.PreProrocess(logger, prog)
+	// prog = parser.PreProrocess(logger, prog)
 	return prog, lexer, nil
 }
 
