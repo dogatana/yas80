@@ -171,9 +171,14 @@ func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCo
 	parser.SetYYDebug(as.YYdebug) // go-yacc debug flag
 	prog := parser.Parse(lexer, as.IncDirs)
 
-	// プリプロセス
-	fmt.Println("# preprocess")
-	prog = parser.PreProrocess(logger, prog)
+	if as.AutoProc {
+		// AutoProc プリプロセス
+		fmt.Println("# preprocess")
+		if as.AstDebug == 2 {
+			fmt.Println("before\n", prog.String())
+		}
+		prog = parser.PreProrocess(prog)
+	}
 
 	// 構文解析後 AST 表示
 	fmt.Println("# ast")

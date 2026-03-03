@@ -90,7 +90,7 @@ func Parse() Option {
 
 	flag.IntVar(&opt.StartAddr, "start-addr", -1, "program start address")
 	flag.StringVar(&opt.LoadName, "load-name", "", "load file name for MZT")
-	flag.BoolVar(&opt.AutoProc, "auto-proc", false, "generate PROC from normal label")
+	flag.BoolVarP(&opt.AutoProc, "auto-proc", "a", false, "generate PROC from normal label")
 	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
 	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
 
@@ -115,7 +115,7 @@ func Parse() Option {
 	// flag.CommandLine.MarkHidden("yydebug")
 	// flag.CommandLine.MarkHidden("evaldebug")
 	// flag.CommandLine.MarkHidden("listdebug")
-	flag.BoolVarP(&opt.AsmArg, "arg", "a", false, "assemble Args[0]")
+	flag.BoolVar(&opt.AsmArg, "arg", false, "assemble Args[0]")
 	// usage をカスタマイズ
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] file [file...]\n", progName)
