@@ -35,7 +35,7 @@ func makeContents(opt options.Option) []*filecontent.FileContent {
 
 	switch {
 	case opt.AsmArg: // コマンドライン引数をアセンブル
-		fc, _ := filecontent.NewFromString("line", opt.Args[0])
+		fc, _ := filecontent.NewFromString("arg", opt.Args[0])
 		fcs = append(fcs, fc)
 
 	case len(opt.Args) == 0: // 標準入力をアセンブル

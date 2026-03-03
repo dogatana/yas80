@@ -149,13 +149,7 @@ func Parse() Option {
 
 	// 出力ファイル名
 	setOutput(&opt)
-
-	var base string
-	if opt.Stdin {
-		base = "stdin"
-	} else {
-		base = opt.Args[0]
-	}
+	base := opt.Output
 
 	if opt.outList && opt.ListFile == "" {
 		opt.ListFile = replaceExt(base, ".lst")
@@ -254,6 +248,8 @@ func setOutput(opt *Option) {
 		var file string
 		if len(opt.Args) == 0 && opt.Stdin {
 			file = "stdin"
+		} else if opt.AsmArg {
+			file = "arg"
 		} else {
 			file = opt.Args[0]
 		}
