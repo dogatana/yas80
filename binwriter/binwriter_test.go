@@ -1,6 +1,8 @@
 package binwriter
 
 import (
+	"bytes"
+	"strings"
 	"testing"
 	"yas80/errcode"
 	"yas80/internal/testutil"
@@ -47,7 +49,7 @@ func TestBinWriterGapAndSortSegment(t *testing.T) {
 		env := object.NewEnvironment(nil)
 		logger := logging.New()
 		prog, _ := evalInput(tt.input, logger, env)
-		code, ok := codeFromObj(prog, tt.fill, logger)
+		code, ok := binFromObj(prog, tt.fill, logger)
 
 		// error, warning, information
 		if tt.err != "" {
@@ -90,7 +92,7 @@ func TestBinWriterAbsAndRel(t *testing.T) {
 		env := object.NewEnvironment(nil)
 		logger := logging.New()
 		prog, _ := evalInput(tt.input, logger, env)
-		code, ok := codeFromObj(prog, tt.fill, logger)
+		code, ok := binFromObj(prog, tt.fill, logger)
 
 		// error, warning, information
 		if tt.err != "" {
@@ -147,7 +149,7 @@ func TestBinWriterMultiFiles(t *testing.T) {
 		env := object.NewEnvironment(nil)
 		logger := logging.New()
 		prog, _ := evalInput(tt.input, logger, env)
-		code, ok := codeFromObj(prog, tt.fill, logger)
+		code, ok := binFromObj(prog, tt.fill, logger)
 
 		// error, warning, information
 		if tt.err != "" {
@@ -184,7 +186,7 @@ func TestRemoveDuplicateMessages(t *testing.T) {
 		env := object.NewEnvironment(nil)
 		logger := logging.New()
 		prog, _ := evalInput(tt.input, logger, env)
-		code, ok := codeFromObj(prog, tt.fill, logger)
+		code, ok := binFromObj(prog, tt.fill, logger)
 
 		// error, warning, information
 		if tt.err != "" {
@@ -206,6 +208,194 @@ func TestRemoveDuplicateMessages(t *testing.T) {
 		logger.RemoveDupe()
 		if _, w, _ := logger.Count(); w != 1 {
 			t.Errorf("[%d], logger should have 1 messages. got %d", tn, w)
+		}
+	}
+}
+
+func TestMztBinarySize(t *testing.T) {
+	tests := []struct {
+		input any
+		code  []byte
+		name  string
+		start int
+		load  int
+	}{
+		{
+			input: `nop`, code: []byte{0},
+		},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, _ := evalInput(tt.input, logger, env)
+
+		mzt, ok := mztFromObj(prog, 0, logger, tt.name, 0)
+		if !ok {
+			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].String())
+		}
+
+		if err := testutil.BytesEqual(mzt[0x80:], tt.code); err != nil {
+			t.Errorf("[%d], %s", tn, err.Error())
+		}
+
+		if len(mzt) != len(tt.code)+0x80 {
+			t.Errorf("[%d] mzt size not 0x%x. got 0x%x\n", tn, len(tt.code)+0x80, len(mzt))
+			continue
+		}
+		size := int(mzt[0x13])*256 + int(mzt[0x12])
+		if size != len(tt.code) {
+			t.Errorf("[%d] code size in mzt not 0x%x. got 0x%x", tn, len(tt.code), size)
+			continue
+		}
+	}
+}
+
+func TestMztLoadAddr(t *testing.T) {
+	tests := []struct {
+		input any
+		code  []byte
+		name  string
+		start int
+		load  int
+	}{
+		{input: `nop`, load: 0},
+		{input: `org $1234 \ nop`, load: 0x1234},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, _ := evalInput(tt.input, logger, env)
+
+		mzt, ok := mztFromObj(prog, 0, logger, tt.name, 0)
+		if !ok {
+			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].String())
+		}
+
+		load := int(mzt[0x15])*256 + int(mzt[0x14])
+		if load != tt.load {
+			t.Errorf("[%d] load addr not 0x%x. got 0x%x", tn, tt.load, load)
+			continue
+		}
+	}
+}
+
+func TestMztStartAddr(t *testing.T) {
+	tests := []struct {
+		input any
+		code  []byte
+		name  string
+		start int
+		load  int
+	}{
+		{input: `nop`, start: 0},
+		{input: `org $1234 \ nop`, start: 0x1234},
+		{input: `org $1234 \ nop \ end $5678`, start: 0x5678},
+		{input: `org $1234 \ nop \ entry $5678`, start: 0x5678},
+		{input: `entry $1234 \ org $1234 \ nop \ entry $5678`, start: 0x5678},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, _ := evalInput(tt.input, logger, env)
+
+		mzt, ok := mztFromObj(prog, 0, logger, tt.name, 0)
+		if !ok {
+			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].String())
+		}
+
+		end := int(mzt[0x17])*256 + int(mzt[0x16])
+		if end != tt.load {
+			t.Errorf("[%d] start addr not 0x%x. got 0x%x", tn, tt.start, end)
+			continue
+		}
+	}
+}
+
+func TestMztLoadName(t *testing.T) {
+	tests := []struct {
+		input any
+		code  []byte
+		name  string
+		start int
+		load  int
+	}{
+		{input: `nop`, name: "short"},
+		{input: `nop`, name: "0123456789012345"},
+		{input: `nop`, name: "01234567890123456"},
+		{input: `nop`, name: "012345678901234567"},
+		{input: `nop`, name: "012345678901234568"},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, _ := evalInput(tt.input, logger, env)
+
+		mzt, ok := mztFromObj(prog, 0, logger, tt.name, 0)
+		if !ok {
+			t.Errorf("[%d], codeFromObj %s", tn, logger.GetErrors()[0].String())
+		}
+
+		mztName := mzt[1:0x12]
+
+		// 16 文字以内 + 0d
+		ttName := []byte(tt.name)
+		ttName = append(ttName, 0x0d)
+		ttName = append(ttName, bytes.Repeat([]byte{0x20}, 16)...)
+		ttName = ttName[:16]
+		ttName = append(ttName, 0x0d)
+
+		if err := testutil.BytesEqual(mztName, ttName); err != nil {
+			t.Errorf("[%d] name not %q. got %q", tn, string(ttName), string(mztName))
+		}
+	}
+}
+
+func TestT88LoadNameAndAddr(t *testing.T) {
+	tests := []struct {
+		input any
+		code  []byte
+		name  string
+		start int
+		load  int
+	}{
+		{input: `nop`, name: "t88", load: 0},
+		{input: `org $1234 \ nop`, name: "t88", load: 0x1234},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, _ := evalInput(tt.input, logger, env)
+
+		ttname := ("$$$" + tt.name + strings.Repeat(" ", 6))[:9]
+
+		name, load, err := t88FromObj(prog, 0, logger, tt.name)
+		if err != nil {
+			t.Errorf("[%d] t88FromObj error %s", tn, err.Error())
+			continue
+		}
+		if name != ttname {
+			t.Errorf("[%d] name not %q. got %q", tn, ttname, name)
+			continue
+		}
+
+		if load != tt.load {
+			t.Errorf("[%d] load addr not 0x%x. got 0x%x", tn, tt.load, load)
+			continue
 		}
 	}
 }

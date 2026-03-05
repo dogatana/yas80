@@ -2,6 +2,9 @@ package binwriter
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
+	"slices"
 	"yas80/evaluator"
 	"yas80/filecontent"
 	"yas80/logging"
@@ -96,11 +99,93 @@ func parseTextForTest(input any, logger *logging.Logger) *parser.BlockStatement 
 	return prog
 }
 
-func codeFromObj(obj object.Object, fill int, logger *logging.Logger) ([]byte, bool) {
+func binFromObj(obj object.Object, fill int, logger *logging.Logger) ([]byte, bool) {
 	bw := New(obj, fill, logger)
 
 	var buf bytes.Buffer
-	ok := bw.WriteBin(&buf)
+	result := bw.WriteBin(&buf)
 
-	return buf.Bytes(), ok
+	return buf.Bytes(), result
+}
+
+func mztFromObj(obj object.Object, fill int, logger *logging.Logger, name string, start int) ([]byte, bool) {
+	bw := New(obj, fill, logger)
+
+	var buf bytes.Buffer
+	result := bw.WriteMzt(&buf, name, start)
+	return buf.Bytes(), result
+}
+
+func t88FromObj(obj object.Object, fill int, logger *logging.Logger, name string) (string, int, error) {
+	bw := New(obj, fill, logger)
+
+	var buf bytes.Buffer
+	ok := bw.WriteT88(&buf, name)
+	if !ok {
+		return "", -1, errors.New("WriteT88 error")
+	}
+	data := buf.Bytes()
+
+	var t88name string
+	if string(data[:24]) != "PC-8801 Tape Image(T88)\x00" {
+		return "", -1, errors.New("no T88 magic")
+	}
+	ofs := 24 // skip magic
+	for ofs < len(data) {
+		id, err := bytesToInt(data[ofs:ofs+2], 2)
+		if err != nil {
+			goto ERROR
+		}
+		ofs += 2
+		size, err := bytesToInt(data[ofs:ofs+2], 2)
+		if err != nil {
+			goto ERROR
+		}
+		ofs += 2
+		tagData := data[ofs : ofs+size]
+		ofs += size
+		if id != 0x0101 {
+			continue
+		}
+		t88name = string(tagData[12:21])
+		break
+	}
+	for ofs < len(data) {
+		id, err := bytesToInt(data[ofs:ofs+2], 2)
+		if err != nil {
+			goto ERROR
+		}
+		ofs += 2
+		size, err := bytesToInt(data[ofs:ofs+2], 2)
+		if err != nil {
+			goto ERROR
+		}
+		ofs += 2
+		tagData := data[ofs : ofs+size]
+		ofs += size
+		if id != 0x0101 {
+			continue
+		}
+		if tagData[12] != ':' {
+			return "", -1, errors.New("invalid Load Address Record")
+		}
+		addr := int(tagData[13])*256 + int(tagData[14])
+		return t88name, addr, nil
+	}
+ERROR:
+	return "", -1, errors.New("invalid T88")
+}
+
+func bytesToInt(b []byte, size int) (int, error) {
+	if len(b) != size {
+		return 0, fmt.Errorf("len([]byte) must be %d. got %d", size, len(b))
+	}
+	data := slices.Clone(b)
+	slices.Reverse(data)
+
+	out := 0
+	for _, b := range data {
+		out = out*256 + int(b)
+	}
+	return out, nil
 }
