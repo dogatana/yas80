@@ -10,6 +10,7 @@ categories = ['z80as', 'yas80', 'z80asm(z88dk)', 'zma', 'tools80', 'ailz80asm']
 values = [0.004, 0.064, 0.264, 1.003, 2.443, 6.740]
 # values = [0.016, 0.044, 0.152, 0.395, 1.065]
 
+fig = plt.figure(figsize=(10,4), dpi=100)
 # 横棒グラフの描画
 plt.barh(categories, values, 0.4) # , color='skyblue')
 
@@ -25,6 +26,8 @@ plt.xlabel('time(sec)')
 
 # グリッドを表示
 # plt.grid(axis='x')
+
+plt.savefig("output.png")
 
 # グラフを表示
 plt.show()

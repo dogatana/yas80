@@ -30,7 +30,7 @@ if __name__ == "__main__":
         print("usage: measure.py count cmd")
         exit()
     count = int(sys.argv[1])
-    if count <= 0 or count > 100:
-        print("count must be between 1 to 100")
+    if count <= 0:
+        print("count must be positive number")
         exit()
     main(count, sys.argv[2])
