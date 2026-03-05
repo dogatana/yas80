@@ -18,19 +18,19 @@ const (
 )
 
 type Option struct {
-	IncDirs   []string
-	Constants map[string]int
+	IncDirs   []string       // include フォルダ（複数）
+	Constants map[string]int // 定数定義（複数）
 
-	Output string
+	Output string // 出力ファイル名
 	OutMZT bool
 	OutT88 bool
 	OutBIN bool
 
-	LoadName  string
-	StartAddr int
-	AutoProc  bool
-	Fill      int
-	R800      bool
+	LoadName  string // ロードファイル名 mzt, t88
+	EntryAddr int    // 実行開始アドレス
+	AutoProc  bool   // PROC 自動生成
+	Fill      int    // GAP Fill 値
+	R800      bool   // R800 をターゲットとする
 
 	outList  bool   // List 出力の有無
 	ListFile string // List ファイル名
@@ -41,39 +41,18 @@ type Option struct {
 
 	Args    []string
 	Version bool
+
 	// for debug
 	Stdin     bool
+	AsmArg    bool
 	AstDebug  int
 	YYdebug   int
 	EvalDebug int
 	ListDebug int
-	AsmArg    bool
 }
 
 func (opt Option) Print() {
-	fmt.Printf("IncDirs: %v\n", opt.IncDirs)
-	fmt.Printf("Constants: %+v\n", opt.Constants)
-
-	fmt.Printf("Output: %q\n", opt.Output)
-	fmt.Printf("OutMZT: %v\n", opt.OutMZT)
-	fmt.Printf("OutT88: %v\n", opt.OutT88)
-	fmt.Printf("OutBIN: %v\n", opt.OutBIN)
-
-	fmt.Printf("LoadName: %v\n", opt.LoadName)
-	fmt.Printf("StartAddr: %v\n", opt.StartAddr)
-	fmt.Printf("AutoProc: %v\n", opt.AutoProc)
-	fmt.Printf("Fill: %d\n", opt.Fill)
-	fmt.Printf("R800: %v\n", opt.R800)
-
-	fmt.Printf("ListFile: %q\n", opt.ListFile)
-	fmt.Printf("MapFile: %q\n", opt.MapFile)
-	fmt.Printf("SymFile: %q\n", opt.SymFile)
-
-	fmt.Printf("Args: %v\n", opt.Args)
-	fmt.Printf("AstDebug: %d\n", opt.AstDebug)
-	fmt.Printf("YYDebug: %d\n", opt.YYdebug)
-	fmt.Printf("EvalDebug: %d\n", opt.EvalDebug)
-	fmt.Printf("ListDebug: %d\n", opt.ListDebug)
+	util.PrintStructFields(opt)
 }
 
 func Parse() Option {
@@ -83,13 +62,13 @@ func Parse() Option {
 	var defs []string
 
 	flag.StringSliceVarP(&opt.IncDirs, "I", "I", []string{}, "directories to search for iclude")
-	flag.StringSliceVarP(&defs, "D", "D", []string{}, "define constants")
+	flag.StringSliceVarP(&defs, "D", "D", []string{}, "define numeric constants")
 	flag.StringVarP(&opt.Output, "output", "o", "", "output file name")
 	flag.BoolVar(&opt.OutMZT, "mzt", false, "output with MZT format")
 	flag.BoolVar(&opt.OutT88, "t88", false, "output with T88 format")
 
-	flag.IntVar(&opt.StartAddr, "start-addr", -1, "program start address")
-	flag.StringVar(&opt.LoadName, "load-name", "", "load file name for MZT")
+	flag.IntVarP(&opt.EntryAddr, "entry", "e", -1, "program start address")
+	flag.StringVarP(&opt.LoadName, "load-name", "n", "", "load file name")
 	flag.BoolVarP(&opt.AutoProc, "auto-proc", "a", false, "generate PROC from normal label")
 	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
 	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
@@ -104,18 +83,21 @@ func Parse() Option {
 	flag.StringVar(&opt.SymFile, "sym", "", "symbol filename")
 
 	flag.BoolVarP(&opt.Version, "version", "v", false, "print version")
+
 	// 以下デバッグ用非表示オプション
 	flag.BoolVar(&opt.Stdin, "stdin", false, "assemble stdin")
+	flag.BoolVar(&opt.AsmArg, "arg", false, "assemble Args[0]")
 	flag.IntVar(&opt.AstDebug, "astdebug", 0, "debug level for Parse")
 	flag.IntVar(&opt.YYdebug, "yydebug", 0, "debug level for go-yacc")
 	flag.IntVar(&opt.EvalDebug, "evaldebug", 0, "debug level for Evaluator")
 	flag.IntVar(&opt.ListDebug, "listdebug", 0, "debug level for Lister")
-	// flag.CommandLine.MarkHidden("stdin")
-	// flag.CommandLine.MarkHidden("astdebug")
-	// flag.CommandLine.MarkHidden("yydebug")
-	// flag.CommandLine.MarkHidden("evaldebug")
-	// flag.CommandLine.MarkHidden("listdebug")
-	flag.BoolVar(&opt.AsmArg, "arg", false, "assemble Args[0]")
+	flag.CommandLine.MarkHidden("stdin")
+	flag.CommandLine.MarkHidden("arg")
+	flag.CommandLine.MarkHidden("astdebug")
+	flag.CommandLine.MarkHidden("yydebug")
+	flag.CommandLine.MarkHidden("evaldebug")
+	flag.CommandLine.MarkHidden("listdebug")
+
 	// usage をカスタマイズ
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: %s [options] file [file...]\n", progName)

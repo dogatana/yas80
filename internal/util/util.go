@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/mattn/go-runewidth"
@@ -175,4 +176,33 @@ func IsAsciiString(name string) bool {
 		}
 	}
 	return true
+}
+
+func PrintStructFields(v any) {
+	// 構造体名
+	t := reflect.TypeOf(v)
+	if t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	name := t.Name()
+
+	// フィールド名、値
+	rv := reflect.ValueOf(v)
+	if rv.Kind() == reflect.Pointer {
+		rv = rv.Elem()
+	}
+
+	rt := rv.Type()
+	for i := 0; i < rv.NumField(); i++ {
+		field := rt.Field(i) // フィールド情報（名前・タグなど）
+		if field.Name[0] > 'Z' {
+			continue // 非公開フィールドは無視
+		}
+		value := rv.Field(i) // 実際の値
+		if s, ok := value.Interface().(string); ok {
+			fmt.Printf("%s.%s = %q\n", name, field.Name, s)
+		} else {
+			fmt.Printf("%s.%s = %v\n", name, field.Name, value.Interface())
+		}
+	}
 }
