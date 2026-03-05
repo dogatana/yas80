@@ -240,9 +240,9 @@ func (b *BinWriter) WriteMzt(w io.Writer, name string, start int) bool {
 
 	// start addr
 	switch {
-	case start == -1 && b.start == -1: // オプション指定なし、END 指定なし
+	case start == -1 && b.start == -1: // オプション指定なし、END/ENTRY 指定なし
 		start = load
-	case start == -1 && b.start != -1: // オプション指定なし、END 指定あり
+	case start == -1 && b.start != -1: // オプション指定なし、END/ENTRY 指定あり
 		start = b.start
 	case start != -1: // オプション指定あり
 		// do nothing
@@ -356,7 +356,6 @@ func (b *BinWriter) allocateSegments() {
 			addr += s.size
 		}
 	}
-
 	b.segs = nsegs
 }
 
@@ -413,9 +412,9 @@ func (b *BinWriter) collectSegemnts() []*Segment {
 			}
 			seg = &Segment{addr: o.Addr, code: []byte{}, allocType: o.AllocType}
 			inseg = true
-		case *object.EndObject:
-			if o.Start != -1 {
-				b.start = o.Start // 開始アドレスの更新
+		case *object.EntryObject:
+			if o.StartAddr != -1 {
+				b.start = o.StartAddr // 開始アドレスの更新
 			}
 		}
 	}

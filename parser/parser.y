@@ -94,6 +94,7 @@ program		: { }
 				} else {
 					prog := yylex.(*Lexer).program
 					prog.Block = append(prog.Block, $2)
+					// END なら構文解析を終了する
 					if $2.NodeType() == NODE_END_STMT {
 						return 0
 						// YYACCEPT

@@ -21,7 +21,7 @@ const (
 	OBJ_REG_INDIRECT
 	OBJ_ADDR_INDIRECT
 	OBJ_ORG
-	OBJ_END
+	OBJ_ENTRY
 	OBJ_CODE
 	OBJ_NODE
 	OBJ_NODES
@@ -130,13 +130,13 @@ func (o *OrgObject) String() string {
 	}
 }
 
-// start
-type EndObject struct {
-	Start int
+// entry
+type EntryObject struct {
+	StartAddr int
 }
 
-func (o *EndObject) Type() ObjectType { return OBJ_END }
-func (o *EndObject) String() string   { return fmt.Sprintf("END %d\n", o.Start) }
+func (o *EntryObject) Type() ObjectType { return OBJ_ENTRY }
+func (o *EntryObject) String() string   { return fmt.Sprintf("END %d\n", o.StartAddr) }
 
 // code
 type CodeObject struct {

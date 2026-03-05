@@ -360,7 +360,7 @@ func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object
 // END
 func (e *Evaluator) evalEndStatement(stmt *parser.EndStatement, env TEnv) object.Object {
 	if stmt.Start == nil {
-		return &object.EndObject{Start: -1}
+		return &object.EntryObject{StartAddr: -1}
 	}
 
 	e.concatenateSymbol(&stmt.Start, env, stmt.Context)
@@ -373,7 +373,7 @@ func (e *Evaluator) evalEndStatement(stmt *parser.EndStatement, env TEnv) object
 		return object.ERROR
 
 	case *object.NumberObject:
-		return &object.EndObject{Start: obj.Value}
+		return &object.EntryObject{StartAddr: obj.Value}
 
 	default:
 		e.logger.Error(errcode.EEND_VALUE, stmt.Context)

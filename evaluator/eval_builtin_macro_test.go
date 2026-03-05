@@ -331,6 +331,5 @@ func TestSetMap(t *testing.T) {
 
 		// code
 		testCodeResult(t, tn, tt.code, prog)
-
 	}
 }

@@ -2,7 +2,7 @@
 
 ## 仕様
 
-[doc/README.md](doc/README.md)
+[https://dogatana.github.io/yas80-docs/](https://dogatana.github.io/yas80-docs/)
 
 ## 主な特長
 

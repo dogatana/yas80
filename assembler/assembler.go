@@ -96,7 +96,7 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 			} else {
 				name = as.LoadName
 			}
-			ok = bw.WriteMzt(&buf, name, as.StartAddr)
+			ok = bw.WriteMzt(&buf, name, as.EntryAddr)
 		case as.OutT88:
 			var name string
 			if as.LoadName == "" {

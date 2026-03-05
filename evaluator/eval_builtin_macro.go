@@ -12,6 +12,8 @@ import (
 // 組み込みマクロの実行
 func (e *Evaluator) evalBuiltinMacro(stmt *parser.MacroCallStatement, env TEnv) (object.Object, bool) {
 	switch stmt.Name {
+	case "ENTRY":
+		return e.ebMacroEntry(stmt, env), true
 	case "ALIGN":
 		return e.ebMacroAlign(stmt, env), true
 	case "ERROR":
@@ -27,6 +29,38 @@ func (e *Evaluator) evalBuiltinMacro(stmt *parser.MacroCallStatement, env TEnv) 
 	}
 	return object.NULL, false
 
+}
+
+// entry
+func (e *Evaluator) ebMacroEntry(stmt *parser.MacroCallStatement, env TEnv) object.Object {
+	args := stmt.Args.Expressions
+
+	if len(args) != 1 {
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_COUNT, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+
+	obj := e.evalExpression(args[0], env, stmt.Context)
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		return obj
+	case *object.NullObject:
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_NULL, stmt.Name), stmt.Context)
+		return object.ERROR
+
+	case *object.NumberObject:
+		addr, ok := e.intToWord(obj.Value)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, obj.Value, obj.Value), stmt.Context)
+		}
+		return &object.EntryObject{StartAddr: addr}
+
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_VALUE, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
 }
 
 // align n, fill
