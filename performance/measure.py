@@ -1,4 +1,4 @@
-""""
+""" 
 アセンブル時間の計測
 count 1 - 100
 cmd コマンドライン文字列(単一文字列)
@@ -9,6 +9,7 @@ cmd コマンドライン文字列(単一文字列)
 total 15.411 sec, average : 0.154
 
 """
+
 import subprocess
 import sys
 import time
