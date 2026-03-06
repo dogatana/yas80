@@ -38,7 +38,7 @@ colors = [
     "cornflowerblue",
 ]
 for src, values in data.items():
-    fig = plt.figure(figsize=(9, 3), dpi=100)  # 1000 x 400
+    fig = plt.figure(figsize=(9, 4), dpi=100)  # 1000 x 400
     plt.barh(labels, values, 0.4, color=colors)
     plt.gca().invert_yaxis()
 
