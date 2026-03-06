@@ -143,6 +143,16 @@ func Parse() Option {
 		opt.SymFile = replaceExt(base, ".sym")
 	}
 
+	// 出力ファイルが入力ファイルに含まれているかどうかチェックする
+	output := strings.ToUpper(opt.Output)
+	for _, arg := range opt.Args {
+		arg := strings.ToUpper(arg)
+		if arg == output {
+			fmt.Printf("入力ファイルと出力ファイルが同一です")
+			os.Exit(1)
+		}
+	}
+
 	return opt
 }
 
