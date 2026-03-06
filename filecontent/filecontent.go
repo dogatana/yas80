@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"unicode/utf8"
+	"yas80/errcode"
 	"yas80/internal/util"
 )
 
@@ -73,13 +74,13 @@ func NewFromFile(filename string) (*FileContent, error) {
 
 	if data, err = os.ReadFile(filename); err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("file not found: %s", filename)
+			return nil, fmt.Errorf(errcode.EFILE_NOT_FOUND, filename)
 		}
-		return nil, err
+		return nil, fmt.Errorf(errcode.EFILE_ERR, filename, err.Error())
 	}
 
 	if data, err = formatBytesInput(data); err != nil {
-		return nil, err
+		return nil, fmt.Errorf(errcode.EFILE_ERR, filename, err.Error())
 	}
 
 	return &FileContent{Filename: filename, Content: data}, nil

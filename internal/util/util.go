@@ -2,11 +2,13 @@ package util
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"yas80/errcode"
 
 	"github.com/mattn/go-runewidth"
 	"golang.org/x/text/encoding/japanese"
@@ -118,7 +120,7 @@ func ShiftJisToUtf8(input []byte) ([]byte, error) {
 	}
 	// u+fffd があれば正しく変換できていない
 	if strings.ContainsRune(string(data), '\ufffd') {
-		return nil, fmt.Errorf("unknown encoding")
+		return nil, errors.New(errcode.EFILE_ENCODING)
 	}
 	return data, err
 }
