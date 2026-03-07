@@ -60,13 +60,13 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものに�
 
 ###  計測対象アセンブラ
 
-| アセンブラ    | バージョン                | サイズ     | 備考                 | url |
-|  --           | --                        | --:        | --                   | -- |
-| yas80.exe     | 0.1.0 (prototype)         |  4,800,512 |                      | https://github.com/dogatana/yas80 |
-| z80as.exe     | 0.12                      |    172,032 |                      | [We Love MZ-700](http://www.maroon.dti.ne.jp/youkan/mz700/index.html) |
-| z80asm.exe    | 2.4                       | 39,447,620 | MSVCRT.dll 依存      | [z88dk](https://z88dk.org/site/)
-| tools80.jar   | Release 6.48 (Ver. 6.6.66)|    186,306 | 要 java.exe          | [OUT of STANDARD [PC-8001]](http://upd780c1.g1.xrea.com/pc-8001/index.html#UTL) |
-| ailz80asm.exe | 1.0.31.0                  | 68,322,858 | 複数 dll 依存        | https://github.com/AILight/AILZ80ASM |
+| アセンブラ    | バージョン                | サイズ     | 備考            |  
+|  --           | --                        | --:        | --              | 
+| yas80.exe     | 0.1.0 (prototype)         |  4,800,512 |                 | 
+| z80as.exe     | 0.12                      |    172,032 |                 | 
+| z80asm.exe    | 2.4                       | 39,447,620 | MSVCRT.dll 依存 |
+| tools80.jar   | Release 6.48 (Ver. 6.6.66)|    186,306 | 要 java.exe     |
+| ailz80asm.exe | 1.0.31.0                  | 68,322,858 | 複数 dll 依存（おそらく埋め込み） | 
 
 ### 計測対象ソース
 
