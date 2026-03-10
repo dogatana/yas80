@@ -266,6 +266,7 @@ func (b *BinWriter) WriteMzt(w io.Writer, name string, start int) bool {
 	return true
 }
 
+// map 出力
 func (b *BinWriter) WriteMap(w io.Writer) error {
 	ofs := 0
 	for _, s := range b.segs {
@@ -289,6 +290,45 @@ func (b *BinWriter) WriteMap(w io.Writer) error {
 		}
 	}
 	return nil
+}
+
+// sym 出力
+func (b *BinWriter) WriteSym(w io.Writer, env object.Environment) error {
+	syms := b.collectSymbols(env)
+
+	addrs := make([]int, 0, len(syms))
+	for k := range syms {
+		addrs = append(addrs, k)
+	}
+	slices.Sort(addrs)
+
+	for _, addr := range addrs {
+		fmt.Fprintf(w, "%04X %s\n", addr, syms[addr])
+	}
+	return nil
+}
+
+// env から SymbolObject を抽出する
+func (b *BinWriter) collectSymbols(env object.Environment) map[int]string {
+	syms := map[int]string{}
+
+	for _, v := range env.Store() {
+		switch v := v.(type) {
+		case *object.SymbolObject:
+			if v.SymType != object.SYM_LABEL {
+				break
+			}
+			if no, ok := v.Value.(*object.NumberObject); ok {
+				syms[no.Value] = v.Name
+			}
+		case *object.ProcObject:
+			pmap := b.collectSymbols(v)
+			for k, v := range pmap {
+				syms[k] = v
+			}
+		}
+	}
+	return syms
 }
 
 func (b *BinWriter) write(w io.Writer) error {

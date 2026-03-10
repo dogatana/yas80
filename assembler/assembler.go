@@ -65,14 +65,6 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 			logger.Warning(errcode.WEVAL_CODE_STABLE, nil)
 		}
 	}
-	// 評価完了
-
-	// if logger.ErrorCount() > 0 {
-	// 	logger.Print()
-	// 	fmt.Println(prog.String())
-	// 	object.PrintEnv(env)
-	// 	os.Exit(1)
-	// }
 
 	// LogMessage の重複削除
 	logger.RemoveDupe()
@@ -129,11 +121,19 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 			buf.Reset()
 			if err := bw.WriteMap(&buf); err != nil {
 				fmt.Println(err.Error())
-				os.Exit(1)
-			}
-			if err := os.WriteFile(as.MapFile, buf.Bytes(), 0644); err != nil {
+			} else if err := os.WriteFile(as.MapFile, buf.Bytes(), 0644); err != nil {
 				fmt.Println(err)
-				os.Exit(1)
+			}
+		}
+
+		// シンボルファイル出力
+		if as.SymFile != "" {
+			fmt.Printf("# シンボルファイル出力")
+			buf.Reset()
+			if err := bw.WriteSym(&buf, env); err != nil {
+				fmt.Println(err.Error())
+			} else if err := os.WriteFile(as.SymFile, buf.Bytes(), 0644); err != nil {
+				fmt.Println(err)
 			}
 		}
 	}
