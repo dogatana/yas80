@@ -203,6 +203,8 @@ const (
 
 	WBW_LOAD_NAME = "Load name が ASCII 以外の文字を含んでいるので OUTPUT で代替"
 
+	WEVAL_CODE_STABLE = "生成コードが安定していません。出力コードを確認してください"
+
 	// infromation
 	// ILABEL_LOCAL = "[I]ローカルラベルには ':' は不要"
 )

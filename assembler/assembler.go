@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"yas80/binwriter"
+	"yas80/errcode"
 	"yas80/evaluator"
 	"yas80/filecontent"
 	"yas80/lister"
@@ -60,8 +61,12 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	if logger.ErrorCount() == 0 && eval.Resolved {
 		obj, pass = as.evalStage2(eval, pass, logger, prog, env, obj)
 		fmt.Printf("eval %d times, codeStable %v\n", pass, eval.CodeStable)
+		if !eval.CodeStable {
+			logger.Warning(errcode.WEVAL_CODE_STABLE, nil)
+		}
 	}
 	// 評価完了
+
 	// if logger.ErrorCount() > 0 {
 	// 	logger.Print()
 	// 	fmt.Println(prog.String())
