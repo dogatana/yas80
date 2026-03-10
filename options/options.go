@@ -61,7 +61,7 @@ func Parse() Option {
 
 	var defs []string
 
-	flag.StringSliceVarP(&opt.IncDirs, "I", "I", []string{}, "directories to search for iclude")
+	flag.StringSliceVarP(&opt.IncDirs, "I", "I", []string{}, "directories to search for include/incbin/charmap")
 	flag.StringSliceVarP(&defs, "D", "D", []string{}, "define numeric constants")
 	flag.StringVarP(&opt.Output, "output", "o", "", "output file name")
 	flag.BoolVar(&opt.OutMZT, "mzt", false, "output with MZT format")
