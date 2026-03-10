@@ -315,16 +315,19 @@ func (b *BinWriter) collectSymbols(env object.Environment) map[int]string {
 	for _, v := range env.Store() {
 		switch v := v.(type) {
 		case *object.SymbolObject:
-			if v.SymType != object.SYM_LABEL {
+			if v.SymType != object.SYM_LABEL || strings.HasPrefix(v.Name, "__") {
 				break
 			}
 			if no, ok := v.Value.(*object.NumberObject); ok {
 				syms[no.Value] = v.Name
 			}
 		case *object.ProcObject:
+			syms[v.Addr] = v.Name
+			pname := v.Name
+
 			pmap := b.collectSymbols(v)
 			for k, v := range pmap {
-				syms[k] = v
+				syms[k] = fmt.Sprintf("%s%s", pname, v)
 			}
 		}
 	}
