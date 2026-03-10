@@ -139,7 +139,7 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	}
 
 	// リストファイル出力
-	if as.ListFile == "" {
+	if as.LstFile == "" {
 		return
 	}
 
@@ -160,7 +160,7 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 
 	var buf bytes.Buffer
 	lister.List(&buf)
-	if err := os.WriteFile(as.ListFile, buf.Bytes(), 0644); err != nil {
+	if err := os.WriteFile(as.LstFile, buf.Bytes(), 0644); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

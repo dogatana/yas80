@@ -32,12 +32,12 @@ type Option struct {
 	Fill      int    // GAP Fill 値
 	R800      bool   // R800 をターゲットとする
 
-	outList  bool   // List 出力の有無
-	ListFile string // List ファイル名
-	outMap   bool   // map 出力の有無
-	MapFile  string // map ファイル名
-	outSym   bool   // symbol 出力の有無
-	SymFile  string // sym フィル名
+	outLst  bool   // List 出力の有無
+	LstFile string // List ファイル名
+	outMap  bool   // map 出力の有無
+	MapFile string // map ファイル名
+	outSym  bool   // symbol 出力の有無
+	SymFile string // sym フィル名
 
 	Args    []string
 	Version bool
@@ -73,8 +73,8 @@ func Parse() Option {
 	flag.IntVarP(&opt.Fill, "fill", "f", 0xff, "filler for DS and Segment Gap")
 	flag.BoolVarP(&opt.R800, "R800", "R", false, "assmble for R800")
 
-	flag.BoolVarP(&opt.outList, "l", "l", false, "generate list file")
-	flag.StringVar(&opt.ListFile, "list", "", "list filename")
+	flag.BoolVarP(&opt.outLst, "l", "l", false, "generate list file")
+	flag.StringVar(&opt.LstFile, "lst", "", "lst filename")
 
 	flag.BoolVarP(&opt.outMap, "m", "m", false, "generate map file")
 	flag.StringVar(&opt.MapFile, "map", "", "map filename")
@@ -140,8 +140,8 @@ func Parse() Option {
 	setOutput(&opt)
 	base := opt.Output
 
-	if opt.outList && opt.ListFile == "" {
-		opt.ListFile = replaceExt(base, ".lst")
+	if opt.outLst && opt.LstFile == "" {
+		opt.LstFile = replaceExt(base, ".lst")
 	}
 	if opt.outMap && opt.MapFile == "" {
 		opt.MapFile = replaceExt(base, ".map")
