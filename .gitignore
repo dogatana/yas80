@@ -23,6 +23,7 @@ venv/
 *.t88
 *.bat
 *.pdf
+*.map
 
 doc/
 
