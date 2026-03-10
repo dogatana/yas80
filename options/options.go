@@ -124,8 +124,15 @@ func Parse() Option {
 	// -I の値の整形(trim)
 	opt.IncDirs = trimStringSlice(opt.IncDirs)
 
-	if !opt.Stdin && len(opt.Args) == 0 {
-		fmt.Println("no input files")
+	switch {
+	case opt.Stdin && opt.AsmArg:
+		fmt.Println("--arg and --stdin used")
+		os.Exit(1)
+	case opt.Stdin && len(opt.Args) != 0:
+		fmt.Println("don't take any arugment")
+		os.Exit(1)
+	case opt.AsmArg && len(opt.Args) != 1:
+		fmt.Println("take one argument")
 		os.Exit(1)
 	}
 
