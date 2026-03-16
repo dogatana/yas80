@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"testing"
+	"yas80/errcode"
+	"yas80/internal/errcodenames"
 )
 
 func TestReadBlock(t *testing.T) {
@@ -31,34 +34,56 @@ func TestReadBlock(t *testing.T) {
 	}
 }
 
-func TestReadBlockError(t *testing.T) {
-	tests := []struct {
-		filename string
-		expected string
-	}{
-		{"binary.bin", "unknown encoding"},
-		{"hoge", "file not found"},
-	}
-
-	for _, tt := range tests {
-		path := testGetDataFilePath(t, tt.filename)
-		_, err := NewFromFile(path)
-		if err == nil {
-			t.Errorf("NewFromFile(%q) returns no error", tt.filename)
-		}
-		es := err.Error()
-		if !strings.Contains(es, tt.expected) {
-			t.Errorf("not %s. got %s", tt.expected, es)
-		}
-	}
-}
-
 func sameContent(b1, b2 []byte) bool {
 	if len(b1) != len(b2) {
 		return false
 	}
 	for i, b := range b1 {
 		if b2[i] != b {
+			return false
+		}
+	}
+	return true
+}
+func TestReadBlockError(t *testing.T) {
+	tests := []struct {
+		filename string
+		expected string
+	}{
+		{"binary.bin", errcode.EFILE_ENCODING},
+		{"hoge", errcode.EFILE_NOT_FOUND},
+	}
+
+	for tn, tt := range tests {
+		path := testGetDataFilePath(t, tt.filename)
+		_, err := NewFromFile(path)
+		if err == nil {
+			t.Errorf("[%d] NewFromFile(%q) returns no error", tn, tt.filename)
+			continue
+		}
+
+		ename, ok := errcodenames.ErrcodeNames[tt.expected]
+		if !ok {
+			t.Errorf("[%d] errcode の定義が見つからない %q", tn, tt.expected)
+			continue
+		}
+
+		if !hasMessage(err.Error(), tt.expected) {
+			t.Errorf("[%d] not [%s] \"%s\" => \"%s\"",
+				tn,
+				ename,
+				tt.expected,
+				err.Error(),
+			)
+		}
+	}
+}
+
+func hasMessage(msg, err string) bool {
+
+	re := regexp.MustCompile(`\.?%.\.?`)
+	for _, s := range re.Split(err, -1) {
+		if !strings.Contains(msg, s) {
 			return false
 		}
 	}
