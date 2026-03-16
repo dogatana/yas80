@@ -71,13 +71,13 @@ check:
 tc:
 	python internal/testutil/errcode_coverage.py
 
-test: internal/testutil/errcode_names.go
+test: internal/errcodenames/errcode_names.go
 	go test ${TESTDIR}
 
-testv: internal/testutil/errcode_names.go
+testv: internal/errcodenames/errcode_names.go
 	go test -v ${TESTDIR}
 
-internal/testutil/errcode_names.go: errcode/errcode.go
-	python internal/testutil/errcode_names.py $< $@
+internal/errcodenames/errcode_names.go: errcode/errcode.go
+	python internal/errcodenames/errcode_names.py $< $@
 	go fmt $@
 	

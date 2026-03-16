@@ -6,8 +6,8 @@ const (
 	ESYNTAX   = "syntax error"
 	EINTERNAL = "internal error %s"
 
-	EFILE_ENCODING  = "不明なエンコーディング"
-	EFILE_NOT_FOUND = "ファイル %s が見つからない"
+	EFILE_ENCODING  = "ファイルのエンコーディングが不明です"
+	EFILE_NOT_FOUND = "ファイル %s が見つかりません"
 	EFILE_ERR       = "ファイル %s エラー: %s"
 
 	EINCLUDE_CYCLIC = "INCLUDE %q で循環 INCLUDE 検出"

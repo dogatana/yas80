@@ -8,11 +8,12 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"yas80/internal/errcodenames"
 	"yas80/logging"
 )
 
 func TestLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {
-	ename, ok := ErrcodeNames[err]
+	ename, ok := errcodenames.ErrcodeNames[err]
 	if !ok {
 		t.Fatalf("[%d] errcode の定義が見つからない %q", tn, err)
 		return

@@ -20,7 +20,7 @@ def read_names(file:str)->list[str]:
 
 def write_go(file:str, names:list[str]):
     with open(file, "w", encoding="utf-8") as fp:
-        print("""package testutil
+        print("""package errcodenames
 
 import "yas80/errcode"
 

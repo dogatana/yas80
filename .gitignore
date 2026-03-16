@@ -30,7 +30,7 @@ doc/
 
 parser/rules.go
 parser/parser.go
-internal/testutil/errcode_names.go
+internal/errcodenames/errcode_names.go
 performance/*.bin
 performance/*.o
 performance/zma.*
