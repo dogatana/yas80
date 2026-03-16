@@ -24,7 +24,7 @@ func (fc *FileContent) String() string {
 	} else {
 		content = fmt.Sprintf("[]byte(len=%d)", len(fc.Content))
 	}
-	return fmt.Sprintf("FileBlock{FileName: %s, Content: %s}", fc.Filename, content)
+	return fmt.Sprintf("FileContent{FileName: %s, Content: %s}", fc.Filename, content)
 }
 
 // 指定行を取得
