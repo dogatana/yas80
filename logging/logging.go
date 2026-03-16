@@ -32,7 +32,7 @@ func (m *Message) String() string {
 	if m.Context == nil {
 		return fmt.Sprintf("%s %s", tn, m.Text)
 	} else {
-		return fmt.Sprintf("%q:%d %s %s", m.Context.FileContent.Filename, m.Context.Line, tn, m.Text)
+		return fmt.Sprintf("%s:%d %s %s", m.Context.FileContent.Filename, m.Context.Line, tn, m.Text)
 	}
 }
 
