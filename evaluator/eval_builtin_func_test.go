@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"fmt"
 	"testing"
 	"yas80/errcode"
 	"yas80/internal/testutil"
@@ -28,6 +29,7 @@ func TestBuiltinFuncLength(t *testing.T) {
 		if tt.input == "" {
 			continue
 		}
+		fmt.Printf("[%d] input %s\n", tn, tt.input)
 		env := object.NewEnvironment(nil)
 		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)

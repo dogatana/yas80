@@ -98,20 +98,20 @@ func getStatementLabel(stmt Statement) Expression {
 		return stmt.Name
 	case *Z80Instruction:
 		return stmt.Label
-	case *ConstStatement:
-		return stmt.Name
-	case *ProcStatement:
-		return stmt.Name
-	case *EnumStatement:
-		return &StringLiteral{Value: stmt.Name}
-	case *VariableStatement:
-		return stmt.Name
+	// case *ConstStatement:
+	// 	return stmt.Name
+	// case *ProcStatement:
+	// return stmt.Name
+	// case *EnumStatement:
+	// return &StringLiteral{Value: stmt.Name}
+	// case *VariableStatement:
+	// 	return stmt.Name
 	case *ReptStatement:
 		return stmt.Label
-	case *FuncStatement:
-		return &StringLiteral{Value: stmt.Name}
-	case *MacroStatement:
-		return &StringLiteral{Value: stmt.Name}
+	// case *FuncStatement:
+	// return &StringLiteral{Value: stmt.Name}
+	// case *MacroStatement:
+	// return &StringLiteral{Value: stmt.Name}
 	case *MacroCallStatement:
 		return stmt.Label
 	case *DataDefineStatement:
@@ -140,12 +140,12 @@ func removeLabel(stmt Statement) {
 		stmt.Name = nil
 	case *Z80Instruction:
 		stmt.Label = nil
-	case *ConstStatement:
-		stmt.Name = nil
+	// case *ConstStatement:
+	// stmt.Name = nil
 	// case *ProcStatement:
 	// case *EnumStatement:
-	case *VariableStatement:
-		stmt.Name = nil
+	// case *VariableStatement:
+	// stmt.Name = nil
 	case *ReptStatement:
 		stmt.Label = nil
 	// case *FuncStatement:
