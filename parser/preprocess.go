@@ -5,96 +5,134 @@ import (
 )
 
 func PreProrocess(prog *BlockStatement) *BlockStatement {
+	check := map[NodeType]bool{ // inProc 処理を終了する NodeType
+		NODE_FILE:      true,
+		NODE_ENUM_STMT: true,
+		NODE_PROC_STMT: true,
+		NODE_FUNC_STMT: true,
+	}
 
 	block := []Statement{}
 
-	var proc *ProcStatement
-	var label Expression
+	var pblock []Statement
 
-	in_proc := false
+	inProc := false   // auto-proc 処理中
+	hasLocal := false // local label あり
+
 	for _, stmt := range prog.Block {
+		label := getStatementLabel(stmt)
 
-		switch stmt := stmt.(type) {
-		case *LabelStatement:
-			label = stmt.Name
-		case *Z80Instruction:
-			label = stmt.Label
-		case *ConstStatement:
-			label = stmt.Name
-		case *ProcStatement:
-			label = stmt.Name
-		case *EnumStatement:
-			label = &StringLiteral{Value: stmt.Name}
-		case *VariableStatement:
-			label = stmt.Name
-		case *ReptStatement:
-			label = stmt.Label
-		case *FuncStatement:
-			label = &StringLiteral{Value: stmt.Name}
-		case *MacroStatement:
-			label = &StringLiteral{Value: stmt.Name}
-		case *MacroCallStatement:
-			label = stmt.Label
-		case *DataDefineStatement:
-			label = stmt.Label
-		case *DataStoreStatement:
-			label = stmt.Label
-		default:
-			label = nil
-		}
-		if !in_proc && label == nil {
+		// label なし or auto-proc 終了文
+		if !inProc && label == nil {
 			block = append(block, stmt)
 			continue
 		}
-		if !in_proc && (stmt.NodeType() == NODE_ENUM_STMT || stmt.NodeType() == NODE_PROC_STMT || stmt.NodeType() == NODE_FUNC_STMT) {
+		if !inProc && check[stmt.NodeType()] {
 			block = append(block, stmt)
 			continue
 		}
-		if in_proc && label == nil {
-			proc.Block.Block = append(proc.Block.Block, stmt)
+		if inProc && check[stmt.NodeType()] {
+			if !hasLocal { // local がないので元のまま
+				block = append(block, pblock[1:]...)
+			} else { // PROC 作成
+				block = append(block, buildProc(pblock))
+			}
+			inProc = false
+			hasLocal = false
+			pblock = []Statement{}
+			block = append(block, stmt)
 			continue
 		}
-		if in_proc && (stmt.NodeType() == NODE_ENUM_STMT || stmt.NodeType() == NODE_PROC_STMT || stmt.NodeType() == NODE_FUNC_STMT) {
-			block = append(block, proc, stmt)
-			proc = nil
-			in_proc = false
+		if inProc && label == nil {
+			pblock = append(pblock, stmt)
 			continue
 		}
+		// label あり
 		name := getName(label)
-		if !in_proc && name[0] != '.' {
-			// create PROC
-			if stmt.NodeType() == NODE_LABEL_STMT {
-				proc = &ProcStatement{Name: label, Block: &BlockStatement{Block: []Statement{}}, Context: stmt.GetContext()}
+		if !inProc && name[0] != '.' {
+			// proc + stmt
+			pblock = []Statement{
+				&ProcStatement{Name: label, Block: &BlockStatement{Block: []Statement{}}, Context: stmt.GetContext()},
+				stmt}
+			inProc = true
+			continue
+		}
+		if !inProc {
+			block = append(block, stmt)
+			continue
+		}
+		if inProc && name[0] == '.' {
+			hasLocal = true
+			pblock = append(pblock, stmt)
+			continue
+		}
+		if inProc {
+			if !hasLocal {
+				block = append(block, pblock[1:]...)
 			} else {
-				removeLabel(stmt)
-				proc = &ProcStatement{Name: label, Block: &BlockStatement{Block: []Statement{stmt}}, Context: stmt.GetContext()}
+				block = append(block, buildProc(pblock))
 			}
-			in_proc = true
+			pblock = []Statement{
+				&ProcStatement{Name: label, Block: &BlockStatement{Block: []Statement{}}, Context: stmt.GetContext()},
+				stmt}
+			hasLocal = false
 			continue
 		}
-		if in_proc && name[0] == '.' {
-			proc.Block.Block = append(proc.Block.Block, stmt)
-			continue
-		}
-		if in_proc && name[0] != '.' {
-			block = append(block, proc)
-			if stmt.NodeType() == NODE_LABEL_STMT {
-				proc = &ProcStatement{Name: label, Block: &BlockStatement{Block: []Statement{}}, Context: stmt.GetContext()}
-			} else {
-				removeLabel(stmt)
-				proc = &ProcStatement{Name: label, Block: &BlockStatement{Block: []Statement{stmt}}, Context: stmt.GetContext()}
-			}
-			continue
-		}
-		proc.Block.Block = append(proc.Block.Block, stmt)
-
+		pblock = append(pblock, stmt)
 	}
-	if proc != nil {
-		block = append(block, proc)
+
+	if len(pblock) != 0 {
+		if !hasLocal {
+			block = append(block, pblock[1:]...)
+		} else {
+			block = append(block, buildProc(pblock))
+		}
 	}
 	prog.Block = block
-	fmt.Println("--prog\n", prog.String())
+	fmt.Printf("--prog\n%s\n", prog.String())
 	return prog
+}
+
+func getStatementLabel(stmt Statement) Expression {
+	switch stmt := stmt.(type) {
+	case *LabelStatement:
+		return stmt.Name
+	case *Z80Instruction:
+		return stmt.Label
+	case *ConstStatement:
+		return stmt.Name
+	case *ProcStatement:
+		return stmt.Name
+	case *EnumStatement:
+		return &StringLiteral{Value: stmt.Name}
+	case *VariableStatement:
+		return stmt.Name
+	case *ReptStatement:
+		return stmt.Label
+	case *FuncStatement:
+		return &StringLiteral{Value: stmt.Name}
+	case *MacroStatement:
+		return &StringLiteral{Value: stmt.Name}
+	case *MacroCallStatement:
+		return stmt.Label
+	case *DataDefineStatement:
+		return stmt.Label
+	case *DataStoreStatement:
+		return stmt.Label
+	default:
+		return nil
+	}
+}
+
+func buildProc(pb []Statement) Statement {
+	proc := pb[0].(*ProcStatement)
+	if pb[1].NodeType() == NODE_LABEL_STMT {
+		proc.Block.Block = pb[2:]
+	} else {
+		removeLabel(pb[1])
+		proc.Block.Block = pb[1:]
+	}
+	return proc
 }
 
 func removeLabel(stmt Statement) {
