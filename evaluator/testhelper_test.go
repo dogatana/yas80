@@ -122,7 +122,7 @@ func parseTextForTest(input string, filename string, logger *logging.Logger) *pa
 		return prog
 	}
 
-	// prog = parser.PreProrocess(logger, prog)
+	prog = parser.PreProrocess(prog)
 	return prog
 }
 

@@ -89,7 +89,6 @@ func PreProrocess(prog *BlockStatement) *BlockStatement {
 		}
 	}
 	prog.Block = block
-	fmt.Printf("--prog\n%s\n", prog.String())
 	return prog
 }
 
