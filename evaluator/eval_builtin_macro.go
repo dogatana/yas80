@@ -329,7 +329,7 @@ func (e *Evaluator) ebMacroSetMap(stmt *parser.MacroCallStatement, env TEnv) obj
 	cmap.Cmap[str] = values
 
 	atext := strings.ReplaceAll(fmt.Sprint(values), " ", ", ")
-	return &object.TextObject{Text: fmt.Sprintf("%q = %s", str, atext), Context: stmt.Context}
+	return &object.TextObject{Text: fmt.Sprintf("%q:%s", str, atext), Context: stmt.Context}
 }
 
 // マクロ引数を StringObject として評価
