@@ -16,7 +16,7 @@ type FlagObject struct {
 	Flag int
 }
 
-func (f *FlagObject) Type() ObjectType { return OBJ_REGISTER }
+func (f *FlagObject) Type() ObjectType { return OBJ_FLAG }
 func (r *FlagObject) String() string   { return parser.Z80Opcode2Name(r.Flag) }
 
 // Z80 Regisers and Flags

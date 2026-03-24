@@ -36,6 +36,41 @@ func TestEvalExpressionError(t *testing.T) {
 	}
 }
 
+func TestEvalEqualityInnfixExpression(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{`const val = 1 \ const result = val == 1`, []symValue{{"RESULT", 1}}, ""},
+		{`const val = 'a' \ const result = val == 'a'`, []symValue{{"RESULT", 1}}, ""},
+		{`const val = [] \ const result = val == []`, []symValue{{"RESULT", 1}}, ""},
+		{`const val = [1] \ const result = val == [1]`, []symValue{{"RESULT", 1}}, ""},
+		{`const val = [1,2] \ const result = val == [1,2]`, []symValue{{"RESULT", 1}}, ""},
+		{`const val = a \ const result = val == a`, []symValue{{"RESULT", 1}}, ""},
+		{`const val = z \ const result = val == z`, []symValue{{"RESULT", 1}}, ""},
+		{`const val = cy \ const result = val == cy`, []symValue{{"RESULT", 1}}, ""},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
 func TestEvalInfixExpression(t *testing.T) {
 	tests := []struct {
 		input string

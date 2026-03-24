@@ -18,6 +18,7 @@ const (
 	OBJ_STRING
 	OBJ_ENUM
 	OBJ_REGISTER
+	OBJ_FLAG
 	OBJ_REG_INDIRECT
 	OBJ_ADDR_INDIRECT
 	OBJ_ORG
@@ -52,6 +53,50 @@ type ObjectType int
 type Object interface {
 	Type() ObjectType
 	String() string
+}
+
+// Object の同値判定
+func Equal(o1, o2 Object) bool {
+	if o1.Type() != o2.Type() {
+		return false
+	}
+	switch v1 := o1.(type) {
+	case *NullObject:
+		return true
+	case *NumberObject:
+		return v1.Value == o2.(*NumberObject).Value
+	case *StringObject:
+		return v1.Value == o2.(*StringObject).Value
+	case *RegisterObject:
+		return v1.Register == o2.(*RegisterObject).Register
+	case *FlagObject:
+		return v1.Flag == o2.(*FlagObject).Flag
+	case *ArrayObject:
+		v2 := o2.(*ArrayObject)
+		if len(v1.Values) != len(v2.Values) {
+			return false
+		}
+		for i, v := range v1.Values {
+			if !Equal(v, v2.Values[i]) {
+				return false
+			}
+		}
+		return true
+	case *EnumObject:
+		return v1.Name == o2.(*EnumObject).Name
+	case *ProcObject:
+		return v1.Name == o2.(*ProcObject).Name
+	case *FunctionObject:
+		return v1.Name == o2.(*FunctionObject).Name
+	case *CharamapObject:
+		return v1.Name == o2.(*CharamapObject).Name
+	case *SymbolObject:
+		v2 := o2.(*SymbolObject)
+		return Equal(v1.Value, v2.Value)
+
+	default:
+		return false
+	}
 }
 
 // value - list ファイル出力用

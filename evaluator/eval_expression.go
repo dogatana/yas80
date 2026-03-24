@@ -211,8 +211,13 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, 
 		e.Resolved = false
 		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
 
+	// 論理演算
 	case node.Operator == parser.OR || node.Operator == parser.AND:
 		return e.evalLogicalInfixExpression(node.Operator, op1, op2, ctx)
+
+	// 同値判定
+	case node.Operator == parser.EQ || node.Operator == parser.NEQ:
+		return e.evalEqualityExpression(node.Operator, op1, op2, ctx)
 
 	// 数値演算
 	case isNumber(op1) && isNumber(op2):
@@ -249,6 +254,19 @@ func (e *Evaluator) evalLogicalInfixExpression(opCode int, op1, op2 object.Objec
 		return &object.NumberObject{Value: boolToInt(v1 && v2), Context: ctx}
 	default:
 		panic("invalid evalLogcalInfixExpression")
+	}
+}
+
+// 同値判定 == !=
+func (e *Evaluator) evalEqualityExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
+	c := object.Equal(op1, op2)
+	if opCode == parser.NEQ {
+		c = !c
+	}
+	if c {
+		return &object.NumberObject{Value: 1}
+	} else {
+		return &object.NumberObject{Value: 0}
 	}
 }
 
