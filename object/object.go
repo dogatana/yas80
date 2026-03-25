@@ -475,10 +475,15 @@ func (o *ArrayObject) String() string {
 func FlattenObject(obj Object) []Object {
 	objs := []Object{}
 
+	if obj == nil {
+		return objs
+	}
 	switch obj := obj.(type) {
 	case *BlockObject:
 		for _, o := range obj.Block {
-			objs = append(objs, FlattenObject(o)...)
+			if o != nil {
+				objs = append(objs, FlattenObject(o)...)
+			}
 		}
 	default:
 		objs = append(objs, obj)
