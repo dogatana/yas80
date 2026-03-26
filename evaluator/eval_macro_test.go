@@ -627,3 +627,54 @@ func TestMacroReptCombination(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+
+func TestMacroDataDef(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{ // macro / macro
+			input: `
+			tm macro n, msg
+			  data ## $fmt("%d", n) db msg
+			endm
+			tm 1, "one"
+			tm 2, "two"
+			tm 3, "three"`,
+			code: []byte("one" + "two" + "three"),
+			syms: []symValue{
+				{"DATA1", 0},
+				{"DATA2", 3},
+				{"DATA3", 6},
+			},
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
