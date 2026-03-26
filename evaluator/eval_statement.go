@@ -589,16 +589,32 @@ func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TE
 		val := *v // copy
 		sym := object.NewVarSymbol(name, stmt.Value, &val, []string{}, stmt.Context)
 		env.Set(name, sym)
-		return &object.ValueObject{Value: v, Context: stmt.Context}
+		text := fmt.Sprintf("%04x(%d)", v.Value, v.Value)
+		return &object.TextObject{Text: text, Context: stmt.Context}
 
 	case *object.StringObject:
 		// StringObject の copy を値とする Symbol を作成し環境へ登録
 		val := *v // copy
 		sym := object.NewVarSymbol(name, stmt.Value, &val, []string{}, stmt.Context)
 		env.Set(name, sym)
-		return &object.ValueObject{Value: v, Context: stmt.Context}
+		text := fmt.Sprintf("%q", v.Value)
+		return &object.TextObject{Text: text, Context: stmt.Context}
 
-	case *object.RegisterObject, *object.FlagObject, *object.FunctionObject, *object.ArrayObject:
+	case *object.RegisterObject:
+		// 値を持つ Symbol を作成し環境へ登録
+		sym := object.NewVarSymbol(name, stmt.Value, v, []string{}, stmt.Context)
+		env.Set(name, sym)
+		text := parser.TokenLiteral(v.Register)
+		return &object.TextObject{Text: text, Context: stmt.Context}
+
+	case *object.FlagObject:
+		// 値を持つ Symbol を作成し環境へ登録
+		sym := object.NewVarSymbol(name, stmt.Value, v, []string{}, stmt.Context)
+		env.Set(name, sym)
+		text := parser.TokenLiteral(v.Flag)
+		return &object.TextObject{Text: text, Context: stmt.Context}
+
+	case *object.FunctionObject, *object.ArrayObject:
 		// 値を持つ Symbol を作成し環境へ登録
 		sym := object.NewVarSymbol(name, stmt.Value, v, []string{}, stmt.Context)
 		env.Set(name, sym)
