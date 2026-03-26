@@ -40,6 +40,7 @@ type Option struct {
 	SymFile string // sym フィル名
 
 	Args    []string
+	Verbose bool
 	Version bool
 
 	// for debug
@@ -82,7 +83,8 @@ func Parse() Option {
 	flag.BoolVarP(&opt.outSym, "s", "s", false, "generate symbol file")
 	flag.StringVar(&opt.SymFile, "sym", "", "symbol filename")
 
-	flag.BoolVarP(&opt.Version, "version", "v", false, "print version")
+	flag.BoolVarP(&opt.Verbose, "verbose", "v", false, "verbose mode")
+	flag.BoolVarP(&opt.Version, "version", "V", false, "print version")
 
 	// 以下デバッグ用非表示オプション
 	flag.BoolVar(&opt.Stdin, "stdin", false, "assemble stdin")
@@ -133,6 +135,11 @@ func Parse() Option {
 		os.Exit(1)
 	case opt.AsmArg && len(opt.Args) != 1:
 		fmt.Println("take one argument")
+		os.Exit(1)
+	}
+
+	if !opt.Stdin && len(opt.Args) == 0 {
+		fmt.Println("no file")
 		os.Exit(1)
 	}
 
