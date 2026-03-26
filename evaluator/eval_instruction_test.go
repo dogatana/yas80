@@ -86,12 +86,13 @@ func TestInstruction_LD_STR(t *testing.T) {
 	}{
 		// 0-
 		{input: `ld a, 'a'`, code: []byte{0x3e, 'a'}},
-		{input: `ld a, 'ab'`, code: []byte{0x3e, 'a'}, err: errcode.WROUND_BYTE},
+		{input: `ld a, 'あ'`, code: []byte{0x3e, 0xa0}, err: errcode.WROUND_BYTE},
 		{input: `ld hl, 'a'`, code: []byte{0x21, 'a', 0}},
-		{input: `ld hl, 'ab'`, code: []byte{0x21, 'b', 'a'}},
 		{input: `ld hl, 'あ'`, code: []byte{0x21, 0xa0, 0x82}},
-		{input: `ld hl, 'abc'`, err: errcode.EZ80_OP2_STR},
-		{input: `ld hl, 'あc'`, err: errcode.EZ80_OP2_STR},
+		{input: `ld a, 'ab'`, err: errcode.ESTR_TO_INT_LEN},
+		{input: `ld hl, 'ab'`, err: errcode.ESTR_TO_INT_LEN},
+		{input: `ld hl, 'abc'`, err: errcode.ESTR_TO_INT_LEN},
+		{input: `ld hl, 'あc'`, err: errcode.ESTR_TO_INT_LEN},
 	}
 
 	for tn, tt := range tests {

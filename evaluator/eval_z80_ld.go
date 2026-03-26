@@ -103,7 +103,18 @@ EVAL_AGAIN:
 		return object.ERROR
 
 	case *object.StringObject:
-		argOp2 = e.stringObjToOp2(op2, stmt.Context)
+		// argOp2 = e.stringObjToOp2(op2, stmt.Context)
+		argOp2 = e.evalOneCharStringAsNumber(op2.Value, stmt.Context)
+		if isError(argOp2) {
+			return argOp2
+		}
+		goto EVAL_AGAIN
+
+	case *object.ArrayObject:
+		argOp2 = e.evalArrayToInt(op2.Values, stmt.Context)
+		if isError(argOp2) {
+			return argOp2
+		}
 		goto EVAL_AGAIN
 
 	case *object.NumberObject:
@@ -215,7 +226,18 @@ EVAL_AGAIN:
 		}
 
 	case *object.StringObject:
-		argOp2 = e.stringObjToOp2(op2, stmt.Context)
+		// argOp2 = e.stringObjToOp2(op2, stmt.Context)
+		argOp2 = e.evalOneCharStringAsNumber(op2.Value, stmt.Context)
+		if isError(argOp2) {
+			return argOp2
+		}
+		goto EVAL_AGAIN
+
+	case *object.ArrayObject:
+		argOp2 = e.evalArrayToInt(op2.Values, stmt.Context)
+		if isError(argOp2) {
+			return argOp2
+		}
 		goto EVAL_AGAIN
 
 	case *object.NumberObject:

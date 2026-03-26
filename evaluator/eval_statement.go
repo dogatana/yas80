@@ -673,9 +673,9 @@ func (e *Evaluator) evalAssignStatement(stmt *parser.AssignStatement, env TEnv) 
 		e.logger.Error(errcode.EASSIGN_VALUE, stmt.Context)
 		return object.ERROR
 	}
-
 	sym.Value = value
-	return &object.ValueObject{Value: value, Context: stmt.Context}
+
+	return e.valueToTextObject(value, stmt.Context)
 }
 
 // if 文
