@@ -292,6 +292,13 @@ func (b *BinWriter) WriteMap(w io.Writer) error {
 	return nil
 }
 
+// symbol map
+type symMap map[int][]string
+
+func (s symMap) add(addr int, name string) {
+	s[addr] = append(s[addr], name)
+}
+
 // sym 出力
 func (b *BinWriter) WriteSym(w io.Writer, env object.Environment) error {
 	syms := b.collectSymbols(env)
@@ -303,14 +310,18 @@ func (b *BinWriter) WriteSym(w io.Writer, env object.Environment) error {
 	slices.Sort(addrs)
 
 	for _, addr := range addrs {
-		fmt.Fprintf(w, "%04X %s\n", addr, syms[addr])
+		names := syms[addr]
+		slices.Sort(names)
+		for _, name := range names {
+			fmt.Fprintf(w, "%04X %s\n", addr, name)
+		}
 	}
 	return nil
 }
 
 // env から SymbolObject を抽出する
-func (b *BinWriter) collectSymbols(env object.Environment) map[int]string {
-	syms := map[int]string{}
+func (b *BinWriter) collectSymbols(env object.Environment) symMap {
+	syms := symMap{}
 
 	for _, v := range env.Store() {
 		switch v := v.(type) {
@@ -319,15 +330,17 @@ func (b *BinWriter) collectSymbols(env object.Environment) map[int]string {
 				break
 			}
 			if no, ok := v.Value.(*object.NumberObject); ok {
-				syms[no.Value] = v.Name
+				syms.add(no.Value, v.Name)
 			}
 		case *object.ProcObject:
-			syms[v.Addr] = v.Name
 			pname := v.Name
+			syms.add(v.Addr, pname)
 
 			pmap := b.collectSymbols(v)
 			for k, v := range pmap {
-				syms[k] = fmt.Sprintf("%s%s", pname, v)
+				for _, name := range v {
+					syms.add(k, pname+name)
+				}
 			}
 		}
 	}
