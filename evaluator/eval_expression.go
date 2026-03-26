@@ -204,6 +204,7 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, 
 	op1 := e.evalExpression(node.Op1, env, ctx)
 	op2 := e.evalExpression(node.Op2, env, ctx)
 
+EVAL_AGAIN:
 	switch {
 	case isError(op1) || isError(op2):
 		return object.ERROR
@@ -232,6 +233,38 @@ func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, 
 		s1 := op1.(*object.StringObject).Value
 		s2 := op2.(*object.StringObject).Value
 		return &object.StringObject{Value: s1 + s2}
+
+	// 文字列 op 数値
+	case isString(op1) && isNumber(op2):
+		op1 = e.evalOneCharStringAsNumber(op1.(*object.StringObject).Value, ctx)
+		if isError(op1) {
+			return op1
+		}
+		goto EVAL_AGAIN
+
+	// 数値 op 文字列
+	case isNumber(op1) && isString(op2):
+		op2 = e.evalOneCharStringAsNumber(op2.(*object.StringObject).Value, ctx)
+		if isError(op2) {
+			return op2
+		}
+		goto EVAL_AGAIN
+
+	// 配列 op 数値
+	case op1.Type() == object.OBJ_ARRAY && isNumber(op2):
+		op1 = e.evalArrayToInt(op1.(*object.ArrayObject).Values, ctx)
+		if isError(op1) {
+			return op1
+		}
+		goto EVAL_AGAIN
+
+	// 数値 op 配列
+	case isNumber(op1) && op2.Type() == object.OBJ_ARRAY:
+		op2 = e.evalArrayToInt(op2.(*object.ArrayObject).Values, ctx)
+		if isError(op2) {
+			return op2
+		}
+		goto EVAL_AGAIN
 
 	default:
 		if e.Debug > 0 {

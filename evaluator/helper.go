@@ -25,6 +25,10 @@ func isString(obj object.Object) bool {
 	return obj.Type() == object.OBJ_STRING
 }
 
+func isArray(obj object.Object) bool {
+	return obj.Type() == object.OBJ_ARRAY
+}
+
 func isRefNotFound(obj object.Object) bool {
 	return obj.Type() == object.OBJ_REF_NOTFOUND
 }
@@ -252,6 +256,52 @@ func (e *Evaluator) stringObjToOp2(so *object.StringObject, ctx TContext) object
 		e.logger.Error(errcode.EZ80_OP2_STR, ctx)
 		return object.ERROR
 	}
+}
+
+// 1文字の文字列を数値に変換する
+func (e *Evaluator) evalOneCharStringAsNumber(s string, ctx TContext) object.Object {
+	r := []rune(s)
+	if len(r) != 1 {
+		e.logger.Error(fmt.Sprintf(errcode.ESTR_TO_INT_LEN, len(r)), ctx)
+		return object.ERROR
+	}
+	b, err := util.Utf8ToShiftJis(string(r))
+	if err != nil || len(b) == 0 || len(b) > 2 {
+		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, string(r)), ctx)
+		return object.ERROR
+	}
+
+	var code int
+	if len(b) == 1 {
+		code = int(b[0])
+	} else {
+		code = int(b[0])*256 + int(b[1])
+	}
+	return &object.NumberObject{Value: code, Context: ctx}
+}
+
+// 1/2 要素の数値配列を数値に変換する
+func (e *Evaluator) evalArrayToInt(values []object.Object, ctx TContext) object.Object {
+	if len(values) < 1 || len(values) > 2 {
+		e.logger.Error(fmt.Sprintf(errcode.EARRAY_TO_INT_LEN, len(values)), ctx)
+		return object.ERROR
+
+	}
+	v1, ok := values[0].(*object.NumberObject)
+	if !ok {
+		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
+		return object.ERROR
+	}
+	if len(values) == 1 {
+		return &object.NumberObject{Value: v1.Value, Context: ctx}
+	}
+
+	v2, ok := values[1].(*object.NumberObject)
+	if !ok {
+		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
+		return object.ERROR
+	}
+	return &object.NumberObject{Value: v1.Value*256 + v2.Value, Context: ctx}
 }
 
 // incbin charmap ファイル読み込み

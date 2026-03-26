@@ -138,6 +138,134 @@ func TestEvalInfixExpression(t *testing.T) {
 	}
 }
 
+func TestEvalInfixExpressionNumberString(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{`const val = 1 \ const RESULT = 'a' +  val`, []symValue{{"RESULT", 0x61 + 1}}, ""},
+		{`const val = 1 \ const RESULT = 'a' +  val  + 2`, []symValue{{"RESULT", 0x61 + 1 + 2}}, ""},
+		{`const val = 1 \ const RESULT = 'a' +  val  + 2 + 'b'`, []symValue{{"RESULT", 0x61 + 1 + 2 + 0x62}}, ""},
+		{`const val = 1 \ const RESULT = val + 'a'`, []symValue{{"RESULT", 0x61 + 1}}, ""},
+		{`const val = 1 \ const RESULT = val + 'a' +  2`, []symValue{{"RESULT", 0x61 + 1 + 2}}, ""},
+		{`const val = 1 \ const RESULT = val + 'a' +  2 + 'b'`, []symValue{{"RESULT", 0x61 + 1 + 2 + 0x62}}, ""},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+func TestEvalInfixExpressionNumberStringError(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `const val = 1 \ const RESULT = 'ab' +  val`, err: errcode.ESTR_TO_INT_LEN},
+		{input: `const val = 1 \ const RESULT = '' +  val`, err: errcode.ESTR_TO_INT_LEN},
+		{input: `const val = 1 \ const RESULT = val + 'ab'`, err: errcode.ESTR_TO_INT_LEN},
+		{input: `const val = 1 \ const RESULT = val + ''`, err: errcode.ESTR_TO_INT_LEN},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+func TestEvalInfixExpressionNumberArray(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{`const val = 2 \ const RESULT = [1] +  val`, []symValue{{"RESULT", 1 + 2}}, ""},
+		{`const val = 2 \ const RESULT = [1] +  val  + 3`, []symValue{{"RESULT", 1 + 2 + 3}}, ""},
+		{`const val = 2 \ const RESULT = [1] +  val  + 3 + [4]`, []symValue{{"RESULT", 1 + 2 + 3 + 4}}, ""},
+		{`const val = 2 \ const RESULT = val + [1]`, []symValue{{"RESULT", 2 + 1}}, ""},
+		{`const val = 2 \ const RESULT = val + [1] +  3`, []symValue{{"RESULT", 2 + 1 + 3}}, ""},
+		{`const val = 2 \ const RESULT = val + [1] +  3 + [4]`, []symValue{{"RESULT", 2 + 1 + 3 + 4}}, ""},
+		{`const val = 2 \ const RESULT = [1,3] +  val`, []symValue{{"RESULT", 0x0103 + 2}}, ""},
+		{`const val = 2 \ const RESULT = val + [1,3]`, []symValue{{"RESULT", 2 + 0x0103}}, ""},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestEvalInfixExpressionNumberArrayError(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `const val = 1 \ const RESULT = [] +  val`, err: errcode.EARRAY_TO_INT_LEN},
+		{input: `const val = 1 \ const RESULT = [1,2,3] +  val`, err: errcode.EARRAY_TO_INT_LEN},
+		{input: `const val = 1 \ const RESULT = val + []`, err: errcode.EARRAY_TO_INT_LEN},
+		{input: `const val = 1 \ const RESULT = val + [1,2,3]`, err: errcode.EARRAY_TO_INT_LEN},
+	}
+
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
 func TestEvalInfixExpressionError(t *testing.T) {
 	tests := []struct {
 		input string
@@ -145,17 +273,14 @@ func TestEvalInfixExpressionError(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `const val = 1 \ _ = val + "a"`, err: errcode.EBIN_OP_TYPE},
-		{input: `const val = 1 \ _ = "a" - val`, err: errcode.EBIN_OP_TYPE},
-		{input: `const val = 1 \ _ = val * a`, err: errcode.EBIN_OP_TYPE},
-		{input: `const val = 1 \ _ = val * nc`, err: errcode.EBIN_OP_TYPE},
-		{input: `const val = 0 \  _ = 1 / val`, err: errcode.EBIN_OP_DIVZERO},
+		// {input: `const val = 1 \ _ = val + "a"`, err: errcode.EBIN_OP_TYPE},
+		// {input: `const val = 1 \ _ = "a" - val`, err: errcode.EBIN_OP_TYPE},
+		// {input: `const val = 1 \ _ = val * a`, err: errcode.EBIN_OP_TYPE},
+		// {input: `const val = 1 \ _ = val * nc`, err: errcode.EBIN_OP_TYPE},
+		// {input: `const val = "a" \  _ = 1 / val`, err: errcode.EBIN_OP_TYPE},
 		// 5-
-		{input: `const val = "a" \  _ = 1 / val`, err: errcode.EBIN_OP_TYPE},
-		{input: `const val = "a" \ const result = +val`, err: errcode.EUNI_OP_TYPE},
-		{input: `const val = "a" \ const result = -val`, err: errcode.EUNI_OP_TYPE},
-		{input: `const val = "a" \ const result = ~val`, err: errcode.EUNI_OP_TYPE},
 		// 10-
+		{input: `const val = 0 \  _ = 1 / val`, err: errcode.EBIN_OP_DIVZERO},
 		{input: `const abc = 123 / 0`, err: errcode.EBIN_OP_DIVZERO}, // これは parser で出力される
 		{input: `test macro arg \ ld a, 1 / arg \ endm \ test 0`, err: errcode.EBIN_OP_DIVZERO},
 	}
@@ -226,12 +351,6 @@ func TestEvalPrefixExpressionError(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `const val = 1 \ _ = val + "a"`, err: errcode.EBIN_OP_TYPE},
-		{input: `const val = 1 \ _ = "a" - val`, err: errcode.EBIN_OP_TYPE},
-		{input: `const val = 1 \ _ = val * a`, err: errcode.EBIN_OP_TYPE},
-		{input: `const val = 1 \ _ = val * nc`, err: errcode.EBIN_OP_TYPE},
-		{input: `const val = 0 \  _ = 1 / val`, err: errcode.EBIN_OP_DIVZERO},
-		// 5-
 		{input: `const val = "a" \ const result = +val`, err: errcode.EUNI_OP_TYPE},
 		{input: `const val = "a" \ const result = -val`, err: errcode.EUNI_OP_TYPE},
 		{input: `const val = "a" \ const result = ~val`, err: errcode.EUNI_OP_TYPE},
