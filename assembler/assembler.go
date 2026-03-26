@@ -56,11 +56,15 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	eval.CheckSymbolError(env)
 
 	// eval stage 1 終了状況
-	fmt.Printf("eval %d times, %d errors, eval.Resolved = %v\n", pass, logger.ErrorCount(), eval.Resolved)
+	if as.Verbose {
+		fmt.Printf("eval %d times, %d errors, eval.Resolved: %v\n", pass, logger.ErrorCount(), eval.Resolved)
+	}
 
 	if logger.ErrorCount() == 0 && eval.Resolved {
 		obj, pass = as.evalStage2(eval, pass, logger, prog, env, obj)
-		fmt.Printf("eval %d times, codeStable %v\n", pass, eval.CodeStable)
+		if as.Verbose {
+			fmt.Printf("eval %d times, eval.codeStable: %v\n", pass, eval.CodeStable)
+		}
 		if !eval.CodeStable {
 			logger.Warning(errcode.WEVAL_CODE_STABLE, nil)
 		}
@@ -74,10 +78,13 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 		parser.PrintNode(prog, 0)
 	}
 
+	// ログメッセージ表示
 	logger.Print()
 	if logger.ErrorCount() == 0 {
 		// 出力ファイル生成
-		fmt.Println("# 出力ファイル生成")
+		if as.Verbose {
+			fmt.Printf("# 出力ファイル生成 %s\n", as.Output)
+		}
 		fill := as.Fill
 		bw := binwriter.New(obj, fill, logger)
 
@@ -117,7 +124,9 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 
 		// マップファイル出力
 		if as.MapFile != "" {
-			fmt.Println("# マップファイル出力")
+			if as.Verbose {
+				fmt.Printf("# マップファイル出力 %s\n", as.MapFile)
+			}
 			buf.Reset()
 			if err := bw.WriteMap(&buf); err != nil {
 				fmt.Println(err.Error())
@@ -128,7 +137,9 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 
 		// シンボルファイル出力
 		if as.SymFile != "" {
-			fmt.Printf("# シンボルファイル出力")
+			if as.Verbose {
+				fmt.Printf("# シンボルファイル出力 %s\n", as.SymFile)
+			}
 			buf.Reset()
 			if err := bw.WriteSym(&buf, env); err != nil {
 				fmt.Println(err.Error())
@@ -143,11 +154,11 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 		return
 	}
 
-	fmt.Println("-- log start")
-	logger.Print()
-	fmt.Println("-- log end")
 	mmap := logger.BuildMessageMap()
 	if as.ListDebug > 0 {
+		fmt.Println("-- log start")
+		logger.Print()
+		fmt.Println("-- log end")
 		fmt.Println("-- message map start")
 		mmap.Print()
 		fmt.Println("-- message map end")
@@ -156,7 +167,7 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 			fmt.Printf("file %s\n", f)
 		}
 	}
-	lister := lister.New(as.R800, prog, obj.(*object.BlockObject), fcMap, mmap)
+	lister := lister.New(as.R800, prog, obj.(*object.BlockObject), fcMap, mmap, as.ListDebug)
 
 	var buf bytes.Buffer
 	lister.List(&buf)
@@ -172,13 +183,17 @@ func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCo
 	lexer := parser.NewLexer(logger, fn)
 
 	// 構文解析
-	fmt.Println("# parse")
+	if as.Verbose {
+		fmt.Println("# parse")
+	}
 	parser.SetYYDebug(as.YYdebug) // go-yacc debug flag
 	prog := parser.Parse(lexer, as.IncDirs)
 
 	if as.AutoProc {
 		// AutoProc プリプロセス
-		fmt.Println("# preprocess")
+		if as.Verbose {
+			fmt.Println("# preprocess")
+		}
 		if as.AstDebug == 2 {
 			fmt.Println("before\n", prog.String())
 		}
@@ -186,7 +201,9 @@ func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCo
 	}
 
 	// 構文解析後 AST 表示
-	fmt.Println("# ast")
+	if as.Verbose {
+		fmt.Println("# ast")
+	}
 	if as.AstDebug != 0 {
 		if len(prog.Block) == 0 {
 			fmt.Print("no statements detected")
@@ -202,7 +219,9 @@ func (as *Assembler) parse(logger *logging.Logger, fn func() *filecontent.FileCo
 // 評価後 eval.Resolved が true ならコード生成完了とみなす
 // true でないなら、規定回数（256) だけ eval を繰り返す
 func (as *Assembler) evalStage1(eval *evaluator.Evaluator, pass int, logger *logging.Logger, prog *parser.BlockStatement, env object.Environment) (object.Object, int) {
-	fmt.Println("\n# eval stage 1")
+	if as.Verbose {
+		fmt.Println("# eval stage 1")
+	}
 	var obj object.Object
 
 	for i := range 256 {
@@ -238,7 +257,10 @@ func (as *Assembler) evalStage1(eval *evaluator.Evaluator, pass int, logger *log
 // コードが安定するまで規定回数(16)評価を繰り返す
 // 例) const abc = xyz + 10 \ ld a, abc \  xyz: nop
 func (as *Assembler) evalStage2(eval *evaluator.Evaluator, pass int, logger *logging.Logger, prog *parser.BlockStatement, env object.Environment, obj object.Object) (object.Object, int) {
-	fmt.Println("\n# eval stage 2")
+	if as.Verbose {
+		fmt.Println("# eval stage 2")
+	}
+
 	code := object.CollectCode(obj.(*object.BlockObject).Block)
 
 	eval.CodeStable = false

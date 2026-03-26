@@ -54,25 +54,28 @@ const (
 )
 
 type Lister struct {
-	tsIndex int
-	nodes   *parser.BlockStatement
-	objects []object.Object
-	fcMap   map[string]*filecontent.FileContent
-	fblocks []*object.FileBlock
+	tsIndex   int
+	nodes     *parser.BlockStatement
+	objects   []object.Object
+	fcMap     map[string]*filecontent.FileContent
+	fblocks   []*object.FileBlock
+	listDebug int
 }
 
-func New(r800 bool, pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent, mmap logging.MessageMap) *Lister {
-	l := &Lister{nodes: pnode, fcMap: fcmap}
+func New(r800 bool, pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent, mmap logging.MessageMap, listDebug int) *Lister {
+	l := &Lister{nodes: pnode, fcMap: fcmap, listDebug: listDebug}
 	if r800 {
 		l.tsIndex = 1
 	}
 	l.objects = object.FlattenObject(pobj)
 
-	fmt.Println("-- objects start")
-	for _, o := range l.objects {
-		fmt.Println(o.String())
+	if l.listDebug > 0 {
+		fmt.Println("-- objects start")
+		for _, o := range l.objects {
+			fmt.Println(o.String())
+		}
+		fmt.Println("-- objects end")
 	}
-	fmt.Println("-- objects end")
 
 	// []*FileBlock の収集
 	fblocks := object.BuildFileBlock(l.objects)
@@ -80,11 +83,13 @@ func New(r800 bool, pnode *parser.BlockStatement, pobj *object.BlockObject, fcma
 	fblocks = object.InsertMessages(fblocks, mmap)
 	l.fblocks = fblocks
 
-	fmt.Println("-- FileBlocks start")
-	for _, fb := range fblocks {
-		fb.Print()
+	if l.listDebug > 0 {
+		fmt.Println("-- FileBlocks start")
+		for _, fb := range fblocks {
+			fb.Print()
+		}
+		fmt.Println("-- FileBlocks end")
 	}
-	fmt.Println("-- FileBlocks end")
 
 	return l
 }

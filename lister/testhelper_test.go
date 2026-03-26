@@ -24,7 +24,7 @@ func evalFile(filename string, logger *logging.Logger, env object.Environment) (
 	for k := range lexer.FcMap {
 		fmt.Printf("file: %s\n", k)
 	}
-	lister := New(false, prog, obj, lexer.FcMap, logger.BuildMessageMap())
+	lister := New(false, prog, obj, lexer.FcMap, logger.BuildMessageMap(), 0) // listDebug = 0
 
 	var buf bytes.Buffer
 	lister.List(&buf)

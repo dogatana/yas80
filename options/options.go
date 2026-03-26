@@ -139,7 +139,7 @@ func Parse() Option {
 	}
 
 	if !opt.Stdin && len(opt.Args) == 0 {
-		fmt.Println("no file")
+		fmt.Println("no input file")
 		os.Exit(1)
 	}
 

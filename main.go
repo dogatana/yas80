@@ -11,11 +11,6 @@ import (
 func main() {
 	opt := options.Parse()
 
-	if !opt.Stdin && len(opt.Args) == 0 {
-		fmt.Println("no input files")
-		os.Exit(1)
-	}
-
 	run(opt)
 	os.Exit(0)
 }
