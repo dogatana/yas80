@@ -190,6 +190,7 @@ func (e *Evaluator) mangleNamesInStatement(stmt parser.Statement, replace func(p
 	case *parser.DataDefineStatement:
 		news := *stmt
 		replace(&news.Label)
+		news.Values = slices.Clone(news.Values)
 		for i := 0; i < len(news.Values); i++ {
 			replace(&news.Values[i])
 		}
