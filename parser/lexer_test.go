@@ -216,6 +216,10 @@ func TestLexNumber(t *testing.T) {
 		// 15-
 		{"89ab_cdefH", "89ab_cdefH"},
 		{"0abc", "0abc"}, // このエラーは parser で検出する
+		{"0bh", "$0b"},
+		{"0BH", "$0B"},
+		{"0b1h", "$0b1"},
+		{"0b1_23h", "$0b1_23"},
 	}
 
 	for tn, tt := range tests {
