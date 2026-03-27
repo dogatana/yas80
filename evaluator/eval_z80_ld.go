@@ -103,7 +103,6 @@ EVAL_AGAIN:
 		return object.ERROR
 
 	case *object.StringObject:
-		// argOp2 = e.stringObjToOp2(op2, stmt.Context)
 		argOp2 = e.evalOneCharStringAsNumber(op2.Value, stmt.Context)
 		if isError(argOp2) {
 			return argOp2
@@ -346,11 +345,12 @@ func (e *Evaluator) evalZ80LD_RegIndirect(stmt *parser.Z80Instruction, op1 *obje
 		return object.ERROR
 	}
 
-	num, ok := op2.(*object.NumberObject)
-	if ok {
-		b, ok := e.intToByte(num.Value)
+EVAL_AGAIN:
+	switch v := op2.(type) {
+	case *object.NumberObject:
+		b, ok := e.intToByte(v.Value)
 		if !ok {
-			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, num.Value, num.Value), stmt.Context)
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, v.Value, v.Value), stmt.Context)
 		}
 		switch op1.Register {
 		case parser.Z80_REG_HL: // LD (HL), n
@@ -362,10 +362,24 @@ func (e *Evaluator) evalZ80LD_RegIndirect(stmt *parser.Z80Instruction, op1 *obje
 		}
 		e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		return object.ERROR
-	}
 
-	e.logger.Error(errcode.EZ80_OP2, stmt.Context)
-	return object.ERROR
+	case *object.StringObject:
+		op2 = e.evalOneCharStringAsNumber(v.Value, stmt.Context)
+		if isError(op2) {
+			return op2
+		}
+		goto EVAL_AGAIN
+
+	case *object.ArrayObject:
+		op2 = e.evalArrayToInt(v.Values, stmt.Context)
+		if isError(op2) {
+			return op2
+		}
+		goto EVAL_AGAIN
+	default:
+		e.logger.Error(errcode.EZ80_OP2, stmt.Context)
+		return object.ERROR
+	}
 }
 
 // アドレ間接（メモリ）

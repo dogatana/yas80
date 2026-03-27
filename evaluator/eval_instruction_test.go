@@ -89,6 +89,9 @@ func TestInstruction_LD_STR(t *testing.T) {
 		{input: `ld a, 'あ'`, code: []byte{0x3e, 0xa0}, err: errcode.WROUND_BYTE},
 		{input: `ld hl, 'a'`, code: []byte{0x21, 'a', 0}},
 		{input: `ld hl, 'あ'`, code: []byte{0x21, 0xa0, 0x82}},
+		{input: `ld (hl), 'a'`, code: []byte{0x36, 0x61}},
+		{input: `ld (ix), 'b'`, code: []byte{0xdd, 0x36, 0, 0x62}},
+		{input: `ld (iy+1), 'c'`, code: []byte{0xfd, 0x36, 1, 0x63}},
 		{input: `ld a, 'ab'`, err: errcode.ESTR_TO_INT_LEN},
 		{input: `ld hl, 'ab'`, err: errcode.ESTR_TO_INT_LEN},
 		{input: `ld hl, 'abc'`, err: errcode.ESTR_TO_INT_LEN},
@@ -114,6 +117,42 @@ func TestInstruction_LD_STR(t *testing.T) {
 		testCodeResult(t, tn, tt.code, prog)
 	}
 }
+
+func TestInstruction_LD_Array(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		// 0-
+		{input: `ld a, [1]`, code: []byte{0x3e, 1}},
+		{input: `ld hl, [0x82, 0xa0]`, code: []byte{0x21, 0xa0, 0x82}},
+		{input: `ld (hl), [2]`, code: []byte{0x36, 2}},
+		{input: `ld (ix), [3]`, code: []byte{0xdd, 0x36, 0, 03}},
+		{input: `ld a, []`, err: errcode.EARRAY_TO_INT_LEN},
+		{input: `ld a, [1,2,3]`, err: errcode.EARRAY_TO_INT_LEN},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
 func TestInstructionError_LD16(t *testing.T) {
 	tests := []struct {
 		input string
@@ -211,7 +250,7 @@ func TestInstructionError_LDRegIndirect(t *testing.T) {
 		{input: `ld (hl), r`, err: errcode.EZ80_OP_REG},
 		{input: `ld (sp), a`, err: errcode.EZ80_OP_REG},
 		{input: `ld (sp), 1`, err: errcode.EZ80_OP},
-		{input: `ld (hl), 'a'`, err: errcode.EZ80_OP2},
+		// {input: `ld (hl), 'a'`, err: errcode.EZ80_OP2},
 		{input: `ld (hl), cy`, err: errcode.EZ80_OP2},
 	}
 
