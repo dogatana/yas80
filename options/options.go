@@ -44,12 +44,14 @@ type Option struct {
 	Version bool
 
 	// for debug
-	Stdin     bool
-	AsmArg    bool
-	AstDebug  int
-	YYdebug   int
-	EvalDebug int
-	ListDebug int
+	Stdin      bool
+	AsmArg     bool
+	AstDebug   int
+	YYdebug    int
+	EvalDebug  int
+	ListDebug  int
+	Cpuprofile string
+	Memprofile string
 }
 
 func (opt Option) Print() {
@@ -93,12 +95,16 @@ func Parse() Option {
 	flag.IntVar(&opt.YYdebug, "yydebug", 0, "debug level for go-yacc")
 	flag.IntVar(&opt.EvalDebug, "evaldebug", 0, "debug level for Evaluator")
 	flag.IntVar(&opt.ListDebug, "listdebug", 0, "debug level for Lister")
+	flag.StringVar(&opt.Cpuprofile, "cpuprofile", "", "cpuprofile to file")
+	flag.StringVar(&opt.Memprofile, "memprofile", "", "memprofile to file")
 	flag.CommandLine.MarkHidden("stdin")
 	flag.CommandLine.MarkHidden("arg")
 	flag.CommandLine.MarkHidden("astdebug")
 	flag.CommandLine.MarkHidden("yydebug")
 	flag.CommandLine.MarkHidden("evaldebug")
 	flag.CommandLine.MarkHidden("listdebug")
+	flag.CommandLine.MarkHidden("cpuprofile")
+	flag.CommandLine.MarkHidden("memprofile")
 
 	// usage をカスタマイズ
 	flag.Usage = func() {

@@ -104,3 +104,14 @@ func TestOutputT88(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkRun(b *testing.B) {
+	opt := options.Option{
+		Args:   []string{"performance/max.asm"},
+		Output: "temp.bin",
+		OutBIN: true,
+	}
+	for i := 0; i < b.N; i++ {
+		run(opt)
+	}
+}

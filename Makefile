@@ -81,3 +81,11 @@ internal/errcodenames/errcode_names.go: errcode/errcode.go
 	python internal/errcodenames/errcode_names.py $< $@
 	go fmt $@
 	
+bench:
+	go test -bench Run
+
+prof:
+	main --cpuprofile cpu.prof performance\label.asm -o out.bin
+	go tool pprof -top cpu.prof
+	main --memprofile mem.prof performance\label.asm -o out.bin
+	go tool pprof -top mem.prof
