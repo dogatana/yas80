@@ -27,6 +27,7 @@ venv/
 *.sym
 
 doc/
+port/
 
 parser/rules.go
 parser/parser.go

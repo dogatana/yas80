@@ -308,14 +308,32 @@ LINE_CONT:
 		l.nextChar() // '0'をスキップ
 		literal = "0" + string(l.lctx.curChar)
 		l.nextChar() // 'b'または'B'をスキップ
-		if !l.isBinChar(l.lctx.curChar) {
-			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), l.lctx.toContext(l.start))
+
+		ch := l.lctx.curChar
+		// 0bh
+		if ch == 'h' || ch == 'H' {
+			tok = Token{TokenType: NUMBER, Literal: "$" + literal, Context: l.lctx.toContext(l.start)}
+			l.nextChar() // skip 'h' / 'H'
+			return tok
+		}
+		// 0b[\x]
+		if l.isHexChar(ch) {
+			hex := l.readHexString()
+			l.nextChar()
+			ch = l.lctx.curChar
+			if ch == 'h' || ch == 'H' {
+				tok = Token{TokenType: NUMBER, Literal: "$" + literal + hex, Context: l.lctx.toContext(l.start)}
+				l.nextChar()
+				return tok
+			}
+			if l.isBinString(hex) {
+				return Token{TokenType: NUMBER, Literal: literal + hex, Context: l.lctx.toContext(l.start)}
+			}
+			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal+hex), l.lctx.toContext(l.start))
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
-		literal += l.readBinString()
-		tok = Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
-		l.nextChar()
-		return tok
+		l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), l.lctx.toContext(l.start))
+		return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '0' && (l.peekChar() == 'o' || l.peekChar() == 'O'):
 		// 8数リテラル(0o)
@@ -600,6 +618,15 @@ func (l *Lexer) isHexChar(ch rune) bool {
 func (l *Lexer) isHexString(s string) bool {
 	for _, c := range s {
 		if !l.isHexChar(rune(c)) {
+			return false
+		}
+	}
+	return true
+}
+
+func (l *Lexer) isBinString(s string) bool {
+	for _, c := range s {
+		if !l.isBinChar(rune(c)) {
 			return false
 		}
 	}
