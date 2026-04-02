@@ -153,9 +153,13 @@ func TestIncBin(t *testing.T) {
 		syms  []symValue
 		err   string
 	}{
-		// 0-
 		{
 			input: `incbin "inc.bin"`,
+			code:  bin,
+			syms:  []symValue{{"$RSIZE", len(bin)}},
+		},
+		{
+			input: `binclude "inc.bin"`,
 			code:  bin,
 			syms:  []symValue{{"$RSIZE", len(bin)}},
 		},

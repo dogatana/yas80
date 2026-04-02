@@ -22,7 +22,7 @@ func (e *Evaluator) evalBuiltinMacro(stmt *parser.MacroCallStatement, env TEnv) 
 		return e.ebMacroLogMessage(logging.Warn, stmt, env), true
 	case "INFO":
 		return e.ebMacroLogMessage(logging.Info, stmt, env), true
-	case "INCBIN":
+	case "INCBIN", "BINCLUDE":
 		return e.ebMacroIncBin(stmt, env), true
 	case "SETMAP":
 		return e.ebMacroSetMap(stmt, env), true
