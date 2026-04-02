@@ -11,6 +11,7 @@ type Evaluator struct {
 	Debug      int
 	Resolved   bool
 	CodeStable bool
+	Stage2     bool // eval staget 2
 	Counter    func() int
 	incDirs    []string
 }

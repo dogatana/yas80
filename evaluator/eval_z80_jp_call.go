@@ -205,7 +205,8 @@ func (e *Evaluator) evalZ80_JR(stmt *parser.Z80Instruction, op1, op2 object.Obje
 
 	// addr set
 	ofs := addr - getLocationCounter(env) - 2
-	if ofs < -128 || ofs > 127 {
+	// ofs 検査は Evaluator.Satge2 で行う。Stage1 ではラベルのアドレスが確定していないため
+	if e.Stage2 && (ofs < -128 || ofs > 127) {
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_JR_RANGE, ofs, ofs), stmt.Context)
 		return object.ERROR
 	}

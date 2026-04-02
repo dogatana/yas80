@@ -61,6 +61,8 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 	}
 
 	if logger.ErrorCount() == 0 && eval.Resolved {
+		// JR のオフセット検査
+		eval.Stage2 = true
 		obj, pass = as.evalStage2(eval, pass, logger, prog, env, obj)
 		if as.Verbose {
 			fmt.Printf("eval %d times, eval.codeStable: %v\n", pass, eval.CodeStable)
