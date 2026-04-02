@@ -39,7 +39,7 @@ const (
 	ENUMBER_LITERAL = "数値リテラル誤り: '%s'"
 
 	EARRAY_TO_INT_LEN   = "配列要素数が %d のため数値に変換できない"
-	EARRAY_TO_INT_TYPE  = "配列要素数が数値のため数値に変換できない"
+	EARRAY_TO_INT_TYPE  = "配列要素が数値でないため、数値に変換できない"
 	EARRAY_EMPTY        = "空の配列"
 	EARRAY_NAME         = "配列名誤り"
 	EARRAY_INDEX        = "配列インデックス誤り"
