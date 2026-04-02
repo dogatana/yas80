@@ -310,6 +310,72 @@ func TestInstructionError_LDAddrIndirect(t *testing.T) {
 	}
 }
 
+func testInstructionAdd8(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		err   string
+	}{
+		{input: `
+add a, 'A'
+adc a, 'A'
+sub    'A'
+sbc a, 'A'
+and    'A'
+or     'A'
+xor    'A'
+cp     'A'
+add a, '@' + 1
+adc a, '@' + 1
+sub    '@' + 1
+sbc a, '@' + 1
+and    '@' + 1
+or     '@' + 1
+xor    '@' + 1
+cp     '@' + 1
+add a, [0x41]
+adc a, [0x41]
+sub    [0x41]
+sbc a, [0x41]
+and    [0x41]
+or     [0x41]
+xor    [0x41]
+cp     [0x41]
+add a, [0, 0x41]
+adc a, [0, 0x41]
+sub    [0, 0x41]
+sbc a, [0, 0x41]
+and    [0, 0x41]
+or     [0, 0x41]
+xor    [0, 0x41]
+cp     [0, 0x41]`, code: []byte{
+			0xc6, 0x41, 0xce, 0x41, 0xd6, 0x41, 0xde, 0x41, 0xe6, 0x41, 0xf6, 0x41, 0xee, 0x41, 0xfe, 0x41, // 'A'
+			0xc6, 0x41, 0xce, 0x41, 0xd6, 0x41, 0xde, 0x41, 0xe6, 0x41, 0xf6, 0x41, 0xee, 0x41, 0xfe, 0x41, // '@' + 1
+			0xc6, 0x41, 0xce, 0x41, 0xd6, 0x41, 0xde, 0x41, 0xe6, 0x41, 0xf6, 0x41, 0xee, 0x41, 0xfe, 0x41, // [0x41]
+			0xc6, 0x41, 0xce, 0x41, 0xd6, 0x41, 0xde, 0x41, 0xe6, 0x41, 0xf6, 0x41, 0xee, 0x41, 0xfe, 0x41, // [0, 0x41]
+		}},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
 func TestInstructionError_JP_JR_DJNZ(t *testing.T) {
 	tests := []struct {
 		input string
@@ -698,7 +764,11 @@ func TestInstructionError_ADD8(t *testing.T) {
 		{input: `and (DE)`, err: errcode.EINDIRECT_REG},
 		{input: `and (IX+128)`, err: errcode.EINDIRECT_DISP_RANGE},
 		{input: `and (IY-129)`, err: errcode.EINDIRECT_DISP_RANGE},
-		{input: `and 'abc'`, err: errcode.EZ80_OP},
+		{input: `and 'abc'`, err: errcode.ESTR_TO_INT_LEN},
+		{input: `and ''`, err: errcode.ESTR_TO_INT_LEN},
+		{input: `and []`, err: errcode.EARRAY_TO_INT_LEN},
+		{input: `and [1,2,3]`, err: errcode.EARRAY_TO_INT_LEN},
+		{input: `and ['a']`, err: errcode.EARRAY_TO_INT_TYPE},
 	}
 
 	for tn, tt := range tests {

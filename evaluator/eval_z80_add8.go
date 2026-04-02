@@ -10,7 +10,7 @@ import (
 // 8 ビット演算命令
 // 本来 1 オペランド命令だが、演算対象が A レジスタなので、A を含む 2 オペランドの形式も許容する
 // ADD, ADC, SBC は evalZ80_ADD16 から呼び出される
-func (e *Evaluator) evalZ80_ADD8(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
+func (e *Evaluator) evalZ80_ADD8(stmt *parser.Z80Instruction, op1, argOp2 object.Object, env TEnv) object.Object {
 	var opcodes = map[int]byte{
 		parser.Z80_INST_ADD: 0x80,
 		parser.Z80_INST_ADC: 0x88,
@@ -44,7 +44,8 @@ func (e *Evaluator) evalZ80_ADD8(stmt *parser.Z80Instruction, op1, op2 object.Ob
 
 	code := &object.CodeObject{Code: []byte{opcodes[stmt.Opcode]}, TStates: [2]byte{4, 1}, Context: stmt.Context} // PUSH BC
 
-	switch op2 := op2.(type) {
+EVAL_AGAIN:
+	switch op2 := argOp2.(type) {
 	case *object.RefNotFoundObject:
 		e.Resolved = false
 		return op2
@@ -84,6 +85,20 @@ func (e *Evaluator) evalZ80_ADD8(stmt *parser.Z80Instruction, op1, op2 object.Ob
 		}
 		code.Code = []byte{code.Code[0], n}
 		return code
+
+	case *object.StringObject:
+		argOp2 = e.evalOneCharStringAsNumber(op2.Value, stmt.Context)
+		if isError(argOp2) {
+			return argOp2
+		}
+		goto EVAL_AGAIN
+
+	case *object.ArrayObject:
+		argOp2 = e.evalArrayToInt(op2.Values, stmt.Context)
+		if isError(argOp2) {
+			return argOp2
+		}
+		goto EVAL_AGAIN
 
 	// OP (HL),(IX+d),(IY+d)
 	case *object.RegIndirectObject:
