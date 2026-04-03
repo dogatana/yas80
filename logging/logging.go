@@ -203,6 +203,9 @@ func (l *Logger) BuildMessageMap() MessageMap {
 	mmap := map[string]*util.OrderedMap[int, []*Message]{}
 
 	for _, msg := range l.messages {
+		if msg.Context == nil { // 生成コード不安定などソースに紐づかないものはスキップ
+			continue
+		}
 		file := util.SlashPath(msg.Context.FileContent.Filename)
 		_, ok := mmap[file]
 		if !ok {
