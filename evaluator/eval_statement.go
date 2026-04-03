@@ -319,13 +319,19 @@ func (e *Evaluator) filterValidStatementForProc(bs *parser.BlockStatement) {
 
 // PROC BLOCK
 func (e *Evaluator) evalProcBlockStatement(stmt *parser.ProcBlockStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
-	pobj, ok := env.Get(stmt.Name)
+	obj, ok := env.Get(stmt.Name)
 	if !ok {
 		panic(fmt.Sprintf("no ProcEnv(%s)", stmt.Name))
 	}
+	if po, ok := obj.(*object.ProcObject); ok {
+		po.Addr = getLocationCounter(env) // proc アドレスを更新
+	} else {
+		panic(fmt.Sprintf("invalid ProcjObject(%s)", stmt.Name))
+	}
+
 	// ProcObject は Environment intterface を実装
 	bs := &parser.BlockStatement{Block: stmt.Block}
-	return e.evalStatement(bs, checkExitM, ectx, pobj.(object.Environment))
+	return e.evalStatement(bs, checkExitM, ectx, obj.(object.Environment))
 }
 
 // ORG
