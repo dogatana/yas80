@@ -172,7 +172,7 @@ func (e *Evaluator) ebfuncDefined(expr *parser.FuncCallExpression, env TEnv, ctx
 		return object.ERROR
 	} else {
 		_, ok = env.Get(id.Name)
-		return &object.NumberObject{Value: boolToInt(!ok), Context: ctx}
+		return &object.NumberObject{Value: boolToInt(ok), Context: ctx}
 	}
 }
 

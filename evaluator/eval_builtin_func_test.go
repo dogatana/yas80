@@ -323,3 +323,42 @@ func TestBuiltinFuncChr(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
+
+func TestBuiltinFuncDefined(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `const v = $defined(x)`, syms: []symValue{{"V", 0}}},
+		{input: `const v = $defined(v)`, syms: []symValue{{"V", 1}}},
+		{input: `const x = 1 \ const v = $defined(x)`, syms: []symValue{{"V", 1}}},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
