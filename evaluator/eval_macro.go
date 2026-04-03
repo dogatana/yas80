@@ -15,17 +15,20 @@ func (e *Evaluator) evalMacroStatement(stmt *parser.MacroStatement, env TEnv) ob
 		return object.ERROR
 	}
 	if obj, ok := env.Get(name); ok {
-		if obj.Type() == object.OBJ_MACRO {
-			e.logger.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), stmt.Context)
-		} else {
+		mo, ok := obj.(*object.MacroObject)
+		if !ok {
 			e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, name), stmt.Context)
+			return object.ERROR
 		}
-		return object.ERROR
+		if !stmt.Context.Equal(mo.Context) { // Context が同一でない場合は重複定義エラー
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), stmt.Context)
+		}
+		return mo
 	}
 	// 無効な文をチェック
 	e.filterValidStatementForMacro(stmt.Body)
 
-	obj := &object.MacroObject{Name: name, Params: stmt.Params, End: stmt.End, Body: stmt.Body}
+	obj := &object.MacroObject{Name: name, Params: stmt.Params, End: stmt.End, Body: stmt.Body, Context: stmt.Context}
 	env.Set(name, obj)
 	return obj // 形式上必要
 }

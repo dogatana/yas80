@@ -250,9 +250,10 @@ func (o *RefNotFoundObject) String() string {
 
 // proc - Object interface と Environ interface を実装する
 type ProcObject struct {
-	Name string
-	Addr int
-	Env  Environment
+	Name    string
+	Addr    int
+	Env     Environment
+	Context *filecontent.Context
 }
 
 // Object の実装
@@ -429,10 +430,11 @@ func (o *FunctionObject) String() string {
 
 // Macro
 type MacroObject struct {
-	Name   string
-	Params []string
-	End    int
-	Body   *parser.BlockStatement
+	Name    string
+	Params  []string
+	End     int
+	Body    *parser.BlockStatement
+	Context *filecontent.Context
 }
 
 func (o *MacroObject) Type() ObjectType { return OBJ_MACRO }
