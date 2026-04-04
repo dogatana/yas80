@@ -172,6 +172,12 @@ func TestLexString(t *testing.T) {
 		{`'abc\def'`, `abc\def`},
 		{`'abc\\def'`, `abc\def`},
 		{`'abc\\\def'`, `abc\\def`},
+		// raw string
+		{"`" + `abc"def` + "`", `abc"def`},
+		{"`" + `abc\'def` + "`", `abc\'def`},
+		{"`" + `abc\def` + "`", `abc\def`},
+		{"`" + `abc\\def` + "`", `abc\\def`},
+		{"`" + `abc\\\def` + "`", `abc\\\def`},
 	}
 
 	for tn, tt := range tests {

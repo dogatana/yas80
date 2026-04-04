@@ -206,8 +206,8 @@ LINE_CONT:
 		l.lctx.lineNumber++
 		return tok
 
-	case l.lctx.curChar == '"' || l.lctx.curChar == '\'':
-		// 文字列リテラル
+	case l.lctx.curChar == '"' || l.lctx.curChar == '\'' || l.lctx.curChar == '`':
+		// 文字列リテラル, raw string リテラル
 		s := l.readString(l.lctx.curChar)
 		if l.lctx.curChar != '\n' {
 			// ESTR_END_QUOTE の場合、nextChar すると EOL トークンを出力しない
@@ -550,7 +550,7 @@ func (l *Lexer) readString(quote rune) string {
 			l.logger.Error(errcode.ESTR_CTRL, l.lctx.toContext(index))
 			break
 		}
-		if ch == '\\' {
+		if quote != '`' && ch == '\\' { // raw string 以外はエスケープシーケンスを処理
 			ec, ok := escapeChars[l.peekChar()]
 			if ok {
 				ch = ec
@@ -562,6 +562,29 @@ func (l *Lexer) readString(quote rune) string {
 	return string(runes)
 }
 
+func (l *Lexer) readRawString() string {
+	runes := []rune{}
+
+	index := l.lctx.index
+	var ch rune
+	for {
+		l.nextChar()
+		ch = l.lctx.curChar
+		if ch == '`' {
+			break
+		}
+		if ch == '\n' {
+			l.logger.Error(errcode.ESTR_END_QUOTE, l.lctx.toContext(index))
+			break
+		}
+		if ch < ' ' {
+			l.logger.Error(errcode.ESTR_CTRL, l.lctx.toContext(index))
+			break
+		}
+		runes = append(runes, ch)
+	}
+	return string(runes)
+}
 func (l *Lexer) readWord() string {
 	startIndex := l.lctx.index - 1
 	for l.lctx.index < len(l.lctx.fileContent.Content) && l.isWordChar(rune(l.lctx.fileContent.Content[l.lctx.index])) {
