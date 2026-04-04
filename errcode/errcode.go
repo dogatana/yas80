@@ -192,7 +192,6 @@ const (
 
 	// BinWriter
 	EBW_OVERLAPPED = "ORG $%x と ORG $%x の範囲が重複"
-	EBW_NULL       = "コード生成なし"
 	EBW_WRITE      = "ファイル書込みエラー: %s"
 
 	// warning
@@ -201,10 +200,11 @@ const (
 	WROUND_ADDR = "数値 '%d(0x%x)' をアドレス範囲(0 - 5535)に丸めました"
 
 	WSCOPE_MACRO = "MACRO 内では無効"
-	WSCOPE_FUNC  = "FUNC 内では無効 %T"
+	WSCOPE_FUNC  = "FUNC 内では無効"
 	WSCOPE_PROC  = "PROC では無効"
 
 	WBW_LOAD_NAME = "Load name が ASCII 以外の文字を含んでいるので OUTPUT で代替"
+	WBW_NO_CODE   = "コード生成なし"
 
 	WEVAL_CODE_STABLE = "生成コードが安定していません。出力コードを確認してください"
 

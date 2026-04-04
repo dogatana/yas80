@@ -49,7 +49,8 @@ func (b *BinWriter) WriteBin(w io.Writer) bool {
 		return false
 	}
 	if len(b.segs) == 0 {
-		b.logger.Error(errcode.EBW_NULL, nil)
+		b.logger.Warning(errcode.WBW_NO_CODE, nil)
+		// fmt.Println(errcode.WBW_NO_CODE)
 		return false
 	}
 	b.write(w)

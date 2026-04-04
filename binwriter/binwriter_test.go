@@ -36,10 +36,6 @@ func TestBinWriterGapAndSortSegment(t *testing.T) {
 			input: `ld hl, $1234 \ org 1 \ ret`,
 			err:   errcode.EBW_OVERLAPPED,
 		},
-		{
-			input: ` `,
-			err:   errcode.EBW_NULL,
-		},
 	}
 
 	for tn, tt := range tests {

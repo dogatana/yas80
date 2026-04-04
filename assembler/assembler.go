@@ -80,8 +80,6 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 		parser.PrintNode(prog, 0)
 	}
 
-	// ログメッセージ表示
-	logger.Print()
 	if logger.ErrorCount() == 0 {
 		// 出力ファイル生成
 		if as.Verbose {
@@ -115,13 +113,12 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 			panic("no output format specified")
 		}
 
+		// コード生成に失敗した場合は出力しない
 		if !ok {
-			logger.Print()
-			os.Exit(1)
+			goto BREAK
 		}
 		if err := os.WriteFile(as.Output, buf.Bytes(), 0644); err != nil {
 			fmt.Println(err)
-			os.Exit(1)
 		}
 
 		// マップファイル出力
@@ -151,11 +148,18 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 		}
 	}
 
+BREAK:
+	// ログメッセージ表示
+	logger.Print()
+
 	// リストファイル出力
 	if as.LstFile == "" {
 		return
 	}
 
+	if as.Verbose {
+		fmt.Printf("# リストファイル出力 %s\n", as.LstFile)
+	}
 	mmap := logger.BuildMessageMap()
 	if as.ListDebug > 0 {
 		fmt.Println("-- log start")
