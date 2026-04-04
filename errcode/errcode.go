@@ -207,7 +207,4 @@ const (
 	WBW_NO_CODE   = "コード生成なし"
 
 	WEVAL_CODE_STABLE = "生成コードが安定していません。出力コードを確認してください"
-
-	// infromation
-	// ILABEL_LOCAL = "[I]ローカルラベルには ':' は不要"
 )
