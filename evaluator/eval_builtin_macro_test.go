@@ -103,6 +103,14 @@ func TestLogMessage(t *testing.T) {
 			err:   "66", // 0x41 + 1
 		},
 		{
+			input: `info hl`,
+			err:   "HL",
+		},
+		{
+			input: `info nz`,
+			err:   "NZ",
+		},
+		{
 			input: `error`,
 			err:   errcode.EEBMAC_ARG_COUNT,
 		},

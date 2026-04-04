@@ -158,6 +158,10 @@ func (e *Evaluator) ebMacroLogMessage(msgType int, stmt *parser.MacroCallStateme
 		msg = obj.Value // 文字列引数
 	case *object.NumberObject:
 		msg = fmt.Sprintf("%d", obj.Value) // 数値引数を文字列化
+	case *object.RegisterObject:
+		msg = parser.TokenLiteral(obj.Register) // レジスタ引数を文字列化
+	case *object.FlagObject:
+		msg = parser.TokenLiteral(obj.Flag) // フラグ引数を文字列化
 
 	case *object.RefNotFoundObject:
 		return obj // そのまま返す
