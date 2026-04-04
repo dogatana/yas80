@@ -151,11 +151,23 @@ func (e *Evaluator) ebMacroLogMessage(msgType int, stmt *parser.MacroCallStateme
 	}
 
 	var msg string
-	obj := e.evalMacroStringArg(stmt.Name, args[0], env, stmt.Context)
-	if obj, ok := obj.(*object.StringObject); !ok {
-		return obj
-	} else {
-		msg = obj.Value
+
+	obj := e.evalExpression(args[0], env, stmt.Context)
+	switch obj := obj.(type) {
+	case *object.StringObject:
+		msg = obj.Value // 文字列引数
+	case *object.NumberObject:
+		msg = fmt.Sprintf("%d", obj.Value) // 数値引数を文字列化
+
+	case *object.RefNotFoundObject:
+		return obj // そのまま返す
+
+	case *object.NullObject:
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_NULL, stmt.Name), stmt.Context)
+		return object.ERROR
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_VALUE, stmt.Name), stmt.Context)
+		return object.ERROR
 	}
 
 	switch msgType {

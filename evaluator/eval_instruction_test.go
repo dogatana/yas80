@@ -310,7 +310,7 @@ func TestInstructionError_LDAddrIndirect(t *testing.T) {
 	}
 }
 
-func testInstructionAdd8(t *testing.T) {
+func TestInstructionAdd8(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte

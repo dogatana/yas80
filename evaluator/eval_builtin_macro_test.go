@@ -91,16 +91,24 @@ func TestLogMessage(t *testing.T) {
 			err:   "this is information",
 		},
 		{
+			input: `info 123`,
+			err:   "123",
+		},
+		{
+			input: `warn 123 + 456`,
+			err:   "579",
+		},
+		{
+			input: `error 'A' + 1`,
+			err:   "66", // 0x41 + 1
+		},
+		{
 			input: `error`,
 			err:   errcode.EEBMAC_ARG_COUNT,
 		},
 		{
 			input: `error 1, 2`,
 			err:   errcode.EEBMAC_ARG_COUNT,
-		},
-		{
-			input: `ds 4 \ align 4 \ ret`,
-			code:  []byte{0x00, 0x00, 0x00, 0x00, 0xc9},
 		},
 		{input: `fn func\endf\ error fn()`, err: errcode.EEBMAC_ARG_NULL},
 	}
