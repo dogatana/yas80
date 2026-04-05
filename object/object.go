@@ -750,6 +750,8 @@ func lineOffset(obj Object) (int, int) {
 		return obj.Context.Line, obj.Context.Offset
 	case *ErrorObject:
 		return obj.Context.Line, obj.Context.Offset
+	case *ListControl:
+		return obj.Context.Line, obj.Context.Offset
 	default:
 		panic(fmt.Sprintf("unexpected object type: %T", obj))
 	}
