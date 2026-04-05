@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"slices"
 	"yas80/filecontent"
 	"yas80/internal/util"
 	"yas80/logging"
@@ -108,7 +109,10 @@ func (l *Lister) List(out io.Writer) {
 		var src string
 		var err error
 
-		for _, ln := range fb.LineObjects.Keys() {
+		// あらかじめ行番号をソートしておく
+		keys := fb.LineObjects.Keys()
+		slices.Sort(keys)
+		for _, ln := range keys {
 			// ln までソース表示
 			for lnum < ln {
 				src, err = fc.GetLine(lnum)
