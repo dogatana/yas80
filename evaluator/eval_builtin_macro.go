@@ -26,6 +26,8 @@ func (e *Evaluator) evalBuiltinMacro(stmt *parser.MacroCallStatement, env TEnv) 
 		return e.ebMacroIncBin(stmt, env), true
 	case "SETMAP":
 		return e.ebMacroSetMap(stmt, env), true
+	case "LIST":
+		return e.ebMacroList(stmt, env), true
 	}
 	return object.NULL, false
 
@@ -346,6 +348,27 @@ func (e *Evaluator) ebMacroSetMap(stmt *parser.MacroCallStatement, env TEnv) obj
 
 	atext := strings.ReplaceAll(fmt.Sprint(values), " ", ", ")
 	return &object.TextObject{Text: fmt.Sprintf("%q:%s", str, atext), Context: stmt.Context}
+}
+
+// list 制御 1/0
+func (e *Evaluator) ebMacroList(stmt *parser.MacroCallStatement, env TEnv) object.Object {
+	args := stmt.Args.Expressions
+
+	if len(args) != 1 {
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_COUNT, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+
+	obj := e.evalMacroNumberArg(stmt.Name, args[0], env, stmt.Context)
+	no, ok := obj.(*object.NumberObject)
+	if !ok {
+		return obj
+	}
+	if no.Value == 0 {
+		return &object.ListControl{Enabled: false, Context: stmt.Context}
+	} else {
+		return &object.ListControl{Enabled: true, Context: stmt.Context}
+	}
 }
 
 // マクロ引数を StringObject として評価

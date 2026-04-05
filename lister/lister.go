@@ -101,9 +101,12 @@ func (l *Lister) List(out io.Writer) {
 	var lnum int // ソース行番号
 	var fc *filecontent.FileContent
 
+	output := true
 	for _, fb := range l.fblocks {
 		// (1)ファイル名出力
-		fmt.Fprintf(w, "%s:\n", fb.Filename)
+		if output {
+			fmt.Fprintf(w, "%s:\n", fb.Filename)
+		}
 		lnum = fb.Line
 		fc = l.fcMap[fb.Filename]
 		var src string
@@ -115,6 +118,10 @@ func (l *Lister) List(out io.Writer) {
 		for _, ln := range keys {
 			// ln までソース表示
 			for lnum < ln {
+				if !output { // リスト出力 OFF ならすぐに抜ける
+					lnum = ln
+					break
+				}
 				src, err = fc.GetLine(lnum)
 				if err != nil {
 					panic(fmt.Sprintf("GetLine(%d)", lnum))
@@ -125,6 +132,14 @@ func (l *Lister) List(out io.Writer) {
 			// src, err = fc.GetLine(lnum)
 			objs, _ := fb.LineObjects.Get(ln)
 			for _, obj := range objs {
+				// list 制御処理
+				lc, ok := obj.(*object.ListControl)
+				if ok {
+					output = lc.Enabled
+				}
+				if !output {
+					continue
+				}
 				switch obj := obj.(type) {
 				case *object.CommentObject:
 					text := obj.Text

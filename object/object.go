@@ -40,8 +40,9 @@ const (
 	OBJ_FILE // 入力ファイル（include含む）変更通知用 Object
 	OBJ_COMMENT
 	OBJ_ARRAY
-	OBJ_ANON_LABELS // 匿名ラベルコレクション
-	OBJ_ANON_LABEL  // 匿名ラベル
+	OBJ_ANON_LABELS  // 匿名ラベルコレクション
+	OBJ_ANON_LABEL   // 匿名ラベル
+	OBJ_LIST_CONTROL // リスト出力制御
 )
 
 // 同一判定のため定数として定義
@@ -220,6 +221,21 @@ type EntryObject struct {
 
 func (o *EntryObject) Type() ObjectType { return OBJ_ENTRY }
 func (o *EntryObject) String() string   { return fmt.Sprintf("END %d\n", o.StartAddr) }
+
+// list control
+type ListControl struct {
+	Enabled bool
+	Context *filecontent.Context
+}
+
+func (o *ListControl) Type() ObjectType { return OBJ_LIST_CONTROL }
+func (o *ListControl) String() string {
+	if o.Enabled {
+		return "ListControl(Enabled)"
+	} else {
+		return "ListControl(Disabled)"
+	}
+}
 
 // code
 type CodeObject struct {
@@ -625,6 +641,14 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 			}
 
 		case *TextObject:
+			line := obj.Context.Line
+			if objs, ok := fb.LineObjects.Get(line); !ok {
+				fb.LineObjects.Set(line, []Object{obj})
+			} else {
+				objs = append(objs, obj)
+				fb.LineObjects.Set(line, objs)
+			}
+		case *ListControl:
 			line := obj.Context.Line
 			if objs, ok := fb.LineObjects.Get(line); !ok {
 				fb.LineObjects.Set(line, []Object{obj})
