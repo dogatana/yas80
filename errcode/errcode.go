@@ -96,6 +96,10 @@ const (
 
 	ER800 = "R800 専用命令のため利用不可"
 
+	// 匿名ラベル
+	EANON_LABEL_NOT_FOUND = "対応する @@ が定義されていない"
+	EANON_LABEL_REF_ONLY  = "%s は参照のみ可能"
+
 	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"
 	ESYM_CYCLIC = "シンボル %s の定義が循環参照を含む"
@@ -195,9 +199,9 @@ const (
 	EBW_WRITE      = "ファイル書込みエラー: %s"
 
 	// warning
-	WROUND_BYTE = "数値 '%d(0x%x)' をバイト範囲(-128 - 255)に丸めました"
-	WROUND_WORD = "数値 '%d(0x%x)' をワード範囲(-32768 - 65535)に丸めました"
-	WROUND_ADDR = "数値 '%d(0x%x)' をアドレス範囲(0 - 5535)に丸めました"
+	WROUND_BYTE = "数値 '%d(0x%x)' をバイト範囲(-128 - 255)に丸めた"
+	WROUND_WORD = "数値 '%d(0x%x)' をワード範囲(-32768 - 65535)に丸めた"
+	WROUND_ADDR = "数値 '%d(0x%x)' をアドレス範囲(0 - 5535)に丸めた"
 
 	WSCOPE_MACRO = "MACRO 内では無効"
 	WSCOPE_FUNC  = "FUNC 内では無効"
@@ -206,5 +210,5 @@ const (
 	WBW_LOAD_NAME = "Load name が ASCII 以外の文字を含んでいるので OUTPUT で代替"
 	WBW_NO_CODE   = "コード生成なし"
 
-	WEVAL_CODE_STABLE = "生成コードが安定していません。出力コードを確認してください"
+	WEVAL_CODE_STABLE = "生成コードが不安定。出力コードを確認すること"
 )

@@ -40,7 +40,8 @@ const (
 	OBJ_FILE // 入力ファイル（include含む）変更通知用 Object
 	OBJ_COMMENT
 	OBJ_ARRAY
-	OBJ_ANON_LABELS // 匿名ラベル
+	OBJ_ANON_LABELS // 匿名ラベルコレクション
+	OBJ_ANON_LABEL  // 匿名ラベル
 )
 
 // 同一判定のため定数として定義
@@ -129,8 +130,9 @@ type AnonLabel struct {
 	Line     int
 }
 
-func (ao *AnonLabel) String() string {
-	return fmt.Sprintf("@@(%s:%d)", ao.Filename, ao.Line)
+func (o *AnonLabel) Type() ObjectType { return OBJ_ANON_LABEL }
+func (o *AnonLabel) String() string {
+	return fmt.Sprintf("@@(%s:%d)", o.Filename, o.Line)
 }
 
 // 匿名ラベル Object
@@ -144,7 +146,7 @@ func (o *AnonLabelsObject) String() string {
 	for _, l := range o.Labels {
 		strs = append(strs, l.String())
 	}
-	return fmt.Sprintf("@@[(%s]", strings.Join(strs, ", "))
+	return fmt.Sprintf("@@[(%s]", strings.Join(strs, ","))
 }
 func (o *AnonLabelsObject) Add(label *AnonLabel) {
 	for i, l := range o.Labels {

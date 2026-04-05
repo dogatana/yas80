@@ -235,6 +235,42 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 	}
 }
 
+// 匿名ラベルを検索
+func (e *Evaluator) findAnonLabel(name string, env TEnv, ctx TContext) object.Object {
+	obj, ok := env.Get("@@")
+	if !ok {
+		return &object.RefNotFoundObject{}
+	}
+	labels := obj.(*object.AnonLabelsObject).Labels
+	switch name {
+	case "@B":
+		// 逆順検索
+		for i := len(labels) - 1; i >= 0; i-- {
+			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line < ctx.Line {
+				return labels[i]
+			}
+		}
+		// 逆順なので必ず見つかるはずで、そうでないならエラー
+		e.logger.Error(errcode.EANON_LABEL_NOT_FOUND, ctx)
+		return object.ERROR
+	case "@F":
+		// 順方向検索
+		for i := 0; i < len(labels); i++ {
+			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line > ctx.Line {
+				return labels[i]
+			}
+		}
+		// 定義前の検索の場合、見つからない場合はあるが、Evaluator.Stage2 ならエラーとする
+		if e.Stage2 {
+			e.logger.Error(errcode.EANON_LABEL_NOT_FOUND, ctx)
+			return object.ERROR
+		}
+		return &object.RefNotFoundObject{}
+	default:
+		panic(fmt.Sprintf("invalid anonymous label name: %s", name))
+	}
+}
+
 // parser.Expression -> parser.Ident - >parser.Label を評価・環境登録し object.SymbolObject を返す
 func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) object.Object {
 	id, ok := expr.(*parser.Ident)

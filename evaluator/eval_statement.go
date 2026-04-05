@@ -409,6 +409,11 @@ func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 	} else if name == "@@" {
 		return e.evalAnonymouseLable(label, env)
 	}
+	// @F @B は参照のみ可能で定義不可
+	if name == "@F" || name == "@B" {
+		e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_REF_ONLY, name), label.Context)
+		return object.ERROR
+	}
 
 	switch {
 	case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
