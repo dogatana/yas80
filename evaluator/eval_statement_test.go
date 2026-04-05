@@ -180,6 +180,83 @@ func TestProcStatement(t *testing.T) {
 	}
 }
 
+func TestProcAnonLabel(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{input: `
+			nop
+			name	proc
+					jp @f
+			@@:		nop
+					jp @b
+					jp @f
+			@@:		ret
+					jp @b
+					endp
+			`,
+			code: []byte{
+				0,
+				0xc3, 0x04, 0,
+				0,
+				0xc3, 0x04, 0,
+				0xc3, 0x0b, 0,
+				0xc9,
+				0xc3, 0x0b, 0,
+			},
+			syms: []symValue{{"NAME", 1}},
+		},
+		{input: `
+			name proc
+			@@: nop
+				jp @f
+				endp
+			`,
+			err: errcode.EANON_LABEL_NOT_FOUND,
+		},
+		{input: `
+			name proc
+				jp @b
+			@@: nop
+				endp
+			`,
+			err: errcode.EANON_LABEL_NOT_FOUND,
+		},
+		{input: `@@: nop`, err: errcode.ESCOPE_PROC},
+		{input: `@f: nop`, err: errcode.EANON_LABEL_REF_ONLY},
+		{input: `@b: nop`, err: errcode.EANON_LABEL_REF_ONLY},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
 func TestEnumStatement(t *testing.T) {
 	tests := []struct {
 		input string
