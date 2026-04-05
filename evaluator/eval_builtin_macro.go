@@ -182,7 +182,7 @@ func (e *Evaluator) ebMacroLogMessage(msgType int, stmt *parser.MacroCallStateme
 	case logging.Info:
 		e.logger.Info(msg, stmt.Context)
 	}
-	return object.NULL // エラーではないので NULL を返す
+	return &object.TextObject{Text: "", Context: stmt.Context}
 }
 
 // incbin "file", [start, [length]]
