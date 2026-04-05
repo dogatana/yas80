@@ -126,7 +126,7 @@ func (l *Logger) PrintSyntaxError() {
 	for _, m := range l.messages {
 		if m.Context == nil {
 			// unexpected EOF など、ファイルコンテキストがないエラーはファイル名を表示しない
-			// fmt.Printf("%s %s\n", msgTypeName[m.Type], m.Text)
+			fmt.Printf("%s %s\n", msgTypeName[m.Type], m.Text)
 			continue
 		}
 		if m.Context.FileContent.Filename != file {
