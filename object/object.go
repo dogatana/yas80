@@ -40,6 +40,7 @@ const (
 	OBJ_FILE // 入力ファイル（include含む）変更通知用 Object
 	OBJ_COMMENT
 	OBJ_ARRAY
+	OBJ_ANON_LABELS // 匿名ラベル
 )
 
 // 同一判定のため定数として定義
@@ -119,6 +120,41 @@ type TextObject struct {
 func (o *TextObject) Type() ObjectType { return OBJ_TEXT }
 func (o *TextObject) String() string {
 	return fmt.Sprintf("TEXT %s", o.Text)
+}
+
+// 匿名ラベル
+type AnonLabel struct {
+	Addr     int
+	Filename string
+	Line     int
+}
+
+func (ao *AnonLabel) String() string {
+	return fmt.Sprintf("@@(%s:%d)", ao.Filename, ao.Line)
+}
+
+// 匿名ラベル Object
+type AnonLabelsObject struct {
+	Labels []*AnonLabel
+}
+
+func (o *AnonLabelsObject) Type() ObjectType { return OBJ_ANON_LABELS }
+func (o *AnonLabelsObject) String() string {
+	strs := []string{}
+	for _, l := range o.Labels {
+		strs = append(strs, l.String())
+	}
+	return fmt.Sprintf("@@[(%s]", strings.Join(strs, ", "))
+}
+func (o *AnonLabelsObject) Add(label *AnonLabel) {
+	for i, l := range o.Labels {
+		if l.Filename == label.Filename && l.Line == label.Line {
+			o.Labels[i].Addr = label.Addr // アドレスを更新して戻る
+			return
+		}
+	}
+	// 未登録なら追加
+	o.Labels = append(o.Labels, label)
 }
 
 // file

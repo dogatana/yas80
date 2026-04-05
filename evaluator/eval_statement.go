@@ -402,6 +402,14 @@ func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env TEnv) ob
 func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 	name := label.Name
 
+	// 匿名ラベル処理
+	if name == "@@" && object.OuterEnvType(env) != object.ENV_PROC {
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)
+		return object.ERROR
+	} else if name == "@@" {
+		return e.evalAnonymouseLable(label, env)
+	}
+
 	switch {
 	case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
 		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)
@@ -439,6 +447,30 @@ func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 	// 値を更新
 	sym.Value.(*object.NumberObject).Value = getLocationCounter(env)
 	return sym
+}
+
+// 匿名ラベル処理
+func (e *Evaluator) evalAnonymouseLable(label *parser.Label, env TEnv) object.Object {
+	// 匿名ラベル情報
+	pos := &object.AnonLabel{
+		Addr:     getLocationCounter(env),
+		Filename: label.Context.FileContent.Filename,
+		Line:     label.Context.Line}
+
+	obj, ok := env.Get("@@")
+	if !ok {
+		// 環境にないなら新規登録
+		obj := &object.AnonLabelsObject{Labels: []*object.AnonLabel{pos}}
+		env.Set("@@", obj)
+		return obj
+	}
+	// 追加
+	lo, ok := obj.(*object.AnonLabelsObject)
+	if !ok {
+		panic(fmt.Sprintf("invalid AnonLabelsObject: %#v", obj))
+	}
+	lo.Add(pos)
+	return lo
 }
 
 // const / equ 文

@@ -250,10 +250,12 @@ func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) 
 // parser.Ident -> parser.Label 変換(exprToLabel から呼ばれる)
 func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 	l := &parser.Label{Name: id.Name, LabelType: parser.NODE_LABEL, Context: id.Context}
-	switch id.Name[0] {
-	case '.':
+	switch {
+	case id.Name == "@@" || id.Name == "@F" || id.Name == "@B":
+		l.LabelType = parser.NODE_ANON_LABEL
+	case id.Name[0] == '.':
 		l.LabelType = parser.NODE_LOCAL_LABEL
-	case '@':
+	case id.Name[0] == '@':
 		l.LabelType = parser.NODE_AT_LABEL
 	}
 	return l
