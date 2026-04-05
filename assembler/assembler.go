@@ -288,16 +288,13 @@ func (as *Assembler) evalStage2(eval *evaluator.Evaluator, pass int, logger *log
 
 // 環境初期化
 func (as *Assembler) initEnvironment(env object.Environment) {
-	// システム変数初期値設定
+	// オプションに従いシステム変数更新
+	// 初期設定は object.setupSystemVariables で実行
 	env.Set("$FILL", &object.NumberObject{Value: as.Fill})
-	env.Set("$CMAP_ERR", &object.NumberObject{Value: -1})
-	env.Set("$CMAP_THRU", &object.NumberObject{Value: -2})
 
-	v := 0
 	if as.R800 {
-		v = 1
+		env.Set("$R800", &object.NumberObject{Value: 1})
 	}
-	env.Set("$R800", &object.NumberObject{Value: v})
 
 	// -D オプションで定義した定数を NumberObject として環境に登録
 	for name, value := range as.Constants {
