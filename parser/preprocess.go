@@ -165,7 +165,7 @@ func getName(expr Expression) string {
 	case *StringLiteral:
 		return expr.Value
 	case *Ident:
-		if expr.IdentType == IDENT || expr.IdentType == LOCAL_IDENT {
+		if expr.IdentType == IDENT || expr.IdentType == LOCAL_IDENT || expr.IdentType == ANON_IDENT {
 			return expr.Name
 		}
 		panic(fmt.Sprintf("unexpected Ident %s", expr.Name))
