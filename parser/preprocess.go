@@ -49,7 +49,7 @@ func PreProrocess(prog *BlockStatement) *BlockStatement {
 		}
 		// label あり
 		name := getName(label)
-		if !inProc && name[0] != '.' {
+		if !inProc && name[0] != '.' && name != "@@" {
 			// proc + stmt
 			pblock = []Statement{
 				&ProcStatement{Name: label, Block: &BlockStatement{Block: []Statement{}}, Context: stmt.GetContext()},
@@ -61,7 +61,7 @@ func PreProrocess(prog *BlockStatement) *BlockStatement {
 			block = append(block, stmt)
 			continue
 		}
-		if inProc && name[0] == '.' {
+		if inProc && (name[0] == '.' || name == "@@") {
 			hasLocal = true
 			pblock = append(pblock, stmt)
 			continue
