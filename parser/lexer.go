@@ -563,29 +563,6 @@ func (l *Lexer) readString(quote rune) string {
 	return string(runes)
 }
 
-func (l *Lexer) readRawString() string {
-	runes := []rune{}
-
-	index := l.lctx.index
-	var ch rune
-	for {
-		l.nextChar()
-		ch = l.lctx.curChar
-		if ch == '`' {
-			break
-		}
-		if ch == '\n' {
-			l.logger.Error(errcode.ESTR_END_QUOTE, l.lctx.toContext(index))
-			break
-		}
-		if ch < ' ' {
-			l.logger.Error(errcode.ESTR_CTRL, l.lctx.toContext(index))
-			break
-		}
-		runes = append(runes, ch)
-	}
-	return string(runes)
-}
 func (l *Lexer) readWord() string {
 	startIndex := l.lctx.index - 1
 	for l.lctx.index < len(l.lctx.fileContent.Content) && l.isWordChar(rune(l.lctx.fileContent.Content[l.lctx.index])) {
