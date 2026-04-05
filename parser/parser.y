@@ -43,6 +43,7 @@ var _ = __yyfmt__.Sprintf
 %token<token> IDENT 
 %token<token> AT_IDENT    // @def 
 %token<token> LOCAL_IDENT // .def 
+%token<token> ANON_IDENT // @@ @f @b
 %token<token> DOT_IDENT   // abc.def ラベル, enum
 
 %token<token> Z80_INST0 Z80_INST1 Z80_INST2 Z80_REG8 Z80_REG16 Z80_FLAG
@@ -150,7 +151,8 @@ statement   : EOL { $$ = nil }
 			| error EOL
 			{
 				// ここで対処する前に syntax error が出力されているので改めてエラー出力はしない
-				// yylex.Error(__yyfmt__.Sprintf("[statement error] %s", $1.String()), $2.Context)
+				// lx.Error(__yyfmt__.Sprintf("[statement error] %s), $2.$1.String()), Context)
+				fmt.Printf("error EOL")
 			}
 			;
 
@@ -431,6 +433,7 @@ datastore	: DS expr
 ident		: IDENT		 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT, Context: $1.Context}}
 			| LOCAL_IDENT	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT, Context: $1.Context}}
 			| AT_IDENT		{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: AT_IDENT, Context: $1.Context}}
+			| ANON_IDENT	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: ANON_IDENT, Context: $1.Context}}
 			;
 
 ident_expr	: ident			{ $$ = $1 }

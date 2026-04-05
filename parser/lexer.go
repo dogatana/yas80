@@ -249,13 +249,6 @@ LINE_CONT:
 		l.nextChar()
 		return tok
 
-	// case l.lctx.curChar == '$' && l.isXDigit(l.peekChar()):
-	// 	// 16進数リテラル($)
-	// 	l.nextChar()
-	// 	literal = "$" + l.readHexString()
-	// 	l.nextChar()
-	// 	return Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
-
 	case l.lctx.curChar == '$' && l.isWordChar(l.peekChar()):
 		// システム識別子($)
 		l.nextChar()
@@ -405,9 +398,17 @@ LINE_CONT:
 		l.nextChar()
 		literal += l.readWord()
 		l.nextChar()
-		if prefix == '@' {
+
+		us := strings.ToUpper(literal)
+		switch {
+		case us == "@@" || us == "@F" || us == "@B":
+			// 匿名
+			return Token{TokenType: ANON_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+		case prefix == '@':
+			// MACRO ローカル
 			return Token{TokenType: AT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
-		} else {
+		default:
+			// グローバル, PROC ローカル
 			return Token{TokenType: LOCAL_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 		}
 
