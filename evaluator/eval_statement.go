@@ -403,14 +403,16 @@ func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 	name := label.Name
 
 	// 匿名ラベル処理
-	if name == "@@" && object.OuterEnvType(env) != object.ENV_PROC {
-		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)
-		return object.ERROR
-	} else if name == "@@" {
-		return e.evalAnonymouseLable(label, env)
-	}
-	// @F @B は参照のみ可能で定義不可
-	if name == "@F" || name == "@B" {
+	if label.LabelType == parser.NODE_ANON_LABEL {
+		if object.OuterEnvType(env) != object.ENV_PROC {
+			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)
+			return object.ERROR
+		}
+		name = label.Name
+		if e.isAnonDef(name) {
+			return e.evalAnonymouseLable(label, env)
+		}
+		// @F @B @nF @nB
 		e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_REF_ONLY, name), label.Context)
 		return object.ERROR
 	}
@@ -462,11 +464,11 @@ func (e *Evaluator) evalAnonymouseLable(label *parser.Label, env TEnv) object.Ob
 		Filename: label.Context.FileContent.Filename,
 		Line:     label.Context.Line}
 
-	obj, ok := env.Get("@@")
+	obj, ok := env.Get(label.Name)
 	if !ok {
 		// 環境にないなら新規登録
-		obj := &object.AnonLabelsObject{Labels: []*object.AnonLabel{pos}}
-		env.Set("@@", obj)
+		obj := &object.AnonLabelsObject{Name: label.Name, Labels: []*object.AnonLabel{pos}}
+		env.Set(label.Name, obj)
 		return obj
 	}
 	// 追加

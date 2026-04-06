@@ -226,8 +226,8 @@ func TestProcAnonLabel(t *testing.T) {
 			err: errcode.EANON_LABEL_NOT_FOUND,
 		},
 		{input: `@@: nop`, err: errcode.ESCOPE_PROC},
-		{input: `@f: nop`, err: errcode.EANON_LABEL_REF_ONLY},
-		{input: `@b: nop`, err: errcode.EANON_LABEL_REF_ONLY},
+		{input: `@f: nop`, err: errcode.ESCOPE_PROC},
+		{input: `@b: nop`, err: errcode.ESCOPE_PROC},
 	}
 
 	for tn, tt := range tests {

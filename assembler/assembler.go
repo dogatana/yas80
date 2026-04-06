@@ -232,7 +232,7 @@ func (as *Assembler) evalStage1(eval *evaluator.Evaluator, pass int, logger *log
 	}
 	var obj object.Object
 
-	for i := range 256 {
+	for i := range eval.Stage1MaxCount {
 		pass++
 
 		eval.Resolved = true
@@ -272,7 +272,7 @@ func (as *Assembler) evalStage2(eval *evaluator.Evaluator, pass int, logger *log
 	code := object.CollectCode(obj.(*object.BlockObject).Block)
 
 	eval.CodeStable = false
-	for i := 0; i < 16 && !eval.CodeStable; i++ {
+	for i := 0; i < eval.Stage2MaxCount && !eval.CodeStable; i++ {
 		pass++
 		env.Set("$PASS", &object.NumberObject{Value: pass})
 		obj = eval.EvalProgram(prog, pass, env)

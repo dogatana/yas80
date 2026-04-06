@@ -99,8 +99,9 @@ const (
 	ER800 = "R800 専用命令のため利用不可"
 
 	// 匿名ラベル
-	EANON_LABEL_NOT_FOUND = "対応する @@ が定義されていない"
+	EANON_LABEL_NOT_FOUND = "%s に対応する匿名シンボルが未定義"
 	EANON_LABEL_REF_ONLY  = "%s は参照のみ可能"
+	EANON_LABEL_DEF_ONLY  = "%s は定義のみ可能"
 
 	// symbol
 	ESYM_UNDEF  = "シンボル %s は未定義"

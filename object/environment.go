@@ -122,7 +122,9 @@ func (e *ProcEnvironment) Get(name string) (Object, bool) {
 	return obj, ok
 }
 func (e *ProcEnvironment) Set(name string, obj Object) Object {
-	if name[0] == '.' || name == "@@" { // Proc Local
+	if name[0] == '.' || name == "@@" { // .local  @@
+		e.store[name] = obj
+	} else if len(name) == 2 && name[0] == '@' && '1' <= name[1] && name[1] <= '9' { // @1-@9
 		e.store[name] = obj
 	} else {
 		e.outer.Set(name, obj)

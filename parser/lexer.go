@@ -401,7 +401,7 @@ LINE_CONT:
 
 		us := strings.ToUpper(literal)
 		switch {
-		case us == "@@" || us == "@F" || us == "@B":
+		case l.isAnonSymbol(us):
 			// 匿名
 			return Token{TokenType: ANON_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 		case prefix == '@':
@@ -652,6 +652,21 @@ func (l *Lexer) isAlpha(ch rune) bool {
 
 func (l *Lexer) isWordChar(ch rune) bool {
 	return l.isDigit(ch) || l.isAlpha(ch)
+}
+
+// 匿名シンボルかどうか
+func (l *Lexer) isAnonSymbol(s string) bool {
+	if s == "@@" || s == "@F" || s == "@B" {
+		return true
+	}
+	if s[0] == '@' && '1' <= s[1] && s[1] <= '9' {
+		if len(s) == 2 {
+			return true
+		} else if len(s) == 3 && s[2] == 'F' || s[2] == 'B' {
+			return true
+		}
+	}
+	return false
 }
 
 func (l *Lexer) charSize(ch byte) int {

@@ -33,8 +33,13 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	// 識別子
 	case *parser.Ident:
 		name := node.Name
+
 		// 匿名ラベルの参照を解決
-		if name == "@F" || name == "@B" {
+		if node.IdentType == parser.ANON_IDENT {
+			if e.isAnonDef(name) { // @@ @1-@9
+				e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_DEF_ONLY, name), node.Context)
+				return object.ERROR
+			}
 			obj := e.findAnonLabel(name, env, node.Context)
 			switch obj := obj.(type) {
 			case *object.ErrorObject, *object.RefNotFoundObject:

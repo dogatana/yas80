@@ -138,6 +138,7 @@ func (o *AnonLabel) String() string {
 
 // 匿名ラベル Object
 type AnonLabelsObject struct {
+	Name   string
 	Labels []*AnonLabel
 }
 

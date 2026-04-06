@@ -7,17 +7,22 @@ import (
 )
 
 type Evaluator struct {
-	logger     *logging.Logger
-	Debug      int
-	Resolved   bool
-	CodeStable bool
-	Stage2     bool // eval staget 2
-	Counter    func() int
-	incDirs    []string
+	logger         *logging.Logger
+	Debug          int
+	Resolved       bool
+	CodeStable     bool
+	Stage1MaxCount int  // eval stage 1 の最大評価回数 256回
+	Stage2MaxCount int  // eval stage 2 の最大評価回数 16回
+	Stage2         bool // eval stage 2 評価中
+	Counter        func() int
+	incDirs        []string
 }
 
 func New(logger *logging.Logger, incDirs []string) *Evaluator {
-	return &Evaluator{logger: logger, Resolved: true, Counter: makeCounter(0), incDirs: incDirs}
+	e := &Evaluator{logger: logger, Resolved: true, Counter: makeCounter(0), incDirs: incDirs}
+	e.Stage1MaxCount = 256
+	e.Stage2MaxCount = 16
+	return e
 }
 
 // start + 1 から順次生成するカウンタ関数を返す
