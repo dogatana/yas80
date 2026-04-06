@@ -30,6 +30,8 @@ func TestParseNumberLiteral(t *testing.T) {
 		{`_ = 1111b`, 15},
 		{`_ = 0101B`, 5},
 		{`_ = 1010_0101B`, 0xa5},
+		// 15-
+		{`_ = 123d`, 123},
 	}
 
 	for tn, tt := range tests {
@@ -51,6 +53,7 @@ func TestParseNumberLiteralError(t *testing.T) {
 		{input: `_ = 0x`, err: errcode.ENUMBER_LITERAL},
 		{input: `_ = 0b`, err: errcode.ENUMBER_LITERAL},
 		{input: `_ = 0o`, err: errcode.ENUMBER_LITERAL},
+		{input: `_ = 12ad`, err: errcode.ENUMBER_LITERAL},
 		{input: `_ = 0xG`, err: errcode.ESYNTAX},
 		{input: `_ = 0bG`, err: errcode.ESYNTAX},
 		{input: `_ = 0oG`, err: errcode.ESYNTAX},

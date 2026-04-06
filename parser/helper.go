@@ -25,6 +25,8 @@ func parseInt(s string) (int64, error) {
 		return strconv.ParseInt(str[0:length-1], 16, 0)
 	case length >= 2 && (str[length-1] == 'B'):
 		return strconv.ParseInt(str[0:length-1], 2, 0)
+	case length >= 2 && (str[length-1] == 'D'):
+		return strconv.ParseInt(str[0:length-1], 10, 0)
 	default:
 		return strconv.ParseInt(str, 0, 0)
 	}
