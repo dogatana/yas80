@@ -57,15 +57,17 @@ func (as *Assembler) Run(fn func() *filecontent.FileContent) {
 
 	// eval stage 1 終了状況
 	if as.Verbose {
-		fmt.Printf("eval %d times, %d errors, eval.Resolved: %v\n", pass, logger.ErrorCount(), eval.Resolved)
+		fmt.Printf("last pass %d, %d errors, eval.Resolved: %v\n", pass, logger.ErrorCount(), eval.Resolved)
 	}
 
 	if logger.ErrorCount() == 0 && eval.Resolved {
 		// JR のオフセット検査
 		eval.Stage2 = true
+		env.Set("$STAGE2", &object.NumberObject{Value: 1})
+
 		obj, pass = as.evalStage2(eval, pass, logger, prog, env, obj)
 		if as.Verbose {
-			fmt.Printf("eval %d times, eval.codeStable: %v\n", pass, eval.CodeStable)
+			fmt.Printf("last pass %d, eval.codeStable: %v\n", pass, eval.CodeStable)
 		}
 		if !eval.CodeStable {
 			logger.Warning(errcode.WEVAL_CODE_STABLE, nil)

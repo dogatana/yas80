@@ -63,6 +63,7 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*o
 	code := object.CollectCode(obj.(*object.BlockObject).Block)
 	eval.CodeStable = false
 	eval.Stage2 = true
+	env.Set("$STAGE2", &object.NumberObject{Value: 1})
 	for i := 0; i < 256 && !eval.CodeStable; i++ {
 		pass++
 		obj = eval.EvalProgram(prog, pass, env)

@@ -47,6 +47,7 @@ func setupSystemVariables(env Environment) {
 	env.Set("$CMAP_THRU", &NumberObject{Value: -2})
 
 	env.Set("$R800", v0)
+	env.Set("$STAGE2", v0)
 }
 
 // for Proc
