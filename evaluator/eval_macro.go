@@ -254,12 +254,17 @@ func (e *Evaluator) evalMacroBlockStatement(node parser.Statement, checkExitM bo
 			goto BREAK
 
 		case *parser.MacroCallStatement:
+			// 組み込みマクロは直接実行
+			// ユーザ定義マクロは展開しMacroBlockStatementとしてから実行
 			obj := e.evalStatement(node, true, ectx, env)
 			if isError(obj) {
 				continue
 			}
 			if obj.Type() != object.OBJ_NODES {
-				panic("not nodes object")
+				// 組み込みマクロの結果は単一 Object
+				stmts = append(stmts, stmt)
+				objects = append(objects, obj)
+				continue
 			}
 			bs := &parser.MacroBlockStatement{Name: stmt.Name, Block: obj.(*object.StatemetnsObject).Statements, Context: stmt.Context}
 

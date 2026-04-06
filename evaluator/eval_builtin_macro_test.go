@@ -353,3 +353,64 @@ func TestSetMap(t *testing.T) {
 		testCodeResult(t, tn, tt.code, prog)
 	}
 }
+
+func TestBuiltinMacroInUserMacro(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{
+			input: `
+				tm macro arg
+				  var @value = arg
+				  info @value
+				endm
+				tm "this is a message"
+				`,
+			err: "this is a message",
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// check system variables
+		for _, s := range tt.syms {
+			num, ok := e.getNumberFromEnv(s.name, env)
+			if !ok {
+				t.Errorf("[%d] %s not found in env", tn, s.name)
+			}
+			if num.Value != s.expected {
+				t.Errorf("[%d] %s is not %v. bot %v", tn, s.name, s.expected, num.Value)
+			}
+		}
+
+		// error, warning, information
+		if tt.err != "" {
+			// errcode.*
+			if strings.Contains(tt.err, "%") {
+				testutil.TestLogMessage(t, tn, tt.err, e.logger)
+				continue
+			}
+			// error, warn, info マクロ
+			msgs := util.Map(logger.GetMessages(), func(m *logging.Message) string { return m.String() })
+			text := strings.Join(msgs, "\n")
+			if !strings.Contains(text, tt.err) {
+				t.Errorf("[%d] no %q", tn, tt.err)
+			}
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+	}
+}

@@ -9,6 +9,22 @@ import (
 	"yas80/parser"
 )
 
+// 組み込みマクロかどうか
+func isBuiltinMacroName(name string) bool {
+	builtinMacroNames := map[string]bool{
+		"ENTRY":    true,
+		"ALIGN":    true,
+		"ERROR":    true,
+		"WARN":     true,
+		"INFO":     true,
+		"INCBIN":   true,
+		"BINCLUDE": true,
+		"SETMAP":   true,
+		"LIST":     true,
+	}
+	return builtinMacroNames[name]
+}
+
 // 組み込みマクロの実行
 func (e *Evaluator) evalBuiltinMacro(stmt *parser.MacroCallStatement, env TEnv) (object.Object, bool) {
 	switch stmt.Name {

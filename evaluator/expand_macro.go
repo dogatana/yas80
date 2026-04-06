@@ -25,9 +25,15 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
-			obj := e.evalMacroCallStatement(news, checkExitM, ectx, env)
-			if isError(obj) {
+			// 組み込みマクロならそのまま stmts へ追加
+			if isBuiltinMacroName(news.Name) {
+				stmts = append(stmts, news)
 				continue
+			}
+
+			obj := e.evalMacroCallStatement(news, checkExitM, ectx, env)
+			if isError(obj) || isRefNotFound((obj)) {
+				return obj
 			}
 			mbs := obj.(*object.StatementObject).Statement.(*parser.MacroBlockStatement)
 			// mbs.ReplaceContext(*ectx) // struct(not *struct)
