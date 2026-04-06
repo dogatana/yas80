@@ -275,6 +275,7 @@ func (as *Assembler) evalStage2(eval *evaluator.Evaluator, pass int, logger *log
 		env.Set("$PASS", &object.NumberObject{Value: pass})
 		obj = eval.EvalProgram(prog, pass, env)
 		if logger.ErrorCount() > 0 {
+			eval.CodeStable = true // コード不安定が原因ではないため true としておく
 			break
 		}
 		newCode := object.CollectCode(obj.(*object.BlockObject).Block)
