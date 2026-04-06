@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"bytes"
 	"os"
 	"strings"
 	"testing"
@@ -412,5 +413,52 @@ func TestBuiltinMacroInUserMacro(t *testing.T) {
 
 		// code
 		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+func TestBuiltinMacroCheck256(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{
+			input: `base ds 256, 0 \ check256 base`,
+			code:  bytes.Repeat([]byte{0}, 256),
+		},
+		{
+			input: `base ds 257, 0 \ check256 base`,
+			code:  bytes.Repeat([]byte{0}, 257),
+			err:   errcode.ECHECK256_ERROR,
+		},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+		if tt.input == "" {
+			continue
+		}
 	}
 }

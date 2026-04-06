@@ -21,6 +21,7 @@ func isBuiltinMacroName(name string) bool {
 		"BINCLUDE": true,
 		"SETMAP":   true,
 		"LIST":     true,
+		"CHECK256": true,
 	}
 	return builtinMacroNames[name]
 }
@@ -44,6 +45,8 @@ func (e *Evaluator) evalBuiltinMacro(stmt *parser.MacroCallStatement, env TEnv) 
 		return e.ebMacroSetMap(stmt, env), true
 	case "LIST":
 		return e.ebMacroList(stmt, env), true
+	case "CHECK256":
+		return e.ebMacroCheck256(stmt, env), true
 	}
 	return object.NULL, false
 
@@ -385,6 +388,37 @@ func (e *Evaluator) ebMacroList(stmt *parser.MacroCallStatement, env TEnv) objec
 	} else {
 		return &object.ListControl{Enabled: true, Context: stmt.Context}
 	}
+}
+
+// check256 base
+func (e *Evaluator) ebMacroCheck256(stmt *parser.MacroCallStatement, env TEnv) object.Object {
+	args := stmt.Args.Expressions
+
+	if len(args) != 1 {
+		e.logger.Error(fmt.Sprintf(errcode.EEBMAC_ARG_COUNT, stmt.Name), stmt.Context)
+		return object.ERROR
+	}
+
+	// アドレスに関係するので Stage2 で実行する
+	if !e.Stage2 {
+		return object.NULL
+	}
+
+	// base
+	obj := e.evalMacroNumberArg(stmt.Name, args[0], env, stmt.Context)
+	no, ok := obj.(*object.NumberObject)
+	if !ok {
+		return obj
+	}
+	base := no.Value
+
+	// $
+	addr := getLocationCounter(env)
+
+	if addr > (base&0xff00)+0x0100 {
+		e.logger.Error(fmt.Sprintf(errcode.ECHECK256_ERROR, base, addr), stmt.Context)
+	}
+	return object.NULL
 }
 
 // マクロ引数を StringObject として評価

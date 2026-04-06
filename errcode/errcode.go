@@ -30,6 +30,8 @@ const (
 	ESETMAP_NOT_A_CHAR  = "文字列の文字数が 1 でない"
 	ESETMAP_ARRAY_EMPTY = "空の配列が指定された"
 
+	ECHECK256_ERROR = "256 バイト境界をまたいでいる。基準 0x%x, $ 0x%x"
+
 	EADDRESS_OVERFLOW = "アドレスオバーフロー $%x"
 
 	ESTR_TO_INT_LEN = "文字数が %d のため数値に変換できない"
