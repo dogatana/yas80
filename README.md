@@ -97,7 +97,7 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものと�
 | tools80      |          10.500 |              0.105 |
 | ailz80asm    |          48.457 |              0.485 |
 
-![min](https://github.com/dogatana/yas80/performance/min.svg)
+![min](https://raw.githubusercontent.com/dogatana/yas80/main/performance/min.svg)
 
 #### max.asm 100回
 
@@ -109,7 +109,7 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものと�
 | tools80      |          30.844 |              0.308 |
 | ailz80asm    |          98.436 |              0.984 |
 
-![max](https://github.com/dogatana/yas80/performance/max.svg)
+![max](https://raw.githubusercontent.com/dogatana/yas80/main/performance/max.svg)
 
 #### label.asm 100回
 
@@ -121,7 +121,7 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものと�
 | tools80      |         249.643 |              2.496 |
 | ailz80asm    |         685.302 |              6.853 |
 
-![label](https://github.com/dogatana/yas80/performance/label.svg)
+![label](https://raw.githubusercontent.com/dogatana/yas80/main/performance/label.svg)
 
 
 ## 参考
