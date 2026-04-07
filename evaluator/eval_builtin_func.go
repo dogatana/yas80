@@ -23,8 +23,10 @@ func (e *Evaluator) evalBuiltinFunction(expr *parser.FuncCallExpression, env TEn
 		return e.ebfuncFormat(expr, env, ctx)
 	case "$ISARY", "$ISARRAY":
 		return e.ebfuncIsArray(expr, env, ctx)
-	case "$CHR":
+	case "$CHR": // 非公開 $CODE に変更するか？
 		return e.ebfuncChr(expr, env, ctx)
+	case "$STR":
+		return e.ebfuncStr(expr, env, ctx)
 	case "$DEFINED":
 		return e.ebfuncDefined(expr, env, ctx)
 	default:
@@ -286,4 +288,18 @@ func (e *Evaluator) ebfuncChr(expr *parser.FuncCallExpression, env TEnv, ctx TCo
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_COUNT, expr.Name), ctx)
 		return object.ERROR
 	}
+}
+
+// $str(obj) -> string
+func (e *Evaluator) ebfuncStr(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+	args := expr.Args.Expressions
+
+	if len(args) != 1 {
+		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_COUNT, expr.Name), ctx)
+		return object.ERROR
+	}
+
+	obj := e.evalExpression(args[0], env, ctx)
+
+	return &object.StringObject{Value: obj.String(), Context: ctx}
 }
