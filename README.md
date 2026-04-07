@@ -59,20 +59,22 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものと�
 またアセンブラのシンボル管理処理に負荷をかける（かもしれない）という観点で、
 各行にラベルを付加したものも使用しています。
 
-結果は下にありますが、やはりCPUバイナリを直接生成するものが速く、
+結果は下にありますが、CPUバイナリを直接実行するものが速く、
 この傾向は label.asm で顕著に表れています。
-中では z80as は非常に高速です。
+label.asm は単にラベルを登録するだけのものですが、負荷が高くなっているようです。
+
+この中では z80as は非常に高速です。
 
 
 ###  計測対象アセンブラ
 
-| アセンブラ    | バージョン                | サイズ     | 備考            |  
-|  --           | --                        | --:        | --              | 
-| yas80.exe     | 0.4.0                     |  3,693,568 |                 | 
-| z80as.exe     | 0.12                      |    172,032 |                 | 
-| z80asm.exe    | 2.4                       | 39,447,620 | MSVCRT.dll 依存 |
-| tools80.jar   | Release 6.48 (Ver. 6.6.66)|    186,306 | 要 java.exe     |
-| ailz80asm.exe | 1.0.31.0                  | 68,322,858 | 複数 dll 依存（おそらく埋め込み） | 
+| アセンブラ                         | バージョン                | サイズ     | 備考            |  
+|  --                                | --                        | --:        | --              | 
+| yas80.exe                          | 0.4.0                     |  3,693,0563|                 | 
+| z80as.exe (紅茶羊羹氏)             | 0.12                      |    172,032 |                 | 
+| z80asm.exe (z88dk)                 | 2.4                       | 39,447,620 | MSVCRT.dll 依存 |
+| tools80.jar (HAL 8999氏)           | Release 6.48 (Ver. 6.6.66)|    186,306 | 要 java.exe     |
+| AILZ80ASM.exe (Mitsuhito Ishino氏) | 1.0.31.0                  | 68,322,858 | 複数 dll 依存（おそらく埋め込み） | 
 
 ### 計測対象ソース
 
@@ -89,42 +91,50 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものと�
 
 ### 計測結果
 
-#### min.asm 100回
+#### min.asm 10 回
 
-|アセンブラ    | 総実行時間（秒）| 平均実行時間（秒） |
-| --           |       --:       |                --: |
-| yas80        |           0.781 |              0.008 |
-| z80as        |           0.428 |              0.004 | 
-| z80asm(z88dk)|           1.024 |              0.010 |
-| tools80      |          10.500 |              0.105 |
-| ailz80asm    |          48.457 |              0.485 |
+|アセンブラ | 平均実行時間（秒） |
+| --        |                --: |
+| yas80     |              0.007 |
+| z80as     |              0.004 |
+| z80asm    |              0.010 |
+| tools80   |              0.104 |
+| AILZ80ASM |              0.480 |
 
 ![min](https://raw.githubusercontent.com/dogatana/yas80/main/performance/min.asm.svg)
 
-#### max.asm 100回
+#### max.asm 10 回
 
-|アセンブラ    | 総実行時間（秒）| 平均実行時間（秒） |
-| --           |       --:       |                --: |
-| yas80        |           4.120 |              0.041 |
-| z80as        |           1.414 |              0.014 | 
-| z80asm(z88dk)|          14.196 |              0.142 |
-| tools80      |          30.844 |              0.308 |
-| ailz80asm    |          98.436 |              0.984 |
+|アセンブラ | 平均実行時間（秒） |
+| --        |                --: |
+| yas80     |              0.041 |
+| z80as     |              0.014 |
+| z80asm    |              0.144 |
+| tools80   |              0.308 |
+| AILZ80ASM |              0.941 |
 
 ![max](https://raw.githubusercontent.com/dogatana/yas80/main/performance/max.asm.svg)
 
-#### label.asm 100回
+#### label.asm 10 回
 
-|アセンブラ    | 総実行時間（秒）| 平均実行時間（秒） |
-| --           |       --:       |                --: |
-| yas80        |           6.243 |              0.062 |
-| z80as        |           2.550 |              0.025 | 
-| z80asm(z88dk)|          27.537 |              0.275 |
-| tools80      |         249.643 |              2.496 |
-| ailz80asm    |         685.302 |              6.853 |
+|アセンブラ | 平均実行時間（秒） |
+| --        |                --: |
+| yas80     |              0.082 |
+| z80as     |              0.026 |
+| z80asm    |              0.272 |
+| tools80   |              2.433 |
+| AILZ80ASM |              6.186 |
 
 ![label](https://raw.githubusercontent.com/dogatana/yas80/main/performance/label.asm.svg)
 
+#### ZMA v1.0.19 （参考値）
+
+ZMA v1.0.19 (t.hara氏)だと z80asm と tools80 の間にあたる 0.868 秒でした。<br>
+ZMA は
+- 書式が一般の Z80 アセンブラと異なる
+- 対応 Z80 公開命令が更に絞り込まれている（模様）
+
+ため専用ソース（書式変更、対応命令をコメント化）での計測となっています。
 
 ## 参考
 
@@ -140,4 +150,5 @@ yas80 作成にあたり、次の書籍、サイトを参考にさせていた�
 - z80as - [We Love MZ-700](http://www.maroon.dti.ne.jp/youkan/mz700/index.html)
 - z80asm - [z88dk](https://z88dk.org/site/)
 - z80as - [OUT of STANDARD [PC-8001]](http://upd780c1.g1.xrea.com/pc-8001/index.html#UTL) 
-- ailz80asm  https://github.com/AILight/AILZ80ASM
+- AILZ80ASM  https://github.com/AILight/AILZ80ASM
+- zma https://github.com/hra1129/zma

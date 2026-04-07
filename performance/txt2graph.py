@@ -17,38 +17,43 @@ colors = [
     "cornflowerblue",
 ]
 
-def main(file:str):
+
+def main(file: str):
     result = read_data(file)
     result_to_graph(result)
+    # for MD table
     for file, v in result.items():
         print(file)
+        print("|アセンブラ | 平均実行時間（秒）|")
+        print("| --        |       --:         |")
         for asm, value in v.items():
-            print(f"{asm:20s}{value}")
+            asm = asm.replace("java", "tools80").replace("ailz80asm", "AILZ80ASM")
+            print(f"| {asm:9s} | {value:17.3f} |")
         print()
-
 
 
 def read_data(file):
     result = {}
     with open(file) as f:
-        count = 0
+        count = 0  # noqa:F841
         asm = file = ""
         for line in f:
             m = re.search(r'measure.py (\d+) "([^"]+)"\s*$', line)
             if m is not None:
                 cols = m.group(2).split()
-                count = int(m.group(1))
+                count = int(m.group(1))  # noqa:F841
                 asm = cols[0]
                 file = cols[-1]
                 continue
             m = re.match(r"total (\S+).*?(\S+)$", line)
             if m is not None:
-                total = float(m.group(1))
+                total = float(m.group(1))  # noqa:F841
                 ave = float(m.group(2))
 
                 v = result.setdefault(file, dict())
                 v.setdefault(asm, ave)
     return result
+
 
 def result_to_graph(result):
     for file, v in result.items():
@@ -56,8 +61,9 @@ def result_to_graph(result):
         # values.reverse()
         build_graph(file, values)
 
+
 def build_graph(file, values):
-    fig = plt.figure(figsize=(9, 4), dpi=100)  # 1000 x 400
+    _ = plt.figure(figsize=(9, 4), dpi=100)  # 1000 x 400
     plt.barh(labels, values, 0.4, color=colors)
     plt.gca().invert_yaxis()
 
@@ -74,6 +80,7 @@ def build_graph(file, values):
     # plt.grid(axis="x")
 
     plt.savefig(f"{file}.svg")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

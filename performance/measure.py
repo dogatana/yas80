@@ -1,4 +1,4 @@
-""" 
+"""
 アセンブル時間の計測
 count 1 - 100
 cmd コマンドライン文字列(単一文字列)
@@ -28,7 +28,7 @@ def main(count, cmd):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("usage: measure.py count cmd")
+        print("usage: python measure.py count cmd")
         exit()
     count = int(sys.argv[1])
     if count <= 0:
