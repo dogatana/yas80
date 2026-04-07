@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"slices"
 	"testing"
 	"yas80/logging"
 	"yas80/object"
@@ -21,6 +22,16 @@ func TestAutoProc(t *testing.T) {
 				{"A1.L1", 1},
 				{"A1.L2", 2},
 				{"A2", 3},
+			},
+		},
+		{`a1: nop \ .l1: nop \ .l2: nop \ @@: nop \ @1: nop \ a2: nop`,
+			[]byte{0, 0, 0, 0, 0, 0},
+			[]string{"A1"},
+			[]symValue{
+				{"A1", 0},
+				{"A1.L1", 1},
+				{"A1.L2", 2},
+				{"A2", 5},
 			},
 		},
 		{`a1: \ nop \ .l1: \ nop \ .l2: \ nop \ a2: \ nop`,
@@ -72,17 +83,33 @@ func TestAutoProc(t *testing.T) {
 
 		testCodeResult(t, tn, tt.code, prog)
 
-		for _, name := range tt.names {
-			obj, ok := env.Get(name)
-			if !ok {
-				t.Errorf("[%d] not %s in env", tn, name)
-			} else if obj, ok := obj.(*object.ProcObject); !ok {
-				t.Errorf("[%d] not ProcObject. got %T", tn, obj)
-			}
+		proc_names, procs := collectProc(env)
+		if len(procs) != len(tt.names) {
+			t.Errorf("[%d] expect %d procs. got %d", tn, len(tt.names), len(procs))
+			continue
+		}
+		names := slices.Clone(tt.names)
+		slices.Sort(names)
+		slices.Sort(proc_names)
+		if !slices.Equal(names, proc_names) {
+			t.Errorf("[%d] expect %v procs. got %v", tn, names, proc_names)
+			continue
 		}
 		getter := func(name string) (*object.SymbolObject, bool) {
 			return e.getSymbolFromEnv(name, env)
 		}
 		testSymValues(t, tn, tt.syms, getter)
 	}
+}
+
+func collectProc(env object.Environment) ([]string, map[string]*object.ProcObject) {
+	procs := map[string]*object.ProcObject{}
+	keys := []string{}
+	for name, obj := range env.Store() {
+		if obj, ok := obj.(*object.ProcObject); ok {
+			procs[name] = obj
+			keys = append(keys, name)
+		}
+	}
+	return keys, procs
 }
