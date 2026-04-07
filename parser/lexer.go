@@ -391,27 +391,41 @@ LINE_CONT:
 		l.nextChar()
 		return tok
 
-	case l.lctx.curChar == '@' || l.lctx.curChar == '.':
-		// AT_IDENT, LOCAL_IDENT
-		prefix := l.lctx.curChar
-		literal = string(l.lctx.curChar)
+	case l.lctx.curChar == '.':
+		// LOCAL_IDENT
 		l.nextChar()
-		literal += l.readWord()
+		literal = "." + l.readWord()
 		l.nextChar()
+		return Token{TokenType: LOCAL_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 
-		us := strings.ToUpper(literal)
+	case l.lctx.curChar == '@':
+		// AT_IDENT, ANON_IDENT
+		ch := l.peekChar()
 		switch {
-		case util.IsAnonDef(us) || util.IsAnonRef(us):
-			// 匿名
+		case '0' <= ch && ch <= '9':
+			l.nextChar()
+			literal := "@" + string(ch)
+			ch = l.peekChar()
+			if ch == 'f' || ch == 'F' || ch == 'b' || ch == 'B' {
+				literal += string(ch)
+				l.nextChar()
+			}
+			l.nextChar()
 			return Token{TokenType: ANON_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
-		case prefix == '@':
-			// MACRO ローカル
-			return Token{TokenType: AT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
-		default:
-			// グローバル, PROC ローカル
-			return Token{TokenType: LOCAL_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+		case ch == '@':
+			l.nextChar()
+			l.nextChar()
+			return Token{TokenType: ANON_IDENT, Literal: "@@", Context: l.lctx.toContext(l.start)}
 		}
 
+		literal = l.readWord()
+		l.nextChar()
+
+		if util.IsAnonRef(literal) {
+			return Token{TokenType: ANON_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+		}
+		// MACRO ローカル
+		return Token{TokenType: AT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 	default:
 		literal = string(l.lctx.curChar)
 		tok = Token{TokenType: INVALID, Literal: literal, Context: l.lctx.toContext(l.start)}
@@ -652,21 +666,6 @@ func (l *Lexer) isAlpha(ch rune) bool {
 
 func (l *Lexer) isWordChar(ch rune) bool {
 	return l.isDigit(ch) || l.isAlpha(ch)
-}
-
-// 匿名シンボルかどうか
-func (l *Lexer) isAnonSymbol(s string) bool {
-	if s == "@@" || s == "@F" || s == "@B" {
-		return true
-	}
-	if s[0] == '@' && '1' <= s[1] && s[1] <= '9' {
-		if len(s) == 2 {
-			return true
-		} else if len(s) == 3 && s[2] == 'F' || s[2] == 'B' {
-			return true
-		}
-	}
-	return false
 }
 
 func (l *Lexer) charSize(ch byte) int {

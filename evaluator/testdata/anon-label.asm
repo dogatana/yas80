@@ -1,5 +1,6 @@
 name	proc
 @@:ei
+@0:ei
 @1:ei
 @2:ei
 @3:ei
@@ -10,6 +11,7 @@ name	proc
 @8:ei
 @9:ei
         jp @f
+	jp @0f
 	jp @1f
 	jp @2f
 	jp @3f
@@ -20,6 +22,7 @@ name	proc
 	jp @8f
 	jp @9f
         jp @b
+	jp @0b
 	jp @1b
 	jp @2b
 	jp @3b
@@ -30,6 +33,7 @@ name	proc
 	jp @8b
 	jp @9b
 @@:ret
+@0:ret
 @1:ret
 @2:ret
 @3:ret

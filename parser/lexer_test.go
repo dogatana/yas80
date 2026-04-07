@@ -83,7 +83,7 @@ func TestLexSymbols(t *testing.T) {
 }
 
 func TestLexAnonSymbols(t *testing.T) {
-	input := "@@ @f @b @1 @2 @3 @4 @5 @6 @7 @8 @9 @1f @2f @3f @4f @5f @6f @7f @8f @9f @1b @2b @3b @4b @5b @6b @7b @8b @9b"
+	input := "@@ @f @b @0 @1 @2 @3 @4 @5 @6 @7 @8 @9 @0f @1f @2f @3f @4f @5f @6f @7f @8f @9f @0b @1b @2b @3b @4b @5b @6b @7b @8b @9b"
 	expected := strings.Split(input, " ")
 
 	l := newLexerForTest(input)
