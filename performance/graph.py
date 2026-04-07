@@ -54,7 +54,7 @@ for src, values in data.items():
     # グリッドを表示
     # plt.grid(axis="x")
 
-    plt.savefig(f"{src}.png")
+    plt.savefig(f"{src}.svg")
 
     # グラフを表示
     # plt.show()
