@@ -312,42 +312,11 @@ func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) 
 	return e.evalLabel(label, env)
 }
 
-// 定義用匿名ラベル
-func (e *Evaluator) isAnonDef(name string) bool {
-	names := map[string]bool{
-		"@@": true,
-		"@1": true,
-		"@2": true,
-		"@3": true,
-		"@4": true,
-		"@5": true,
-		"@6": true,
-		"@7": true,
-		"@8": true,
-		"@9": true,
-	}
-	return names[name]
-}
-
-// 参照用匿名ラベル
-func (e *Evaluator) isAnonRef(name string) bool {
-	if name[0] != '@' {
-		return false
-	}
-	if len(name) == 2 && (name[1] == 'F' || name[1] == 'B') {
-		return true
-	}
-	if len(name) == 3 && '1' <= name[1] && name[1] <= '9' && (name[2] == 'F' || name[2] == 'B') {
-		return true
-	}
-	return false
-}
-
 // parser.Ident -> parser.Label 変換(exprToLabel から呼ばれる)
 func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 	l := &parser.Label{Name: id.Name, LabelType: parser.NODE_LABEL, Context: id.Context}
 	switch {
-	case e.isAnonDef(id.Name) || e.isAnonRef(id.Name):
+	case util.IsAnonDef(id.Name) || util.IsAnonRef(id.Name):
 		l.LabelType = parser.NODE_ANON_LABEL
 	case id.Name[0] == '.':
 		l.LabelType = parser.NODE_LOCAL_LABEL

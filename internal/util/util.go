@@ -208,3 +208,34 @@ func PrintStructFields(v any) {
 		}
 	}
 }
+
+// 定義用匿名ラベル
+func IsAnonDef(name string) bool {
+	names := map[string]bool{
+		"@@": true,
+		"@1": true,
+		"@2": true,
+		"@3": true,
+		"@4": true,
+		"@5": true,
+		"@6": true,
+		"@7": true,
+		"@8": true,
+		"@9": true,
+	}
+	return names[name]
+}
+
+// 参照用匿名ラベル
+func IsAnonRef(name string) bool {
+	if name[0] != '@' {
+		return false
+	}
+	if len(name) == 2 && (name[1] == 'F' || name[1] == 'B') {
+		return true
+	}
+	if len(name) == 3 && '1' <= name[1] && name[1] <= '9' && (name[2] == 'F' || name[2] == 'B') {
+		return true
+	}
+	return false
+}

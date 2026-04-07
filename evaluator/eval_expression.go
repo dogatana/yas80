@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 	"yas80/errcode"
+	"yas80/internal/util"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -36,7 +37,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 
 		// 匿名ラベルの参照を解決
 		if node.IdentType == parser.ANON_IDENT {
-			if e.isAnonDef(name) { // @@ @1-@9
+			if util.IsAnonDef(name) { // @@ @1-@9
 				e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_DEF_ONLY, name), node.Context)
 				return object.ERROR
 			}

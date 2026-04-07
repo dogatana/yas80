@@ -401,7 +401,7 @@ LINE_CONT:
 
 		us := strings.ToUpper(literal)
 		switch {
-		case l.isAnonSymbol(us):
+		case util.IsAnonDef(us) || util.IsAnonRef(us):
 			// 匿名
 			return Token{TokenType: ANON_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
 		case prefix == '@':

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"yas80/errcode"
+	"yas80/internal/util"
 	"yas80/object"
 	"yas80/parser"
 )
@@ -409,7 +410,7 @@ func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 			return object.ERROR
 		}
 		name = label.Name
-		if e.isAnonDef(name) {
+		if util.IsAnonDef(name) {
 			return e.evalAnonymouseLable(label, env)
 		}
 		// @F @B @nF @nB
