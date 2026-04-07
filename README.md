@@ -60,13 +60,15 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものと�
 各行にラベルを付加したものも使用しています。
 
 結果は下にありますが、やはりCPUバイナリを直接生成するものが速く、
-中でも z80as は非常に高速です。
+この傾向は label.asm で顕著に表れています。
+中では z80as は非常に高速です。
+
 
 ###  計測対象アセンブラ
 
 | アセンブラ    | バージョン                | サイズ     | 備考            |  
 |  --           | --                        | --:        | --              | 
-| yas80.exe     | 0.4.0 (prototype)         |  3,693,568 |                 | 
+| yas80.exe     | 0.4.0                     |  3,693,568 |                 | 
 | z80as.exe     | 0.12                      |    172,032 |                 | 
 | z80asm.exe    | 2.4                       | 39,447,620 | MSVCRT.dll 依存 |
 | tools80.jar   | Release 6.48 (Ver. 6.6.66)|    186,306 | 要 java.exe     |
@@ -97,7 +99,7 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものと�
 | tools80      |          10.500 |              0.105 |
 | ailz80asm    |          48.457 |              0.485 |
 
-![min](https://raw.githubusercontent.com/dogatana/yas80/main/performance/min.svg)
+![min](https://raw.githubusercontent.com/dogatana/yas80/main/performance/min.asm.svg)
 
 #### max.asm 100回
 
@@ -109,7 +111,7 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものと�
 | tools80      |          30.844 |              0.308 |
 | ailz80asm    |          98.436 |              0.984 |
 
-![max](https://raw.githubusercontent.com/dogatana/yas80/main/performance/max.svg)
+![max](https://raw.githubusercontent.com/dogatana/yas80/main/performance/max.asm.svg)
 
 #### label.asm 100回
 
@@ -121,7 +123,7 @@ Z80 公開命令の範囲でアセンブル時間の比較を行ったものと�
 | tools80      |         249.643 |              2.496 |
 | ailz80asm    |         685.302 |              6.853 |
 
-![label](https://raw.githubusercontent.com/dogatana/yas80/main/performance/label.svg)
+![label](https://raw.githubusercontent.com/dogatana/yas80/main/performance/label.asm.svg)
 
 
 ## 参考
