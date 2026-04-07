@@ -180,7 +180,8 @@ func TestProcStatement(t *testing.T) {
 	}
 }
 
-func TestProcAnonLabel(t *testing.T) {
+// エラーのみ正常系は evaluator_test.TestAssembleFile で確認
+func TestProcAnonLabelError(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -188,46 +189,83 @@ func TestProcAnonLabel(t *testing.T) {
 		err   string
 	}{
 		{input: `
-			nop
-			name	proc
-					jp @f
-			@@:		nop
-					jp @b
-					jp @f
-			@@:		ret
-					jp @b
-					endp
+			name proc
+				jp @f
+			endp
 			`,
-			code: []byte{
-				0,
-				0xc3, 0x04, 0,
-				0,
-				0xc3, 0x04, 0,
-				0xc3, 0x0b, 0,
-				0xc9,
-				0xc3, 0x0b, 0,
-			},
-			syms: []symValue{{"NAME", 1}},
+			err: errcode.EANON_LABEL_NOT_FOUND,
 		},
 		{input: `
 			name proc
-			@@: nop
-				jp @f
-				endp
+				jp @1f
+			endp
+			`,
+			err: errcode.EANON_LABEL_NOT_FOUND,
+		},
+		{input: `
+			name proc
+				jp @9f
+			endp
 			`,
 			err: errcode.EANON_LABEL_NOT_FOUND,
 		},
 		{input: `
 			name proc
 				jp @b
-			@@: nop
-				endp
+			endp
 			`,
 			err: errcode.EANON_LABEL_NOT_FOUND,
 		},
+		{input: `
+			name proc
+				jp @2b
+			endp
+			`,
+			err: errcode.EANON_LABEL_NOT_FOUND,
+		},
+		{input: `
+			name proc
+				jp @8b
+			endp
+			`,
+			err: errcode.EANON_LABEL_NOT_FOUND,
+		},
+		{input: `
+			name proc
+				jp @@
+			endp
+			`,
+			err: errcode.EANON_LABEL_DEF_ONLY,
+		},
+		{input: `
+			name proc
+				jp @1
+			endp
+			`,
+			err: errcode.EANON_LABEL_DEF_ONLY,
+		},
+		{input: `
+			name proc
+			@f: nop
+			endp
+			`,
+			err: errcode.EANON_LABEL_REF_ONLY,
+		},
+		{input: `
+			name proc
+			@1b: nop
+			endp
+			`,
+			err: errcode.EANON_LABEL_REF_ONLY,
+		},
+
 		{input: `@@: nop`, err: errcode.ESCOPE_PROC},
 		{input: `@f: nop`, err: errcode.ESCOPE_PROC},
 		{input: `@b: nop`, err: errcode.ESCOPE_PROC},
+		{input: `@1: nop`, err: errcode.ESCOPE_PROC},
+		{input: `@9: nop`, err: errcode.ESCOPE_PROC},
+		{input: `@2f: nop`, err: errcode.ESCOPE_PROC},
+		{input: `@8b: nop`, err: errcode.ESCOPE_PROC},
 	}
 
 	for tn, tt := range tests {

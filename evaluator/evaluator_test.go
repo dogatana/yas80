@@ -31,6 +31,8 @@ func TestAssembleFile(t *testing.T) {
 		{input: "zilog"},   // 公開命令
 		{input: "zilog-a"}, // SUB r 等を SUB A, r の揺らぎを許容
 		{input: "ixy-hl"},  // IXH, IXL, IYH, IYL 非公開命令。R800 では公開命令
+
+		{input: "anon-label"}, // 匿名シンボル
 	}
 
 	for tn, tt := range tests {
