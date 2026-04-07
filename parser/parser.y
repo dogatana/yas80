@@ -152,7 +152,6 @@ statement   : EOL { $$ = nil }
 			{
 				// ここで対処する前に syntax error が出力されているので改めてエラー出力はしない
 				// lx.Error(__yyfmt__.Sprintf("[statement error] %s), $2.$1.String()), Context)
-				fmt.Printf("error EOL")
 			}
 			;
 
