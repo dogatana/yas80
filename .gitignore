@@ -44,3 +44,5 @@ performance/zma.*
 !README.md
 !lister/testdata/*.txt
 
+# Added by goreleaser init:
+dist/
