@@ -82,6 +82,24 @@ func TestLexSymbols(t *testing.T) {
 	testInputEnd(t, -1, l)
 }
 
+func TestLexAnonSymbols(t *testing.T) {
+	input := "@@ @f @b @1 @2 @3 @4 @5 @6 @7 @8 @9 @1f @2f @3f @4f @5f @6f @7f @8f @9f @1b @2b @3b @4b @5b @6b @7b @8b @9b"
+	expected := strings.Split(input, " ")
+
+	l := newLexerForTest(input)
+
+	for tn, s := range expected {
+		tok := l.NextToken()
+		if tok.TokenType != ANON_IDENT {
+			t.Errorf("[%d] expected Token.TokenType %s. got %s", tn, TokenLiteral(ANON_IDENT), tok.String())
+		}
+		if tok.Literal != s {
+			t.Errorf("[%d] expected Token.Literal %q. got %s", tn, s, tok.String())
+		}
+	}
+	testInputEnd(t, -1, l)
+}
+
 // 空白入力、コメントのみの入力のテスト(最後に EOL, EOFが返ること)
 func TestLexBlankInput(t *testing.T) {
 	tests := []struct {
