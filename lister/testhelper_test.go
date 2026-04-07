@@ -21,19 +21,15 @@ func evalFile(filename string, logger *logging.Logger, env object.Environment) (
 	}
 	obj, _ := evalProg(prog, logger, env)
 
-	for k := range lexer.FcMap {
-		fmt.Printf("file: %s\n", k)
-	}
+	// for k := range lexer.FcMap {
+	// 	fmt.Printf("file: %s\n", k)
+	// }
+
 	lister := New(false, prog, obj, lexer.FcMap, logger.BuildMessageMap(), 0) // listDebug = 0
 
 	var buf bytes.Buffer
 	lister.List(&buf)
 	return buf.Bytes(), nil
-
-	// bw := binwriter.New(obj, 0, logger)
-	// var buf bytes.Buffer
-	// ok := bw.Write(&buf)
-	// return buf.Bytes(), ok
 }
 
 func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env object.Environment) (*object.BlockObject, *evaluator.Evaluator) {
