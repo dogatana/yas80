@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"yas80/internal/util"
 )
 
 func PreProrocess(prog *BlockStatement) *BlockStatement {
@@ -49,7 +50,7 @@ func PreProrocess(prog *BlockStatement) *BlockStatement {
 		}
 		// label あり
 		name := getName(label)
-		if !inProc && name[0] != '.' && name != "@@" {
+		if !inProc && name[0] != '.' && !util.IsAnonDef(name) {
 			// proc + stmt
 			pblock = []Statement{
 				&ProcStatement{Name: label, Block: &BlockStatement{Block: []Statement{}}, Context: stmt.GetContext()},
@@ -61,7 +62,7 @@ func PreProrocess(prog *BlockStatement) *BlockStatement {
 			block = append(block, stmt)
 			continue
 		}
-		if inProc && (name[0] == '.' || name == "@@") {
+		if inProc && (name[0] == '.' || util.IsAnonDef(name)) {
 			hasLocal = true
 			pblock = append(pblock, stmt)
 			continue
