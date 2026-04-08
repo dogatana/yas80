@@ -18,7 +18,6 @@ Z80 用アセンブラは既にいくつか利用可能ですが、
 ## 動作環境
 
 Go のクロスコンパイル機能を利用し次表の環境で利用可能です。
-それぞれ [Releases](https://github.com/dogatana/yad80/releases) から取得してください。
 ただしこちらで確認しているのは windows - amd64 のみです。
 
 | goos    | garch        |
@@ -26,6 +25,18 @@ Go のクロスコンパイル機能を利用し次表の環境で利用可能�
 | windows | amd64        |
 | linux   | amd64        |
 | darwin  | amd64, arm64 |
+
+## インストール
+
+[Releases](https://github.com/dogatana/yad80/releases) からダウンロード、解凍してください。
+
+## ソースからのビルド
+
+```
+git clone https://github.com/dogatana/yas80.git
+cd yas80
+go build
+```
 
 ## 主な特長
 
