@@ -29,9 +29,9 @@ venv/
 doc/
 port/
 
-parser/rules.go
-parser/parser.go
-internal/errcodenames/errcode_names.go
+#parser/rules.go
+#parser/parser.go
+# internal/errcodenames/errcode_names.go
 performance/*.bin
 performance/*.o
 performance/zma.*
@@ -42,6 +42,7 @@ performance/zma.*
 
 *.md
 !README.md
+!CHANGELOG.md
 !lister/testdata/*.txt
 
 # Added by goreleaser init:

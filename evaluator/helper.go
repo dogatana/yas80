@@ -236,16 +236,6 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 	}
 }
 
-// pass を取得
-func (e *Evaluator) getPass(env TEnv) int {
-	obj, ok := env.Get("$PASS")
-	if !ok {
-		panic("no $PASS in env")
-	}
-	no := obj.(*object.NumberObject)
-	return no.Value
-}
-
 // 参照用匿名ラベルを検索  呼ばれる前に isAnonRef なのはチェック済み
 func (e *Evaluator) findAnonLabel(name string, env TEnv, ctx TContext) object.Object {
 	var def string
