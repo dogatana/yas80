@@ -83,6 +83,7 @@ func TestLexSymbols(t *testing.T) {
 	testInputEnd(t, -1, l)
 }
 
+// 匿名シンボル
 func TestLexAnonSymbols(t *testing.T) {
 	input := "@@ @f @b @0 @1 @2 @3 @4 @5 @6 @7 @8 @9 @0f @1f @2f @3f @4f @5f @6f @7f @8f @9f @0b @1b @2b @3b @4b @5b @6b @7b @8b @9b"
 	expected := strings.Split(input, " ")
@@ -99,6 +100,34 @@ func TestLexAnonSymbols(t *testing.T) {
 		}
 	}
 	testInputEnd(t, -1, l)
+}
+
+// 継続行とマルチステートメントの行番号
+func TestLexLineContAndMulti(t *testing.T) {
+	input := `ld a, \
+	+ \
+	2 \
+	nop \ ret
+
+	ei
+	`
+	l := newLexerForTest(input)
+
+	for {
+		tok := l.NextToken()
+		if tok.TokenType == EOL {
+			break
+		}
+		if tok.Literal == "nop" && tok.Context.Line != 4 {
+			t.Errorf("nop Line not 4. got %d", tok.Context.Line)
+		}
+		if tok.Literal == "ret" && tok.Context.Line != 4 {
+			t.Errorf("ret Line not 4. got %d", tok.Context.Line)
+		}
+		if tok.Literal == "ei" && tok.Context.Line != 6 {
+			t.Errorf("ei Line not 4. got %d", tok.Context.Line)
+		}
+	}
 }
 
 // 空白入力、コメントのみの入力のテスト(最後に EOL, EOFが返ること)

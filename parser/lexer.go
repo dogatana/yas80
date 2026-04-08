@@ -192,6 +192,7 @@ LINE_CONT:
 		// 行継続
 		l.nextChar()
 		l.nextChar()
+		l.lctx.lineNumber++
 		goto LINE_CONT
 
 	case l.lctx.curChar == '\\':
