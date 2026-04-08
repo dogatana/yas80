@@ -1,8 +1,8 @@
 package evaluator
 
 import (
-	"yas80/filecontent"
-	"yas80/object"
+	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/object"
 )
 
 type TContext *filecontent.Context

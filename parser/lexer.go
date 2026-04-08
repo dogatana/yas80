@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"yas80/errcode"
-	"yas80/filecontent"
-	"yas80/internal/util"
-	"yas80/logging"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/internal/util"
+	"github.com/dogatana/yas80/logging"
 )
 
 const EOF = 0

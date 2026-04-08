@@ -6,8 +6,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"yas80/internal/util"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/internal/util"
+	"github.com/dogatana/yas80/parser"
 
 	flag "github.com/spf13/pflag"
 )

@@ -5,7 +5,8 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
-	"yas80/filecontent"
+
+	"github.com/dogatana/yas80/filecontent"
 )
 
 const (

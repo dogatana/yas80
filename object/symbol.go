@@ -3,8 +3,9 @@ package object
 import (
 	"fmt"
 	"strings"
-	"yas80/filecontent"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/parser"
 )
 
 type SymbolType int

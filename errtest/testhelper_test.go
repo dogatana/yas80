@@ -2,11 +2,12 @@ package errtest
 
 import (
 	"bytes"
-	"yas80/evaluator"
-	"yas80/filecontent"
-	"yas80/logging"
-	"yas80/object"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/evaluator"
+	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/logging"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 const (

@@ -8,8 +8,9 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"yas80/internal/errcodenames"
-	"yas80/logging"
+
+	"github.com/dogatana/yas80/internal/errcodenames"
+	"github.com/dogatana/yas80/logging"
 )
 
 func TestLogMessage(t *testing.T, tn int, err string, logger *logging.Logger) {

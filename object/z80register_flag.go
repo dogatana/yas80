@@ -1,6 +1,6 @@
 package object
 
-import "yas80/parser"
+import "github.com/dogatana/yas80/parser"
 
 // レジスタ
 type RegisterObject struct {

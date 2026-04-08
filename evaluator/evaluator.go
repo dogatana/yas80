@@ -1,9 +1,9 @@
 package evaluator
 
 import (
-	"yas80/logging"
-	"yas80/object"
-	"yas80/parser"
+	"github.com/dogatana/yas80/logging"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 type Evaluator struct {

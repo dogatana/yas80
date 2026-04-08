@@ -2,7 +2,8 @@ package evaluator
 
 import (
 	"strings"
-	"yas80/object"
+
+	"github.com/dogatana/yas80/object"
 )
 
 func (e *Evaluator) EvalEnv(env TEnv) ([]string, error) {

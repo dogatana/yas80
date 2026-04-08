@@ -2,9 +2,10 @@ package evaluator
 
 import (
 	"fmt"
-	"yas80/errcode"
-	"yas80/object"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 func (e *Evaluator) evalZ80_RLC(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {

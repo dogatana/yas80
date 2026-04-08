@@ -3,8 +3,9 @@ package evaluator
 import (
 	"slices"
 	"testing"
-	"yas80/logging"
-	"yas80/object"
+
+	"github.com/dogatana/yas80/logging"
+	"github.com/dogatana/yas80/object"
 )
 
 func TestAutoProc(t *testing.T) {

@@ -2,7 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"yas80/filecontent"
+
+	"github.com/dogatana/yas80/filecontent"
 )
 
 // TokenType, TokenType は grammer.y の %token で定義される

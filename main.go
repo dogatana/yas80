@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os"
 	"runtime/pprof"
-	"yas80/assembler"
-	"yas80/filecontent"
-	"yas80/options"
+
+	"github.com/dogatana/yas80/assembler"
+	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/options"
 )
 
 func main() {

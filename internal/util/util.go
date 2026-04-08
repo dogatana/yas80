@@ -8,7 +8,8 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
-	"yas80/errcode"
+
+	"github.com/dogatana/yas80/errcode"
 
 	"github.com/mattn/go-runewidth"
 	"golang.org/x/text/encoding/japanese"

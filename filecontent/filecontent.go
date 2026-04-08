@@ -7,8 +7,9 @@ import (
 	"os"
 	"strings"
 	"unicode/utf8"
-	"yas80/errcode"
-	"yas80/internal/util"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/util"
 )
 
 type FileContent struct {

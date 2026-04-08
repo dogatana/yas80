@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"strings"
 	"testing"
-	"yas80/errcode"
-	"yas80/internal/testutil"
-	"yas80/logging"
-	"yas80/object"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/testutil"
+	"github.com/dogatana/yas80/logging"
+	"github.com/dogatana/yas80/object"
 )
 
 func TestBinWriterGapAndSortSegment(t *testing.T) {

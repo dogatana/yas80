@@ -22,7 +22,7 @@ def write_go(file:str, names:list[str]):
     with open(file, "w", encoding="utf-8") as fp:
         print("""package errcodenames
 
-import "yas80/errcode"
+import "github.com/dogatana/yas80/errcode"
 
 var ErrcodeNames map[string]string = map[string]string {
 """, file=fp)

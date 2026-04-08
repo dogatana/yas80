@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"yas80/filecontent"
-	"yas80/internal/util"
-	"yas80/logging"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/internal/util"
+	"github.com/dogatana/yas80/logging"
+	"github.com/dogatana/yas80/parser"
 )
 
 const (

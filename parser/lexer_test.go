@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"yas80/errcode"
-	"yas80/internal/testutil"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/testutil"
 )
 
 //lint:ignore U1000 非テスト：文字列に対してトークン列を返す

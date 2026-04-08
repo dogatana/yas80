@@ -2,8 +2,9 @@ package logging
 
 import (
 	"fmt"
-	"yas80/filecontent"
-	"yas80/internal/util"
+
+	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/internal/util"
 )
 
 type MessageType int

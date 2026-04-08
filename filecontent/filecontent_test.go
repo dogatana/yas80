@@ -8,8 +8,9 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"yas80/errcode"
-	"yas80/internal/errcodenames"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/errcodenames"
 )
 
 func TestReadBlock(t *testing.T) {

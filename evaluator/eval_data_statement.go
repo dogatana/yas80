@@ -2,11 +2,12 @@ package evaluator
 
 import (
 	"fmt"
-	"yas80/errcode"
-	"yas80/filecontent"
-	"yas80/internal/util"
-	"yas80/object"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/internal/util"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env TEnv) object.Object {

@@ -3,8 +3,9 @@ package lister
 import (
 	"path/filepath"
 	"testing"
-	"yas80/logging"
-	"yas80/object"
+
+	"github.com/dogatana/yas80/logging"
+	"github.com/dogatana/yas80/object"
 )
 
 func TestLister(t *testing.T) {

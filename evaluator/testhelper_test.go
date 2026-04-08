@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
-	"yas80/binwriter"
-	"yas80/filecontent"
-	"yas80/internal/testutil"
-	"yas80/logging"
-	"yas80/object"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/binwriter"
+	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/internal/testutil"
+	"github.com/dogatana/yas80/logging"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 type symValue struct {

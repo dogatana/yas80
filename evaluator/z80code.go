@@ -1,8 +1,8 @@
 package evaluator
 
 import (
-	"yas80/object"
-	"yas80/parser"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 var Z80CodeTable0 = map[int]object.CodeObject{

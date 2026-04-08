@@ -3,10 +3,11 @@ package evaluator
 import (
 	"fmt"
 	"strings"
-	"yas80/errcode"
-	"yas80/logging"
-	"yas80/object"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/logging"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 // 組み込みマクロかどうか

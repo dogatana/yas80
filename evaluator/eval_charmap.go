@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"yas80/errcode"
-	"yas80/internal/util"
-	"yas80/object"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/util"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 // charmap 定義

@@ -1,4 +1,4 @@
-module yas80
+module github.com/dogatana/yas80
 
 go 1.26.0
 

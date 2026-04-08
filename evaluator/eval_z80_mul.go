@@ -2,9 +2,10 @@ package evaluator
 
 import (
 	"fmt"
-	"yas80/errcode"
-	"yas80/object"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 // MUL

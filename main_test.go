@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"path/filepath"
 	"testing"
-	"yas80/internal/testutil"
-	"yas80/options"
+
+	"github.com/dogatana/yas80/internal/testutil"
+	"github.com/dogatana/yas80/options"
 )
 
 func TestOutputBIN(t *testing.T) {

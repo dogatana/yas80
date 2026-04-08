@@ -3,8 +3,9 @@ package evaluator
 import (
 	"fmt"
 	"strings"
-	"yas80/errcode"
-	"yas80/object"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/object"
 )
 
 // func (e *Evaluator) CheckSymbols(env TEnv) {

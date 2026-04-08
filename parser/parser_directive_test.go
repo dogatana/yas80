@@ -3,9 +3,10 @@ package parser
 import (
 	"strings"
 	"testing"
-	"yas80/errcode"
-	"yas80/internal/errcodenames"
-	"yas80/internal/testutil"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/errcodenames"
+	"github.com/dogatana/yas80/internal/testutil"
 )
 
 func TestParseConstStatement(t *testing.T) {

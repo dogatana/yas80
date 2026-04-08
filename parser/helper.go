@@ -5,8 +5,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"yas80/errcode"
-	"yas80/filecontent"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/filecontent"
 )
 
 func parseInt(s string) (int64, error) {

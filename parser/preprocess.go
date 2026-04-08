@@ -2,7 +2,8 @@ package parser
 
 import (
 	"fmt"
-	"yas80/internal/util"
+
+	"github.com/dogatana/yas80/internal/util"
 )
 
 func PreProrocess(prog *BlockStatement) *BlockStatement {

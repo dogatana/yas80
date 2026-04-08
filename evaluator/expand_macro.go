@@ -3,8 +3,9 @@ package evaluator
 import (
 	"fmt"
 	"slices"
-	"yas80/object"
-	"yas80/parser"
+
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.MacroObject, checkExitM bool, ectx TContext, env TEnv) object.Object {

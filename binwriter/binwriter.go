@@ -6,10 +6,11 @@ import (
 	"io"
 	"slices"
 	"strings"
-	"yas80/errcode"
-	"yas80/internal/util"
-	"yas80/logging"
-	"yas80/object"
+
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/util"
+	"github.com/dogatana/yas80/logging"
+	"github.com/dogatana/yas80/object"
 )
 
 type Segment struct {

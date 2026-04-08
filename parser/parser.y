@@ -4,8 +4,8 @@ package parser
 import (
 	"fmt"
 	"strings"
-	"yas80/errcode"
-	"yas80/filecontent"
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/filecontent"
 )
 
 // goyacc が __yyfmt__ を勝手に import することの対策
