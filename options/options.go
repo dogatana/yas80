@@ -15,7 +15,7 @@ import (
 
 const (
 	progName    = "yas80"
-	progVersion = "0.4.0"
+	progVersion = "0.4.1"
 )
 
 type Option struct {
