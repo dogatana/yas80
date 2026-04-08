@@ -42,6 +42,7 @@ archives:
         formats: [zip]
 
 changelog:
+  use: ""
   sort: asc
   filters:
     exclude:

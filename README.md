@@ -1,16 +1,17 @@
-# yas80 - Yet Another Assembler for Z80 and R800
+# yas80
+
 
 ## はじめに
 
 Go で書いた Z80/R800 マクロアセンブラです。
 
-Go 言語を使い始め『Go 言語でつくるインタプリタ』を読んでいるうちに何か作りたくなり、
+Go 言語を使い始めて『Go 言語でつくるインタプリタ』を読んでいるうちに何か作りたくなり、
 それならば Z80 アセンブラを書いてみようと思い立ち、
 その昔齧ったことのある yacc も利用できることもわかったので、
-go-yacc を使って書いてみました。
+goyacc を使って書いてみました。
 
-こんな経緯から yas80 の "ya" は yacc の "ya" と同じです。
-(Yet Another xx を使いたかっただけとも)
+yas80 は Yet Another Assembler for Z80 and R800 の略で、
+yacc の "ya" と同じです。(Yet Another xx を使いたかっただけ)
 
 Z80 用アセンブラは既にいくつか利用可能ですが、
 これまで使用している中で個人的に欲しかった仕様を盛り込んでいます。
@@ -20,11 +21,11 @@ Z80 用アセンブラは既にいくつか利用可能ですが、
 Go のクロスコンパイル機能を利用し次表の環境で利用可能です。
 ただしこちらで確認しているのは windows - amd64 のみです。
 
-| goos    | garch        |
-| --      | --           |
-| windows | amd64        |
-| linux   | amd64        |
-| darwin  | amd64, arm64 |
+| OS (goos)| CPU (garch)  |
+| --       | --           |
+| windows  | amd64        |
+| linux    | amd64        |
+| darwin   | amd64, arm64 |
 
 ## インストール
 
@@ -62,7 +63,7 @@ go build
 
 ## マニュアル
 
-[別サイト](https://dogatana.github.io/yas80-docs/)
+[別サイト](https://dogatana.github.io/yas80-docs/)に置いています。
 
 ## ライセンス
 
