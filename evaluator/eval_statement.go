@@ -419,6 +419,12 @@ func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 		return object.ERROR
 	}
 
+	// . @ 1 文字のラベルは利用不可
+	if name == "." || name == "@" {
+		e.logger.Error(fmt.Sprintf(errcode.ESYM_INVALID, name), label.Context)
+		return object.ERROR
+	}
+
 	switch {
 	case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
 		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)

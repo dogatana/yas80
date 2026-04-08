@@ -104,9 +104,10 @@ const (
 	EANON_LABEL_DEF_ONLY  = "%s は定義のみ可能"
 
 	// symbol
-	ESYM_UNDEF  = "シンボル %s は未定義"
-	ESYM_CYCLIC = "シンボル %s の定義が循環参照を含む"
-	ESYM_NULL   = "シンボル %s の値が未確定"
+	ESYM_UNDEF   = "シンボル %s は未定義"
+	ESYM_CYCLIC  = "シンボル %s の定義が循環参照を含む"
+	ESYM_NULL    = "シンボル %s の値が未確定"
+	ESYM_INVALID = "シンボル %s は使用不可"
 
 	// ORG
 	EORG_ALLOC = "ABS/REL のみ指定可能"
@@ -191,8 +192,8 @@ const (
 	EREPT_COUNT = "REPT 式の値が数値でない"
 
 	// SCOPE
-	ESCOPE_PROC  = "%s は PROC 内部でしか利用できない"
-	ESCOPE_MACRO = "%s は MACRO 内部でしか利用できない"
+	ESCOPE_PROC  = "%s は PROC 内部のみ利用可能"
+	ESCOPE_MACRO = "%s は MACRO 内部のみ利用可能"
 
 	ENOT_IMPL_EXPR = "未実装エラー: evalExression(%T)"
 	ENOT_IMPL_STMT = "未実装エラー: eval(%T')"
