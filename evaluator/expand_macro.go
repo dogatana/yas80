@@ -103,6 +103,13 @@ func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx T
 		news := e.mangleNamesInStatement(stmt, mangleFn, ectx)
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
+			// 組み込みマクロならそのまま stmts へ追加
+			if isBuiltinMacroName(news.Name) {
+				news.ReplaceContext(*ectx)
+				stmts = append(stmts, news)
+				continue
+			}
+
 			obj := e.evalMacroCallStatement(news, true, ectx, env)
 			if isError(obj) {
 				return object.ERROR
