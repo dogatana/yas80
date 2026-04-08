@@ -394,6 +394,12 @@ LINE_CONT:
 
 	case l.lctx.curChar == '.':
 		// LOCAL_IDENT
+		if !l.isWordChar(l.peekChar()) {
+			// "." のケース
+			tok = Token{TokenType: LOCAL_IDENT, Literal: ".", Context: l.lctx.toContext(l.start)}
+			l.nextChar()
+			return tok
+		}
 		l.nextChar()
 		literal = "." + l.readWord()
 		l.nextChar()
