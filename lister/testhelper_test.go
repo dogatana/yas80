@@ -136,11 +136,11 @@ func linesEqual(result, expected []byte) error {
 	for i := range max(len(al), len(bl)) {
 		switch {
 		case i >= len(bl):
-			fmt.Printf("result only [%d] %q\n", i, al[i])
+			fmt.Printf("result   only [%d] %q\n", i, al[i])
 		case i >= len(al):
 			fmt.Printf("expected only [%d] %q\n", i, bl[i])
 		case al[i] != bl[i]:
-			fmt.Printf("result[%d] %s\n", i, al[i])
+			fmt.Printf("result  [%d] %s\n", i, al[i])
 			fmt.Printf("expected[%d] %s\n", i, al[i])
 			errs = append(errs, fmt.Errorf("line %d\n%s\n%s", i, al[i], bl[i]))
 		}
