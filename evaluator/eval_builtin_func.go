@@ -24,8 +24,8 @@ func (e *Evaluator) evalBuiltinFunction(expr *parser.FuncCallExpression, env TEn
 		return e.ebfuncFormat(expr, env, ctx)
 	case "$ISARY", "$ISARRAY":
 		return e.ebfuncIsArray(expr, env, ctx)
-	case "$CHR": // 非公開 $CODE に変更するか？
-		return e.ebfuncChr(expr, env, ctx)
+	case "$CODE":
+		return e.ebfuncCode(expr, env, ctx)
 	case "$STR":
 		return e.ebfuncStr(expr, env, ctx)
 	case "$DEFINED":
@@ -249,7 +249,7 @@ func (e *Evaluator) ebfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx 
 	return &object.StringObject{Value: s, Context: ctx}
 }
 
-func (e *Evaluator) ebfuncChr(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+func (e *Evaluator) ebfuncCode(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
 	args := expr.Args.Expressions
 
 	if len(args) != 1 {
@@ -279,15 +279,21 @@ func (e *Evaluator) ebfuncChr(expr *parser.FuncCallExpression, env TEnv, ctx TCo
 
 	switch len(array.Values) {
 	case 1:
-		if obj, ok := array.Values[0].(*object.NumberObject); !ok {
+		var num int
+		// 1t byte
+		if v, ok := array.Values[0].(*object.NumberObject); !ok {
 			e.logger.Error(errcode.EEBFN_ARG_VALUE, ctx)
 			return object.ERROR
+		} else if b, ok := e.intToByte(v.Value); ok {
+			num = int(b)
 		} else {
-			return obj
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_BYTE, v.Value, v.Value), ctx)
+			num = int(b)
 		}
+		return &object.NumberObject{Value: num}
 	case 2:
 		var num int
-		// 1sr byte
+		// 1st byte
 		if v, ok := array.Values[0].(*object.NumberObject); !ok {
 			e.logger.Error(errcode.EEBFN_ARG_VALUE, ctx)
 			return object.ERROR

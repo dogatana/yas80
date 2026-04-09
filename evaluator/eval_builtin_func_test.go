@@ -276,7 +276,7 @@ func TestBuiltinFuncWord(t *testing.T) {
 	}
 }
 
-func TestBuiltinFuncChr(t *testing.T) {
+func TestBuiltinFuncCode(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -284,18 +284,20 @@ func TestBuiltinFuncChr(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `db $chr([1])`, code: []byte{1}},
-		{input: `db $chr([1, 2])`, code: []byte{2}}, // 0102
-		{input: `dw $chr([1])`, code: []byte{1, 0}},
-		{input: `dw $chr([1, 2])`, code: []byte{2, 1}},
-		{input: `fn func\endf\ db $chr(fn())`, err: errcode.EEBFN_ARG_NULL},
-		{input: `db $chr(1)`, err: errcode.EEBFN_ARG_VALUE},
-		{input: `db $chr('a')`, err: errcode.EEBFN_ARG_VALUE},
-		{input: `db $chr([])`, err: errcode.EEBFN_ARG_COUNT},
-		{input: `db $chr([1,2,3])`, err: errcode.EEBFN_ARG_COUNT},
-		{input: `db $chr(['a'])`, err: errcode.EEBFN_ARG_VALUE},
-		{input: `db $chr(['a', 1])`, err: errcode.EEBFN_ARG_VALUE},
-		{input: `db $chr([1, 'a'])`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $code([1])`, code: []byte{1}},
+		{input: `dw $code([1])`, code: []byte{1, 0}},
+		{input: `dw $code([1, 2])`, code: []byte{2, 1}},
+		{input: `fn func\endf\ db $code(fn())`, err: errcode.EEBFN_ARG_NULL},
+		{input: `db $code(1)`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $code('a')`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $code([])`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `db $code([1,2,3])`, err: errcode.EEBFN_ARG_COUNT},
+		{input: `db $code(['a'])`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $code(['a', 1])`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $code([1, 'a'])`, err: errcode.EEBFN_ARG_VALUE},
+		{input: `db $code([256])`, err: errcode.WROUND_BYTE},
+		{input: `dw $code([256, 1])`, err: errcode.WROUND_BYTE},
+		{input: `dw $code([1, 256])`, err: errcode.WROUND_BYTE},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
