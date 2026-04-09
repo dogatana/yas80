@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/object"
 	"github.com/dogatana/yas80/parser"
 )
@@ -145,7 +146,12 @@ func (e *Evaluator) ebfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx 
 	case *object.ArrayObject:
 		return &object.NumberObject{Value: len(v.Values)}
 	case *object.StringObject:
-		return &object.NumberObject{Value: len(v.Value)}
+		sj, err := util.Utf8ToShiftJis(v.Value)
+		if err != nil {
+			e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, v.Value), ctx)
+			return object.ERROR
+		}
+		return &object.NumberObject{Value: len(sj)}
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR

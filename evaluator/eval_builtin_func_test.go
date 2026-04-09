@@ -19,6 +19,9 @@ func TestBuiltinFuncLength(t *testing.T) {
 		// 0-
 		{input: `const v = $len([1,2,3])`, syms: []symValue{{"V", 3}}},
 		{input: `const array = [1,2,3] \ var v = $length(array)`, syms: []symValue{{"V", 3}}},
+		{input: `const v = $len('abc')`, syms: []symValue{{"V", 3}}},
+		{input: `const v = $len('あいう')`, syms: []symValue{{"V", 6}}},
+		{input: `const v = $len('ｱｲｳ')`, syms: []symValue{{"V", 3}}},
 		{input: `const v = $len()`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $len(1,2)`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $len(1)`, err: errcode.EEBFN_ARG_VALUE},
