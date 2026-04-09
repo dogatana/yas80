@@ -152,7 +152,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 
 		env.Set(stmt.Name, v)
 		comment := fmt.Sprintf("%s = %s", stmt.Name, v.String())
-		return &object.CommentObject{Text: comment, Context: stmt.Context}
+		return &object.CommentObject{Text: comment, SetSysVar: true, Context: stmt.Context}
 
 	// enum
 	case *parser.EnumStatement:

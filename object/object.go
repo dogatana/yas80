@@ -175,8 +175,9 @@ func (o *FileObject) String() string {
 
 // value - list ファイル出力用
 type CommentObject struct {
-	Text    any
-	Context *filecontent.Context
+	Text      any
+	SetSysVar bool // システム変数の設定か
+	Context   *filecontent.Context
 }
 
 func (o *CommentObject) Type() ObjectType { return OBJ_COMMENT }
@@ -226,17 +227,13 @@ func (o *EntryObject) String() string   { return fmt.Sprintf("END %d\n", o.Start
 
 // list control
 type ListControl struct {
-	Enabled bool
+	Value   int
 	Context *filecontent.Context
 }
 
 func (o *ListControl) Type() ObjectType { return OBJ_LIST_CONTROL }
 func (o *ListControl) String() string {
-	if o.Enabled {
-		return "ListControl(Enabled)"
-	} else {
-		return "ListControl(Disabled)"
-	}
+	return fmt.Sprintf("ListControl(%d)", o.Value)
 }
 
 // code

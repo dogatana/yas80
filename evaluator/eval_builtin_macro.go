@@ -384,11 +384,11 @@ func (e *Evaluator) ebMacroList(stmt *parser.MacroCallStatement, env TEnv) objec
 	if !ok {
 		return obj
 	}
-	if no.Value == 0 {
-		return &object.ListControl{Enabled: false, Context: stmt.Context}
-	} else {
-		return &object.ListControl{Enabled: true, Context: stmt.Context}
+	v := no.Value
+	if v != 0 && v != 2 {
+		v = 1
 	}
+	return &object.ListControl{Value: v, Context: stmt.Context}
 }
 
 // check256 base

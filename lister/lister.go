@@ -102,10 +102,10 @@ func (l *Lister) List(out io.Writer) {
 	var lnum int // ソース行番号
 	var fc *filecontent.FileContent
 
-	output := true
+	ctrl := 1 // LIST 1
 	for _, fb := range l.fblocks {
 		// (1)ファイル名出力
-		if output {
+		if ctrl != 0 {
 			fmt.Fprintf(w, "%s:\n", fb.Filename)
 		}
 		lnum = fb.Line
@@ -119,7 +119,7 @@ func (l *Lister) List(out io.Writer) {
 		for _, ln := range keys {
 			// ln までソース表示
 			for lnum < ln {
-				if !output { // リスト出力 OFF ならすぐに抜ける
+				if ctrl == 0 { // リスト出力 OFF ならすぐに抜ける
 					lnum = ln
 					break
 				}
@@ -136,9 +136,9 @@ func (l *Lister) List(out io.Writer) {
 				// list 制御処理
 				lc, ok := obj.(*object.ListControl)
 				if ok {
-					output = lc.Enabled
+					ctrl = lc.Value
 				}
-				if !output {
+				if ctrl == 0 {
 					continue
 				}
 				switch obj := obj.(type) {
@@ -147,6 +147,10 @@ func (l *Lister) List(out io.Writer) {
 					if text == nil {
 						// Context の指すソース行を取得
 						text = obj.Context.GetLine()
+					}
+					// REPT 展開時の $I/$V/$COUNT 表示で LIST 2 でなければスキップ
+					if obj.SetSysVar && ctrl != 2 {
+						break
 					}
 					if obj.Context.Offset == 0 {
 						fmt.Fprintf(w, fmtSrc, lnum, "", ' ', text)
