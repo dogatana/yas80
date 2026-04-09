@@ -44,11 +44,11 @@ YOUT = parser/y.output
 TESTDIR = ./binwriter ./errtest ./evaluator ./filecontent ./parser ./lister
 
 	  
-main.exe: ${SRC} 
-	go build -o $@
+yas80.exe: ${SRC} 
+	go build
 
 clean:
-	rm main.exe
+	rm yas80.exe
 	rm parser/parser.go
 
 ${PARSER}: ${YACC} ${PATCH}
