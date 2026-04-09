@@ -143,6 +143,8 @@ func (e *Evaluator) ebfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx 
 		return object.ERROR
 	case *object.ArrayObject:
 		return &object.NumberObject{Value: len(v.Values)}
+	case *object.StringObject:
+		return &object.NumberObject{Value: len(v.Value)}
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR
