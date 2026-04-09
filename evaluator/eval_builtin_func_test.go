@@ -431,6 +431,10 @@ func TestBuitinFuncArgumentsForwardReference(t *testing.T) {
 			syms:  []symValue{{"V", 3}},
 		},
 		{
+			input: `db $rev(fwd) \ const fwd = [1,2]`,
+			code:  []byte{2, 1},
+		},
+		{
 			input: `const v = $fmt(fwd) \ const fwd = "string"`,
 			syms:  []symValue{{"V", "string"}},
 		},
