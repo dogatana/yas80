@@ -138,6 +138,7 @@ func (e *Evaluator) ebfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx 
 	case *object.RefNotFoundObject:
 		e.Resolved = false
 		return v
+
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
@@ -334,6 +335,11 @@ func (e *Evaluator) ebfuncStr(expr *parser.FuncCallExpression, env TEnv, ctx TCo
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
+	case *object.StringObject:
+		return &object.StringObject{Value: obj.Value, Context: ctx}
+	case *object.NumberObject:
+		return &object.StringObject{Value: fmt.Sprintf("%d", obj.Value), Context: ctx}
+
 	default:
 		return &object.StringObject{Value: obj.String(), Context: ctx}
 	}
