@@ -22,7 +22,7 @@ func TestBuiltinFuncLength(t *testing.T) {
 		{input: `const v = $len()`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $len(1,2)`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $len(1)`, err: errcode.EEBFN_ARG_VALUE},
-		{input: `const v = $len(xyz)`, err: errcode.EEBFN_ARG_NULL},
+		{input: `const v = $len(xyz)`, err: errcode.ESYM_UNDEF},
 	}
 
 	for tn, tt := range tests {
@@ -67,7 +67,7 @@ func TestBuiltinFuncIsArray(t *testing.T) {
 		{input: `const v = $isary(hl)`, syms: []symValue{{"V", 0}}},
 		{input: `const v = $isary()`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $isary(1,2)`, err: errcode.EEBFN_ARG_COUNT},
-		{input: `const v = $isary(xyz)`, err: errcode.EEBFN_ARG_NULL},
+		{input: `const v = $isary(xyz)`, err: errcode.ESYM_UNDEF},
 	}
 
 	for tn, tt := range tests {
@@ -110,7 +110,7 @@ func TestBuiltinFuncReverse(t *testing.T) {
 		{input: `const abc = $rev()`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const abc = $rev(1, 2)`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const abc = $rev(1)`, err: errcode.EEBFN_ARG_VALUE},
-		{input: `const abc = $rev(def)`, err: errcode.EEBFN_ARG_NULL},
+		{input: `const abc = $rev(def)`, err: errcode.ESYM_UNDEF},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
@@ -247,7 +247,7 @@ func TestBuiltinFuncWord(t *testing.T) {
 		{input: `db $w()`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `db $w(1,2)`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `db $w("a")`, err: errcode.EEBFN_ARG_VALUE},
-		{input: `const v \ db $w(v)`, err: errcode.EEBFN_ARG_NULL},
+		{input: `fn func \ endf \ db $w(fn())`, err: errcode.EEBFN_ARG_NULL},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
