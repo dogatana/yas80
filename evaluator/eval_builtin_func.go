@@ -228,12 +228,15 @@ func (e *Evaluator) ebfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx 
 	for _, arg := range args[1:] {
 		v := e.evalExpression(arg, env, ctx)
 		switch v := v.(type) {
+		case *object.ErrorObject:
+			return v
+		case *object.RefNotFoundObject:
+			return v
+
 		case *object.NumberObject:
 			fargs = append(fargs, v.Value)
 		case *object.StringObject:
 			fargs = append(fargs, v.Value)
-		case *object.ErrorObject:
-			return v
 		default:
 			e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
 			return object.ERROR
