@@ -33,6 +33,7 @@ type Option struct {
 	Fill      int    // GAP Fill 値
 	R800      bool   // R800 をターゲットとする
 
+	List    int    // List 制御値
 	outLst  bool   // List 出力の有無
 	LstFile string // List ファイル名
 	outMap  bool   // map 出力の有無
@@ -79,6 +80,7 @@ func Parse() Option {
 
 	flag.BoolVarP(&opt.outLst, "l", "l", false, "generate list file")
 	flag.StringVar(&opt.LstFile, "lst", "", "lst filename")
+	flag.IntVar(&opt.List, "list", 1, "LIST value")
 
 	flag.BoolVarP(&opt.outMap, "m", "m", false, "generate map file")
 	flag.StringVar(&opt.MapFile, "map", "", "map filename")

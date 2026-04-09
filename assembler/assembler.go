@@ -176,7 +176,7 @@ BREAK:
 			fmt.Printf("file %s\n", f)
 		}
 	}
-	lister := lister.New(as.R800, prog, obj.(*object.BlockObject), fcMap, mmap, as.ListDebug)
+	lister := lister.New(as.List, as.R800, prog, obj.(*object.BlockObject), fcMap, mmap, as.ListDebug)
 
 	var buf bytes.Buffer
 	lister.List(&buf)

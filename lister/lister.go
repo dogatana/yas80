@@ -62,10 +62,11 @@ type Lister struct {
 	fcMap     map[string]*filecontent.FileContent
 	fblocks   []*object.FileBlock
 	listDebug int
+	list      int // LIST 制御値
 }
 
-func New(r800 bool, pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent, mmap logging.MessageMap, listDebug int) *Lister {
-	l := &Lister{nodes: pnode, fcMap: fcmap, listDebug: listDebug}
+func New(list int, r800 bool, pnode *parser.BlockStatement, pobj *object.BlockObject, fcmap map[string]*filecontent.FileContent, mmap logging.MessageMap, listDebug int) *Lister {
+	l := &Lister{list: list, nodes: pnode, fcMap: fcmap, listDebug: listDebug}
 	if r800 {
 		l.tsIndex = 1
 	}
@@ -102,10 +103,9 @@ func (l *Lister) List(out io.Writer) {
 	var lnum int // ソース行番号
 	var fc *filecontent.FileContent
 
-	ctrl := 1 // LIST 1
 	for _, fb := range l.fblocks {
 		// (1)ファイル名出力
-		if ctrl != 0 {
+		if l.list != 0 {
 			fmt.Fprintf(w, "%s:\n", fb.Filename)
 		}
 		lnum = fb.Line
@@ -119,7 +119,7 @@ func (l *Lister) List(out io.Writer) {
 		for _, ln := range keys {
 			// ln までソース表示
 			for lnum < ln {
-				if ctrl == 0 { // リスト出力 OFF ならすぐに抜ける
+				if l.list == 0 { // リスト出力 OFF ならすぐに抜ける
 					lnum = ln
 					break
 				}
@@ -136,9 +136,9 @@ func (l *Lister) List(out io.Writer) {
 				// list 制御処理
 				lc, ok := obj.(*object.ListControl)
 				if ok {
-					ctrl = lc.Value
+					l.list = lc.Value
 				}
-				if ctrl == 0 {
+				if l.list == 0 {
 					continue
 				}
 				switch obj := obj.(type) {
@@ -149,7 +149,7 @@ func (l *Lister) List(out io.Writer) {
 						text = obj.Context.GetLine()
 					}
 					// REPT 展開時の $I/$V/$COUNT 表示で LIST 2 でなければスキップ
-					if obj.SetSysVar && ctrl != 2 {
+					if obj.SetSysVar && l.list != 2 {
 						break
 					}
 					if obj.Context.Offset == 0 {

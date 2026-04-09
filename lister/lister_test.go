@@ -34,11 +34,11 @@ func TestLister(t *testing.T) {
 			continue
 		}
 		if ec := logger.ErrorCount(); ec != 0 {
+			logger.Print()
 			t.Errorf("[%d] %d errors ", tn, ec)
 			continue
 		}
 		if len(list) == 0 {
-			logger.Print()
 			t.Errorf("[%d] no list", tn)
 			continue
 		}
