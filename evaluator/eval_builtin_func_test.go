@@ -231,6 +231,7 @@ func TestBuiltinFuncHighLow(t *testing.T) {
 		}
 		testSymValues(t, tn, tt.syms, getter)
 	}
+
 }
 
 func TestBuiltinFuncWord(t *testing.T) {
@@ -372,6 +373,93 @@ func TestBuiltinFuncStr(t *testing.T) {
 		// 0-
 		{input: `const v = $str(hl)`, syms: []symValue{{"V", "HL"}}},
 		{input: `const v = $str(nz)`, syms: []symValue{{"V", "NZ"}}},
+	}
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestBuitinFuncArgumentsForwardReference(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+		code  []byte
+	}{
+		{
+			input: `const v = $w(fwd) \ const fwd = 123`,
+			syms:  []symValue{{"V", 123}},
+		},
+		{
+			input: `const v = $h(fwd) \ const fwd = $1234`,
+			syms:  []symValue{{"V", 0x12}},
+		},
+		{
+			input: `const v = $l(fwd) \ const fwd = $1234`,
+			syms:  []symValue{{"V", 0x34}},
+		},
+		{
+			input: `const v = $length(fwd) \ const fwd = [1,2,3]`,
+			syms:  []symValue{{"V", 3}},
+		},
+		{
+			input: `const v = $length(fwd) \ const fwd = "123"`,
+			syms:  []symValue{{"V", 3}},
+		},
+		{
+			input: `const v = $fmt(fwd) \ const fwd = "string"`,
+			syms:  []symValue{{"V", "string"}},
+		},
+		{
+			input: `const v = $fmt("%d", fwd) \ const fwd = 1234`,
+			syms:  []symValue{{"V", "1234"}},
+		},
+		{
+			input: `const v = $isarray(fwd) \ const fwd = [1,2,3]`,
+			syms:  []symValue{{"V", 1}},
+		},
+		{
+			input: `const v = $str(fwd) \ const fwd = 123`,
+			syms:  []symValue{{"V", "123"}},
+		},
+		{
+			input: `const v = $str(fwd) \ const fwd = "abc"`,
+			syms:  []symValue{{"V", "abc"}},
+		},
+		{
+			input: `const v = $str(fwd) \ const fwd = hl`,
+			syms:  []symValue{{"V", "HL"}},
+		},
+		{
+			input: `const v = $str(fwd) \ const fwd = nz`,
+			syms:  []symValue{{"V", "NZ"}},
+		},
+		{
+			input: `const v = $defined(fwd) \ const fwd = 123`,
+			syms:  []symValue{{"V", 1}},
+		},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
