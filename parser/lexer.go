@@ -264,8 +264,14 @@ LINE_CONT:
 		return tok
 
 	case l.lctx.curChar == '$':
+		if l.peekChar() == '$' { // アロケーションカウンタ
+			tok = Token{TokenType: IDENT, Literal: "$$", Context: l.lctx.toContext(l.start)}
+			l.nextChar()
+			l.nextChar()
+			return tok
+		}
 		// $ ローケーションカウンタ
-		tok := Token{TokenType: IDENT, Literal: "$", Context: l.lctx.toContext(l.start)}
+		tok = Token{TokenType: IDENT, Literal: "$", Context: l.lctx.toContext(l.start)}
 		l.nextChar()
 		return tok
 

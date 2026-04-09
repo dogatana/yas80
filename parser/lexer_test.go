@@ -537,6 +537,8 @@ func TestLexDoller(t *testing.T) {
 		// 0-
 		{"$", IDENT},
 		{"$ ", IDENT},
+		{"$$", IDENT},
+		{"$$ ", IDENT},
 		{"$0", NUMBER},
 		{"$a", NUMBER},
 		{"$f", NUMBER},
