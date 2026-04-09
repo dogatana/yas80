@@ -16,28 +16,6 @@ yacc の "ya" と同じです。(Yet Another xx を使いたかっただけ)
 Z80 用アセンブラは既にいくつか利用可能ですが、
 これまで使用している中で個人的に欲しかった仕様を盛り込んでいます。
 
-## 動作環境
-
-Go のクロスコンパイル機能を利用し次表の環境で利用可能です。
-ただしこちらで確認しているのは windows - amd64 のみです。
-
-| OS (goos)| CPU (garch)  |
-| --       | --           |
-| windows  | amd64        |
-| linux    | amd64        |
-| darwin   | amd64, arm64 |
-
-## インストール
-
-[Releases](https://github.com/dogatana/yad80/releases) からダウンロード、解凍してください。
-
-## ソースからのビルド
-
-```
-git clone https://github.com/dogatana/yas80.git
-cd yas80
-go build
-```
 
 ## 主な特長
 
@@ -61,9 +39,32 @@ go build
 - 配列リテラル
 - R800 命令（乗算命令+Z80非公開命令の一部）
 
+## 動作環境
+
+Go のクロスコンパイル機能を利用し次表の環境で利用可能です。
+ただしこちらで確認しているのは windows - amd64 のみです。
+
+| OS (goos)| CPU (garch)  |
+| --       | --           |
+| windows  | amd64        |
+| linux    | amd64        |
+| darwin   | amd64, arm64 |
+
+## インストール
+
+[Releases](https://github.com/dogatana/yad80/releases) からダウンロード、解凍してください。
+
+## ソースからのビルド
+
+```
+git clone https://github.com/dogatana/yas80.git
+cd yas80
+go build
+```
+
 ## マニュアル
 
-[別サイト](https://dogatana.github.io/yas80-docs/)に置いています。
+[こちら](https://dogatana.github.io/yas80-docs/)に置いています。
 
 ## ライセンス
 
