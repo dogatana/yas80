@@ -194,9 +194,9 @@ func TestBuiltinFuncHighLow(t *testing.T) {
 	}{
 		// 0-
 		{input: `const v = $h(0x1234)`, syms: []symValue{{"V", 0x12}}},
-		{input: `const v = $hi(0x1234)`, syms: []symValue{{"V", 0x12}}},
+		{input: `const v = $high(0x1234)`, syms: []symValue{{"V", 0x12}}},
 		{input: `const v = $l(0x1234)`, syms: []symValue{{"V", 0x34}}},
-		{input: `const v = $lo(0x1234)`, syms: []symValue{{"V", 0x34}}},
+		{input: `const v = $low(0x1234)`, syms: []symValue{{"V", 0x34}}},
 		{input: `const v = $h()`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $h(1,2)`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $h("a")`, err: errcode.EEBFN_ARG_VALUE},
