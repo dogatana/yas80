@@ -51,9 +51,26 @@ func extractNames(obj object.Object) []string {
 	}
 }
 
-// location counter 初期化
-func initLocationCounter(env TEnv, addr int) {
-	env.Set("$", &object.NumberObject{Value: addr})
+// $ location counter 初期化
+func setLocationCounter(env TEnv, addr int) {
+	if obj, ok := env.Get("$"); !ok {
+		panic("getLocationCounter failed")
+	} else if no, ok := obj.(*object.NumberObject); !ok {
+		panic("getLocationCounter failed")
+	} else {
+		no.Value = addr
+	}
+}
+
+// $$ allocate location counter 初期化
+func setAllocLocationCounter(env TEnv, addr int) {
+	if obj, ok := env.Get("$$"); !ok {
+		panic("getAllocLocationCounter failed")
+	} else if no, ok := obj.(*object.NumberObject); !ok {
+		panic("getAllocLocationCounter failed")
+	} else {
+		no.Value = addr
+	}
 }
 
 // location counter 取得
@@ -63,11 +80,20 @@ func getLocationCounter(env TEnv) int {
 		panic("getLocationCounter failed")
 	}
 	return counter.(*object.NumberObject).Value
-
 }
 
+// location counter 取得
+// func getAllocLocationCounter(env TEnv) int {
+// 	counter, ok := env.Get("$$")
+// 	if !ok {
+// 		panic("getAllocLocationCounter failed")
+// 	}
+// 	return counter.(*object.NumberObject).Value
+// }
+
 // location counter 更新
-func advanceLocationCounter(env TEnv, n int) error {
+// set** を使用すると現階層の Env に設定するため、元のオブジェクトの値を直接書き換える
+func advanceLocationCounters(env TEnv, n int) error {
 	obj, ok := env.Get("$")
 	if !ok {
 		panic("getLocationCounter failed")
@@ -77,8 +103,21 @@ func advanceLocationCounter(env TEnv, n int) error {
 
 	// 64KB アドレス超過のチェック
 	if counter.Value > 0x10000 {
-		return fmt.Errorf(errcode.EADDRESS_OVERFLOW, counter.Value)
+		return fmt.Errorf(errcode.EADDR_OVERFLOW, counter.Value)
 	}
+
+	obj, ok = env.Get("$$")
+	if !ok {
+		panic("getAllocLocationCounter failed")
+	}
+	counter = obj.(*object.NumberObject)
+	counter.Value += n
+
+	// 64KB アドレス超過のチェック
+	if counter.Value > 0x10000 {
+		return fmt.Errorf(errcode.EALLOC_ADDR_OVERFLOW, counter.Value)
+	}
+
 	return nil
 }
 

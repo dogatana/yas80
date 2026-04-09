@@ -22,8 +22,8 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 			code := obj.(*object.CodeObject)
 			// アドレス設定はコード生成後
 			code.Addr = getLocationCounter(env)
-			// 生成コードのサイズ文ロケーションカウンタを進める
-			if err := advanceLocationCounter(env, code.Size()); err != nil {
+			// 生成コードのサイズ ロケーションカウンタを進める
+			if err := advanceLocationCounters(env, code.Size()); err != nil {
 				e.logger.Error(err.Error(), stmt.Context)
 			}
 		}
@@ -60,7 +60,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 		if isError(obj) {
 			return object.ERROR
 		}
-		if err := advanceLocationCounter(env, len(obj.(*object.CodeObject).Code)); err != nil {
+		if err := advanceLocationCounters(env, len(obj.(*object.CodeObject).Code)); err != nil {
 			e.logger.Error(err.Error(), stmt.Context)
 		}
 		return obj
@@ -71,7 +71,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 		if isError(obj) {
 			return object.ERROR
 		}
-		if err := advanceLocationCounter(env, len(obj.(*object.CodeObject).Code)); err != nil {
+		if err := advanceLocationCounters(env, len(obj.(*object.CodeObject).Code)); err != nil {
 			e.logger.Error(err.Error(), stmt.Context)
 		}
 		return obj
@@ -363,7 +363,12 @@ func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object
 	if !ok {
 		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
 	}
-	initLocationCounter(env, addr)
+
+	// ABS は $, $$ REL は $ のみ変更
+	setLocationCounter(env, addr)
+	if stmt.AllocType == parser.ALLOC_ABS {
+		setAllocLocationCounter(env, addr)
+	}
 	return &object.OrgObject{Addr: addr, AllocType: int(stmt.AllocType)}
 }
 

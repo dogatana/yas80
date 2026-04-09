@@ -156,7 +156,7 @@ func (e *Evaluator) ebMacroAlign(stmt *parser.MacroCallStatement, env TEnv) obje
 		code[i] = fill
 	}
 
-	if err := advanceLocationCounter(env, size); err != nil {
+	if err := advanceLocationCounters(env, size); err != nil {
 		e.logger.Error(err.Error(), stmt.Context)
 	}
 	return &object.CodeObject{Addr: addr, Code: code, Filled: true, Context: stmt.Context}
@@ -278,7 +278,7 @@ func (e *Evaluator) ebMacroIncBin(stmt *parser.MacroCallStatement, env TEnv) obj
 	o, _ := env.Get("$RSIZE")
 	o.(*object.NumberObject).Value = co.Size()
 
-	if err := advanceLocationCounter(env, co.Size()); err != nil {
+	if err := advanceLocationCounters(env, co.Size()); err != nil {
 		e.logger.Error(err.Error(), stmt.Context)
 	}
 

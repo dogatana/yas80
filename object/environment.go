@@ -32,22 +32,21 @@ func NewEnvironment(outer Environment) Environment {
 func setupSystemVariables(env Environment) {
 	env.Set("_", &SymbolObject{Name: "_", SymType: SYM_VAR, Value: NULL})
 
-	v0 := &NumberObject{Value: 0}
-	v1 := &NumberObject{Value: 1}
+	env.Set("$", &NumberObject{Value: 0})
+	env.Set("$$", &NumberObject{Value: 0})
 
-	env.Set("$", v0)
-	env.Set("$FILL", v0)
+	env.Set("$FILL", &NumberObject{Value: 0})
 
-	env.Set("$OFF", v0)
-	env.Set("$ON", v1)
-	env.Set("$FALSE", v0)
-	env.Set("$TRUE", v1)
+	env.Set("$OFF", &NumberObject{Value: 0})
+	env.Set("$ON", &NumberObject{Value: 1})
+	env.Set("$FALSE", &NumberObject{Value: 0})
+	env.Set("$TRUE", &NumberObject{Value: 1})
 
 	env.Set("$CMAP_ERR", &NumberObject{Value: -1})
 	env.Set("$CMAP_THRU", &NumberObject{Value: -2})
 
-	env.Set("$R800", v0)
-	env.Set("$STAGE2", v0)
+	env.Set("$R800", &NumberObject{Value: 0})
+	env.Set("$STAGE2", &NumberObject{Value: 0})
 }
 
 // for Proc

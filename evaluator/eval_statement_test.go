@@ -476,18 +476,18 @@ func TestOrgStatement(t *testing.T) {
 		{input: `org $1000 \ nop `, addr: 0x1000},
 		{input: `org $ffff \ nop `, addr: 0xffff},
 		{input: `org -1 \ nop `, addr: 0xffff},
-		{input: `org $ffff \ ld a, 1`, err: errcode.EADDRESS_OVERFLOW},
+		{input: `org $ffff \ ld a, 1`, err: errcode.EADDR_OVERFLOW},
 		{input: `org hl \ nop `, err: errcode.EORG_VALUE},
 		{input: `org 'hl' \ nop `, err: errcode.EORG_VALUE},
 		{input: `org abc \ nop `, err: errcode.ESYM_UNDEF},
 		{input: `fn func\endf\ org fn()`, err: errcode.EORG_NULL},
 		{input: `org 0, aaa`, err: errcode.EORG_ALLOC},
 		// 10-
-		{input: `org $ffff \ dsw 1`, err: errcode.EADDRESS_OVERFLOW},
-		{input: `org $ffff \ ds 2`, err: errcode.EADDRESS_OVERFLOW},
-		{input: `org $ffff \ db $ff, $ff`, err: errcode.EADDRESS_OVERFLOW},
-		{input: `org $ffff \ dw $ffff`, err: errcode.EADDRESS_OVERFLOW},
-		{input: `org $ffff \ dd $w(0)`, err: errcode.EADDRESS_OVERFLOW},
+		{input: `org $ffff \ dsw 1`, err: errcode.EADDR_OVERFLOW},
+		{input: `org $ffff \ ds 2`, err: errcode.EADDR_OVERFLOW},
+		{input: `org $ffff \ db $ff, $ff`, err: errcode.EADDR_OVERFLOW},
+		{input: `org $ffff \ dw $ffff`, err: errcode.EADDR_OVERFLOW},
+		{input: `org $ffff \ dd $w(0)`, err: errcode.EADDR_OVERFLOW},
 	}
 
 	for tn, tt := range tests {
@@ -520,5 +520,106 @@ func TestOrgStatement(t *testing.T) {
 		if code.Addr != tt.addr {
 			t.Errorf("[%d] address is not $%04x. %s", tn, tt.addr, code.String())
 		}
+	}
+}
+
+func TestOrgAbsRel(t *testing.T) {
+	tests := []struct {
+		input string
+		code  []byte
+		syms  []symValue
+		err   string
+	}{
+		{input: `a1:nop `, syms: []symValue{{"A1", 0}}},
+		{input: `org $1000 \ a1:nop `, syms: []symValue{{"A1", 0x1000}}},
+		{input: `org $ffff \ a1:nop `, syms: []symValue{{"A1", 0xffff}}},
+		{input: `org -1 \ a1:nop `, syms: []symValue{{"A1", 0xffff}}},
+		{
+			input: `	org $1000
+					a1r	equ $$
+					a1: nop
+
+					org $2000
+					a2r	equ $$
+					a2: nop
+
+					org $3000, rel
+					a3r	equ $$
+					a3: nop
+
+					org $4000, rel
+					a4r	equ $$
+					a4: nop
+
+					org $5000
+					a5r	equ $$
+					a5: nop
+			`, syms: []symValue{
+				{"A1", 0x1000},
+				{"A2", 0x2000},
+				{"A3", 0x3000},
+				{"A4", 0x4000},
+				{"A5", 0x5000},
+				{"A1R", 0x1000},
+				{"A2R", 0x2000},
+				{"A3R", 0x2001},
+				{"A4R", 0x2002},
+				{"A5R", 0x5000},
+			},
+		},
+		{input: `org $ffff \ ld a, 1`, err: errcode.EADDR_OVERFLOW},
+		{input: `org 0xffff \ org 0, rel \ call 0`, err: errcode.EALLOC_ADDR_OVERFLOW},
+		{input: `org hl \ nop `, err: errcode.EORG_VALUE},
+		{input: `org 'hl' \ nop `, err: errcode.EORG_VALUE},
+		{input: `org abc \ nop `, err: errcode.ESYM_UNDEF},
+		{input: `fn func\endf\ org fn()`, err: errcode.EORG_NULL},
+		{input: `org 0, aaa`, err: errcode.EORG_ALLOC},
+		// 10-
+		{input: `org $ffff \ dsw 1`, err: errcode.EADDR_OVERFLOW},
+		{input: `org $ffff \ ds 2`, err: errcode.EADDR_OVERFLOW},
+		{input: `org $ffff \ db $ff, $ff`, err: errcode.EADDR_OVERFLOW},
+		{input: `org $ffff \ dw $ffff`, err: errcode.EADDR_OVERFLOW},
+		{input: `org $ffff \ dd $w(0)`, err: errcode.EADDR_OVERFLOW},
+		// 0-
+		{input: `var v = 1 \ v = v + 1`, syms: []symValue{{"V", 2}}},
+		{input: `var .test = 1`, err: errcode.ESCOPE_PROC},
+		{input: `var @test = 1`, err: errcode.ESCOPE_MACRO},
+		{input: `var _ = 1`, err: errcode.EVAR_SYS},
+		{input: `const abc = 1 \ var abc = 1`, err: errcode.EVAR_USED},
+		// 5-
+		{input: `var abc = 1 \ var abc = 2`, err: errcode.EVAR_USED},
+		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE},
+		{input: `const def = 1\ var abc = def`, syms: []symValue{{"ABC", 1}}},
+		{input: `abc = 123`, err: errcode.EVAR_UNDEF},
+		{input: `hl = 123`, err: errcode.EASSIGN_LEFT},
+		// 10-
+		{input: `fn func \ endf \ var abc = 1 \ abc = fn()`, err: errcode.EASSIGN_VALUE},
+		{input: `fn func \ endf \ var abc = 1 \ abc = fn()`, err: errcode.EASSIGN_VALUE},
+	}
+
+	for tn, tt := range tests {
+		if tt.input == "" {
+			continue
+		}
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		prog, e := evalInput(tt.input, logger, env)
+
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+
+		// code
+		testCodeResult(t, tn, tt.code, prog)
+
+		// syms
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
 	}
 }
