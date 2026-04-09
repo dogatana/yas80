@@ -479,7 +479,7 @@ func TestOrgStatement(t *testing.T) {
 		{input: `org $ffff \ ld a, 1`, err: errcode.EADDRESS_OVERFLOW},
 		{input: `org hl \ nop `, err: errcode.EORG_VALUE},
 		{input: `org 'hl' \ nop `, err: errcode.EORG_VALUE},
-		{input: `org abc \ nop `, err: errcode.EORG_NULL},
+		{input: `org abc \ nop `, err: errcode.ESYM_UNDEF},
 		{input: `fn func\endf\ org fn()`, err: errcode.EORG_NULL},
 		{input: `org 0, aaa`, err: errcode.EORG_ALLOC},
 		// 10-

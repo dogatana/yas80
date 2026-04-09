@@ -345,7 +345,9 @@ func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object
 	switch obj := obj.(type) {
 	case *object.ErrorObject:
 		return obj
-	case *object.RefNotFoundObject, *object.NullObject:
+	case *object.RefNotFoundObject:
+		return obj
+	case *object.NullObject:
 		e.logger.Error(errcode.EORG_NULL, stmt.Context)
 		return object.ERROR
 

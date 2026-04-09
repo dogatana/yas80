@@ -200,11 +200,11 @@ func TestBuiltinFuncHighLow(t *testing.T) {
 		{input: `const v = $h()`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $h(1,2)`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $h("a")`, err: errcode.EEBFN_ARG_VALUE},
-		{input: `const v = $h(xyz)`, err: errcode.EEBFN_ARG_NULL},
+		{input: `const v = $h(xyz)`, err: errcode.ESYM_UNDEF},
 		{input: `const v = $l()`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $l(1,2)`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const v = $l("a")`, err: errcode.EEBFN_ARG_VALUE},
-		{input: `const v = $l(xyz)`, err: errcode.EEBFN_ARG_NULL},
+		{input: `const v = $l(xyz)`, err: errcode.ESYM_UNDEF},
 	}
 	for tn, tt := range tests {
 		if tt.input == "" {
