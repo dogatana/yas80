@@ -270,21 +270,26 @@ func (b *BinWriter) WriteMzt(w io.Writer, name string, start int) bool {
 
 // map 出力
 func (b *BinWriter) WriteMap(w io.Writer) error {
+	header := "offset   load   type  range        size" + "\n" + "------  ------  ----  -----------  ----"
+	fmt_s := "%6x  %6x  %s   %04x - %04x  %04x\n"
 	ofs := 0
+	load := b.segs[0].addr
+
+	fmt.Fprintln(w, header)
 	for _, s := range b.segs {
 		if s.gap {
-			if _, err := fmt.Fprintf(w, "%05x GAP %04x - %04x, size %04x\n", ofs, s.addr, s.addr+s.size-1, s.size); err != nil {
+			if _, err := fmt.Fprintf(w, fmt_s, ofs, load+ofs, "GAP", s.addr, s.addr+s.size-1, s.size); err != nil {
 				return err
 			}
 			ofs += s.size
 		} else {
 			size := len(s.code)
-			if _, err := fmt.Fprintf(w, "%05x ABS %04x - %04x, size %04x\n", ofs, s.addr, s.addr+size-1, size); err != nil {
+			if _, err := fmt.Fprintf(w, fmt_s, ofs, load+ofs, "ABS", s.addr, s.addr+size-1, size); err != nil {
 				return err
 			}
 			ofs += size
 			for _, rs := range s.children {
-				if _, err := fmt.Fprintf(w, "%05x REL %04x - %04x, size %04x\n", ofs, rs.addr, rs.addr+rs.size-1, size); err != nil {
+				if _, err := fmt.Fprintf(w, fmt_s, ofs, load+ofs, "REL", rs.addr, rs.addr+rs.size-1, rs.size); err != nil {
 					return err
 				}
 				ofs += rs.size

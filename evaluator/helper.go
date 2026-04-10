@@ -113,10 +113,10 @@ func advanceLocationCounters(env TEnv, n int) error {
 	counter = obj.(*object.NumberObject)
 	counter.Value += n
 
-	// 64KB アドレス超過のチェック
-	if counter.Value > 0x10000 {
-		return fmt.Errorf(errcode.EALLOC_ADDR_OVERFLOW, counter.Value)
-	}
+	// 64KB アドレス超過を許容するためチェックしない
+	// if counter.Value > 0x10000 {
+	// 	return fmt.Errorf(errcode.EALLOC_ADDR_OVERFLOW, counter.Value)
+	// }
 
 	return nil
 }
