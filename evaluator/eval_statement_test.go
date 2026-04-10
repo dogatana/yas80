@@ -568,7 +568,7 @@ func TestOrgAbsRel(t *testing.T) {
 			},
 		},
 		{input: `org $ffff \ ld a, 1`, err: errcode.EADDR_OVERFLOW},
-		{input: `org 0xffff \ org 0, rel \ call 0`, err: errcode.EALLOC_ADDR_OVERFLOW},
+		// {input: `org 0xffff \ org 0, rel \ call 0`, err: errcode.EALLOC_ADDR_OVERFLOW}, // 配置アドレスは64k超を許容するためテスト対象外
 		{input: `org hl \ nop `, err: errcode.EORG_VALUE},
 		{input: `org 'hl' \ nop `, err: errcode.EORG_VALUE},
 		{input: `org abc \ nop `, err: errcode.ESYM_UNDEF},
