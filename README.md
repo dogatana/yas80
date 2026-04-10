@@ -80,7 +80,7 @@ go build
 
 | アセンブラ                            | バージョン                   | サイズ     | 備考            |  
 |  --                                   | --                           | --:        | --              | 
-| yas80.exe                             | 0.5.0                        |  3,710,464 |                 | 
+| yas80.exe                             | 0.5.0                        |  3,715,584 |                 | 
 | z80as.exe<br>(紅茶羊羹氏)             | 0.12                         |    172,032 |                 | 
 | z80asm.exe<br>(z88dk)                 | 2.4                          | 39,447,620 | MSVCRT.dll 依存 |
 | tools80.jar<br>(HAL 8999氏)           | Release 6.48<br>(Ver. 6.6.66)|    186,306 | 要 java.exe     |
@@ -114,11 +114,11 @@ Z80 公開命令の範囲でアセンブル時間の比較を行っています�
 
 |アセンブラ | 平均実行時間（秒）|
 | --        |       --:         |
-| yas80     |             0.020 |
+| yas80     |             0.021 |
 | z80as     |             0.005 |
-| z80asm    |             0.016 |
-| tools80   |             0.106 |
-| AILZ80ASM |             0.524 |
+| z80asm    |             0.017 |
+| tools80   |             0.113 |
+| AILZ80ASM |             0.540 |
 
 ![min](https://raw.githubusercontent.com/dogatana/yas80/main/performance/min.asm.svg)
 
@@ -126,11 +126,11 @@ Z80 公開命令の範囲でアセンブル時間の比較を行っています�
 
 |アセンブラ | 平均実行時間（秒）|
 | --        |       --:         |
-| yas80     |             0.041 |
-| z80as     |             0.015 |
-| z80asm    |             0.143 |
-| tools80   |             0.307 |
-| AILZ80ASM |             0.942 |
+| yas80     |             0.046 |
+| z80as     |             0.014 |
+| z80asm    |             0.139 |
+| tools80   |             0.309 |
+| AILZ80ASM |             0.938 |
 
 ![max](https://raw.githubusercontent.com/dogatana/yas80/main/performance/max.asm.svg)
 
@@ -138,11 +138,11 @@ Z80 公開命令の範囲でアセンブル時間の比較を行っています�
 
 |アセンブラ | 平均実行時間（秒）|
 | --        |       --:         |
-| yas80     |             0.082 |
-| z80as     |             0.026 |
-| z80asm    |             0.279 |
-| tools80   |             2.471 |
-| AILZ80ASM |             6.246 |
+| yas80     |             0.089 |
+| z80as     |             0.025 |
+| z80asm    |             0.268 |
+| tools80   |             2.423 |
+| AILZ80ASM |             6.220 |
 
 ![label](https://raw.githubusercontent.com/dogatana/yas80/main/performance/label.asm.svg)
 
