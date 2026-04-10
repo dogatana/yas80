@@ -271,7 +271,7 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 		return nil, false
 
 	default:
-		panic(fmt.Sprintf("getSymbolFromEnv error %#v", obj))
+		return nil, false
 	}
 }
 
