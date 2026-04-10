@@ -44,7 +44,7 @@ Z80 用アセンブラは既にいくつか利用可能ですが、
 Go のクロスコンパイル機能を利用し次表の環境で利用可能です。
 ただしこちらで確認しているのは windows - amd64 のみです。
 
-| OS (goos)| CPU (garch)  |
+| OS (goos)| CPU (goarch)  |
 | --       | --           |
 | windows  | amd64        |
 | linux    | amd64        |
@@ -54,17 +54,9 @@ Go のクロスコンパイル機能を利用し次表の環境で利用可能�
 
 [Releases](https://github.com/dogatana/yad80/releases) からダウンロード、解凍してください。
 
-## ソースからのビルド
-
-```
-git clone https://github.com/dogatana/yas80.git
-cd yas80
-go build
-```
-
 ## マニュアル
 
-[こちら](https://dogatana.github.io/yas80-docs/)に置いています。
+[こちら](https://dogatana.github.io/yas80-docs/) に置いています。
 
 ## ライセンス
 
@@ -72,8 +64,8 @@ go build
 
 ## アセンブル性能
 
-実用性の指標となるアセンブル性能を計測しました。
-合わせて容易に入手できる他のアセンブラと比較しています。
+実用性の指標を得る目的でアセンブル性能を計測しました。
+入手可能な他のアセンブラとも比較しています。
 
 
 ###  計測対象アセンブラ
@@ -95,7 +87,7 @@ Z80 公開命令の範囲でアセンブル時間の比較を行っています�
 それを除いた最大公約数的なソースになっています。
 
 またアセンブラのシンボル管理処理に負荷をかけるという観点で、
-各行にラベルを付加したものも使用しています。
+各行にラベルを付加したものも使用しました。
 
 | ソースファイル                     | 行数   | 内容                         |
 | --                                 | --:    |  --                          |
@@ -148,20 +140,26 @@ Z80 公開命令の範囲でアセンブル時間の比較を行っています�
 
 #### ZMA v1.0.19 （参考）
 
-ZMA v1.0.19 (t.hara氏)だと z80asm と tools80 の間にあたる 0.868 秒でした。<br>
+ZMA v1.0.19 (t.hara氏)だと label.asm(相当)のアセンブルで z80asm と tools80 の間にあたる 0.868 秒でした。<br>
 ZMA は
 - 書式が一般の Z80 アセンブラと異なる
 - 対応 Z80 公開命令が更に絞り込まれている（模様）
 
-ため専用ソース（書式変更、エラーとなる命令行コメント化）での計測となっています。
+ため専用ソース（書式変更、エラーとなる命令行コメント化）での計測としています。
 
 ## 参考
 
-yas80 作成にあたり、次の書籍、サイトを参考にさせていただきました。
+yas80 作成にあたって参考にした書籍、サイト、ソフトウェアです。
+著者・作者並びに公開されている方々に感謝します。
+
+### 書籍
 
 - Thorsten Ball 著、設樂 洋爾 訳. Go言語でつくるインタプリタ. O'Reilly Japan, 2018.<br>https://www.oreilly.co.jp/books/9784873118222/  
 - Jon Bodner著、武舎 広幸 訳. 初めてのGo言語 第2版. O'Reilly Japan, 2025.<br>https://www.oreilly.co.jp/books/9784814401192/
 - 近藤 嘉雪 著. yaccによるCコンパイラプログラミング. ソフトバンク, 1990
+
+### サイト
+
 - [goyaccで構文解析を行う](https://qiita.com/k0kubun/items/1b641dfd186fe46feb65)
 - [MZTファイルの仕様について覚書](https://mzakd.cool.coocan.jp/starthp/mzt.html) - [AKD's site](https://mzakd.cool.coocan.jp/main.html)
 - [T88Format](https://quagma.sakura.ne.jp/manuke/t88format.html) - [Manuke Station](https://quagma.sakura.ne.jp/manuke/index_j.html)
@@ -171,3 +169,13 @@ yas80 作成にあたり、次の書籍、サイトを参考にさせていた�
 - z80as - [OUT of STANDARD [PC-8001]](http://upd780c1.g1.xrea.com/pc-8001/index.html#UTL) 
 - AILZ80ASM  https://github.com/AILight/AILZ80ASM
 - zma https://github.com/hra1129/zma
+
+### 公開ソフトウェア
+
+またマニュアル内の 『[メモ：他のアセンブラとの違い](https://dogatana.github.io/yas80-docs/port/port.html)』 の検証にあたり、次の公開ソースを利用させていただきました。
+
+
+- [365面のパズルアクションゲーム FANTIC](http://www.maroon.dti.ne.jp/youkan/mz700/fantic/index.html)
+- [IPLセレクタ](https://web.archive.org/web/20210130154551/http://www.ne.jp/asahi/suga/junkyard/mz/mzsoft/iplsel/index.html)
+- [IPLセレクタ改 for MZ-80B/2000](https://github.com/kuran-kuran/IPLS09bKai?tab=readme-ov-file)
+- [LSX-Dodgers](https://github.com/tablacus/LSX-Dodgers)
