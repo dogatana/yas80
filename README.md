@@ -167,7 +167,7 @@ ZMA は
 
 ### AILZ80ASM - LSX-Dodgers
 
-![lsx-dodgers](performance/lsx-dodgers.svg)
+![lsx-dodgers](performance/LSX-Dodgers.svg)
 
 ## 参考
 
