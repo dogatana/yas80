@@ -25,6 +25,8 @@ venv/
 *.pdf
 *.map
 *.sym
+*.prof
+
 
 doc/
 port/

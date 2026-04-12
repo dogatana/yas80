@@ -147,10 +147,33 @@ ZMA は
 
 ため専用ソース（書式変更、エラーとなる命令行コメント化）での計測としています。
 
+
+## 実用アセンブル性能
+
+### 内容
+
+公開ソフト（URL は末尾）を
+[メモ：他のアセンブラとの違い](https://dogatana.github.io/yas80-docs/port/port.html)
+に従い、書き換えたものについて性能を計測しました。
+
+| 計測アセンブラ | 計測対象 | 行数 |
+| -- | -- | --: |
+| z80as | 365面のパズルアクションゲーム FANTIC | 1,251 |
+| AILZ80ASM | LSX-Dodgers | 6,187 |
+
+### z80asm - FANTIC
+
+![fantic](performance/FANTIC.svg)
+
+### AILZ80ASM - LSX-Dodgers
+
+![lsx-dodgers](performance/lsx-dodgers.svg)
+
 ## 参考
 
 yas80 作成にあたって参考にした書籍、サイト、ソフトウェアです。
 著者・作者並びに公開されている方々に感謝します。
+
 
 ### 書籍
 
