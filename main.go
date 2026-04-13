@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"runtime/pprof"
 
 	"github.com/dogatana/yas80/assembler"
 	"github.com/dogatana/yas80/filecontent"
@@ -19,36 +18,16 @@ func main() {
 
 // main をテスト可能とするため、別関数へ
 func run(opt options.Option) {
-	if opt.Cpuprofile != "" {
-		f, err := os.Create(opt.Cpuprofile)
-		if err != nil {
-			fmt.Printf("cannot create %s\n", opt.Cpuprofile)
-			os.Exit(1)
-		}
-		defer f.Close()
-		if err := pprof.StartCPUProfile(f); err != nil {
-			fmt.Println("cannot start CPU profile", err)
-			os.Exit(1)
-		}
-		defer pprof.StopCPUProfile()
-	}
+	stop := startCPUProfile(opt.Cpuprofile)
+
 	fcs := makeContents(opt)
 	iter := makeContentIterFunc(fcs)
 
 	as := assembler.New(opt)
 	as.Run(iter)
 
-	if opt.Memprofile != "" {
-		f, err := os.Create(opt.Memprofile)
-		if err != nil {
-			fmt.Printf("cannot create %s\n", opt.Memprofile)
-			os.Exit(1)
-		}
-		defer f.Close()
-		if err := pprof.WriteHeapProfile(f); err != nil {
-			fmt.Println("cannot write memory profile", err)
-		}
-	}
+	stop()
+	memProfile(opt.Memprofile)
 }
 
 // opt の内容に応じた []*filecontent.FileContent を生成
