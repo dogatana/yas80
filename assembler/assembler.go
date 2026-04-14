@@ -325,37 +325,36 @@ func printObjects(objs []object.Object) {
 }
 
 func showResult(count int, prog *parser.BlockStatement, obj object.Object, env object.Environment) {
-	path := ""
-	if count >= 0 {
-		path = fmt.Sprintf("[%d] ", count)
-	}
+	// path := ""
+	// if count >= 0 {
+	// 	path = fmt.Sprintf("[%d] ", count)
+	// }
 
-	bo := obj.(*object.BlockObject)
-	fmt.Printf("\n# %s%d objects\n", path, len(bo.Block))
-	printObjects(bo.Block)
+	// bo := obj.(*object.BlockObject)
+	// fmt.Printf("\n# %s%d objects\n", path, len(bo.Block))
+	// printObjects(bo.Block)
 
-	fmt.Printf("\n# %sast\n", path)
-	for _, node := range prog.Block {
-		switch stmt := node.(type) {
-		case *parser.MacroBlockStatement:
-			printContext(stmt.GetContext())
-			if stmt.Name == "REPT" {
-				fmt.Printf("REPT %d\n", stmt.Count)
-			} else {
-				fmt.Println("MACRO", stmt.Name)
-			}
-			for _, s := range stmt.Block {
-				printStatement(s)
-			}
-		default:
-			printStatement(node)
-		}
-	}
-	// fmt.Println(prog.String())
+	// fmt.Printf("\n# %sast\n", path)
+	// for _, node := range prog.Block {
+	// 	switch stmt := node.(type) {
+	// 	case *parser.MacroBlockStatement:
+	// 		printContext(stmt.GetContext())
+	// 		if stmt.Name == "REPT" {
+	// 			fmt.Printf("REPT %d\n", stmt.Count)
+	// 		} else {
+	// 			fmt.Println("MACRO", stmt.Name)
+	// 		}
+	// 		for _, s := range stmt.Block {
+	// 			printStatement(s)
+	// 		}
+	// 	default:
+	// 		printStatement(node)
+	// 	}
+	// }
+	// // fmt.Println(prog.String())
 
-	fmt.Printf("\n# %senv\n", path)
-	object.PrintEnv(env)
-
+	// fmt.Printf("\n# %senv\n", path)
+	// object.PrintEnv(env)
 }
 
 func printStatement(stmt parser.Statement) {

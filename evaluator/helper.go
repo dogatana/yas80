@@ -2,8 +2,6 @@ package evaluator
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/dogatana/yas80/errcode"
@@ -149,74 +147,75 @@ func boolToInt(value bool) int {
 	}
 }
 
-// 数値/文字列/レジスタ/フラグをTextObject に変換する
-func (e *Evaluator) valueToTextObject(obj object.Object, ctx TContext) object.Object {
-	switch v := obj.(type) {
-	case *object.NumberObject:
-		text := fmt.Sprintf("%04x(%d)", v.Value, v.Value)
-		return &object.TextObject{Text: text, Context: ctx}
+// // 数値/文字列/レジスタ/フラグをTextObject に変換する
+// func (e *Evaluator) valueToTextObject(obj object.Object, ctx TContext) object.Object {
+// 	switch v := obj.(type) {
+// 	case *object.NumberObject:
+// 		text := fmt.Sprintf("%04x(%d)", v.Value, v.Value)
+// 		return &object.TextObject{Text: text, Context: ctx}
 
-	case *object.StringObject:
-		text := fmt.Sprintf("%q", v.Value)
-		return &object.TextObject{Text: text, Context: ctx}
+// 	case *object.StringObject:
+// 		text := fmt.Sprintf("%q", v.Value)
+// 		return &object.TextObject{Text: text, Context: ctx}
 
-	case *object.RegisterObject:
-		text := parser.TokenLiteral(v.Register)
-		return &object.TextObject{Text: text, Context: ctx}
+// 	case *object.RegisterObject:
+// 		text := parser.TokenLiteral(v.Register)
+// 		return &object.TextObject{Text: text, Context: ctx}
 
-	case *object.FlagObject:
-		text := parser.TokenLiteral(v.Flag)
-		return &object.TextObject{Text: text, Context: ctx}
-	}
+// 	case *object.FlagObject:
+// 		text := parser.TokenLiteral(v.Flag)
+// 		return &object.TextObject{Text: text, Context: ctx}
+// 	}
 
-	return &object.ValueObject{Value: obj, Context: ctx}
-}
+// 	return &object.ValueObject{Value: obj, Context: ctx}
+// }
 
 // シンボル結合処理
 func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TContext) bool {
-	switch expr := (*ptr).(type) {
-	case *parser.InfixExpression:
-		if expr.Operator != parser.CONCAT {
-			return e.concatenateSymbol(&expr.Op1, env, ctx) || e.concatenateSymbol(&expr.Op2, env, ctx)
-		}
-		ident, ok := expr.Op1.(*parser.Ident)
-		if !ok {
-			panic("not ident")
-			// TODO: parser の段階でここには来ないはず
-			// e.logger.Error(errcode.ESYM_CONCAT_NOTSYM, ctx)
-			// return false
-		}
-		// copy &(*ident) では新しい値が生成されないため
-		{
-			temp := *ident
-			ident = &temp
-		}
+	// switch expr := (*ptr).(type) {
+	// case *parser.InfixExpression:
+	// 	if expr.Operator != parser.CONCAT {
+	// 		return e.concatenateSymbol(&expr.Op1, env, ctx) || e.concatenateSymbol(&expr.Op2, env, ctx)
+	// 	}
+	// 	ident, ok := expr.Op1.(*parser.Ident)
+	// 	if !ok {
+	// 		panic("not ident")
+	// 		// TODO: parser の段階でここには来ないはず
+	// 		// e.logger.Error(errcode.ESYM_CONCAT_NOTSYM, ctx)
+	// 		// return false
+	// 	}
+	// 	// copy &(*ident) では新しい値が生成されないため
+	// 	{
+	// 		temp := *ident
+	// 		ident = &temp
+	// 	}
 
-		suffix := ""
-		op2 := e.evalExpression(expr.Op2, env, ctx)
-		switch op2 := op2.(type) {
-		case *object.ErrorObject:
-			return false
-		case *object.RefNotFoundObject:
-			names := strings.Join(op2.Names, ", ")
-			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, names), ctx)
-			return false
-		case *object.NumberObject:
-			suffix = fmt.Sprintf("%d", op2.Value)
-		case *object.StringObject:
-			suffix = strings.ToUpper(op2.Value) // 文字列リテラルは大文字化して結合する
-		default:
-			e.logger.Error(errcode.ECONCAT_TYPE, ctx)
-			return false
-		}
-		ident.Name += suffix
-		*ptr = ident
-		return true
-	case *parser.PrefixExpression:
-		return e.concatenateSymbol(&expr.Op, env, ctx)
-	default:
-		return false
-	}
+	// 	suffix := ""
+	// 	op2 := e.evalExpression(expr.Op2, env, ctx)
+	// 	switch op2 := op2.(type) {
+	// 	case *object.ErrorObject:
+	// 		return false
+	// 	case *object.RefNotFoundObject:
+	// 		names := strings.Join(op2.Names, ", ")
+	// 		e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, names), ctx)
+	// 		return false
+	// 	case *object.NumberObject:
+	// 		suffix = fmt.Sprintf("%d", op2.Value)
+	// 	case *object.StringObject:
+	// 		suffix = strings.ToUpper(op2.Value) // 文字列リテラルは大文字化して結合する
+	// 	default:
+	// 		e.logger.Error(errcode.ECONCAT_TYPE, ctx)
+	// 		return false
+	// 	}
+	// 	ident.Name += suffix
+	// 	*ptr = ident
+	// 	return true
+	// case *parser.PrefixExpression:
+	// 	return e.concatenateSymbol(&expr.Op, env, ctx)
+	// default:
+	// 	return false
+	// }
+	return false
 }
 
 // ENV から NumberObject を取得する（システム変数用）
@@ -275,60 +274,60 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 	}
 }
 
-// 参照用匿名ラベルを検索  呼ばれる前に isAnonRef なのはチェック済み
-func (e *Evaluator) findAnonLabel(name string, env TEnv, ctx TContext) object.Object {
-	var def string
-	if len(name) == 2 {
-		def = "@@" // @F, @B -> @@ を検索
-	} else {
-		def = name[:2] // @nF, @nB -> @n を検索
-	}
-	obj, ok := env.Get(def)
-	if !ok {
-		if name[len(name)-1] == 'B' { // B の場合は定義済みのはず
-			e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
-			return object.ERROR
-		}
-		// 'F' で環境にないなら空で登録し下のチェック(stage 2)で失敗させるようにする
-		obj := &object.AnonLabelsObject{Name: name, Labels: []*object.AnonLabel{}}
-		env.Set(def, obj)
+// // 参照用匿名ラベルを検索  呼ばれる前に isAnonRef なのはチェック済み
+// func (e *Evaluator) findAnonLabel(name string, env TEnv, ctx TContext) object.Object {
+// 	var def string
+// 	if len(name) == 2 {
+// 		def = "@@" // @F, @B -> @@ を検索
+// 	} else {
+// 		def = name[:2] // @nF, @nB -> @n を検索
+// 	}
+// 	obj, ok := env.Get(def)
+// 	if !ok {
+// 		if name[len(name)-1] == 'B' { // B の場合は定義済みのはず
+// 			e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
+// 			return object.ERROR
+// 		}
+// 		// 'F' で環境にないなら空で登録し下のチェック(stage 2)で失敗させるようにする
+// 		obj := &object.AnonLabelsObject{Name: name, Labels: []*object.AnonLabel{}}
+// 		env.Set(def, obj)
 
-		// stage 2 のチェックへ移行させるため ture のままとする
-		// e.Resolved = false
-		return &object.RefNotFoundObject{}
-	}
+// 		// stage 2 のチェックへ移行させるため ture のままとする
+// 		// e.Resolved = false
+// 		return &object.RefNotFoundObject{}
+// 	}
 
-	labels := obj.(*object.AnonLabelsObject).Labels
-	switch name[len(name)-1] {
-	case 'B':
-		// 逆順検索
-		for i := len(labels) - 1; i >= 0; i-- {
-			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line < ctx.Line {
-				return labels[i]
-			}
-		}
-		// 逆順なので必ず見つかるはずで、そうでないならエラーとする
-		e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
-		return object.ERROR
-	case 'F':
-		// 順方向検索
-		for i := 0; i < len(labels); i++ {
-			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line > ctx.Line {
-				return labels[i]
-			}
-		}
-		// Evaluator.Stage2 で見つからなければエラー
-		if e.Stage2 {
-			e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
-			return object.ERROR
-		}
-		// stage 2 のチェックへ移行させるため ture のままとする
-		// e.Resolved = false
-		return &object.RefNotFoundObject{}
-	default:
-		panic(fmt.Sprintf("invalid anonymous label name: %s", name))
-	}
-}
+// 	labels := obj.(*object.AnonLabelsObject).Labels
+// 	switch name[len(name)-1] {
+// 	case 'B':
+// 		// 逆順検索
+// 		for i := len(labels) - 1; i >= 0; i-- {
+// 			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line < ctx.Line {
+// 				return labels[i]
+// 			}
+// 		}
+// 		// 逆順なので必ず見つかるはずで、そうでないならエラーとする
+// 		e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
+// 		return object.ERROR
+// 	case 'F':
+// 		// 順方向検索
+// 		for i := 0; i < len(labels); i++ {
+// 			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line > ctx.Line {
+// 				return labels[i]
+// 			}
+// 		}
+// 		// Evaluator.Stage2 で見つからなければエラー
+// 		if e.Stage2 {
+// 			e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
+// 			return object.ERROR
+// 		}
+// 		// stage 2 のチェックへ移行させるため ture のままとする
+// 		// e.Resolved = false
+// 		return &object.RefNotFoundObject{}
+// 	default:
+// 		panic(fmt.Sprintf("invalid anonymous label name: %s", name))
+// 	}
+// }
 
 // parser.Expression -> parser.Ident - >parser.Label を評価・環境登録し object.SymbolObject を返す
 func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) object.Object {
@@ -356,65 +355,65 @@ func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 	return l
 }
 
-// 1文字の文字列を数値に変換する
-func (e *Evaluator) evalOneCharStringAsNumber(s string, ctx TContext) object.Object {
-	r := []rune(s)
-	if len(r) != 1 {
-		e.logger.Error(fmt.Sprintf(errcode.ESTR_TO_INT_LEN, len(r)), ctx)
-		return object.ERROR
-	}
-	b, err := util.Utf8ToShiftJis(string(r))
-	if err != nil || len(b) == 0 || len(b) > 2 {
-		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, string(r)), ctx)
-		return object.ERROR
-	}
+// // 1文字の文字列を数値に変換する
+// func (e *Evaluator) evalOneCharStringAsNumber(s string, ctx TContext) object.Object {
+// 	r := []rune(s)
+// 	if len(r) != 1 {
+// 		e.logger.Error(fmt.Sprintf(errcode.ESTR_TO_INT_LEN, len(r)), ctx)
+// 		return object.ERROR
+// 	}
+// 	b, err := util.Utf8ToShiftJis(string(r))
+// 	if err != nil || len(b) == 0 || len(b) > 2 {
+// 		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, string(r)), ctx)
+// 		return object.ERROR
+// 	}
 
-	var code int
-	if len(b) == 1 {
-		code = int(b[0])
-	} else {
-		code = int(b[0])*256 + int(b[1])
-	}
-	return &object.NumberObject{Value: code, Context: ctx}
-}
+// 	var code int
+// 	if len(b) == 1 {
+// 		code = int(b[0])
+// 	} else {
+// 		code = int(b[0])*256 + int(b[1])
+// 	}
+// 	return &object.NumberObject{Value: code, Context: ctx}
+// }
 
-// 1/2 要素の数値配列を数値に変換する
-func (e *Evaluator) evalArrayToInt(values []object.Object, ctx TContext) object.Object {
-	if len(values) < 1 || len(values) > 2 {
-		e.logger.Error(fmt.Sprintf(errcode.EARRAY_TO_INT_LEN, len(values)), ctx)
-		return object.ERROR
+// // 1/2 要素の数値配列を数値に変換する
+// func (e *Evaluator) evalArrayToInt(values []object.Object, ctx TContext) object.Object {
+// 	if len(values) < 1 || len(values) > 2 {
+// 		e.logger.Error(fmt.Sprintf(errcode.EARRAY_TO_INT_LEN, len(values)), ctx)
+// 		return object.ERROR
 
-	}
-	v1, ok := values[0].(*object.NumberObject)
-	if !ok {
-		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
-		return object.ERROR
-	}
-	if len(values) == 1 {
-		return &object.NumberObject{Value: v1.Value, Context: ctx}
-	}
+// 	}
+// 	v1, ok := values[0].(*object.NumberObject)
+// 	if !ok {
+// 		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
+// 		return object.ERROR
+// 	}
+// 	if len(values) == 1 {
+// 		return &object.NumberObject{Value: v1.Value, Context: ctx}
+// 	}
 
-	v2, ok := values[1].(*object.NumberObject)
-	if !ok {
-		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
-		return object.ERROR
-	}
-	return &object.NumberObject{Value: v1.Value*256 + v2.Value, Context: ctx}
-}
+// 	v2, ok := values[1].(*object.NumberObject)
+// 	if !ok {
+// 		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
+// 		return object.ERROR
+// 	}
+// 	return &object.NumberObject{Value: v1.Value*256 + v2.Value, Context: ctx}
+// }
 
-// incbin charmap ファイル読み込み
-func (e *Evaluator) readFile(from, name string) ([]byte, error) {
-	dirs := make([]string, 0, len(e.incDirs)+1)
+// // incbin charmap ファイル読み込み
+// func (e *Evaluator) readFile(from, name string) ([]byte, error) {
+// 	dirs := make([]string, 0, len(e.incDirs)+1)
 
-	dirs = append(dirs, filepath.Dir(from))
-	dirs = append(dirs, e.incDirs...)
+// 	dirs = append(dirs, filepath.Dir(from))
+// 	dirs = append(dirs, e.incDirs...)
 
-	base := filepath.Base(name)
-	for _, dir := range dirs {
-		path := filepath.Join(dir, base)
-		if content, err := os.ReadFile(path); err == nil {
-			return content, nil
-		}
-	}
-	return nil, fmt.Errorf(errcode.EFILE_NOT_FOUND, name)
-}
+// 	base := filepath.Base(name)
+// 	for _, dir := range dirs {
+// 		path := filepath.Join(dir, base)
+// 		if content, err := os.ReadFile(path); err == nil {
+// 			return content, nil
+// 		}
+// 	}
+// 	return nil, fmt.Errorf(errcode.EFILE_NOT_FOUND, name)
+// }

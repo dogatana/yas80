@@ -45,7 +45,7 @@ func (e *Evaluator) evalZ80_ADD8(stmt *parser.Z80Instruction, op1, argOp2 object
 
 	code := &object.CodeObject{Code: []byte{opcodes[stmt.Opcode]}, TStates: [2]byte{4, 1}, Context: stmt.Context} // PUSH BC
 
-EVAL_AGAIN:
+	// EVAL_AGAIN:
 	switch op2 := argOp2.(type) {
 	case *object.RefNotFoundObject:
 		e.Resolved = false
@@ -87,19 +87,19 @@ EVAL_AGAIN:
 		code.Code = []byte{code.Code[0], n}
 		return code
 
-	case *object.StringObject:
-		argOp2 = e.evalOneCharStringAsNumber(op2.Value, stmt.Context)
-		if isError(argOp2) {
-			return argOp2
-		}
-		goto EVAL_AGAIN
+	// case *object.StringObject:
+	// 	argOp2 = e.evalOneCharStringAsNumber(op2.Value, stmt.Context)
+	// 	if isError(argOp2) {
+	// 		return argOp2
+	// 	}
+	// 	goto EVAL_AGAIN
 
-	case *object.ArrayObject:
-		argOp2 = e.evalArrayToInt(op2.Values, stmt.Context)
-		if isError(argOp2) {
-			return argOp2
-		}
-		goto EVAL_AGAIN
+	// case *object.ArrayObject:
+	// 	argOp2 = e.evalArrayToInt(op2.Values, stmt.Context)
+	// 	if isError(argOp2) {
+	// 		return argOp2
+	// 	}
+	// 	goto EVAL_AGAIN
 
 	// OP (HL),(IX+d),(IY+d)
 	case *object.RegIndirectObject:

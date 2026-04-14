@@ -2,7 +2,6 @@ package evaluator
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/dogatana/yas80/errcode"
 	"github.com/dogatana/yas80/object"
@@ -14,41 +13,41 @@ import (
 // }
 
 func (e *Evaluator) CheckSymbolError(env TEnv) {
-	for name, obj := range env.Store() {
-		switch obj := obj.(type) {
-		case *object.SymbolObject:
-			if obj.Name == "_" || obj.Name[0] == '$' {
-				continue
-			}
-			if obj.Name[0] == '@' && env.EnvType() != object.ENV_MACRO {
-				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), obj.Context)
-				continue
-			}
-			if obj.Name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC {
-				e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), obj.Context)
-				continue
-			}
-			if obj.SymType == object.SYM_UNKNOWN && strings.Contains(name[1:], ".") {
-				// dotident が仮登録されている場合で、本登録されていれば削除しておく
-				if _, ok := e.getSymbolFromEnv(name, env); ok {
-					delete(env.Store(), name)
-					continue
-				}
-				e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), obj.Context)
-				continue
-			}
-			if obj.SymType == object.SYM_UNKNOWN {
-				e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), obj.Context)
-				continue
-			}
-			if obj.Value == object.NULL {
-				e.logger.Error(fmt.Sprintf(errcode.ESYM_NULL, name), obj.Context)
-			}
+	// for name, obj := range env.Store() {
+	// 	switch obj := obj.(type) {
+	// 	case *object.SymbolObject:
+	// 		if obj.Name == "_" || obj.Name[0] == '$' {
+	// 			continue
+	// 		}
+	// 		if obj.Name[0] == '@' && env.EnvType() != object.ENV_MACRO {
+	// 			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), obj.Context)
+	// 			continue
+	// 		}
+	// 		if obj.Name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC {
+	// 			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), obj.Context)
+	// 			continue
+	// 		}
+	// 		if obj.SymType == object.SYM_UNKNOWN && strings.Contains(name[1:], ".") {
+	// 			// dotident が仮登録されている場合で、本登録されていれば削除しておく
+	// 			if _, ok := e.getSymbolFromEnv(name, env); ok {
+	// 				delete(env.Store(), name)
+	// 				continue
+	// 			}
+	// 			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), obj.Context)
+	// 			continue
+	// 		}
+	// 		if obj.SymType == object.SYM_UNKNOWN {
+	// 			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), obj.Context)
+	// 			continue
+	// 		}
+	// 		if obj.Value == object.NULL {
+	// 			e.logger.Error(fmt.Sprintf(errcode.ESYM_NULL, name), obj.Context)
+	// 		}
 
-		case *object.ProcObject:
-			e.CheckSymbolError(obj)
-		}
-	}
+	// 	case *object.ProcObject:
+	// 		e.CheckSymbolError(obj)
+	// 	}
+	// }
 }
 
 func (e *Evaluator) CheckCyclicError(env TEnv) {
