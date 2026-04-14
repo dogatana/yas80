@@ -27,3 +27,11 @@ func Intern(s string) SymbolID {
 func Lookup(id SymbolID) string {
 	return idToStr[id]
 }
+
+var ID_LOC SymbolID  // $
+var ID_ALOC SymbolID // $$
+
+func init() {
+	ID_LOC = Intern("$")
+	ID_ALOC = Intern("$$")
+}
