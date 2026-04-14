@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/errcodenames"
 	"github.com/dogatana/yas80/internal/testutil"
 )
@@ -28,8 +29,8 @@ func TestParseConstStatement(t *testing.T) {
 		if !ok {
 			t.Fatalf("[%d] Name must be Ident. got %T", tn, cs.Name)
 		}
-		if ident.Name != tt.name {
-			t.Errorf("[%d] expected Name %q. got %q", tn, tt.name, ident.Name)
+		if intern.Lookup(ident.NameID) != tt.name {
+			t.Errorf("[%d] expected Name %q. got %q", tn, tt.name, intern.Lookup(ident.NameID))
 		}
 		testNumberLiteral(t, tn, cs.Value, tt.expected)
 	}

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/intern"
 )
 
 const (
@@ -180,7 +181,7 @@ func (s *IncludeStatement) String() string {
 
 // charmap
 type CharmapStatement struct {
-	Name     string
+	NameID   intern.SymbolID
 	Filename Expression
 	DefChar  Expression
 	Context  *filecontent.Context
@@ -196,7 +197,7 @@ func (s *CharmapStatement) ReplaceContext(ctx filecontent.Context) {
 	s.Context = &ctx
 }
 func (s *CharmapStatement) String() string {
-	str := fmt.Sprintf("CHARMAP %s, %q", s.Name, s.Filename)
+	str := fmt.Sprintf("CHARMAP %s, %q", intern.Lookup(s.NameID), s.Filename)
 	if s.DefChar != nil {
 		str += ", " + s.DefChar.String()
 	}
@@ -317,7 +318,7 @@ func (s *ProcBlockStatement) String() string {
 
 // enum 定義文
 type EnumStatement struct {
-	Name     string
+	NameID   intern.SymbolID
 	Elements *EnumElements
 	Context  *filecontent.Context
 }
@@ -334,7 +335,7 @@ func (s *EnumStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *EnumStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(s.Name + " ENUM\n")
+	out.WriteString(intern.Lookup(s.NameID) + " ENUM\n")
 	out.WriteString(s.Elements.String() + "\n")
 	out.WriteString("ENDE")
 
@@ -359,7 +360,7 @@ func (s *EnumElements) String() string {
 
 // enum 要素定義文
 type EnumElement struct {
-	Name    string
+	NameID  intern.SymbolID
 	Value   Expression
 	Context *filecontent.Context
 }
@@ -374,10 +375,11 @@ func (s *EnumElement) ReplaceContext(ctx filecontent.Context) {
 	s.Context = &ctx
 }
 func (s *EnumElement) String() string {
+	name := intern.Lookup(s.NameID)
 	if s.Value == nil {
-		return s.Name
+		return name
 	} else {
-		return s.Name + " = " + s.Value.String()
+		return name + " = " + s.Value.String()
 	}
 }
 
@@ -478,7 +480,7 @@ func (s *IfStatement) String() string {
 
 // func 文
 type FuncStatement struct {
-	Name    string
+	NameID  intern.SymbolID
 	Params  []string
 	Block   *BlockStatement
 	Context *filecontent.Context
@@ -496,7 +498,7 @@ func (s *FuncStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *FuncStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(s.Name + " FUNC " + strings.Join(s.Params, ", ") + "\n")
+	out.WriteString(intern.Lookup(s.NameID) + " FUNC " + strings.Join(s.Params, ", ") + "\n")
 	out.WriteString(s.Block.String() + "\n")
 	out.WriteString("ENDF")
 
@@ -505,7 +507,7 @@ func (s *FuncStatement) String() string {
 
 // macro 定義文
 type MacroStatement struct {
-	Name    string
+	NameID  intern.SymbolID
 	Params  []string
 	Body    *BlockStatement
 	End     int // ENDM 行
@@ -524,7 +526,7 @@ func (s *MacroStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *MacroStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(s.Name + " MACRO " + strings.Join(s.Params, ", ") + "\n")
+	out.WriteString(intern.Lookup(s.NameID) + " MACRO " + strings.Join(s.Params, ", ") + "\n")
 	out.WriteString(s.Body.String() + "\n")
 	out.WriteString("ENDM")
 
@@ -534,7 +536,7 @@ func (s *MacroStatement) String() string {
 // macro 呼出し Parse 後
 type MacroCallStatement struct {
 	Label   Expression
-	Name    string
+	NameID  intern.SymbolID
 	Args    *ExpressionList
 	Context *filecontent.Context
 }
@@ -553,7 +555,7 @@ func (s *MacroCallStatement) String() string {
 	for _, arg := range s.Args.Expressions {
 		args = append(args, arg.String())
 	}
-	return fmt.Sprintf("MACRO %s CALL with %s", s.Name, strings.Join(args, ","))
+	return fmt.Sprintf("MACRO %s CALL with %s", intern.Lookup(s.NameID), strings.Join(args, ","))
 }
 
 // block statement
@@ -576,11 +578,11 @@ func (s *BlockStatement) String() string {
 // macro block statement
 type MacroBlockStatement struct {
 	Label   Expression
-	Name    string // マクロ名 もしくは "REPT"
-	Index   int    // REPT 用
-	Count   int    // REPT 用
-	Start   int    // REPT 行
-	Value   any    // REPT 用 Expression/Object
+	NameID  intern.SymbolID // マクロ名 もしくは "REPT"
+	Index   int             // REPT 用
+	Count   int             // REPT 用
+	Start   int             // REPT 行
+	Value   any             // REPT 用 Expression/Object
 	Block   []Statement
 	Context *filecontent.Context
 }
@@ -597,7 +599,7 @@ func (s *MacroBlockStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *MacroBlockStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(fmt.Sprintf("MACRO BLOCK(%s) {\n", s.Name))
+	out.WriteString(fmt.Sprintf("MACRO BLOCK(%s) {\n", intern.Lookup(s.NameID)))
 	for _, s := range s.Block {
 		out.WriteString(s.String() + "\n")
 	}
@@ -635,7 +637,7 @@ func (s *ConstStatement) String() string {
 
 // 変数定義文 - VAR
 type VariableStatement struct {
-	Name    Expression
+	NameID  Expression
 	Value   Expression
 	Context *filecontent.Context
 }
@@ -653,7 +655,7 @@ func (s *VariableStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("VAR ")
-	out.WriteString(s.Name.(*Ident).Name)
+	out.WriteString(intern.Lookup(s.NameID.(*Ident).NameID))
 	out.WriteString(" = ")
 	out.WriteString(s.Value.String())
 
@@ -844,13 +846,13 @@ func (s *CommentStatement) String() string {
 // ラベル
 type Label struct {
 	LabelType int
-	Name      string
+	NameID    intern.SymbolID
 	Context   *filecontent.Context
 }
 
 func (e *Label) expressionNode()    {}
 func (e *Label) NodeType() NodeType { return NODE_LABEL }
-func (e *Label) String() string     { return e.Name }
+func (e *Label) String() string     { return intern.Lookup(e.NameID) }
 
 // 数値
 type NumberLiteral struct {
@@ -942,7 +944,7 @@ func (e *FlagLiteral) String() string {
 
 // 識別子
 type Ident struct {
-	Name      string
+	NameID    intern.SymbolID
 	IdentType int
 	Value     Expression
 	Context   *filecontent.Context
@@ -950,20 +952,20 @@ type Ident struct {
 
 func (e *Ident) expressionNode()    {}
 func (e *Ident) NodeType() NodeType { return NODE_IDENT }
-func (e *Ident) String() string     { return e.Name }
+func (e *Ident) String() string     { return intern.Lookup(e.NameID) }
 
 // ドット識別子
 type DotIdent struct {
-	Name    string
-	Left    string
-	Right   string
+	NameID  intern.SymbolID
+	Left    intern.SymbolID
+	Right   intern.SymbolID
 	Value   Expression
 	Context *filecontent.Context
 }
 
 func (e *DotIdent) expressionNode()    {}
 func (e *DotIdent) NodeType() NodeType { return NODE_DOT_IDENT }
-func (e *DotIdent) String() string     { return e.Name }
+func (e *DotIdent) String() string     { return intern.Lookup(e.NameID) }
 
 // レジスタ間接指定
 type RegIndirectExpression struct {
@@ -1051,7 +1053,7 @@ func (e *PrefixExpression) String() string {
 
 // 関数呼出し
 type FuncCallExpression struct {
-	Name    string
+	NameID  intern.SymbolID
 	Args    *ExpressionList
 	Context *filecontent.Context
 }
@@ -1061,7 +1063,7 @@ func (e *FuncCallExpression) NodeType() NodeType { return NODE_CALL }
 func (e *FuncCallExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(e.Name + "(")
+	out.WriteString(intern.Lookup(e.NameID) + "(")
 	out.WriteString(e.Args.String())
 	out.WriteRune(')')
 

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"github.com/dogatana/yas80/errcode"
 	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/intern"
 )
 
 // goyacc が __yyfmt__ を勝手に import することの対策
@@ -185,14 +186,14 @@ directive	: CONST ident_expr '=' expr
 			}
 			| ident ENUM EOL enum_elements ENDE
 			{
-				$$ = &EnumStatement{Name: $1.Name, Elements: $4, Context: $2.Context}
+				$$ = &EnumStatement{NameID: $1.NameID, Elements: $4, Context: $2.Context}
 			}
 			| VAR ident '=' expr
 			{
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4.(*ParseError)
 				} else {
-					$$ = &VariableStatement{Name: &Ident{Name: $2.Name}, Value: $4, Context: $1.Context}
+					$$ = &VariableStatement{NameID: &Ident{NameID: $2.NameID}, Value: $4, Context: $1.Context}
 				}
 			}
 			| expr '=' expr
@@ -279,7 +280,7 @@ directive	: CONST ident_expr '=' expr
 			}
 			| ident FUNC param_list EOL block_statement ENDF
 			{
-				$$ = &FuncStatement{Name: $1.Name, Params: $3, Block: $5, Context: $2.Context}
+				$$ = &FuncStatement{NameID: $1.NameID, Params: $3, Block: $5, Context: $2.Context}
 			}
 			| FUNCTION ident '(' param_list ')' expr
 			{ 
@@ -287,7 +288,7 @@ directive	: CONST ident_expr '=' expr
 					$$ = $6.(*ParseError)
 				} else {
 					$$ = &FuncStatement{
-						Name: $2.Name, 
+						NameID: $2.NameID, 
 						Params: $4, 
 						Block: &BlockStatement{Block: []Statement {&ReturnStatement{Value: $6, Context: $1.Context}}}, 
 						Context: $1.Context}
@@ -304,15 +305,15 @@ directive	: CONST ident_expr '=' expr
 			}
 			| ident MACRO param_list EOL block_statement ENDM
 			{
-				$$ = &MacroStatement{Name: $1.Name, Params: $3, Body: $5, End: $6.Context.Line, Context: $1.Context}
+				$$ = &MacroStatement{NameID: $1.NameID, Params: $3, Body: $5, End: $6.Context.Line, Context: $1.Context}
 			}
 			| IDENT expr_list 
 			{
-				$$ = &MacroCallStatement{Name: strings.ToUpper($1.Literal), Args: $2, Context: $1.Context}
+				$$ = &MacroCallStatement{NameID: $1.SymbolID, Args: $2, Context: $1.Context}
 			}
 			| ident_expr ':' IDENT expr_list
 			{
-				$$ = &MacroCallStatement{Label: $1, Name: strings.ToUpper($3.Literal), Args: $4	, Context: $3.Context}
+				$$ = &MacroCallStatement{Label: $1, NameID: $3.SymbolID, Args: $4	, Context: $3.Context}
 			}
 			| EXITM			{ $$ = &ExitmStatement{Context: $1.Context}}
 			| EXITM IF expr
@@ -345,10 +346,10 @@ directive	: CONST ident_expr '=' expr
 			| ORG expr	{ $$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: $1.Context }}
 			| ORG expr ',' ident	
 			{ 
-				switch strings.ToUpper($4.Name) {
-				case "ABS":
+				switch $4.NameID {
+				case intern.Intern("ABS"):
 					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: $1.Context }
-				case "REL":
+				case intern.Intern("REL"):
 					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_REL, Context: $1.Context }
 				default:
 					$$ = &ParseError{Message: errcode.EORG_ALLOC, Context: $1.Context}
@@ -357,11 +358,11 @@ directive	: CONST ident_expr '=' expr
 			| INCLUDE STRING { $$ = &IncludeStatement{Filename: $2.Literal, Context: $1.Context} }
 			| CHARMAP IDENT ',' expr
 			{ 
-				$$ = &CharmapStatement{Name: strings.ToUpper($2.Literal), Filename: $4, Context: $1.Context} 
+				$$ = &CharmapStatement{NameID: $2.SymbolID, Filename: $4, Context: $1.Context} 
 			}
 			| CHARMAP IDENT ',' expr ',' expr
 			{ 
-				$$ = &CharmapStatement{Name: strings.ToUpper($2.Literal), Filename: $4, DefChar: $6, Context: $1.Context} 
+				$$ = &CharmapStatement{NameID: $2.SymbolID, Filename: $4, DefChar: $6, Context: $1.Context} 
 			}
 			;
 
@@ -429,10 +430,10 @@ datastore	: DS expr
 			}
 			;
 	
-ident		: IDENT		 	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: IDENT, Context: $1.Context}}
-			| LOCAL_IDENT	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: LOCAL_IDENT, Context: $1.Context}}
-			| AT_IDENT		{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: AT_IDENT, Context: $1.Context}}
-			| ANON_IDENT	{ $$ = &Ident{Name: strings.ToUpper($1.Literal), IdentType: ANON_IDENT, Context: $1.Context}}
+ident		: IDENT		 	{ $$ = &Ident{NameID: $1.SymbolID, IdentType: IDENT, Context: $1.Context}}
+			| LOCAL_IDENT	{ $$ = &Ident{NameID: $1.SymbolID, IdentType: LOCAL_IDENT, Context: $1.Context}}
+			| AT_IDENT		{ $$ = &Ident{NameID: $1.SymbolID, IdentType: AT_IDENT, Context: $1.Context}}
+			| ANON_IDENT	{ $$ = &Ident{NameID: $1.SymbolID, IdentType: ANON_IDENT, Context: $1.Context}}
 			;
 
 ident_expr	: ident			{ $$ = $1 }
@@ -520,13 +521,13 @@ enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			}
 			;
 
-enum_element : IDENT 			{ $$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: nil, Context: $1.Context} }
+enum_element : IDENT 			{ $$ = &EnumElement{NameID: $1.SymbolID, Value: nil, Context: $1.Context} }
 			| IDENT '=' expr	
 			{ 
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3.(*ParseError)
 				} else {
-					$$ = &EnumElement{Name: strings.ToUpper($1.Literal), Value: $3, Context: $1.Context }
+					$$ = &EnumElement{NameID: $1.SymbolID, Value: $3, Context: $1.Context }
 				}
 			}
 			;
@@ -655,11 +656,12 @@ expr		: NUMBER
 			| ident_expr	{ $$ = $1 }
 			| DOT_IDENT
 			{
-				name := strings.ToUpper($1.Literal)
+				name := intern.Lookup($1.SymbolID)
 				names := strings.Split(name, ".")
-				$$ = &DotIdent{Name: name, Left: names[0], Right: "." + names[1], Context: $1.Context}
+				fmt.Printf("dotident %v %v\n", name, names)
+				$$ = &DotIdent{NameID: $1.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: $1.Context}
 			}
-			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ Name: strings.ToUpper($1.Literal), Args: $3, Context: $1.Context} }
+			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ NameID: $1.SymbolID, Args: $3, Context: $1.Context} }
 			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2, Context: $1.Context} }
 			| indexed_expr 				{ $$ = $1}
 			| '(' expr ')'				{ $$ = $2}

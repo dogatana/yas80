@@ -371,7 +371,8 @@ LINE_CONT:
 			// LABEL abc.def
 			l.nextChar()
 			literal += l.readWord()
-			tok = Token{TokenType: DOT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+			id := intern.Intern(strings.ToUpper(literal))
+			tok = Token{TokenType: DOT_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 			l.nextChar()
 			return tok
 		}

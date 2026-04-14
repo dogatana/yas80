@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/util"
 )
 
@@ -168,9 +169,9 @@ func getName(expr Expression) string {
 		return expr.Value
 	case *Ident:
 		if expr.IdentType == IDENT || expr.IdentType == LOCAL_IDENT || expr.IdentType == ANON_IDENT {
-			return expr.Name
+			return intern.Lookup(expr.NameID)
 		}
-		panic(fmt.Sprintf("unexpected Ident %s", expr.Name))
+		panic(fmt.Sprintf("unexpected Ident %s", intern.Lookup(expr.NameID)))
 	case *InfixExpression:
 		if expr.Operator == CONCAT {
 			return getName(expr.Op1)

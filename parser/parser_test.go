@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/errcodenames"
 	"github.com/dogatana/yas80/internal/testutil"
 )
@@ -195,8 +196,8 @@ func TestParseLabelStatement(t *testing.T) {
 		if id.IdentType != tt.identType {
 			t.Errorf("[%d] IdentType not %s. got %s", tn, nodeLiteral(tt.identType), nodeLiteral(id.IdentType))
 		}
-		if id.Name != tt.name {
-			t.Errorf("[%d] Name not %s. got %s", tn, tt.name, id.Name)
+		if id.NameID != intern.Intern(tt.name) {
+			t.Errorf("[%d] Name not %s. got %s", tn, tt.name, intern.Lookup(id.NameID))
 		}
 	}
 }
@@ -219,7 +220,7 @@ func TestParseDotIdent(t *testing.T) {
 		if !ok {
 			t.Errorf("[%d] not *DotIdent got %T", tn, as.Value)
 		}
-		if ident.Left != "ABC" || ident.Right != ".DEF" {
+		if ident.Left != intern.Intern("ABC") || ident.Right != intern.Intern(".DEF") {
 			t.Errorf("[%d] not %q. got %q", tn, tt.expected, ident.String())
 		}
 	}
