@@ -1,5 +1,9 @@
 package parser
 
+import (
+	"github.com/dogatana/yas80/intern"
+)
+
 // Token.SubType 用
 const (
 	// 8bit Register
@@ -112,111 +116,6 @@ const (
 	Z80_INST_MUL
 )
 
-var z80ReservedWords map[string]Token = map[string]Token{
-	"A":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_A, Literal: "A"},
-	"B":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_B, Literal: "B"},
-	"C":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_C, Literal: "C"},
-	"D":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_D, Literal: "D"},
-	"E":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_E, Literal: "E"},
-	"H":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_H, Literal: "H"},
-	"L":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_L, Literal: "L"},
-	"IXH": {TokenType: Z80_REG8, TokenSubType: Z80_REG_IXH, Literal: "IXH"},
-	"IXL": {TokenType: Z80_REG8, TokenSubType: Z80_REG_IXL, Literal: "IXL"},
-	"IYH": {TokenType: Z80_REG8, TokenSubType: Z80_REG_IYH, Literal: "IYH"},
-	"IYL": {TokenType: Z80_REG8, TokenSubType: Z80_REG_IYL, Literal: "IYL"},
-	"I":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_I, Literal: "I"},
-	"R":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_R, Literal: "R"},
-	"F":   {TokenType: Z80_REG8, TokenSubType: Z80_REG_F, Literal: "F"},
-
-	"SP":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_SP, Literal: "SP"},
-	"IX":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_IX, Literal: "IX"},
-	"IY":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_IY, Literal: "IY"},
-	"AF":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_AF, Literal: "AF"},
-	"AF'": {TokenType: Z80_REG16, TokenSubType: Z80_REG_AFEX, Literal: "AF'"},
-	"BC":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_BC, Literal: "BC"},
-	"DE":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_DE, Literal: "DE"},
-	"HL":  {TokenType: Z80_REG16, TokenSubType: Z80_REG_HL, Literal: "HL"},
-
-	"CY": {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_C, Literal: "CY"}, // キャリーの別名を定義
-	"NC": {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_NC, Literal: "NC"},
-	"Z":  {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_Z, Literal: "Z"},
-	"NZ": {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_NZ, Literal: "NZ"},
-	"PO": {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_PO, Literal: "PO"},
-	"PE": {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_PE, Literal: "PE"},
-	"P":  {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_P, Literal: "P"},
-	"M":  {TokenType: Z80_FLAG, TokenSubType: Z80_FLAG_M, Literal: "M"},
-
-	// Opcode
-	"LD":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_LD, Literal: "LD"},
-	"PUSH": {TokenType: Z80_INST1, TokenSubType: Z80_INST_PUSH, Literal: "PUSH"},
-	"POP":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_POP, Literal: "POP"},
-	"EX":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_EX, Literal: "EX"},
-	"EXX":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_EXX, Literal: "EXX"},
-	"LDI":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_LDI, Literal: "LDI"},
-	"LDIR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_LDIR, Literal: "LDIR"},
-	"LDD":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_LDD, Literal: "LDD"},
-	"LDDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_LDDR, Literal: "LDDR"},
-	"CPI":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_CPI, Literal: "CPI"},
-	"CPIR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_CPIR, Literal: "CPIR"},
-	"CPD":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_CPD, Literal: "CPD"},
-	"CPDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_CPDR, Literal: "CPDR"},
-	"ADD":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_ADD, Literal: "ADD"},
-	"ADC":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_ADC, Literal: "ADC"},
-	"SUB":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_SUB, Literal: "SUB"},
-	"SBC":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_SBC, Literal: "SBC"},
-	"AND":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_AND, Literal: "AND"},
-	"OR":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_OR, Literal: "OR"},
-	"XOR":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_XOR, Literal: "XOR"},
-	"CP":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_CP, Literal: "CP"},
-	"INC":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_INC, Literal: "INC"},
-	"DEC":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_DEC, Literal: "DEC"},
-	"DAA":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_DAA, Literal: "DAA"},
-	"CPL":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_CPL, Literal: "CPL"},
-	"NEG":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_NEG, Literal: "NEG"},
-	"CCF":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_CCF, Literal: "CCF"},
-	"SCF":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_SCF, Literal: "SCF"},
-	"NOP":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_NOP, Literal: "NOP"},
-	"HALT": {TokenType: Z80_INST0, TokenSubType: Z80_INST_HALT, Literal: "HALT"},
-	"DI":   {TokenType: Z80_INST0, TokenSubType: Z80_INST_DI, Literal: "DI"},
-	"EI":   {TokenType: Z80_INST0, TokenSubType: Z80_INST_EI, Literal: "EI"},
-	"IM":   {TokenType: Z80_INST1, TokenSubType: Z80_INST_IM, Literal: "IM"},
-	"RLCA": {TokenType: Z80_INST0, TokenSubType: Z80_INST_RLCA, Literal: "RLCA"},
-	"RLA":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_RLA, Literal: "RLA"},
-	"RRCA": {TokenType: Z80_INST0, TokenSubType: Z80_INST_RRCA, Literal: "RRCA"},
-	"RRA":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_RRA, Literal: "RRA"},
-	"RLC":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_RLC, Literal: "RLC"},
-	"RL":   {TokenType: Z80_INST1, TokenSubType: Z80_INST_RL, Literal: "RL"},
-	"RR":   {TokenType: Z80_INST1, TokenSubType: Z80_INST_RR, Literal: "RR"},
-	"RRC":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_RRC, Literal: "RRC"},
-	"SLA":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_SLA, Literal: "SLA"},
-	"SRA":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_SRA, Literal: "SRA"},
-	"SRL":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_SRL, Literal: "SRL"},
-	"RLD":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_RLD, Literal: "RLD"},
-	"RRD":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_RRD, Literal: "RRD"},
-	"BIT":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_BIT, Literal: "BIT"},
-	"SET":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_SET, Literal: "SET"},
-	"RES":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_RES, Literal: "RES"},
-	"JP":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_JP, Literal: "JP"}, // cc 有無によりOPCODE1, OPCODE2 両方あり
-	"JR":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_JR, Literal: "JR"}, // cc 有無によりOPCODE1, OPCODE2 両方あり
-	"DJNZ": {TokenType: Z80_INST1, TokenSubType: Z80_INST_DJNZ, Literal: "DJNZ"},
-	"CALL": {TokenType: Z80_INST2, TokenSubType: Z80_INST_CALL, Literal: "CALL"}, // cc 有無によりOPCODE1, OPCODE2 両方あり
-	"RET":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_RET, Literal: "RET"},   // cc 有無により OPCODE0, OPCODE1 両方あり
-	"RETI": {TokenType: Z80_INST0, TokenSubType: Z80_INST_RETI, Literal: "RETI"},
-	"RETN": {TokenType: Z80_INST0, TokenSubType: Z80_INST_RETN, Literal: "RETN"},
-	"RST":  {TokenType: Z80_INST1, TokenSubType: Z80_INST_RST, Literal: "RST"},
-	"IN":   {TokenType: Z80_INST2, TokenSubType: Z80_INST_IN, Literal: "IN"},
-	"INI":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_INI, Literal: "INI"},
-	"INIR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_INIR, Literal: "INIR"},
-	"IND":  {TokenType: Z80_INST0, TokenSubType: Z80_INST_IND, Literal: "IND"},
-	"INDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_INDR, Literal: "INDR"},
-	"OUT":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_OUT, Literal: "OUT"},
-	"OUTI": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OUTI, Literal: "OUTI"},
-	"OTIR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OTIR, Literal: "OTIR"},
-	"OUTD": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OUTD, Literal: "OUTD"},
-	"OTDR": {TokenType: Z80_INST0, TokenSubType: Z80_INST_OTDR, Literal: "OTDR"},
-	"MUL":  {TokenType: Z80_INST2, TokenSubType: Z80_INST_MUL, Literal: "MUL"},
-}
-
 func Z80Opcode2Name(opcode int) string {
 	for _, v := range z80ReservedWords {
 		if int(v.TokenSubType) == opcode {
@@ -224,4 +123,124 @@ func Z80Opcode2Name(opcode int) string {
 		}
 	}
 	return "UNKNOWN"
+}
+
+func init() {
+	z80ReservedWords = make(map[intern.SymbolID]Token, len(_z80ReservedWords))
+
+	for s, tt := range _z80ReservedWords {
+		id := intern.Intern(s)
+		z80ReservedWords[id] = Token{TokenType: tt.Type, TokenSubType: tt.SubType, SymbolID: id, Literal: s}
+	}
+
+}
+
+var z80ReservedWords map[intern.SymbolID]Token
+
+var _z80ReservedWords = map[string]struct {
+	Type    TokenType
+	SubType TokenSubType
+}{
+	"A":   {Type: Z80_REG8, SubType: Z80_REG_A},
+	"B":   {Type: Z80_REG8, SubType: Z80_REG_B},
+	"C":   {Type: Z80_REG8, SubType: Z80_REG_C},
+	"D":   {Type: Z80_REG8, SubType: Z80_REG_D},
+	"E":   {Type: Z80_REG8, SubType: Z80_REG_E},
+	"H":   {Type: Z80_REG8, SubType: Z80_REG_H},
+	"L":   {Type: Z80_REG8, SubType: Z80_REG_L},
+	"IXH": {Type: Z80_REG8, SubType: Z80_REG_IXH},
+	"IXL": {Type: Z80_REG8, SubType: Z80_REG_IXL},
+	"IYH": {Type: Z80_REG8, SubType: Z80_REG_IYH},
+	"IYL": {Type: Z80_REG8, SubType: Z80_REG_IYL},
+	"I":   {Type: Z80_REG8, SubType: Z80_REG_I},
+	"R":   {Type: Z80_REG8, SubType: Z80_REG_R},
+	"F":   {Type: Z80_REG8, SubType: Z80_REG_F},
+
+	"SP":  {Type: Z80_REG16, SubType: Z80_REG_SP},
+	"IX":  {Type: Z80_REG16, SubType: Z80_REG_IX},
+	"IY":  {Type: Z80_REG16, SubType: Z80_REG_IY},
+	"AF":  {Type: Z80_REG16, SubType: Z80_REG_AF},
+	"AF'": {Type: Z80_REG16, SubType: Z80_REG_AFEX},
+	"BC":  {Type: Z80_REG16, SubType: Z80_REG_BC},
+	"DE":  {Type: Z80_REG16, SubType: Z80_REG_DE},
+	"HL":  {Type: Z80_REG16, SubType: Z80_REG_HL},
+
+	"CY": {Type: Z80_FLAG, SubType: Z80_FLAG_C}, // キャリーの別名を定義
+	"NC": {Type: Z80_FLAG, SubType: Z80_FLAG_NC},
+	"Z":  {Type: Z80_FLAG, SubType: Z80_FLAG_Z},
+	"NZ": {Type: Z80_FLAG, SubType: Z80_FLAG_NZ},
+	"PO": {Type: Z80_FLAG, SubType: Z80_FLAG_PO},
+	"PE": {Type: Z80_FLAG, SubType: Z80_FLAG_PE},
+	"P":  {Type: Z80_FLAG, SubType: Z80_FLAG_P},
+	"M":  {Type: Z80_FLAG, SubType: Z80_FLAG_M},
+
+	// Opcode
+	"LD":   {Type: Z80_INST2, SubType: Z80_INST_LD},
+	"PUSH": {Type: Z80_INST1, SubType: Z80_INST_PUSH},
+	"POP":  {Type: Z80_INST1, SubType: Z80_INST_POP},
+	"EX":   {Type: Z80_INST2, SubType: Z80_INST_EX},
+	"EXX":  {Type: Z80_INST0, SubType: Z80_INST_EXX},
+	"LDI":  {Type: Z80_INST0, SubType: Z80_INST_LDI},
+	"LDIR": {Type: Z80_INST0, SubType: Z80_INST_LDIR},
+	"LDD":  {Type: Z80_INST0, SubType: Z80_INST_LDD},
+	"LDDR": {Type: Z80_INST0, SubType: Z80_INST_LDDR},
+	"CPI":  {Type: Z80_INST0, SubType: Z80_INST_CPI},
+	"CPIR": {Type: Z80_INST0, SubType: Z80_INST_CPIR},
+	"CPD":  {Type: Z80_INST0, SubType: Z80_INST_CPD},
+	"CPDR": {Type: Z80_INST0, SubType: Z80_INST_CPDR},
+	"ADD":  {Type: Z80_INST2, SubType: Z80_INST_ADD},
+	"ADC":  {Type: Z80_INST2, SubType: Z80_INST_ADC},
+	"SUB":  {Type: Z80_INST2, SubType: Z80_INST_SUB},
+	"SBC":  {Type: Z80_INST2, SubType: Z80_INST_SBC},
+	"AND":  {Type: Z80_INST2, SubType: Z80_INST_AND},
+	"OR":   {Type: Z80_INST2, SubType: Z80_INST_OR},
+	"XOR":  {Type: Z80_INST2, SubType: Z80_INST_XOR},
+	"CP":   {Type: Z80_INST2, SubType: Z80_INST_CP},
+	"INC":  {Type: Z80_INST1, SubType: Z80_INST_INC},
+	"DEC":  {Type: Z80_INST1, SubType: Z80_INST_DEC},
+	"DAA":  {Type: Z80_INST0, SubType: Z80_INST_DAA},
+	"CPL":  {Type: Z80_INST0, SubType: Z80_INST_CPL},
+	"NEG":  {Type: Z80_INST0, SubType: Z80_INST_NEG},
+	"CCF":  {Type: Z80_INST0, SubType: Z80_INST_CCF},
+	"SCF":  {Type: Z80_INST0, SubType: Z80_INST_SCF},
+	"NOP":  {Type: Z80_INST0, SubType: Z80_INST_NOP},
+	"HALT": {Type: Z80_INST0, SubType: Z80_INST_HALT},
+	"DI":   {Type: Z80_INST0, SubType: Z80_INST_DI},
+	"EI":   {Type: Z80_INST0, SubType: Z80_INST_EI},
+	"IM":   {Type: Z80_INST1, SubType: Z80_INST_IM},
+	"RLCA": {Type: Z80_INST0, SubType: Z80_INST_RLCA},
+	"RLA":  {Type: Z80_INST0, SubType: Z80_INST_RLA},
+	"RRCA": {Type: Z80_INST0, SubType: Z80_INST_RRCA},
+	"RRA":  {Type: Z80_INST0, SubType: Z80_INST_RRA},
+	"RLC":  {Type: Z80_INST1, SubType: Z80_INST_RLC},
+	"RL":   {Type: Z80_INST1, SubType: Z80_INST_RL},
+	"RR":   {Type: Z80_INST1, SubType: Z80_INST_RR},
+	"RRC":  {Type: Z80_INST1, SubType: Z80_INST_RRC},
+	"SLA":  {Type: Z80_INST1, SubType: Z80_INST_SLA},
+	"SRA":  {Type: Z80_INST1, SubType: Z80_INST_SRA},
+	"SRL":  {Type: Z80_INST1, SubType: Z80_INST_SRL},
+	"RLD":  {Type: Z80_INST0, SubType: Z80_INST_RLD},
+	"RRD":  {Type: Z80_INST0, SubType: Z80_INST_RRD},
+	"BIT":  {Type: Z80_INST2, SubType: Z80_INST_BIT},
+	"SET":  {Type: Z80_INST2, SubType: Z80_INST_SET},
+	"RES":  {Type: Z80_INST2, SubType: Z80_INST_RES},
+	"JP":   {Type: Z80_INST2, SubType: Z80_INST_JP}, // cc 有無によりOPCODE1, OPCODE2 両方あり
+	"JR":   {Type: Z80_INST2, SubType: Z80_INST_JR}, // cc 有無によりOPCODE1, OPCODE2 両方あり
+	"DJNZ": {Type: Z80_INST1, SubType: Z80_INST_DJNZ},
+	"CALL": {Type: Z80_INST2, SubType: Z80_INST_CALL}, // cc 有無によりOPCODE1, OPCODE2 両方あり
+	"RET":  {Type: Z80_INST1, SubType: Z80_INST_RET},  // cc 有無により OPCODE0, OPCODE1 両方あり
+	"RETI": {Type: Z80_INST0, SubType: Z80_INST_RETI},
+	"RETN": {Type: Z80_INST0, SubType: Z80_INST_RETN},
+	"RST":  {Type: Z80_INST1, SubType: Z80_INST_RST},
+	"IN":   {Type: Z80_INST2, SubType: Z80_INST_IN},
+	"INI":  {Type: Z80_INST0, SubType: Z80_INST_INI},
+	"INIR": {Type: Z80_INST0, SubType: Z80_INST_INIR},
+	"IND":  {Type: Z80_INST0, SubType: Z80_INST_IND},
+	"INDR": {Type: Z80_INST0, SubType: Z80_INST_INDR},
+	"OUT":  {Type: Z80_INST2, SubType: Z80_INST_OUT},
+	"OUTI": {Type: Z80_INST0, SubType: Z80_INST_OUTI},
+	"OTIR": {Type: Z80_INST0, SubType: Z80_INST_OTIR},
+	"OUTD": {Type: Z80_INST0, SubType: Z80_INST_OUTD},
+	"OTDR": {Type: Z80_INST0, SubType: Z80_INST_OTDR},
+	"MUL":  {Type: Z80_INST2, SubType: Z80_INST_MUL},
 }

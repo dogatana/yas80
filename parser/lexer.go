@@ -7,6 +7,7 @@ import (
 
 	"github.com/dogatana/yas80/errcode"
 	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/logging"
 )
@@ -379,15 +380,17 @@ LINE_CONT:
 			l.nextChar()
 		}
 
+		// intern literal
+		id := intern.Intern(strings.ToUpper(literal))
 		// z80 予約語
-		tok, ok := z80ReservedWords[strings.ToUpper(literal)]
+		tok, ok := z80ReservedWords[id]
 		if ok {
 			tok.Context = l.lctx.toContext(l.start)
 			l.nextChar()
 			return tok
 		}
 		// yas80 予約語
-		tok, ok = reservedWords[strings.ToUpper(literal)]
+		tok, ok = reservedWords[id]
 		if ok {
 			tok.Context = l.lctx.toContext(l.start)
 			l.nextChar()
@@ -395,7 +398,7 @@ LINE_CONT:
 		}
 
 		// これ以外は IDENT
-		tok = Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+		tok = Token{TokenType: IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 		l.nextChar()
 		return tok
 
@@ -403,14 +406,15 @@ LINE_CONT:
 		// LOCAL_IDENT
 		if !l.isWordChar(l.peekChar()) {
 			// "." のケース
-			tok = Token{TokenType: LOCAL_IDENT, Literal: ".", Context: l.lctx.toContext(l.start)}
+			tok = Token{TokenType: LOCAL_IDENT, SymbolID: intern.Intern("."), Literal: ".", Context: l.lctx.toContext(l.start)}
 			l.nextChar()
 			return tok
 		}
 		l.nextChar()
 		literal = "." + l.readWord()
 		l.nextChar()
-		return Token{TokenType: LOCAL_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+		id := intern.Intern(strings.ToUpper(literal))
+		return Token{TokenType: LOCAL_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '@':
 		// AT_IDENT, ANON_IDENT
@@ -425,21 +429,24 @@ LINE_CONT:
 				l.nextChar()
 			}
 			l.nextChar()
-			return Token{TokenType: ANON_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+			id := intern.Intern(strings.ToUpper(literal))
+			return Token{TokenType: ANON_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 		case ch == '@':
 			l.nextChar()
 			l.nextChar()
-			return Token{TokenType: ANON_IDENT, Literal: "@@", Context: l.lctx.toContext(l.start)}
+			id := intern.Intern("@@")
+			return Token{TokenType: ANON_IDENT, SymbolID: id, Literal: "@@", Context: l.lctx.toContext(l.start)}
 		}
 
 		literal = l.readWord()
 		l.nextChar()
 
+		id := intern.Intern(strings.ToUpper(literal))
 		if util.IsAnonRef(literal) {
-			return Token{TokenType: ANON_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+			return Token{TokenType: ANON_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 		}
 		// MACRO ローカル
-		return Token{TokenType: AT_IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+		return Token{TokenType: AT_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 	default:
 		literal = string(l.lctx.curChar)
 		tok = Token{TokenType: INVALID, Literal: literal, Context: l.lctx.toContext(l.start)}

@@ -471,7 +471,7 @@ func TestLexZ80Instructions(t *testing.T) {
 		if tok.Context.Line == 0 {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
-		expectedToken, ok := z80ReservedWords[tok.Literal]
+		expectedToken, ok := z80ReservedWords[tok.SymbolID]
 		if !ok {
 			t.Errorf("instruction %q not found", tok.Literal)
 			continue
@@ -512,7 +512,7 @@ func TestLexReservedWords(t *testing.T) {
 		if tok.TokenType == EOL {
 			break
 		}
-		expected, ok := reservedWords[tok.Literal]
+		expected, ok := reservedWords[tok.SymbolID]
 		if !ok {
 			t.Fatalf("word %q is not registered", tok.Literal)
 		}

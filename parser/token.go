@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/intern"
 )
 
 // TokenType, TokenType は grammer.y の %token で定義される
@@ -14,6 +15,7 @@ type Token struct {
 	TokenType    TokenType
 	TokenSubType TokenSubType
 	Literal      string
+	SymbolID     intern.SymbolID
 	Context      *filecontent.Context
 }
 
@@ -31,58 +33,75 @@ func (t Token) String() string {
 	} else {
 		ctx = t.Context.String()
 	}
-	return fmt.Sprintf("Token{%s(%d)%s, %q, %s}",
-		TokenLiteral(tt), tt, tstName, t.Literal, ctx)
+	return fmt.Sprintf("Token{%s(%d)%s, %d, %q, %s}",
+		TokenLiteral(tt), tt, tstName, t.SymbolID, t.Literal, ctx)
 }
 
-var reservedWords map[string]Token = map[string]Token{
+// 予約語テーブルを初期化
+func init() {
+	reservedWords = make(map[intern.SymbolID]Token, len(_reservedWords))
+	for s, tt := range _reservedWords {
+		id := intern.Intern(s)
+		reservedWords[id] = Token{TokenType: tt.Type, TokenSubType: tt.SubType, SymbolID: id, Literal: s}
+	}
+	_reservedWords = nil
+}
+
+// 予約語テーブル
+var reservedWords map[intern.SymbolID]Token
+
+// 予約語テーブル初期化用
+var _reservedWords = map[string]struct {
+	Type    TokenType
+	SubType TokenSubType
+}{
 	// 単一行構文
-	"EQU":      {TokenType: EQU, Literal: "EQU"},
-	"CONST":    {TokenType: CONST, Literal: "CONST"},
-	"VAR":      {TokenType: VAR, Literal: "VAR"},
-	"FUNCTION": {TokenType: FUNCTION, Literal: "FUNCTION"},
-	"ORG":      {TokenType: ORG, Literal: "ORG"},
-	"INCLUDE":  {TokenType: INCLUDE, Literal: "INCLUDE"},
-	"CHARMAP":  {TokenType: CHARMAP, Literal: "CHARMAP"},
+	"EQU":      {Type: EQU},
+	"CONST":    {Type: CONST},
+	"VAR":      {Type: VAR},
+	"FUNCTION": {Type: FUNCTION},
+	"ORG":      {Type: ORG},
+	"INCLUDE":  {Type: INCLUDE},
+	"CHARMAP":  {Type: CHARMAP},
 
 	// データ定義
-	"DB":   {TokenType: DATA, TokenSubType: DB, Literal: "DB"},
-	"DEFB": {TokenType: DATA, TokenSubType: DB, Literal: "DEFB"},
-	"DW":   {TokenType: DATA, TokenSubType: DW, Literal: "DW"},
-	"DEFW": {TokenType: DATA, TokenSubType: DW, Literal: "DEFW"},
-	"DD":   {TokenType: DATA, TokenSubType: DD, Literal: "DD"},
-	"DS":   {TokenType: DS, TokenSubType: DSB, Literal: "DS"},
-	"DSB":  {TokenType: DS, TokenSubType: DSB, Literal: "DSB"},
-	"DSW":  {TokenType: DS, TokenSubType: DSW, Literal: "DSW"},
+	"DB":   {Type: DATA, SubType: DB},
+	"DEFB": {Type: DATA, SubType: DB},
+	"DW":   {Type: DATA, SubType: DW},
+	"DEFW": {Type: DATA, SubType: DW},
+	"DD":   {Type: DATA, SubType: DD},
+	"DS":   {Type: DS, SubType: DSB},
+	"DSB":  {Type: DS, SubType: DSB},
+	"DSW":  {Type: DS, SubType: DSW},
 
 	// 複数行構文
-	"IF":    {TokenType: IF, Literal: "IF"},
-	"ELSE":  {TokenType: ELSE, Literal: "ELSE"},
-	"ELIF":  {TokenType: ELIF, Literal: "ELIF"},
-	"ENDIF": {TokenType: ENDIF, Literal: "ENDIF"},
+	"IF":    {Type: IF},
+	"ELSE":  {Type: ELSE},
+	"ELIF":  {Type: ELIF},
+	"ENDIF": {Type: ENDIF},
 
-	"MACRO": {TokenType: MACRO, Literal: "MACRO"},
-	"ENDM":  {TokenType: ENDM, Literal: "ENDM"},
-	"EXITM": {TokenType: EXITM, Literal: "EXITM"},
+	"MACRO": {Type: MACRO},
+	"ENDM":  {Type: ENDM},
+	"EXITM": {Type: EXITM},
 
-	"REPT": {TokenType: REPT, Literal: "REPT"},
-	"ENDR": {TokenType: ENDR, Literal: "ENDR"},
+	"REPT": {Type: REPT},
+	"ENDR": {Type: ENDR},
 
-	"PROC": {TokenType: PROC, Literal: "PROC"},
-	"ENDP": {TokenType: ENDP, Literal: "ENDP"},
+	"PROC": {Type: PROC},
+	"ENDP": {Type: ENDP},
 
-	"FUNC":   {TokenType: FUNC, Literal: "FUNC"},
-	"ENDF":   {TokenType: ENDF, Literal: "ENDF"},
-	"RETURN": {TokenType: RETURN, Literal: "RETURN"},
+	"FUNC":   {Type: FUNC},
+	"ENDF":   {Type: ENDF},
+	"RETURN": {Type: RETURN},
 
-	// "BLOCK": {TokenType: BLOCK, Literal: "BLOCK"}, // 予約
-	// "ENDB":  {TokenType: ENDB, Literal: "ENDB"},   // 予約
+	// "BLOCK": {BLOCK},
+	// "ENDB":  {ENDB},
 
-	"ENUM": {TokenType: ENUM, Literal: "ENUM"},
-	"ENDE": {TokenType: ENDE, Literal: "ENDE"},
+	"ENUM": {Type: ENUM},
+	"ENDE": {Type: ENDE},
 
-	// "FOR":    {TokenType: FOR, Literal: "FOR"},       // 予約
-	// "ENDFOR": {TokenType: ENDFOR, Literal: "ENDFOR"}, // 予約
+	// "FOR":    {FOR},
+	// "ENDFOR": {ENDFOR},
 
-	"END": {TokenType: END, Literal: "END"},
+	"END": {Type: END},
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/dogatana/yas80/errcode"
 	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/intern"
 )
 
 func parseInt(s string) (int64, error) {
@@ -317,11 +318,11 @@ func PrintNode(stmt Statement, indent int) {
 
 // 文字列が予約語かどうかを返す
 func IsReservedWord(s string) bool {
-	word := strings.ToUpper(s)
-	if _, ok := z80ReservedWords[word]; ok {
+	id := intern.Intern(strings.ToUpper(s))
+	if _, ok := z80ReservedWords[id]; ok {
 		return true
 	}
-	if _, ok := reservedWords[word]; ok {
+	if _, ok := reservedWords[id]; ok {
 		return true
 	}
 	return false
