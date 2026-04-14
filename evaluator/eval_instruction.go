@@ -48,8 +48,12 @@ var evalZ80InstructionFuncs = map[int]evalZ80InstructionFunc{
 }
 
 func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) object.Object {
-	e.concatenateSymbol(&stmt.Label, env, stmt.Context)
+	if stmt.Code != nil {
+		return stmt.Code.(*object.CodeObject)
+	}
+
 	if stmt.Label != nil {
+		e.concatenateSymbol(&stmt.Label, env, stmt.Context)
 		e.exprToLabel(stmt.Label, env, stmt.Context)
 	}
 
@@ -57,12 +61,17 @@ func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) ob
 	if stmt.NodeType() == parser.Z80_INST0 {
 		code := Z80CodeTable0[stmt.Opcode]
 		code.Context = stmt.Context
+		stmt.Code = &code
 		return &code
 	}
 
 	// 1 or 2 オペランド
-	e.concatenateSymbol(&stmt.Op1, env, stmt.Context)
-	e.concatenateSymbol(&stmt.Op2, env, stmt.Context)
+	if stmt.Op1 != nil {
+		e.concatenateSymbol(&stmt.Op1, env, stmt.Context)
+	}
+	if stmt.Op2 != nil {
+		e.concatenateSymbol(&stmt.Op2, env, stmt.Context)
+	}
 
 	// 命令毎の評価関数から evalExpression を呼び出すと循環参照エラーになるので事前に評価しておく
 	var op1, op2 object.Object

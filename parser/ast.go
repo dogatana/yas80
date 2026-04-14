@@ -783,6 +783,7 @@ type Z80Instruction struct {
 	Op1      Expression
 	Op2      Expression
 	Context  *filecontent.Context
+	Code     any // *object.CodeObject
 }
 
 func (s *Z80Instruction) GetContext() *filecontent.Context { return s.Context }
