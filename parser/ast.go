@@ -944,6 +944,7 @@ func (e *FlagLiteral) String() string {
 
 // 識別子
 type Ident struct {
+	Name      string
 	NameID    intern.SymbolID
 	IdentType int
 	Value     Expression
@@ -956,6 +957,7 @@ func (e *Ident) String() string     { return intern.Lookup(e.NameID) }
 
 // ドット識別子
 type DotIdent struct {
+	Name    string
 	NameID  intern.SymbolID
 	Left    intern.SymbolID
 	Right   intern.SymbolID
@@ -1053,6 +1055,7 @@ func (e *PrefixExpression) String() string {
 
 // 関数呼出し
 type FuncCallExpression struct {
+	Name    string
 	NameID  intern.SymbolID
 	Args    *ExpressionList
 	Context *filecontent.Context
@@ -1063,7 +1066,7 @@ func (e *FuncCallExpression) NodeType() NodeType { return NODE_CALL }
 func (e *FuncCallExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(intern.Lookup(e.NameID) + "(")
+	out.WriteString(e.Name + "(")
 	out.WriteString(e.Args.String())
 	out.WriteRune(')')
 

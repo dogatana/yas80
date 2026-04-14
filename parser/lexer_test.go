@@ -86,7 +86,7 @@ func TestLexSymbols(t *testing.T) {
 // 匿名シンボル
 func TestLexAnonSymbols(t *testing.T) {
 	input := "@@ @f @b @0 @1 @2 @3 @4 @5 @6 @7 @8 @9 @0f @1f @2f @3f @4f @5f @6f @7f @8f @9f @0b @1b @2b @3b @4b @5b @6b @7b @8b @9b"
-	expected := strings.Split(input, " ")
+	expected := strings.Split(strings.ToUpper(input), " ")
 
 	l := newLexerForTest(input)
 
@@ -318,14 +318,14 @@ func TestLexIdent(t *testing.T) {
 		expectedType    TokenType
 		expectedLiteral string
 	}{
-		{" abc     ", IDENT, "abc"},
-		{" _abc    ", IDENT, "_abc"},
-		{" ab_c    ", IDENT, "ab_c"},
-		{" abc_    ", IDENT, "abc_"},
-		{" abc.def:", DOT_IDENT, "abc.def"},
-		{" .def:   ", LOCAL_IDENT, ".def"},
-		{" .def    ", LOCAL_IDENT, ".def"},
-		{" @def    ", AT_IDENT, "@def"},
+		{" abc     ", IDENT, "ABC"},
+		{" _abc    ", IDENT, "_ABC"},
+		{" ab_c    ", IDENT, "AB_C"},
+		{" abc_    ", IDENT, "ABC_"},
+		{" abc.def:", DOT_IDENT, "ABC.DEF"},
+		{" .def:   ", LOCAL_IDENT, ".DEF"},
+		{" .def    ", LOCAL_IDENT, ".DEF"},
+		{" @def    ", AT_IDENT, "@DEF"},
 	}
 
 	for tn, tt := range tests {

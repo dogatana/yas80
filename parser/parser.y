@@ -656,12 +656,11 @@ expr		: NUMBER
 			| ident_expr	{ $$ = $1 }
 			| DOT_IDENT
 			{
-				name := intern.Lookup($1.SymbolID)
+				name := strings.ToUpper($1.Literal)
 				names := strings.Split(name, ".")
-				fmt.Printf("dotident %v %v\n", name, names)
-				$$ = &DotIdent{NameID: $1.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: $1.Context}
+				$$ = &DotIdent{Name: name, NameID: $1.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: $1.Context}
 			}
-			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ NameID: $1.SymbolID, Args: $3, Context: $1.Context} }
+			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ Name: strings.ToUpper($1.Literal), NameID: $1.SymbolID, Args: $3, Context: $1.Context} }
 			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2, Context: $1.Context} }
 			| indexed_expr 				{ $$ = $1}
 			| '(' expr ')'				{ $$ = $2}

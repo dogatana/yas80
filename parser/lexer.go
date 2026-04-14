@@ -371,18 +371,20 @@ LINE_CONT:
 			// LABEL abc.def
 			l.nextChar()
 			literal += l.readWord()
-			id := intern.Intern(strings.ToUpper(literal))
+			literal := strings.ToUpper(literal)
+			id := intern.Intern(literal)
 			tok = Token{TokenType: DOT_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 			l.nextChar()
 			return tok
 		}
-		if strings.ToUpper(literal) == "AF" && l.peekChar() == '\'' {
+		literal := strings.ToUpper(literal)
+		if literal == "AF" && l.peekChar() == '\'' {
 			literal += "'"
 			l.nextChar()
 		}
 
 		// intern literal
-		id := intern.Intern(strings.ToUpper(literal))
+		id := intern.Intern(literal)
 		// z80 予約語
 		tok, ok := z80ReservedWords[id]
 		if ok {
@@ -414,7 +416,8 @@ LINE_CONT:
 		l.nextChar()
 		literal = "." + l.readWord()
 		l.nextChar()
-		id := intern.Intern(strings.ToUpper(literal))
+		literal := strings.ToUpper(literal)
+		id := intern.Intern(literal)
 		return Token{TokenType: LOCAL_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '@':
@@ -430,7 +433,8 @@ LINE_CONT:
 				l.nextChar()
 			}
 			l.nextChar()
-			id := intern.Intern(strings.ToUpper(literal))
+			literal = strings.ToUpper(literal)
+			id := intern.Intern(literal)
 			return Token{TokenType: ANON_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 		case ch == '@':
 			l.nextChar()
@@ -439,10 +443,10 @@ LINE_CONT:
 			return Token{TokenType: ANON_IDENT, SymbolID: id, Literal: "@@", Context: l.lctx.toContext(l.start)}
 		}
 
-		literal = l.readWord()
+		literal = strings.ToUpper(l.readWord())
 		l.nextChar()
 
-		id := intern.Intern(strings.ToUpper(literal))
+		id := intern.Intern(literal)
 		if util.IsAnonRef(literal) {
 			return Token{TokenType: ANON_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
 		}
