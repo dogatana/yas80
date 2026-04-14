@@ -578,6 +578,7 @@ func (s *BlockStatement) String() string {
 // macro block statement
 type MacroBlockStatement struct {
 	Label   Expression
+	Name    string
 	NameID  intern.SymbolID // マクロ名 もしくは "REPT"
 	Index   int             // REPT 用
 	Count   int             // REPT 用
@@ -846,13 +847,14 @@ func (s *CommentStatement) String() string {
 // ラベル
 type Label struct {
 	LabelType int
+	Name      string
 	NameID    intern.SymbolID
 	Context   *filecontent.Context
 }
 
 func (e *Label) expressionNode()    {}
 func (e *Label) NodeType() NodeType { return NODE_LABEL }
-func (e *Label) String() string     { return intern.Lookup(e.NameID) }
+func (e *Label) String() string     { return e.Name }
 
 // 数値
 type NumberLiteral struct {

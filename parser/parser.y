@@ -430,10 +430,10 @@ datastore	: DS expr
 			}
 			;
 	
-ident		: IDENT		 	{ $$ = &Ident{NameID: $1.SymbolID, IdentType: IDENT, Context: $1.Context}}
-			| LOCAL_IDENT	{ $$ = &Ident{NameID: $1.SymbolID, IdentType: LOCAL_IDENT, Context: $1.Context}}
-			| AT_IDENT		{ $$ = &Ident{NameID: $1.SymbolID, IdentType: AT_IDENT, Context: $1.Context}}
-			| ANON_IDENT	{ $$ = &Ident{NameID: $1.SymbolID, IdentType: ANON_IDENT, Context: $1.Context}}
+ident		: IDENT		 	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: IDENT, Context: $1.Context}}
+			| LOCAL_IDENT	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: LOCAL_IDENT, Context: $1.Context}}
+			| AT_IDENT		{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: AT_IDENT, Context: $1.Context}}
+			| ANON_IDENT	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: ANON_IDENT, Context: $1.Context}}
 			;
 
 ident_expr	: ident			{ $$ = $1 }

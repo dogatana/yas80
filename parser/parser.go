@@ -1273,25 +1273,25 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:433
 		{
-			yyVAL.ident = &Ident{NameID: yyDollar[1].token.SymbolID, IdentType: IDENT, Context: yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: IDENT, Context: yyDollar[1].token.Context}
 		}
 	case 45:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:434
 		{
-			yyVAL.ident = &Ident{NameID: yyDollar[1].token.SymbolID, IdentType: LOCAL_IDENT, Context: yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: LOCAL_IDENT, Context: yyDollar[1].token.Context}
 		}
 	case 46:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:435
 		{
-			yyVAL.ident = &Ident{NameID: yyDollar[1].token.SymbolID, IdentType: AT_IDENT, Context: yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: AT_IDENT, Context: yyDollar[1].token.Context}
 		}
 	case 47:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:436
 		{
-			yyVAL.ident = &Ident{NameID: yyDollar[1].token.SymbolID, IdentType: ANON_IDENT, Context: yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: ANON_IDENT, Context: yyDollar[1].token.Context}
 		}
 	case 48:
 		yyDollar = yyS[yypt-1 : yypt+1]
