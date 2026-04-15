@@ -112,7 +112,7 @@ statement   : EOL { $$ = nil }
 				if $1.NodeType() == NODE_ERROR {
 					$$ =  $1.(*ParseError)
 				} else {
-					$$ = &LabelStatement{Name: $1, Context: $2.Context}
+					$$ = &LabelStatement{Name: $1, Context: &$2.Context}
 				}
 			}
 			| ident_expr ':' instruction EOL
@@ -140,13 +140,13 @@ statement   : EOL { $$ = nil }
 				}
 			}
 			| END EOL {
-				$$ = &EndStatement{Start: nil, Context: $1.Context}
+				$$ = &EndStatement{Start: nil, Context: &$1.Context}
 			}
 			| END expr EOL {
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else {
-					$$ = &EndStatement{Start: $2, Context: $1.Context}
+					$$ = &EndStatement{Start: $2, Context: &$1.Context}
 				}
 			}
 			| error EOL
@@ -163,7 +163,7 @@ directive	: CONST ident_expr '=' expr
 				} else if $4.NodeType() == NODE_ERROR {
 					$$ =  $4.(*ParseError)
 				} else {
-					$$ = &ConstStatement{Name: $2, Value: $4, Context: $1.Context}
+					$$ = &ConstStatement{Name: $2, Value: $4, Context: &$1.Context}
 				}
 			}
 			| ident_expr EQU expr		
@@ -173,7 +173,7 @@ directive	: CONST ident_expr '=' expr
 				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3.(*ParseError)
 				} else {
-					$$ = &ConstStatement{Name: $1, Value: $3, Context: $2.Context}
+					$$ = &ConstStatement{Name: $1, Value: $3, Context: &$2.Context}
 				}
 			}
 			| ident_expr PROC EOL block_statement ENDP
@@ -181,19 +181,19 @@ directive	: CONST ident_expr '=' expr
 				if $1.NodeType() == NODE_ERROR {
 					$$ = $1.(*ParseError)
 				} else {
-					$$ = &ProcStatement{Name: $1, Block: $4, Context: $2.Context}
+					$$ = &ProcStatement{Name: $1, Block: $4, Context: &$2.Context}
 				}
 			}
 			| ident ENUM EOL enum_elements ENDE
 			{
-				$$ = &EnumStatement{NameID: $1.NameID, Elements: $4, Context: $2.Context}
+				$$ = &EnumStatement{NameID: $1.NameID, Elements: $4, Context: &$2.Context}
 			}
 			| VAR ident '=' expr
 			{
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4.(*ParseError)
 				} else {
-					$$ = &VariableStatement{Name: &Ident{Name: $2.Name, NameID: $2.NameID}, Value: $4, Context: $1.Context}
+					$$ = &VariableStatement{Name: &Ident{Name: $2.Name, NameID: $2.NameID}, Value: $4, Context: &$1.Context}
 				}
 			}
 			| expr '=' expr
@@ -209,7 +209,7 @@ directive	: CONST ident_expr '=' expr
 				} else if $3.NodeType() == NODE_ERROR {
 					$$ = $3.(*ParseError)
 				} else {
-					$$ = &AssignStatement{Left: $1, Value: $3, Context: $2.Context}
+					$$ = &AssignStatement{Left: $1, Value: $3, Context: &$2.Context}
 				}
 			}
 			| REPT expr EOL block_statement ENDR
@@ -217,7 +217,7 @@ directive	: CONST ident_expr '=' expr
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else {
-					$$ = &ReptStatement{MaxCount: $2, Block: $4, Start: $1.Context.Line, Context: $5.Context}
+					$$ = &ReptStatement{MaxCount: $2, Block: $4, Start: $1.Context.Line, Context: &$5.Context}
 				}
 			}
 			| ident_expr ':' REPT expr EOL block_statement ENDR
@@ -225,7 +225,7 @@ directive	: CONST ident_expr '=' expr
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4.(*ParseError)
 				} else {
-					$$ = &ReptStatement{Label: $1, MaxCount: $4, Block: $6, Start: $3.Context.Line, Context: $7.Context}
+					$$ = &ReptStatement{Label: $1, MaxCount: $4, Block: $6, Start: $3.Context.Line, Context: &$7.Context}
 				}
 			}
 			| IF expr EOL block_statement elseifs ENDIF
@@ -238,13 +238,13 @@ directive	: CONST ident_expr '=' expr
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else if $5 == nil {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Statement{}}, Context: $1.Context}
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Statement{}}, Context: &$1.Context}
 				} else if $5.NodeType() == NODE_ERROR {
 					$$ = $5.(*ParseError)
 				} else if $5.NodeType() == NODE_BLOCK_STMT {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, Context: $1.Context}
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, Context: &$1.Context}
 				} else {
-					$$ = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF"), Context: $1.Context}
+					$$ = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF"), Context: &$1.Context}
 				} 
 			}
 			| IF expr EOL block_statement elseifs ELSE block_statement ENDIF
@@ -257,30 +257,30 @@ directive	: CONST ident_expr '=' expr
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else if $5 == nil  && $7 == nil {
-					$$ = &IfStatement{ Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Statement{}}, Context: $1.Context}
+					$$ = &IfStatement{ Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Statement{}}, Context: &$1.Context}
 				} else if $5 == nil {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $7, Context: $1.Context}
+					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $7, Context: &$1.Context}
 				} else if $5.NodeType() == NODE_ERROR {
 					$$ = $5
 				}  else if block, ok := $5.(*BlockStatement); ok {
 					if len(block.Block) != 1 || block.Block[0].NodeType() != NODE_IF_STMT {
-						$$ = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF-ELSE"), Context: $1.Context}
+						$$ = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF-ELSE"), Context: &$1.Context}
 					} else {
 						last := getLastIfStatement(block.Block[0].(*IfStatement))
 						if last.NodeType() == NODE_ERROR {
 							$$ = last.(*ParseError)
 						} else {
 							last.(*IfStatement).Alternative = $7
-							$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, Context: $1.Context}
+							$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, Context: &$1.Context}
 						}
 					}
 				} else {
-					$$ = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF-ELSE"), Context: $1.Context}
+					$$ = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF-ELSE"), Context: &$1.Context}
 				}
 			}
 			| ident FUNC param_list EOL block_statement ENDF
 			{
-				$$ = &FuncStatement{NameID: $1.NameID, Params: $3, Block: $5, Context: $2.Context}
+				$$ = &FuncStatement{NameID: $1.NameID, Params: $3, Block: $5, Context: &$2.Context}
 			}
 			| FUNCTION ident '(' param_list ')' expr
 			{ 
@@ -290,17 +290,17 @@ directive	: CONST ident_expr '=' expr
 					$$ = &FuncStatement{
 						NameID: $2.NameID, 
 						Params: $4, 
-						Block: &BlockStatement{Block: []Statement {&ReturnStatement{Value: $6, Context: $1.Context}}}, 
-						Context: $1.Context}
+						Block: &BlockStatement{Block: []Statement {&ReturnStatement{Value: $6, Context: &$1.Context}}}, 
+						Context: &$1.Context}
 				}
 			}
-			| RETURN		{ $$ = &ReturnStatement{Value: nil, Context: $1.Context}} 
+			| RETURN		{ $$ = &ReturnStatement{Value: nil, Context: &$1.Context}} 
 			| RETURN expr	
 			{ 
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else {
-					$$ = &ReturnStatement{Value: $2, Context: $1.Context} 
+					$$ = &ReturnStatement{Value: $2, Context: &$1.Context} 
 				}
 			}
 			| ident MACRO param_list EOL block_statement ENDM
@@ -309,24 +309,24 @@ directive	: CONST ident_expr '=' expr
 			}
 			| IDENT expr_list 
 			{
-				$$ = &MacroCallStatement{NameID: $1.SymbolID, Args: $2, Context: $1.Context}
+				$$ = &MacroCallStatement{NameID: $1.SymbolID, Args: $2, Context: &$1.Context}
 			}
 			| ident_expr ':' IDENT expr_list
 			{
-				$$ = &MacroCallStatement{Label: $1, NameID: $3.SymbolID, Args: $4	, Context: $3.Context}
+				$$ = &MacroCallStatement{Label: $1, NameID: $3.SymbolID, Args: $4	, Context: &$3.Context}
 			}
-			| EXITM			{ $$ = &ExitmStatement{Context: $1.Context}}
+			| EXITM			{ $$ = &ExitmStatement{Context: &$1.Context}}
 			| EXITM IF expr
 			{
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3.(*ParseError)
 				} else {
-					ctx := $1.Context
+					ctx := &$1.Context
 					$$ = &IfStatement{
 						Condition: $3,
 						Consequence: &BlockStatement{Block: []Statement{&ExitmStatement{Context: ctx}}},
 						Alternative:  &BlockStatement{Block: []Statement{}},
-						Context: $1.Context}
+						Context: &$1.Context}
 				}
 			}
 			| datadef	{ $$ = $1 }
@@ -343,26 +343,26 @@ directive	: CONST ident_expr '=' expr
 				data.Label = $1
 				$$ = $2 
 			}
-			| ORG expr	{ $$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: $1.Context }}
+			| ORG expr	{ $$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: &$1.Context }}
 			| ORG expr ',' ident	
 			{ 
 				switch $4.NameID {
 				case intern.Intern("ABS"):
-					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: $1.Context }
+					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: &$1.Context }
 				case intern.Intern("REL"):
-					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_REL, Context: $1.Context }
+					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_REL, Context: &$1.Context }
 				default:
-					$$ = &ParseError{Message: errcode.EORG_ALLOC, Context: $1.Context}
+					$$ = &ParseError{Message: errcode.EORG_ALLOC, Context: &$1.Context}
 				}
 			}
-			| INCLUDE STRING { $$ = &IncludeStatement{Filename: $2.Literal, Context: $1.Context} }
+			| INCLUDE STRING { $$ = &IncludeStatement{Filename: $2.Literal, Context: &$1.Context} }
 			| CHARMAP IDENT ',' expr
 			{ 
-				$$ = &CharmapStatement{NameID: $2.SymbolID, Filename: $4, Context: $1.Context} 
+				$$ = &CharmapStatement{NameID: $2.SymbolID, Filename: $4, Context: &$1.Context} 
 			}
 			| CHARMAP IDENT ',' expr ',' expr
 			{ 
-				$$ = &CharmapStatement{NameID: $2.SymbolID, Filename: $4, DefChar: $6, Context: $1.Context} 
+				$$ = &CharmapStatement{NameID: $2.SymbolID, Filename: $4, DefChar: $6, Context: &$1.Context} 
 			}
 			;
 
@@ -381,7 +381,7 @@ datadef		: DATA expr
 					case DD:
 						size = 0
 					}
-					$$ = &DataDefineStatement{Size: size, Values: []Expression{$2}, Context: $1.Context}
+					$$ = &DataDefineStatement{Size: size, Values: []Expression{$2}, Context: &$1.Context}
 				}
 			}
 			| datadef ',' expr
@@ -408,7 +408,7 @@ datastore	: DS expr
 					case DSW:
 						size = 2
 					}
-					$$ = &DataStoreStatement{Size: size, Count: $2, FillValue: nil, Context: $1.Context}
+					$$ = &DataStoreStatement{Size: size, Count: $2, FillValue: nil, Context: &$1.Context}
 				}
 			}
 			| DS expr ',' expr
@@ -425,15 +425,15 @@ datastore	: DS expr
 					case DSW:
 						size = 2
 					}
-					$$ = &DataStoreStatement{Size: size, Count: $2, FillValue: $4, Context: $1.Context}
+					$$ = &DataStoreStatement{Size: size, Count: $2, FillValue: $4, Context: &$1.Context}
 				}
 			}
 			;
 	
-ident		: IDENT		 	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: IDENT, Context: $1.Context}}
-			| LOCAL_IDENT	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: LOCAL_IDENT, Context: $1.Context}}
-			| AT_IDENT		{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: AT_IDENT, Context: $1.Context}}
-			| ANON_IDENT	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: ANON_IDENT, Context: $1.Context}}
+ident		: IDENT		 	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: IDENT, Context: &$1.Context}}
+			| LOCAL_IDENT	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: LOCAL_IDENT, Context: &$1.Context}}
+			| AT_IDENT		{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: AT_IDENT, Context: &$1.Context}}
+			| ANON_IDENT	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: ANON_IDENT, Context: &$1.Context}}
 			;
 
 ident_expr	: ident			{ $$ = $1 }
@@ -442,7 +442,7 @@ ident_expr	: ident			{ $$ = $1 }
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3.(*ParseError)
 				} else {
-					$$ = buildInfixExpression(CONCAT, $1, $3, $2.Context) 
+					$$ = buildInfixExpression(CONCAT, $1, $3, &$2.Context) 
 				}
 			}
 			;
@@ -459,7 +459,7 @@ param_list	: 			{ $$ = []string{}}
 elseifs		: { $$ = nil }
 			| elseifs ELIF expr EOL block_statement 
 			{ 
-				ifst := &IfStatement{Condition: $3, Consequence: $5, Alternative: &BlockStatement{Block:[]Statement{}}, Context: $2.Context}
+				ifst := &IfStatement{Condition: $3, Consequence: $5, Alternative: &BlockStatement{Block:[]Statement{}}, Context: &$2.Context}
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3.(*ParseError)
 				} else if $1 == nil {
@@ -482,7 +482,7 @@ elseifs		: { $$ = nil }
 							stmt = block.Block[0].(*IfStatement)
 							continue
 						} else {
-							$$ = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "ELIF"), Context: $2.Context}
+							$$ = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "ELIF"), Context: &$2.Context}
 							break
 						}
 					}
@@ -521,24 +521,24 @@ enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 			}
 			;
 
-enum_element : IDENT 			{ $$ = &EnumElement{NameID: $1.SymbolID, Value: nil, Context: $1.Context} }
+enum_element : IDENT 			{ $$ = &EnumElement{NameID: $1.SymbolID, Value: nil, Context: &$1.Context} }
 			| IDENT '=' expr	
 			{ 
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3.(*ParseError)
 				} else {
-					$$ = &EnumElement{NameID: $1.SymbolID, Value: $3, Context: $1.Context }
+					$$ = &EnumElement{NameID: $1.SymbolID, Value: $3, Context: &$1.Context }
 				}
 			}
 			;
 
 instruction	: Z80_INST0
 			{
-				$$ = &Z80Instruction{InstType: Z80_INST0, Opcode: int($1.TokenSubType), Context: $1.Context} 
+				$$ = &Z80Instruction{InstType: Z80_INST0, Opcode: int($1.TokenSubType), Context: &$1.Context} 
 			}
 			| Z80_INST1
 			{
-				$$ = &Z80Instruction{InstType: Z80_INST1, Opcode: int($1.TokenSubType), Context: $1.Context}
+				$$ = &Z80Instruction{InstType: Z80_INST1, Opcode: int($1.TokenSubType), Context: &$1.Context}
 			}
 			| Z80_INST1 operand
 			{
@@ -547,7 +547,7 @@ instruction	: Z80_INST0
 				} else {
 					$$ = &Z80Instruction{InstType: Z80_INST1, Opcode: int($1.TokenSubType), 
 						Op1: $2, 
-						Context: $1.Context }
+						Context: &$1.Context }
 				}
 			}
 			| Z80_INST2 operand
@@ -557,7 +557,7 @@ instruction	: Z80_INST0
 				} else {
 					$$ = &Z80Instruction{InstType: Z80_INST2, Opcode: int($1.TokenSubType), 
 						Op2: $2,
-						Context: $1.Context }
+						Context: &$1.Context }
 				}
 			}
 			| Z80_INST2 operand ',' operand
@@ -574,7 +574,7 @@ instruction	: Z80_INST0
 					$$ = &Z80Instruction{InstType: Z80_INST2, Opcode: int($1.TokenSubType), 
 							Op1: $2,
 							Op2: $4,
-							Context: $1.Context }
+							Context: &$1.Context }
 				}
 			}
 			;
@@ -582,29 +582,29 @@ instruction	: Z80_INST0
 
 operand		: '(' Z80_REG16 ')'
 			{ 
-				reg := &RegisterLiteral{RegisterType: int($2.TokenType), Register:int($2.TokenSubType), Context:$2.Context}
+				reg := &RegisterLiteral{RegisterType: int($2.TokenType), Register:int($2.TokenSubType), Context:&$2.Context}
 				$$ = &RegIndirectExpression{
 						Register: reg,
-						Context: $1.Context}
+						Context: &$1.Context}
 			}
 			| '(' Z80_REG16 ADDSUB expr ')' 
 			{
-				reg := &RegisterLiteral{RegisterType: int($2.TokenType), Register:int($2.TokenSubType), Context:$2.Context}
+				reg := &RegisterLiteral{RegisterType: int($2.TokenType), Register:int($2.TokenSubType), Context:&$2.Context}
 				$$ = &RegIndirectExpression{
 						Register: reg,
-						Displacement: buildPrefixExpression(int($3.TokenSubType), $4, $1.Context),
-						Context: $1.Context}
+						Displacement: buildPrefixExpression(int($3.TokenSubType), $4, &$1.Context),
+						Context: &$1.Context}
 			}
 			| '(' Z80_REG8 ')'
 			{ 
-				reg := &RegisterLiteral{RegisterType: int($2.TokenType), Register:int($2.TokenSubType), Context:$2.Context}
+				reg := &RegisterLiteral{RegisterType: int($2.TokenType), Register:int($2.TokenSubType), Context:&$2.Context}
 				$$ = &RegIndirectExpression{
 						Register: reg,
-						Context: $1.Context}
+						Context: &$1.Context}
 			}
 			| '(' expr ')'		
 			{ 
-				$$ = &AddrIndirectExpression{Address: $2, Context: $1.Context} 
+				$$ = &AddrIndirectExpression{Address: $2, Context: &$1.Context} 
 			}
 			| expr 				{ $$ = $1 }
 			;
@@ -644,34 +644,34 @@ expr		: NUMBER
 			{
 				n, err := parseInt($1.Literal)
 				if err == nil {
-					$$ = &NumberLiteral{Value: int(n), Context: $1.Context}
+					$$ = &NumberLiteral{Value: int(n), Context: &$1.Context}
 				} else {
-					$$ = &ParseError{Message: fmt.Sprintf(errcode.ENUMBER_LITERAL, $1.Literal), Context: $1.Context}
+					$$ = &ParseError{Message: fmt.Sprintf(errcode.ENUMBER_LITERAL, $1.Literal), Context: &$1.Context}
 				}
 			}
-			| string 		{ $$ = &StringLiteral{Value: $1.Literal, Context: $1.Context} }
-			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), Context:$1.Context}}
-			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), Context:$1.Context}}
-			| Z80_FLAG		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), Context:$1.Context}}
+			| string 		{ $$ = &StringLiteral{Value: $1.Literal, Context: &$1.Context} }
+			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), Context:&$1.Context}}
+			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), Context:&$1.Context}}
+			| Z80_FLAG		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), Context:&$1.Context}}
 			| ident_expr	{ $$ = $1 }
 			| DOT_IDENT
 			{
 				name := strings.ToUpper($1.Literal)
 				names := strings.Split(name, ".")
-				$$ = &DotIdent{Name: name, NameID: $1.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: $1.Context}
+				$$ = &DotIdent{Name: name, NameID: $1.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: &$1.Context}
 			}
-			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ Name: strings.ToUpper($1.Literal), NameID: $1.SymbolID, Args: $3, Context: $1.Context} }
-			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2, Context: $1.Context} }
+			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ Name: strings.ToUpper($1.Literal), NameID: $1.SymbolID, Args: $3, Context: &$1.Context} }
+			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2, Context: &$1.Context} }
 			| indexed_expr 				{ $$ = $1}
 			| '(' expr ')'				{ $$ = $2}
-			| expr ADDSUB expr			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Context) }
-			| expr MULDIV expr			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Context) }
-			| expr COMP expr 			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Context) }
-			| expr SHIFT expr			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, $2.Context) }
-			| expr OR expr				{ $$ = buildInfixExpression(OR, $1, $3, $2.Context) }
-			| expr AND expr				{ $$ = buildInfixExpression(AND, $1, $3, $2.Context) }
-			| ADDSUB expr %prec UNARY	{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, $1.Context) }
-			| UNARY expr 				{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, $1.Context) }
+			| expr ADDSUB expr			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, &$2.Context) }
+			| expr MULDIV expr			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, &$2.Context) }
+			| expr COMP expr 			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, &$2.Context) }
+			| expr SHIFT expr			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, &$2.Context) }
+			| expr OR expr				{ $$ = buildInfixExpression(OR, $1, $3, &$2.Context) }
+			| expr AND expr				{ $$ = buildInfixExpression(AND, $1, $3, &$2.Context) }
+			| ADDSUB expr %prec UNARY	{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, &$1.Context) }
+			| UNARY expr 				{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, &$1.Context) }
 			;
 
 indexed_expr: expr '[' ']'
@@ -679,27 +679,27 @@ indexed_expr: expr '[' ']'
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
 					yylex.Error(err.Message, err.Context)
-					yylex.Error(errcode.EARRAY_NAME, $2.Context)
+					yylex.Error(errcode.EARRAY_NAME, &$2.Context)
 				} 
-				$$ = &ParseError{Message: errcode.EARRAY_INDEX, Context: $2.Context}
+				$$ = &ParseError{Message: errcode.EARRAY_INDEX, Context: &$2.Context}
 			}
 			| expr '[' expr ']'
 			{
 				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
-					yylex.Error(errcode.EARRAY_NAME, $2.Context)
+					yylex.Error(errcode.EARRAY_NAME, &$2.Context)
 					err := $1.(*ParseError)
 					yylex.Error(err.Message, err.Context)
 
-					yylex.Error(errcode.EARRAY_INDEX, $2.Context)
+					yylex.Error(errcode.EARRAY_INDEX, &$2.Context)
 					$$ = $3
 				} else if $1.NodeType() == NODE_ERROR {
-					yylex.Error(errcode.EARRAY_NAME, $2.Context)
+					yylex.Error(errcode.EARRAY_NAME, &$2.Context)
 					$$ = $1
 				} else if $3.NodeType() == NODE_ERROR {
-					yylex.Error(errcode.EARRAY_INDEX, $2.Context)
+					yylex.Error(errcode.EARRAY_INDEX, &$2.Context)
 					$$ = $3
 				} else {
-					$$ = &IndexedExpression{Left: $1, Index: $3, Context: $2.Context}
+					$$ = &IndexedExpression{Left: $1, Index: $3, Context: &$2.Context}
 				}
 			}
 			;

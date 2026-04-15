@@ -22,8 +22,8 @@ type LexerContext struct {
 	curChar     rune
 }
 
-func (ctx *LexerContext) toContext(start int) *filecontent.Context {
-	return &filecontent.Context{FileContent: ctx.fileContent, Line: ctx.lineNumber, Index: start}
+func (ctx *LexerContext) toContext(start int) filecontent.Context {
+	return filecontent.Context{FileContent: ctx.fileContent, Line: ctx.lineNumber, Index: start}
 }
 
 // 最低限必要な構造体を定義
@@ -297,7 +297,8 @@ LINE_CONT:
 		literal = "0" + string(l.lctx.curChar)
 		l.nextChar() // 'x'または'X'をスキップ
 		if !l.isHexChar(l.lctx.curChar) {
-			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), l.lctx.toContext(l.start))
+			ctx := l.lctx.toContext(l.start)
+			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), &ctx)
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
 		literal += l.readHexString()
@@ -331,10 +332,12 @@ LINE_CONT:
 			if l.isBinString(hex) {
 				return Token{TokenType: NUMBER, Literal: literal + hex, Context: l.lctx.toContext(l.start)}
 			}
-			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal+hex), l.lctx.toContext(l.start))
+			ctx := l.lctx.toContext(l.start)
+			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal+hex), &ctx)
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
-		l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), l.lctx.toContext(l.start))
+		ctx := l.lctx.toContext(l.start)
+		l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), &ctx)
 		return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '0' && (l.peekChar() == 'o' || l.peekChar() == 'O'):
@@ -343,7 +346,8 @@ LINE_CONT:
 		literal = "0" + string(l.lctx.curChar)
 		l.nextChar() // 'o'または'O'をスキップ
 		if !l.isOctChar(l.lctx.curChar) {
-			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), l.lctx.toContext(l.start))
+			ctx := l.lctx.toContext(l.start)
+			l.logger.Error(fmt.Sprintf(errcode.ENUMBER_LITERAL, literal), &ctx)
 			return Token{TokenType: NUMBER, Literal: "0", Context: l.lctx.toContext(l.start)}
 		}
 		literal += l.readOctString()
@@ -583,12 +587,13 @@ func (l *Lexer) readString(quote rune) string {
 		if ch == quote {
 			break
 		}
+		ctx := l.lctx.toContext(index)
 		if ch == '\n' {
-			l.logger.Error(errcode.ESTR_END_QUOTE, l.lctx.toContext(index))
+			l.logger.Error(errcode.ESTR_END_QUOTE, &ctx)
 			break
 		}
 		if ch < ' ' {
-			l.logger.Error(errcode.ESTR_CTRL, l.lctx.toContext(index))
+			l.logger.Error(errcode.ESTR_CTRL, &ctx)
 			break
 		}
 		if quote != '`' && ch == '\\' { // raw string 以外はエスケープシーケンスを処理

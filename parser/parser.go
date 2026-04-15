@@ -729,7 +729,7 @@ yydefault:
 		/* error ... attempt to resume parsing */
 		switch Errflag {
 		case 0: /* brand new error */
-			yylex.Error(yyErrorMessage(yystate, yytoken, yyrcvr.lval.token), yyrcvr.lval.token.Context)
+			yylex.Error(yyErrorMessage(yystate, yytoken, yyrcvr.lval.token), &yyrcvr.lval.token.Context)
 			Nerrs++
 			if yyDebug >= 1 {
 				__yyfmt__.Printf("%s", yyStatname(yystate))
@@ -860,7 +860,7 @@ yydefault:
 			if yyDollar[1].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[1].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &LabelStatement{Name: yyDollar[1].expr, Context: yyDollar[2].token.Context}
+				yyVAL.statement = &LabelStatement{Name: yyDollar[1].expr, Context: &yyDollar[2].token.Context}
 			}
 		}
 	case 6:
@@ -901,7 +901,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line parser/parser.y:142
 		{
-			yyVAL.statement = &EndStatement{Start: nil, Context: yyDollar[1].token.Context}
+			yyVAL.statement = &EndStatement{Start: nil, Context: &yyDollar[1].token.Context}
 		}
 	case 10:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -910,7 +910,7 @@ yydefault:
 			if yyDollar[2].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[2].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &EndStatement{Start: yyDollar[2].expr, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &EndStatement{Start: yyDollar[2].expr, Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 11:
@@ -929,7 +929,7 @@ yydefault:
 			} else if yyDollar[4].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[4].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &ConstStatement{Name: yyDollar[2].expr, Value: yyDollar[4].expr, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &ConstStatement{Name: yyDollar[2].expr, Value: yyDollar[4].expr, Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 13:
@@ -941,7 +941,7 @@ yydefault:
 			} else if yyDollar[3].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[3].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &ConstStatement{Name: yyDollar[1].expr, Value: yyDollar[3].expr, Context: yyDollar[2].token.Context}
+				yyVAL.statement = &ConstStatement{Name: yyDollar[1].expr, Value: yyDollar[3].expr, Context: &yyDollar[2].token.Context}
 			}
 		}
 	case 14:
@@ -951,14 +951,14 @@ yydefault:
 			if yyDollar[1].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[1].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &ProcStatement{Name: yyDollar[1].expr, Block: yyDollar[4].block, Context: yyDollar[2].token.Context}
+				yyVAL.statement = &ProcStatement{Name: yyDollar[1].expr, Block: yyDollar[4].block, Context: &yyDollar[2].token.Context}
 			}
 		}
 	case 15:
 		yyDollar = yyS[yypt-5 : yypt+1]
 //line parser/parser.y:188
 		{
-			yyVAL.statement = &EnumStatement{NameID: yyDollar[1].ident.NameID, Elements: yyDollar[4].enum_elements, Context: yyDollar[2].token.Context}
+			yyVAL.statement = &EnumStatement{NameID: yyDollar[1].ident.NameID, Elements: yyDollar[4].enum_elements, Context: &yyDollar[2].token.Context}
 		}
 	case 16:
 		yyDollar = yyS[yypt-4 : yypt+1]
@@ -967,7 +967,7 @@ yydefault:
 			if yyDollar[4].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[4].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &VariableStatement{Name: &Ident{Name: yyDollar[2].ident.Name, NameID: yyDollar[2].ident.NameID}, Value: yyDollar[4].expr, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &VariableStatement{Name: &Ident{Name: yyDollar[2].ident.Name, NameID: yyDollar[2].ident.NameID}, Value: yyDollar[4].expr, Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 17:
@@ -985,7 +985,7 @@ yydefault:
 			} else if yyDollar[3].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[3].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &AssignStatement{Left: yyDollar[1].expr, Value: yyDollar[3].expr, Context: yyDollar[2].token.Context}
+				yyVAL.statement = &AssignStatement{Left: yyDollar[1].expr, Value: yyDollar[3].expr, Context: &yyDollar[2].token.Context}
 			}
 		}
 	case 18:
@@ -995,7 +995,7 @@ yydefault:
 			if yyDollar[2].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[2].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &ReptStatement{MaxCount: yyDollar[2].expr, Block: yyDollar[4].block, Start: yyDollar[1].token.Context.Line, Context: yyDollar[5].token.Context}
+				yyVAL.statement = &ReptStatement{MaxCount: yyDollar[2].expr, Block: yyDollar[4].block, Start: yyDollar[1].token.Context.Line, Context: &yyDollar[5].token.Context}
 			}
 		}
 	case 19:
@@ -1005,7 +1005,7 @@ yydefault:
 			if yyDollar[4].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[4].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &ReptStatement{Label: yyDollar[1].expr, MaxCount: yyDollar[4].expr, Block: yyDollar[6].block, Start: yyDollar[3].token.Context.Line, Context: yyDollar[7].token.Context}
+				yyVAL.statement = &ReptStatement{Label: yyDollar[1].expr, MaxCount: yyDollar[4].expr, Block: yyDollar[6].block, Start: yyDollar[3].token.Context.Line, Context: &yyDollar[7].token.Context}
 			}
 		}
 	case 20:
@@ -1020,13 +1020,13 @@ yydefault:
 			} else if yyDollar[2].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[2].expr.(*ParseError)
 			} else if yyDollar[5].statement == nil {
-				yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: &BlockStatement{Block: []Statement{}}, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: &BlockStatement{Block: []Statement{}}, Context: &yyDollar[1].token.Context}
 			} else if yyDollar[5].statement.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[5].statement.(*ParseError)
 			} else if yyDollar[5].statement.NodeType() == NODE_BLOCK_STMT {
-				yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: yyDollar[5].statement, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: yyDollar[5].statement, Context: &yyDollar[1].token.Context}
 			} else {
-				yyVAL.statement = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF"), Context: yyDollar[1].token.Context}
+				yyVAL.statement = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF"), Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 21:
@@ -1041,32 +1041,32 @@ yydefault:
 			} else if yyDollar[2].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[2].expr.(*ParseError)
 			} else if yyDollar[5].statement == nil && yyDollar[7].block == nil {
-				yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: &BlockStatement{Block: []Statement{}}, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: &BlockStatement{Block: []Statement{}}, Context: &yyDollar[1].token.Context}
 			} else if yyDollar[5].statement == nil {
-				yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: yyDollar[7].block, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: yyDollar[7].block, Context: &yyDollar[1].token.Context}
 			} else if yyDollar[5].statement.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[5].statement
 			} else if block, ok := yyDollar[5].statement.(*BlockStatement); ok {
 				if len(block.Block) != 1 || block.Block[0].NodeType() != NODE_IF_STMT {
-					yyVAL.statement = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF-ELSE"), Context: yyDollar[1].token.Context}
+					yyVAL.statement = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF-ELSE"), Context: &yyDollar[1].token.Context}
 				} else {
 					last := getLastIfStatement(block.Block[0].(*IfStatement))
 					if last.NodeType() == NODE_ERROR {
 						yyVAL.statement = last.(*ParseError)
 					} else {
 						last.(*IfStatement).Alternative = yyDollar[7].block
-						yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: yyDollar[5].statement, Context: yyDollar[1].token.Context}
+						yyVAL.statement = &IfStatement{Condition: yyDollar[2].expr, Consequence: yyDollar[4].block, Alternative: yyDollar[5].statement, Context: &yyDollar[1].token.Context}
 					}
 				}
 			} else {
-				yyVAL.statement = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF-ELSE"), Context: yyDollar[1].token.Context}
+				yyVAL.statement = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF-ELSE"), Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 22:
 		yyDollar = yyS[yypt-6 : yypt+1]
 //line parser/parser.y:282
 		{
-			yyVAL.statement = &FuncStatement{NameID: yyDollar[1].ident.NameID, Params: yyDollar[3].params, Block: yyDollar[5].block, Context: yyDollar[2].token.Context}
+			yyVAL.statement = &FuncStatement{NameID: yyDollar[1].ident.NameID, Params: yyDollar[3].params, Block: yyDollar[5].block, Context: &yyDollar[2].token.Context}
 		}
 	case 23:
 		yyDollar = yyS[yypt-6 : yypt+1]
@@ -1078,15 +1078,15 @@ yydefault:
 				yyVAL.statement = &FuncStatement{
 					NameID:  yyDollar[2].ident.NameID,
 					Params:  yyDollar[4].params,
-					Block:   &BlockStatement{Block: []Statement{&ReturnStatement{Value: yyDollar[6].expr, Context: yyDollar[1].token.Context}}},
-					Context: yyDollar[1].token.Context}
+					Block:   &BlockStatement{Block: []Statement{&ReturnStatement{Value: yyDollar[6].expr, Context: &yyDollar[1].token.Context}}},
+					Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 24:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:297
 		{
-			yyVAL.statement = &ReturnStatement{Value: nil, Context: yyDollar[1].token.Context}
+			yyVAL.statement = &ReturnStatement{Value: nil, Context: &yyDollar[1].token.Context}
 		}
 	case 25:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -1095,7 +1095,7 @@ yydefault:
 			if yyDollar[2].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[2].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &ReturnStatement{Value: yyDollar[2].expr, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &ReturnStatement{Value: yyDollar[2].expr, Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 26:
@@ -1108,19 +1108,19 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line parser/parser.y:311
 		{
-			yyVAL.statement = &MacroCallStatement{NameID: yyDollar[1].token.SymbolID, Args: yyDollar[2].expr_list, Context: yyDollar[1].token.Context}
+			yyVAL.statement = &MacroCallStatement{NameID: yyDollar[1].token.SymbolID, Args: yyDollar[2].expr_list, Context: &yyDollar[1].token.Context}
 		}
 	case 28:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line parser/parser.y:315
 		{
-			yyVAL.statement = &MacroCallStatement{Label: yyDollar[1].expr, NameID: yyDollar[3].token.SymbolID, Args: yyDollar[4].expr_list, Context: yyDollar[3].token.Context}
+			yyVAL.statement = &MacroCallStatement{Label: yyDollar[1].expr, NameID: yyDollar[3].token.SymbolID, Args: yyDollar[4].expr_list, Context: &yyDollar[3].token.Context}
 		}
 	case 29:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:318
 		{
-			yyVAL.statement = &ExitmStatement{Context: yyDollar[1].token.Context}
+			yyVAL.statement = &ExitmStatement{Context: &yyDollar[1].token.Context}
 		}
 	case 30:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -1129,12 +1129,12 @@ yydefault:
 			if yyDollar[3].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[3].expr.(*ParseError)
 			} else {
-				ctx := yyDollar[1].token.Context
+				ctx := &yyDollar[1].token.Context
 				yyVAL.statement = &IfStatement{
 					Condition:   yyDollar[3].expr,
 					Consequence: &BlockStatement{Block: []Statement{&ExitmStatement{Context: ctx}}},
 					Alternative: &BlockStatement{Block: []Statement{}},
-					Context:     yyDollar[1].token.Context}
+					Context:     &yyDollar[1].token.Context}
 			}
 		}
 	case 31:
@@ -1169,7 +1169,7 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line parser/parser.y:346
 		{
-			yyVAL.statement = &OrgStatement{Address: yyDollar[2].expr, AllocType: ALLOC_ABS, Context: yyDollar[1].token.Context}
+			yyVAL.statement = &OrgStatement{Address: yyDollar[2].expr, AllocType: ALLOC_ABS, Context: &yyDollar[1].token.Context}
 		}
 	case 36:
 		yyDollar = yyS[yypt-4 : yypt+1]
@@ -1177,30 +1177,30 @@ yydefault:
 		{
 			switch yyDollar[4].ident.NameID {
 			case intern.Intern("ABS"):
-				yyVAL.statement = &OrgStatement{Address: yyDollar[2].expr, AllocType: ALLOC_ABS, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &OrgStatement{Address: yyDollar[2].expr, AllocType: ALLOC_ABS, Context: &yyDollar[1].token.Context}
 			case intern.Intern("REL"):
-				yyVAL.statement = &OrgStatement{Address: yyDollar[2].expr, AllocType: ALLOC_REL, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &OrgStatement{Address: yyDollar[2].expr, AllocType: ALLOC_REL, Context: &yyDollar[1].token.Context}
 			default:
-				yyVAL.statement = &ParseError{Message: errcode.EORG_ALLOC, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &ParseError{Message: errcode.EORG_ALLOC, Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 37:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line parser/parser.y:358
 		{
-			yyVAL.statement = &IncludeStatement{Filename: yyDollar[2].token.Literal, Context: yyDollar[1].token.Context}
+			yyVAL.statement = &IncludeStatement{Filename: yyDollar[2].token.Literal, Context: &yyDollar[1].token.Context}
 		}
 	case 38:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line parser/parser.y:360
 		{
-			yyVAL.statement = &CharmapStatement{NameID: yyDollar[2].token.SymbolID, Filename: yyDollar[4].expr, Context: yyDollar[1].token.Context}
+			yyVAL.statement = &CharmapStatement{NameID: yyDollar[2].token.SymbolID, Filename: yyDollar[4].expr, Context: &yyDollar[1].token.Context}
 		}
 	case 39:
 		yyDollar = yyS[yypt-6 : yypt+1]
 //line parser/parser.y:364
 		{
-			yyVAL.statement = &CharmapStatement{NameID: yyDollar[2].token.SymbolID, Filename: yyDollar[4].expr, DefChar: yyDollar[6].expr, Context: yyDollar[1].token.Context}
+			yyVAL.statement = &CharmapStatement{NameID: yyDollar[2].token.SymbolID, Filename: yyDollar[4].expr, DefChar: yyDollar[6].expr, Context: &yyDollar[1].token.Context}
 		}
 	case 40:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -1218,7 +1218,7 @@ yydefault:
 				case DD:
 					size = 0
 				}
-				yyVAL.statement = &DataDefineStatement{Size: size, Values: []Expression{yyDollar[2].expr}, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &DataDefineStatement{Size: size, Values: []Expression{yyDollar[2].expr}, Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 41:
@@ -1247,7 +1247,7 @@ yydefault:
 				case DSW:
 					size = 2
 				}
-				yyVAL.statement = &DataStoreStatement{Size: size, Count: yyDollar[2].expr, FillValue: nil, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &DataStoreStatement{Size: size, Count: yyDollar[2].expr, FillValue: nil, Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 43:
@@ -1266,32 +1266,32 @@ yydefault:
 				case DSW:
 					size = 2
 				}
-				yyVAL.statement = &DataStoreStatement{Size: size, Count: yyDollar[2].expr, FillValue: yyDollar[4].expr, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &DataStoreStatement{Size: size, Count: yyDollar[2].expr, FillValue: yyDollar[4].expr, Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 44:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:433
 		{
-			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: IDENT, Context: yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: IDENT, Context: &yyDollar[1].token.Context}
 		}
 	case 45:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:434
 		{
-			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: LOCAL_IDENT, Context: yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: LOCAL_IDENT, Context: &yyDollar[1].token.Context}
 		}
 	case 46:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:435
 		{
-			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: AT_IDENT, Context: yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: AT_IDENT, Context: &yyDollar[1].token.Context}
 		}
 	case 47:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:436
 		{
-			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: ANON_IDENT, Context: yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: ANON_IDENT, Context: &yyDollar[1].token.Context}
 		}
 	case 48:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1306,7 +1306,7 @@ yydefault:
 			if yyDollar[3].expr.NodeType() == NODE_ERROR {
 				yyVAL.expr = yyDollar[3].expr.(*ParseError)
 			} else {
-				yyVAL.expr = buildInfixExpression(CONCAT, yyDollar[1].ident, yyDollar[3].expr, yyDollar[2].token.Context)
+				yyVAL.expr = buildInfixExpression(CONCAT, yyDollar[1].ident, yyDollar[3].expr, &yyDollar[2].token.Context)
 			}
 		}
 	case 50:
@@ -1338,7 +1338,7 @@ yydefault:
 		yyDollar = yyS[yypt-5 : yypt+1]
 //line parser/parser.y:461
 		{
-			ifst := &IfStatement{Condition: yyDollar[3].expr, Consequence: yyDollar[5].block, Alternative: &BlockStatement{Block: []Statement{}}, Context: yyDollar[2].token.Context}
+			ifst := &IfStatement{Condition: yyDollar[3].expr, Consequence: yyDollar[5].block, Alternative: &BlockStatement{Block: []Statement{}}, Context: &yyDollar[2].token.Context}
 			if yyDollar[3].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[3].expr.(*ParseError)
 			} else if yyDollar[1].statement == nil {
@@ -1361,7 +1361,7 @@ yydefault:
 						stmt = block.Block[0].(*IfStatement)
 						continue
 					} else {
-						yyVAL.statement = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "ELIF"), Context: yyDollar[2].token.Context}
+						yyVAL.statement = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "ELIF"), Context: &yyDollar[2].token.Context}
 						break
 					}
 				}
@@ -1414,7 +1414,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:524
 		{
-			yyVAL.statement = &EnumElement{NameID: yyDollar[1].token.SymbolID, Value: nil, Context: yyDollar[1].token.Context}
+			yyVAL.statement = &EnumElement{NameID: yyDollar[1].token.SymbolID, Value: nil, Context: &yyDollar[1].token.Context}
 		}
 	case 61:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -1423,20 +1423,20 @@ yydefault:
 			if yyDollar[3].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[3].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &EnumElement{NameID: yyDollar[1].token.SymbolID, Value: yyDollar[3].expr, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &EnumElement{NameID: yyDollar[1].token.SymbolID, Value: yyDollar[3].expr, Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 62:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:536
 		{
-			yyVAL.statement = &Z80Instruction{InstType: Z80_INST0, Opcode: int(yyDollar[1].token.TokenSubType), Context: yyDollar[1].token.Context}
+			yyVAL.statement = &Z80Instruction{InstType: Z80_INST0, Opcode: int(yyDollar[1].token.TokenSubType), Context: &yyDollar[1].token.Context}
 		}
 	case 63:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:540
 		{
-			yyVAL.statement = &Z80Instruction{InstType: Z80_INST1, Opcode: int(yyDollar[1].token.TokenSubType), Context: yyDollar[1].token.Context}
+			yyVAL.statement = &Z80Instruction{InstType: Z80_INST1, Opcode: int(yyDollar[1].token.TokenSubType), Context: &yyDollar[1].token.Context}
 		}
 	case 64:
 		yyDollar = yyS[yypt-2 : yypt+1]
@@ -1447,7 +1447,7 @@ yydefault:
 			} else {
 				yyVAL.statement = &Z80Instruction{InstType: Z80_INST1, Opcode: int(yyDollar[1].token.TokenSubType),
 					Op1:     yyDollar[2].expr,
-					Context: yyDollar[1].token.Context}
+					Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 65:
@@ -1459,7 +1459,7 @@ yydefault:
 			} else {
 				yyVAL.statement = &Z80Instruction{InstType: Z80_INST2, Opcode: int(yyDollar[1].token.TokenSubType),
 					Op2:     yyDollar[2].expr,
-					Context: yyDollar[1].token.Context}
+					Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 66:
@@ -1478,42 +1478,42 @@ yydefault:
 				yyVAL.statement = &Z80Instruction{InstType: Z80_INST2, Opcode: int(yyDollar[1].token.TokenSubType),
 					Op1:     yyDollar[2].expr,
 					Op2:     yyDollar[4].expr,
-					Context: yyDollar[1].token.Context}
+					Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 67:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:584
 		{
-			reg := &RegisterLiteral{RegisterType: int(yyDollar[2].token.TokenType), Register: int(yyDollar[2].token.TokenSubType), Context: yyDollar[2].token.Context}
+			reg := &RegisterLiteral{RegisterType: int(yyDollar[2].token.TokenType), Register: int(yyDollar[2].token.TokenSubType), Context: &yyDollar[2].token.Context}
 			yyVAL.expr = &RegIndirectExpression{
 				Register: reg,
-				Context:  yyDollar[1].token.Context}
+				Context:  &yyDollar[1].token.Context}
 		}
 	case 68:
 		yyDollar = yyS[yypt-5 : yypt+1]
 //line parser/parser.y:591
 		{
-			reg := &RegisterLiteral{RegisterType: int(yyDollar[2].token.TokenType), Register: int(yyDollar[2].token.TokenSubType), Context: yyDollar[2].token.Context}
+			reg := &RegisterLiteral{RegisterType: int(yyDollar[2].token.TokenType), Register: int(yyDollar[2].token.TokenSubType), Context: &yyDollar[2].token.Context}
 			yyVAL.expr = &RegIndirectExpression{
 				Register:     reg,
-				Displacement: buildPrefixExpression(int(yyDollar[3].token.TokenSubType), yyDollar[4].expr, yyDollar[1].token.Context),
-				Context:      yyDollar[1].token.Context}
+				Displacement: buildPrefixExpression(int(yyDollar[3].token.TokenSubType), yyDollar[4].expr, &yyDollar[1].token.Context),
+				Context:      &yyDollar[1].token.Context}
 		}
 	case 69:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:599
 		{
-			reg := &RegisterLiteral{RegisterType: int(yyDollar[2].token.TokenType), Register: int(yyDollar[2].token.TokenSubType), Context: yyDollar[2].token.Context}
+			reg := &RegisterLiteral{RegisterType: int(yyDollar[2].token.TokenType), Register: int(yyDollar[2].token.TokenSubType), Context: &yyDollar[2].token.Context}
 			yyVAL.expr = &RegIndirectExpression{
 				Register: reg,
-				Context:  yyDollar[1].token.Context}
+				Context:  &yyDollar[1].token.Context}
 		}
 	case 70:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:606
 		{
-			yyVAL.expr = &AddrIndirectExpression{Address: yyDollar[2].expr, Context: yyDollar[1].token.Context}
+			yyVAL.expr = &AddrIndirectExpression{Address: yyDollar[2].expr, Context: &yyDollar[1].token.Context}
 		}
 	case 71:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1568,34 +1568,34 @@ yydefault:
 		{
 			n, err := parseInt(yyDollar[1].token.Literal)
 			if err == nil {
-				yyVAL.expr = &NumberLiteral{Value: int(n), Context: yyDollar[1].token.Context}
+				yyVAL.expr = &NumberLiteral{Value: int(n), Context: &yyDollar[1].token.Context}
 			} else {
-				yyVAL.expr = &ParseError{Message: fmt.Sprintf(errcode.ENUMBER_LITERAL, yyDollar[1].token.Literal), Context: yyDollar[1].token.Context}
+				yyVAL.expr = &ParseError{Message: fmt.Sprintf(errcode.ENUMBER_LITERAL, yyDollar[1].token.Literal), Context: &yyDollar[1].token.Context}
 			}
 		}
 	case 78:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:652
 		{
-			yyVAL.expr = &StringLiteral{Value: yyDollar[1].token.Literal, Context: yyDollar[1].token.Context}
+			yyVAL.expr = &StringLiteral{Value: yyDollar[1].token.Literal, Context: &yyDollar[1].token.Context}
 		}
 	case 79:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:653
 		{
-			yyVAL.expr = &RegisterLiteral{RegisterType: int(yyDollar[1].token.TokenType), Register: int(yyDollar[1].token.TokenSubType), Context: yyDollar[1].token.Context}
+			yyVAL.expr = &RegisterLiteral{RegisterType: int(yyDollar[1].token.TokenType), Register: int(yyDollar[1].token.TokenSubType), Context: &yyDollar[1].token.Context}
 		}
 	case 80:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:654
 		{
-			yyVAL.expr = &RegisterLiteral{RegisterType: int(yyDollar[1].token.TokenType), Register: int(yyDollar[1].token.TokenSubType), Context: yyDollar[1].token.Context}
+			yyVAL.expr = &RegisterLiteral{RegisterType: int(yyDollar[1].token.TokenType), Register: int(yyDollar[1].token.TokenSubType), Context: &yyDollar[1].token.Context}
 		}
 	case 81:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:655
 		{
-			yyVAL.expr = &FlagLiteral{Flag: int(yyDollar[1].token.TokenSubType), Context: yyDollar[1].token.Context}
+			yyVAL.expr = &FlagLiteral{Flag: int(yyDollar[1].token.TokenSubType), Context: &yyDollar[1].token.Context}
 		}
 	case 82:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1609,19 +1609,19 @@ yydefault:
 		{
 			name := strings.ToUpper(yyDollar[1].token.Literal)
 			names := strings.Split(name, ".")
-			yyVAL.expr = &DotIdent{Name: name, NameID: yyDollar[1].token.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: yyDollar[1].token.Context}
+			yyVAL.expr = &DotIdent{Name: name, NameID: yyDollar[1].token.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: &yyDollar[1].token.Context}
 		}
 	case 84:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line parser/parser.y:663
 		{
-			yyVAL.expr = &FuncCallExpression{Name: strings.ToUpper(yyDollar[1].token.Literal), NameID: yyDollar[1].token.SymbolID, Args: yyDollar[3].expr_list, Context: yyDollar[1].token.Context}
+			yyVAL.expr = &FuncCallExpression{Name: strings.ToUpper(yyDollar[1].token.Literal), NameID: yyDollar[1].token.SymbolID, Args: yyDollar[3].expr_list, Context: &yyDollar[1].token.Context}
 		}
 	case 85:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:664
 		{
-			yyVAL.expr = &ArrayLiteral{Elements: yyDollar[2].expr_list, Context: yyDollar[1].token.Context}
+			yyVAL.expr = &ArrayLiteral{Elements: yyDollar[2].expr_list, Context: &yyDollar[1].token.Context}
 		}
 	case 86:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1639,49 +1639,49 @@ yydefault:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:667
 		{
-			yyVAL.expr = buildInfixExpression(int(yyDollar[2].token.TokenSubType), yyDollar[1].expr, yyDollar[3].expr, yyDollar[2].token.Context)
+			yyVAL.expr = buildInfixExpression(int(yyDollar[2].token.TokenSubType), yyDollar[1].expr, yyDollar[3].expr, &yyDollar[2].token.Context)
 		}
 	case 89:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:668
 		{
-			yyVAL.expr = buildInfixExpression(int(yyDollar[2].token.TokenSubType), yyDollar[1].expr, yyDollar[3].expr, yyDollar[2].token.Context)
+			yyVAL.expr = buildInfixExpression(int(yyDollar[2].token.TokenSubType), yyDollar[1].expr, yyDollar[3].expr, &yyDollar[2].token.Context)
 		}
 	case 90:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:669
 		{
-			yyVAL.expr = buildInfixExpression(int(yyDollar[2].token.TokenSubType), yyDollar[1].expr, yyDollar[3].expr, yyDollar[2].token.Context)
+			yyVAL.expr = buildInfixExpression(int(yyDollar[2].token.TokenSubType), yyDollar[1].expr, yyDollar[3].expr, &yyDollar[2].token.Context)
 		}
 	case 91:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:670
 		{
-			yyVAL.expr = buildInfixExpression(int(yyDollar[2].token.TokenSubType), yyDollar[1].expr, yyDollar[3].expr, yyDollar[2].token.Context)
+			yyVAL.expr = buildInfixExpression(int(yyDollar[2].token.TokenSubType), yyDollar[1].expr, yyDollar[3].expr, &yyDollar[2].token.Context)
 		}
 	case 92:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:671
 		{
-			yyVAL.expr = buildInfixExpression(OR, yyDollar[1].expr, yyDollar[3].expr, yyDollar[2].token.Context)
+			yyVAL.expr = buildInfixExpression(OR, yyDollar[1].expr, yyDollar[3].expr, &yyDollar[2].token.Context)
 		}
 	case 93:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:672
 		{
-			yyVAL.expr = buildInfixExpression(AND, yyDollar[1].expr, yyDollar[3].expr, yyDollar[2].token.Context)
+			yyVAL.expr = buildInfixExpression(AND, yyDollar[1].expr, yyDollar[3].expr, &yyDollar[2].token.Context)
 		}
 	case 94:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line parser/parser.y:673
 		{
-			yyVAL.expr = buildPrefixExpression(int(yyDollar[1].token.TokenSubType), yyDollar[2].expr, yyDollar[1].token.Context)
+			yyVAL.expr = buildPrefixExpression(int(yyDollar[1].token.TokenSubType), yyDollar[2].expr, &yyDollar[1].token.Context)
 		}
 	case 95:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line parser/parser.y:674
 		{
-			yyVAL.expr = buildPrefixExpression(int(yyDollar[1].token.TokenSubType), yyDollar[2].expr, yyDollar[1].token.Context)
+			yyVAL.expr = buildPrefixExpression(int(yyDollar[1].token.TokenSubType), yyDollar[2].expr, &yyDollar[1].token.Context)
 		}
 	case 96:
 		yyDollar = yyS[yypt-3 : yypt+1]
@@ -1690,29 +1690,29 @@ yydefault:
 			if yyDollar[1].expr.NodeType() == NODE_ERROR {
 				err := yyDollar[1].expr.(*ParseError)
 				yylex.Error(err.Message, err.Context)
-				yylex.Error(errcode.EARRAY_NAME, yyDollar[2].token.Context)
+				yylex.Error(errcode.EARRAY_NAME, &yyDollar[2].token.Context)
 			}
-			yyVAL.expr = &ParseError{Message: errcode.EARRAY_INDEX, Context: yyDollar[2].token.Context}
+			yyVAL.expr = &ParseError{Message: errcode.EARRAY_INDEX, Context: &yyDollar[2].token.Context}
 		}
 	case 97:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line parser/parser.y:687
 		{
 			if yyDollar[1].expr.NodeType() == NODE_ERROR && yyDollar[3].expr.NodeType() == NODE_ERROR {
-				yylex.Error(errcode.EARRAY_NAME, yyDollar[2].token.Context)
+				yylex.Error(errcode.EARRAY_NAME, &yyDollar[2].token.Context)
 				err := yyDollar[1].expr.(*ParseError)
 				yylex.Error(err.Message, err.Context)
 
-				yylex.Error(errcode.EARRAY_INDEX, yyDollar[2].token.Context)
+				yylex.Error(errcode.EARRAY_INDEX, &yyDollar[2].token.Context)
 				yyVAL.expr = yyDollar[3].expr
 			} else if yyDollar[1].expr.NodeType() == NODE_ERROR {
-				yylex.Error(errcode.EARRAY_NAME, yyDollar[2].token.Context)
+				yylex.Error(errcode.EARRAY_NAME, &yyDollar[2].token.Context)
 				yyVAL.expr = yyDollar[1].expr
 			} else if yyDollar[3].expr.NodeType() == NODE_ERROR {
-				yylex.Error(errcode.EARRAY_INDEX, yyDollar[2].token.Context)
+				yylex.Error(errcode.EARRAY_INDEX, &yyDollar[2].token.Context)
 				yyVAL.expr = yyDollar[3].expr
 			} else {
-				yyVAL.expr = &IndexedExpression{Left: yyDollar[1].expr, Index: yyDollar[3].expr, Context: yyDollar[2].token.Context}
+				yyVAL.expr = &IndexedExpression{Left: yyDollar[1].expr, Index: yyDollar[3].expr, Context: &yyDollar[2].token.Context}
 			}
 		}
 	}

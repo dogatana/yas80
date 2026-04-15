@@ -16,7 +16,7 @@ type Token struct {
 	TokenSubType TokenSubType
 	Literal      string
 	SymbolID     intern.SymbolID
-	Context      *filecontent.Context
+	Context      filecontent.Context
 }
 
 func (t Token) String() string {
@@ -27,12 +27,7 @@ func (t Token) String() string {
 		tstName = fmt.Sprintf(", Sub: %s(%d)", TokenLiteral(tst), tst)
 	}
 
-	var ctx string
-	if t.Context == nil {
-		ctx = "<nil>"
-	} else {
-		ctx = t.Context.String()
-	}
+	ctx := t.Context.String()
 	return fmt.Sprintf("Token{%s(%d)%s, %d, %q, %s}",
 		TokenLiteral(tt), tt, tstName, t.SymbolID, t.Literal, ctx)
 }

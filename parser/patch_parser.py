@@ -42,7 +42,7 @@ patch_data: list[PatchData] = [
     ),
     PatchData(
         'yylex.Error(yyErrorMessage(yystate, yytoken))',
-        'yylex.Error(yyErrorMessage(yystate, yytoken, yyrcvr.lval.token), yyrcvr.lval.token.Context)',
+        'yylex.Error(yyErrorMessage(yystate, yytoken, yyrcvr.lval.token), &yyrcvr.lval.token.Context)',
     ),
     PatchData(
         '\t\t\t' 'if len(expected) == cap(expected) {\n'
