@@ -259,60 +259,61 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 	}
 }
 
-// // 参照用匿名ラベルを検索  呼ばれる前に isAnonRef なのはチェック済み
-// func (e *Evaluator) findAnonLabel(name string, env TEnv, ctx TContext) object.Object {
-// 	var def string
-// 	if len(name) == 2 {
-// 		def = "@@" // @F, @B -> @@ を検索
-// 	} else {
-// 		def = name[:2] // @nF, @nB -> @n を検索
-// 	}
-// 	obj, ok := env.Get(def)
-// 	if !ok {
-// 		if name[len(name)-1] == 'B' { // B の場合は定義済みのはず
-// 			e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
-// 			return object.ERROR
-// 		}
-// 		// 'F' で環境にないなら空で登録し下のチェック(stage 2)で失敗させるようにする
-// 		obj := &object.AnonLabelsObject{Name: name, Labels: []*object.AnonLabel{}}
-// 		env.Set(def, obj)
+// 参照用匿名ラベルを検索  呼ばれる前に isAnonRef なのはチェック済み
+func (e *Evaluator) findAnonLabel(name string, env TEnv, ctx TContext) object.Object {
+	var def string
+	if len(name) == 2 {
+		def = "@@" // @F, @B -> @@ を検索
+	} else {
+		def = name[:2] // @nF, @nB -> @n を検索
+	}
+	id := intern.Intern(def)
+	obj, ok := env.Get(id)
+	if !ok {
+		if name[len(name)-1] == 'B' { // B の場合は定義済みのはず
+			e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
+			return object.ERROR
+		}
+		// 'F' で環境にないなら空で登録し下のチェック(stage 2)で失敗させるようにする
+		obj := &object.AnonLabelsObject{Name: name, NameID: id, Labels: []*object.AnonLabel{}}
+		env.Set(id, obj)
 
-// 		// stage 2 のチェックへ移行させるため ture のままとする
-// 		// e.Resolved = false
-// 		return &object.RefNotFoundObject{}
-// 	}
+		// stage 2 のチェックへ移行させるため ture のままとする
+		// e.Resolved = false
+		return &object.RefNotFoundObject{}
+	}
 
-// 	labels := obj.(*object.AnonLabelsObject).Labels
-// 	switch name[len(name)-1] {
-// 	case 'B':
-// 		// 逆順検索
-// 		for i := len(labels) - 1; i >= 0; i-- {
-// 			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line < ctx.Line {
-// 				return labels[i]
-// 			}
-// 		}
-// 		// 逆順なので必ず見つかるはずで、そうでないならエラーとする
-// 		e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
-// 		return object.ERROR
-// 	case 'F':
-// 		// 順方向検索
-// 		for i := 0; i < len(labels); i++ {
-// 			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line > ctx.Line {
-// 				return labels[i]
-// 			}
-// 		}
-// 		// Evaluator.Stage2 で見つからなければエラー
-// 		if e.Stage2 {
-// 			e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
-// 			return object.ERROR
-// 		}
-// 		// stage 2 のチェックへ移行させるため ture のままとする
-// 		// e.Resolved = false
-// 		return &object.RefNotFoundObject{}
-// 	default:
-// 		panic(fmt.Sprintf("invalid anonymous label name: %s", name))
-// 	}
-// }
+	labels := obj.(*object.AnonLabelsObject).Labels
+	switch name[len(name)-1] {
+	case 'B':
+		// 逆順検索
+		for i := len(labels) - 1; i >= 0; i-- {
+			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line < ctx.Line {
+				return labels[i]
+			}
+		}
+		// 逆順なので必ず見つかるはずで、そうでないならエラーとする
+		e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
+		return object.ERROR
+	case 'F':
+		// 順方向検索
+		for i := 0; i < len(labels); i++ {
+			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line > ctx.Line {
+				return labels[i]
+			}
+		}
+		// Evaluator.Stage2 で見つからなければエラー
+		if e.Stage2 {
+			e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_NOT_FOUND, name), ctx)
+			return object.ERROR
+		}
+		// stage 2 のチェックへ移行させるため ture のままとする
+		// e.Resolved = false
+		return &object.RefNotFoundObject{}
+	default:
+		panic(fmt.Sprintf("invalid anonymous label name: %s", name))
+	}
+}
 
 // parser.Expression -> parser.Ident - >parser.Label を評価・環境登録し object.SymbolObject を返す
 func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) object.Object {
@@ -328,7 +329,7 @@ func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) 
 
 // parser.Ident -> parser.Label 変換(exprToLabel から呼ばれる)
 func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
-	l := &parser.Label{Name: id.Name, LabelType: parser.NODE_LABEL, Context: id.Context}
+	l := &parser.Label{Name: id.Name, NameID: id.NameID, LabelType: parser.NODE_LABEL, Context: id.Context}
 	switch {
 	case util.IsAnonDef(id.Name) || util.IsAnonRef(id.Name):
 		l.LabelType = parser.NODE_ANON_LABEL

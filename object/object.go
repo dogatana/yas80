@@ -141,6 +141,7 @@ func (o *AnonLabel) String() string {
 // 匿名ラベル Object
 type AnonLabelsObject struct {
 	Name   string
+	NameID intern.SymbolID
 	Labels []*AnonLabel
 }
 

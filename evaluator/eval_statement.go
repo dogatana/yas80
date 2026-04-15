@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/object"
 	"github.com/dogatana/yas80/parser"
 )
@@ -415,35 +416,34 @@ func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 	id := label.NameID
 	name := label.Name
 
-	// // 匿名ラベル処理
-	// if label.LabelType == parser.NODE_ANON_LABEL {
-	// 	if object.OuterEnvType(env) != object.ENV_PROC {
-	// 		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)
-	// 		return object.ERROR
-	// 	}
-	// 	name = label.Name
-	// 	if util.IsAnonDef(name) {
-	// 		return e.evalAnonymouseLable(label, env)
-	// 	}
-	// 	// @F @B @nF @nB
-	// 	e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_REF_ONLY, name), label.Context)
-	// 	return object.ERROR
-	// }
+	// 匿名ラベル処理
+	if label.LabelType == parser.NODE_ANON_LABEL {
+		if object.OuterEnvType(env) != object.ENV_PROC {
+			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)
+			return object.ERROR
+		}
+		if util.IsAnonDef(name) {
+			return e.evalAnonymouseLable(label, env)
+		}
+		// @F @B @nF @nB
+		e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_REF_ONLY, name), label.Context)
+		return object.ERROR
+	}
 
-	// // . @ 1 文字のラベルは利用不可
-	// if name == "." || name == "@" {
-	// 	e.logger.Error(fmt.Sprintf(errcode.ESYM_INVALID, name), label.Context)
-	// 	return object.ERROR
-	// }
+	// . @ 1 文字のラベルは利用不可
+	if name == "." || name == "@" {
+		e.logger.Error(fmt.Sprintf(errcode.ESYM_INVALID, name), label.Context)
+		return object.ERROR
+	}
 
-	// switch {
-	// case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
-	// 	e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)
-	// 	return object.ERROR
-	// case name[0] == '@' && env.EnvType() != object.ENV_MACRO:
-	// 	e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), label.Context)
-	// 	return object.ERROR
-	// }
+	switch {
+	case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), label.Context)
+		return object.ERROR
+	case name[0] == '@' && env.EnvType() != object.ENV_MACRO:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), label.Context)
+		return object.ERROR
+	}
 
 	obj, ok := env.Get(id)
 	if !ok {
@@ -475,30 +475,30 @@ func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 	return sym
 }
 
-//
-//// 匿名ラベル処理
-//func (e *Evaluator) evalAnonymouseLable(label *parser.Label, env TEnv) object.Object {
-//	// 匿名ラベル情報
-//	pos := &object.AnonLabel{
-//		Addr:     getLocationCounter(env),
-//		Filename: label.Context.FileContent.Filename,
-//		Line:     label.Context.Line}
-//
-//	obj, ok := env.Get(label.Name)
-//	if !ok {
-//		// 環境にないなら新規登録
-//		obj := &object.AnonLabelsObject{Name: label.Name, Labels: []*object.AnonLabel{pos}}
-//		env.Set(label.Name, obj)
-//		return obj
-//	}
-//	// 追加
-//	lo, ok := obj.(*object.AnonLabelsObject)
-//	if !ok {
-//		panic(fmt.Sprintf("invalid AnonLabelsObject: %#v", obj))
-//	}
-//	lo.Add(pos)
-//	return lo
-//}
+// 匿名ラベル処理
+func (e *Evaluator) evalAnonymouseLable(label *parser.Label, env TEnv) object.Object {
+	// 匿名ラベル情報
+	pos := &object.AnonLabel{
+		Addr:     getLocationCounter(env),
+		Filename: label.Context.FileContent.Filename,
+		Line:     label.Context.Line}
+
+	obj, ok := env.Get(label.NameID)
+	if !ok {
+		// 環境にないなら新規登録
+		obj := &object.AnonLabelsObject{Name: label.Name, NameID: label.NameID, Labels: []*object.AnonLabel{pos}}
+		env.Set(label.NameID, obj)
+		return obj
+	}
+	// 追加
+	lo, ok := obj.(*object.AnonLabelsObject)
+	if !ok {
+		panic(fmt.Sprintf("invalid AnonLabelsObject: %#v", obj))
+	}
+	lo.Add(pos)
+	return lo
+}
+
 //
 //// const / equ 文
 //func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env TEnv) object.Object {

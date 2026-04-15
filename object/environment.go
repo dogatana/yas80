@@ -39,6 +39,7 @@ func setupSystemVariables(env Environment) {
 
 	env.Set(intern.ID_LOC, &NumberObject{Value: 0})  // $
 	env.Set(intern.ID_ALOC, &NumberObject{Value: 0}) // $$
+	env.Set(intern.ID_PASS, &NumberObject{Value: 0}) // $PASS
 
 	env.Set(intern.Intern("$FILL"), &NumberObject{Value: 0})
 	env.Set(intern.Intern("$R800"), &NumberObject{Value: 0})

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/object"
 	"github.com/dogatana/yas80/parser"
 )
@@ -23,65 +24,66 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	case *parser.FlagLiteral:
 		return object.Z80RegisterFlagObjects[node.Flag]
 
-	// // レジスタ間接 (HL),(BC),(DE),(IX+d),(IY+d),(C)
-	// case *parser.RegIndirectExpression:
-	// 	return e.evalRegIndirectExpression(node, env, ctx)
+	// レジスタ間接 (HL),(BC),(DE),(IX+d),(IY+d),(C)
+	case *parser.RegIndirectExpression:
+		return e.evalRegIndirectExpression(node, env, ctx)
 
-	// // アドレス間接 (nn),(n)
-	// case *parser.AddrIndirectExpression:
-	// 	return e.evalAddrIndirectExpression(node, env, ctx)
+	// アドレス間接 (nn),(n)
+	case *parser.AddrIndirectExpression:
+		return e.evalAddrIndirectExpression(node, env, ctx)
 
-	// // 識別子
-	// case *parser.Ident:
-	// 	name := node.Name
+	// 識別子
+	case *parser.Ident:
+		id := node.NameID
+		name := node.Name
 
-	// 	// 匿名ラベルの参照を解決
-	// 	if node.IdentType == parser.ANON_IDENT {
-	// 		if util.IsAnonDef(name) { // @@ @1-@9
-	// 			e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_DEF_ONLY, name), node.Context)
-	// 			return object.ERROR
-	// 		}
-	// 		obj := e.findAnonLabel(name, env, node.Context)
-	// 		switch obj := obj.(type) {
-	// 		case *object.ErrorObject, *object.RefNotFoundObject:
-	// 			return obj
-	// 		case *object.AnonLabel:
-	// 			return &object.NumberObject{Value: obj.Addr, Context: node.Context}
-	// 		default:
-	// 			panic(fmt.Sprintf("findAnonLabel returns %T(%#v)", obj, obj))
-	// 		}
-	// 	}
-	// 	// 匿名ラベル以外の解決
-	// 	obj, ok := env.Get(name)
-	// 	if !ok && name[0] == '$' {
-	// 		// システム変数で未登録の場合はエラー
-	// 		e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), node.Context)
-	// 		return object.ERROR
-	// 	} else if !ok {
-	// 		// 未定義の場合、遅延評価するため RefNotFound を返す
-	// 		e.Resolved = false
-	// 		sym := object.NewUnknownSymbol(name, node.Context)
-	// 		env.Set(name, sym)
-	// 		return &object.RefNotFoundObject{Names: []string{name}}
-	// 	}
+		// 匿名ラベルの参照を解決
+		if node.IdentType == parser.ANON_IDENT {
+			if util.IsAnonDef(name) { // @@ @1-@9
+				e.logger.Error(fmt.Sprintf(errcode.EANON_LABEL_DEF_ONLY, name), node.Context)
+				return object.ERROR
+			}
+			obj := e.findAnonLabel(name, env, node.Context)
+			switch obj := obj.(type) {
+			case *object.ErrorObject, *object.RefNotFoundObject:
+				return obj
+			case *object.AnonLabel:
+				return &object.NumberObject{Value: obj.Addr, Context: node.Context}
+			default:
+				panic(fmt.Sprintf("findAnonLabel returns %T(%#v)", obj, obj))
+			}
+		}
+		// 匿名ラベル以外の解決
+		obj, ok := env.Get(id)
+		if !ok && name[0] == '$' {
+			// システム変数で未登録の場合はエラー
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), node.Context)
+			return object.ERROR
+		} else if !ok {
+			// 未定義の場合、遅延評価するため RefNotFound を返す
+			e.Resolved = false
+			sym := object.NewUnknownSymbol(id, name, node.Context)
+			env.Set(id, sym)
+			return &object.RefNotFoundObject{Names: []string{name}}
+		}
 
-	// 	switch obj := obj.(type) {
-	// 	case *object.ProcObject:
-	// 		return &object.NumberObject{Value: obj.Addr, Context: node.Context}
-	// 	case *object.SymbolObject:
-	// 		// _ ならそのまま返す
-	// 		if obj.Name == "_" {
-	// 			return obj
-	// 		}
-	// 		// 値が NULL なら RefNotFound にして返す
-	// 		if obj.Value == object.NULL {
-	// 			return &object.RefNotFoundObject{Names: []string{obj.Name}}
-	// 		}
-	// 		// 値が NULL でないなら Value を返す
-	// 		return obj.Value
-	// 	default:
-	// 		return obj
-	// 	}
+		switch obj := obj.(type) {
+		case *object.ProcObject:
+			return &object.NumberObject{Value: obj.Addr, Context: node.Context}
+		case *object.SymbolObject:
+			// _ ならそのまま返す
+			if obj.Name == "_" {
+				return obj
+			}
+			// 値が NULL なら RefNotFound にして返す
+			if obj.Value == object.NULL {
+				return &object.RefNotFoundObject{Names: []string{obj.Name}}
+			}
+			// 値が NULL でないなら Value を返す
+			return obj.Value
+		default:
+			return obj
+		}
 
 	// // enum or proc.local
 	// case *parser.DotIdent:
@@ -471,71 +473,72 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 // 	return array.Values[index]
 // }
 
-// // レジスタ間接 (SP),(HL),(IX+d),(IY+d),(C)
-// func (e *Evaluator) evalRegIndirectExpression(expr *parser.RegIndirectExpression, env TEnv, ctx TContext) object.Object {
-// 	e.concatenateSymbol(&expr.Displacement, env, ctx)
+// レジスタ間接 (SP),(HL),(IX+d),(IY+d),(C)
+func (e *Evaluator) evalRegIndirectExpression(expr *parser.RegIndirectExpression, env TEnv, ctx TContext) object.Object {
+	reg := expr.Register
+	if reg.RegisterType == parser.Z80_REG8 && reg.Register != parser.Z80_REG_C {
+		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(reg.Register)), ctx)
+		return object.ERROR
+	}
+	if reg.RegisterType == parser.Z80_REG16 && (reg.Register == parser.Z80_REG_AF || reg.Register == parser.Z80_REG_AFEX) {
+		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(reg.Register)), ctx)
+		return object.ERROR
+	}
 
-// 	reg := expr.Register
-// 	if reg.RegisterType == parser.Z80_REG8 && reg.Register != parser.Z80_REG_C {
-// 		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(reg.Register)), ctx)
-// 		return object.ERROR
-// 	}
-// 	if reg.Register == parser.Z80_REG_AF || reg.Register == parser.Z80_REG_AFEX {
-// 		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(reg.Register)), ctx)
-// 		return object.ERROR
-// 	}
+	// オフセットなし
+	if expr.Displacement == nil {
+		return &object.RegIndirectObject{Register: reg.Register}
+	}
 
-// 	if expr.Displacement == nil {
-// 		return &object.RegIndirectObject{Register: reg.Register}
-// 	}
+	// オフセットあり
+	if reg.Register != parser.Z80_REG_IX && reg.Register != parser.Z80_REG_IY {
+		e.logger.Error(errcode.EINDIRECT_DISP_REG, ctx)
+		return object.ERROR
+	}
 
-// 	// オフセットあり
-// 	if reg.Register != parser.Z80_REG_IX && reg.Register != parser.Z80_REG_IY {
-// 		e.logger.Error(errcode.EINDIRECT_DISP_REG, ctx)
-// 		return object.ERROR
-// 	}
+	e.concatenateSymbol(&expr.Displacement, env, ctx)
 
-// 	obj := e.evalExpression(expr.Displacement, env, ctx)
-// 	if isError(obj) {
-// 		return obj
-// 	}
-// 	if isRefNotFound(obj) {
-// 		e.Resolved = false
-// 		return obj
-// 	}
+	obj := e.evalExpression(expr.Displacement, env, ctx)
+	if isError(obj) {
+		return obj
+	}
+	if isRefNotFound(obj) {
+		e.Resolved = false
+		return obj
+	}
 
-// 	num, ok := obj.(*object.NumberObject)
-// 	if !ok {
-// 		e.logger.Error(errcode.EINDIRECT_DISP, ctx)
-// 		return object.ERROR
-// 	}
-// 	if num.Value < -128 || num.Value > 127 {
-// 		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_DISP_RANGE, num.Value, num.Value), ctx)
-// 		return object.ERROR
-// 	}
+	num, ok := obj.(*object.NumberObject)
+	if !ok {
+		e.logger.Error(errcode.EINDIRECT_DISP, ctx)
+		return object.ERROR
+	}
+	if num.Value < -128 || num.Value > 127 {
+		e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_DISP_RANGE, num.Value, num.Value), ctx)
+		return object.ERROR
+	}
 
-// 	return &object.RegIndirectObject{Register: reg.Register, Displacement: num.Value}
-// }
+	return &object.RegIndirectObject{Register: reg.Register, Displacement: num.Value}
+}
 
-// // アドレス間接 (nn), (n)
-// func (e *Evaluator) evalAddrIndirectExpression(expr *parser.AddrIndirectExpression, env TEnv, ctx TContext) object.Object {
-// 	e.concatenateSymbol(&expr.Address, env, ctx)
+// アドレス間接 (nn), (n)
+func (e *Evaluator) evalAddrIndirectExpression(expr *parser.AddrIndirectExpression, env TEnv, ctx TContext) object.Object {
+	e.concatenateSymbol(&expr.Address, env, ctx)
 
-// 	obj := e.evalExpression(expr.Address, env, ctx)
+	obj := e.evalExpression(expr.Address, env, ctx)
 
-// 	switch addr := obj.(type) {
-// 	case *object.ErrorObject:
-// 		return addr
-// 	case *object.RefNotFoundObject:
-// 		e.Resolved = false
-// 		return addr
-// 	case *object.NumberObject:
-// 		return &object.AddrIndirectObject{Address: addr.Value}
-// 	case *object.NullObject:
-// 		e.logger.Error(errcode.EINDIRECT_NULL, ctx)
-// 		return object.ERROR
-// 	default:
-// 		e.logger.Error(errcode.EINDIRECT_VALUE, ctx)
-// 		return object.ERROR
-// 	}
-// }
+	switch addr := obj.(type) {
+	case *object.ErrorObject:
+		return addr
+	case *object.RefNotFoundObject:
+		e.Resolved = false
+		return addr
+	case *object.NumberObject:
+		return &object.AddrIndirectObject{Address: addr.Value}
+	case *object.NullObject:
+		e.logger.Error(errcode.EINDIRECT_NULL, ctx)
+		return object.ERROR
+	default:
+		e.logger.Error(errcode.EINDIRECT_VALUE, ctx)
+		return object.ERROR
+	}
+}
