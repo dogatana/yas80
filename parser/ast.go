@@ -498,7 +498,7 @@ func (s *FuncStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *FuncStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(s.NameID.String() + strings.Join(s.Params, ", ") + "\n")
+	out.WriteString(s.NameID.String() + " FUNC " + strings.Join(s.Params, ", ") + "\n")
 	out.WriteString(s.Block.String() + "\n")
 	out.WriteString("ENDF")
 

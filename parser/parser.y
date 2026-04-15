@@ -193,7 +193,7 @@ directive	: CONST ident_expr '=' expr
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4.(*ParseError)
 				} else {
-					$$ = &VariableStatement{NameID: &Ident{NameID: $2.NameID}, Value: $4, Context: $1.Context}
+					$$ = &VariableStatement{Name: &Ident{Name: $2.Name, NameID: $2.NameID}, Value: $4, Context: $1.Context}
 				}
 			}
 			| expr '=' expr
