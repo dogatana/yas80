@@ -76,11 +76,11 @@ func (e *Evaluator) CheckCyclicError(env TEnv) {
 		visiting[id] = false
 	}
 
-	for name, obj := range env.Store() {
+	for id, obj := range env.Store() {
 		sym, ok := obj.(*object.SymbolObject)
 		if !ok || sym.Name != "_" && sym.Name[0] != '$' && sym.Value != object.NULL {
 			continue
 		}
-		visit(sym, name)
+		visit(sym, intern.SymbolID(id))
 	}
 }

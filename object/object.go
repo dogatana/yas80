@@ -320,7 +320,7 @@ func (o *ProcObject) EnvType() int                              { return o.Env.E
 func (o *ProcObject) Get(id intern.SymbolID) (Object, bool)     { return o.Env.Get(id) }
 func (o *ProcObject) Set(id intern.SymbolID, obj Object) Object { return o.Env.Set(id, obj) }
 func (o *ProcObject) Outer() Environment                        { return o.Env.Outer() }
-func (o *ProcObject) Store() map[intern.SymbolID]Object         { return o.Env.Store() }
+func (o *ProcObject) Store() []Object                           { return o.Env.Store() }
 
 // enum - Object interface と Environ interface を実装する
 type EnumObject struct {
@@ -335,7 +335,7 @@ func (o *EnumObject) String() string {
 
 	out.WriteString(fmt.Sprintf("ENUM(%s) {\n", o.Name))
 	for k, v := range o.Env.Store() {
-		out.WriteString(fmt.Sprintf("%s=%s\n", k, v.String()))
+		out.WriteString(fmt.Sprintf("%s=%s\n", intern.SymbolID(k), v.String()))
 	}
 	out.WriteString("}")
 
@@ -347,7 +347,7 @@ func (o *EnumObject) EnvType() int                              { return o.Env.E
 func (o *EnumObject) Get(id intern.SymbolID) (Object, bool)     { return o.Env.Get(id) }
 func (o *EnumObject) Set(id intern.SymbolID, obj Object) Object { return o.Env.Set(id, obj) }
 func (o *EnumObject) Outer() Environment                        { return o.Env.Outer() }
-func (o *EnumObject) Store() map[intern.SymbolID]Object         { return o.Env.Store() }
+func (o *EnumObject) Store() []Object                           { return o.Env.Store() }
 
 // exitm
 type ExitmObject struct {

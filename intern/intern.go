@@ -1,6 +1,6 @@
 package intern
 
-type SymbolID int
+type SymbolID uint32
 
 func (id SymbolID) String() string {
 	return idToStr[id]
