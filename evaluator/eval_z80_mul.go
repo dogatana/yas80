@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/object"
 	"github.com/dogatana/yas80/parser"
 )
@@ -11,9 +12,9 @@ import (
 // MUL
 func (e *Evaluator) evalZ80_MUL(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
 	// $R800 を確認
-	if obj, ok := env.Get("$R800"); !ok {
+	if r800, ok := getNumberFromEnv(intern.Intern("$R800"), env); !ok {
 		panic("no $R800")
-	} else if obj.(*object.NumberObject).Value == 0 {
+	} else if r800 == 0 {
 		e.logger.Error(errcode.ER800, stmt.Context)
 		return object.ERROR
 	}

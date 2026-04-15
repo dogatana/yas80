@@ -412,6 +412,7 @@ func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env TEnv) ob
 
 // parser.Label 評価&環境登録
 func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
+	id := label.NameID
 	name := label.Name
 
 	// // 匿名ラベル処理
@@ -444,11 +445,11 @@ func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 	// 	return object.ERROR
 	// }
 
-	obj, ok := env.Get(name)
+	obj, ok := env.Get(id)
 	if !ok {
 		// 環境にないなら新規登録
-		sym := object.NewLabelSymbol(name, getLocationCounter(env), label.Context)
-		env.Set(name, sym)
+		sym := object.NewLabelSymbol(id, name, getLocationCounter(env), label.Context)
+		env.Set(id, sym)
 		return sym
 	}
 
@@ -466,8 +467,8 @@ func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 
 	// SYM_UNKNOWN の場合 SYM_LABEL として登録後値を更新
 	if sym.SymType == object.SYM_UNKNOWN {
-		sym = object.NewLabelSymbol(name, 0, label.Context)
-		env.Set(name, sym)
+		sym = object.NewLabelSymbol(id, name, 0, label.Context)
+		env.Set(id, sym)
 	}
 	// 値を更新
 	sym.Value.(*object.NumberObject).Value = getLocationCounter(env)

@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/intern"
+	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/parser"
 )
 
@@ -27,10 +29,11 @@ var symbolTypeNames map[SymbolType]string = map[SymbolType]string{
 // symbol
 type SymbolObject struct {
 	Name      string
+	NameID    intern.SymbolID
 	SymType   SymbolType
 	Node      parser.Node
 	Value     Object
-	DependsOn []string
+	DependsOn []intern.SymbolID
 	Context   *filecontent.Context
 }
 
@@ -39,13 +42,15 @@ func (s *SymbolObject) String() string {
 	str := fmt.Sprintf("Symbol{%q, %s, %s",
 		s.Name, symbolTypeNames[s.SymType], s.Value.String())
 	if len(s.DependsOn) > 0 {
-		str += ", [" + strings.Join(s.DependsOn, ",") + "]"
+		deps := util.Map(s.DependsOn, intern.Lookup)
+		str += ", [" + strings.Join(deps, ",") + "]"
 	}
 	return str + "}"
 }
 
-func NewLabelSymbol(name string, addr int, ctx *filecontent.Context) *SymbolObject {
+func NewLabelSymbol(id intern.SymbolID, name string, addr int, ctx *filecontent.Context) *SymbolObject {
 	return &SymbolObject{
+		NameID:  id,
 		Name:    name,
 		SymType: SYM_LABEL,
 		Value:   &NumberObject{Value: addr, Context: ctx},
@@ -53,8 +58,10 @@ func NewLabelSymbol(name string, addr int, ctx *filecontent.Context) *SymbolObje
 	}
 }
 
-func NewConstSymbol(name string, node parser.Node, value Object, depends []string, ctx *filecontent.Context) *SymbolObject {
-	return &SymbolObject{Name: name,
+func NewConstSymbol(id intern.SymbolID, name string, node parser.Node, value Object, depends []intern.SymbolID, ctx *filecontent.Context) *SymbolObject {
+	return &SymbolObject{
+		NameID:    id,
+		Name:      name,
 		SymType:   SYM_CONST,
 		Node:      node,
 		Value:     value,
@@ -63,8 +70,9 @@ func NewConstSymbol(name string, node parser.Node, value Object, depends []strin
 	}
 }
 
-func NewVarSymbol(name string, node parser.Node, value Object, depends []string, ctx *filecontent.Context) *SymbolObject {
+func NewVarSymbol(id intern.SymbolID, name string, node parser.Node, value Object, depends []intern.SymbolID, ctx *filecontent.Context) *SymbolObject {
 	return &SymbolObject{Name: name,
+		NameID:    id,
 		SymType:   SYM_VAR,
 		Node:      node,
 		Value:     value,
@@ -73,12 +81,13 @@ func NewVarSymbol(name string, node parser.Node, value Object, depends []string,
 	}
 }
 
-func NewUnknownSymbol(name string, ctx *filecontent.Context) *SymbolObject {
+func NewUnknownSymbol(id intern.SymbolID, name string, ctx *filecontent.Context) *SymbolObject {
 	return &SymbolObject{
+		NameID:    id,
 		Name:      name,
 		SymType:   SYM_UNKNOWN,
 		Value:     NULL,
-		DependsOn: []string{},
+		DependsOn: []intern.SymbolID{},
 		Context:   ctx,
 	}
 }

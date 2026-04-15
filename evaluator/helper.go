@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/object"
 	"github.com/dogatana/yas80/parser"
@@ -49,50 +50,46 @@ func extractNames(obj object.Object) []string {
 	}
 }
 
-// $ location counter 初期化
+// $ location counter 更新
 func setLocationCounter(env TEnv, addr int) {
-	if obj, ok := env.Get("$"); !ok {
-		panic("getLocationCounter failed")
-	} else if no, ok := obj.(*object.NumberObject); !ok {
-		panic("getLocationCounter failed")
-	} else {
-		no.Value = addr
-	}
+	updateNumberInEnv(intern.ID_LOC, addr, env)
 }
 
-// $$ allocate location counter 初期化
+// $$ allocate location counter 更新
 func setAllocLocationCounter(env TEnv, addr int) {
-	if obj, ok := env.Get("$$"); !ok {
-		panic("getAllocLocationCounter failed")
+	updateNumberInEnv(intern.ID_ALOC, addr, env)
+}
+
+// $PASS 更新
+func setPass(env TEnv, pass int) {
+	updateNumberInEnv(intern.ID_PASS, pass, env)
+}
+
+// ENV[id] の NumberObject 更新
+func updateNumberInEnv(id intern.SymbolID, value int, env TEnv) {
+	if obj, ok := env.Get(id); !ok {
+		panic(fmt.Sprintf("cannot get %s", id))
 	} else if no, ok := obj.(*object.NumberObject); !ok {
-		panic("getAllocLocationCounter failed")
+		panic(fmt.Sprintf("ENV[%s] is not NumberObject", id))
 	} else {
-		no.Value = addr
+		no.Value = value
 	}
 }
 
 // location counter 取得
 func getLocationCounter(env TEnv) int {
-	counter, ok := env.Get("$")
-	if !ok {
+	if addr, ok := getNumberFromEnv(intern.ID_LOC, env); !ok {
 		panic("getLocationCounter failed")
-	}
-	return counter.(*object.NumberObject).Value
-}
+	} else {
+		return addr
 
-// location counter 取得
-// func getAllocLocationCounter(env TEnv) int {
-// 	counter, ok := env.Get("$$")
-// 	if !ok {
-// 		panic("getAllocLocationCounter failed")
-// 	}
-// 	return counter.(*object.NumberObject).Value
-// }
+	}
+}
 
 // location counter 更新
 // set** を使用すると現階層の Env に設定するため、元のオブジェクトの値を直接書き換える
 func advanceLocationCounters(env TEnv, n int) error {
-	obj, ok := env.Get("$")
+	obj, ok := env.Get(intern.ID_LOC)
 	if !ok {
 		panic("getLocationCounter failed")
 	}
@@ -104,7 +101,7 @@ func advanceLocationCounters(env TEnv, n int) error {
 		return fmt.Errorf(errcode.EADDR_OVERFLOW, counter.Value)
 	}
 
-	obj, ok = env.Get("$$")
+	obj, ok = env.Get(intern.ID_ALOC)
 	if !ok {
 		panic("getAllocLocationCounter failed")
 	}
@@ -218,23 +215,11 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TCon
 	return false
 }
 
-// ENV から NumberObject を取得する（システム変数用）
-func (e *Evaluator) getNumberFromEnv(name string, env TEnv) (*object.NumberObject, bool) {
-	obj, ok := env.Get(name)
-	if !ok {
-		return nil, false
-	}
-	if obj, ok := obj.(*object.NumberObject); ok {
-		return obj, true
-	}
-	return nil, false
-}
-
 // ENV から SymbolObject を取得する
 func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObject, bool) {
 	names := strings.Split(name, ".")
 	if len(names) == 1 {
-		if obj, ok := env.Get(name); ok {
+		if obj, ok := env.Get(intern.Intern(name)); ok {
 			switch obj := obj.(type) {
 			case *object.SymbolObject:
 				return obj, true
@@ -244,13 +229,13 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 			return nil, false
 		}
 	}
-	obj, ok := env.Get(names[0])
+	obj, ok := env.Get(intern.Intern(names[0]))
 	if !ok {
 		return nil, false
 	}
 	switch obj := obj.(type) {
 	case *object.ProcObject:
-		v, ok := obj.Get("." + names[1])
+		v, ok := obj.Get(intern.Intern("." + names[1]))
 		if !ok {
 			return nil, false
 		}
@@ -260,7 +245,7 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 		return nil, false
 
 	case *object.EnumObject:
-		v, ok := obj.Get("." + names[1])
+		v, ok := obj.Get(intern.Intern("." + names[1]))
 		if !ok {
 			return nil, false
 		}
@@ -417,3 +402,21 @@ func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 // 	}
 // 	return nil, fmt.Errorf(errcode.EFILE_NOT_FOUND, name)
 // }
+
+// ENV から NumberObject を取得する（システム変数用）
+func getNumberFromEnv(id intern.SymbolID, env TEnv) (int, bool) {
+	obj, ok := env.Get(id)
+	if !ok {
+		return 0, false
+	}
+EVAL_AGAIN:
+	switch no := obj.(type) {
+	case *object.NumberObject:
+		return no.Value, true
+	case *object.SymbolObject:
+		obj = no.Value
+		goto EVAL_AGAIN
+	default:
+		return 0, false
+	}
+}

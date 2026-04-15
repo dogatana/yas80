@@ -2,6 +2,10 @@ package intern
 
 type SymbolID int
 
+func (id SymbolID) String() string {
+	return idToStr[id]
+}
+
 const symbolCap = 10000
 
 var strToID map[string]SymbolID
@@ -28,10 +32,14 @@ func Lookup(id SymbolID) string {
 	return idToStr[id]
 }
 
-var ID_LOC SymbolID  // $
-var ID_ALOC SymbolID // $$
+var ID_LOC SymbolID    // $
+var ID_ALOC SymbolID   // $$
+var ID_PASS SymbolID   // $PASS
+var ID_STAGE2 SymbolID // $STAGE2
 
 func init() {
 	ID_LOC = Intern("$")
 	ID_ALOC = Intern("$$")
+	ID_PASS = Intern("$PASS")
+	ID_STAGE2 = Intern("$STAGE2")
 }

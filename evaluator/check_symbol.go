@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/object"
 )
 
@@ -51,28 +52,28 @@ func (e *Evaluator) CheckSymbolError(env TEnv) {
 }
 
 func (e *Evaluator) CheckCyclicError(env TEnv) {
-	visited := map[string]bool{}
-	visiting := map[string]bool{}
+	visited := map[intern.SymbolID]bool{}
+	visiting := map[intern.SymbolID]bool{}
 
-	var visit func(sym *object.SymbolObject, name string)
-	visit = func(sym *object.SymbolObject, name string) {
-		if visiting[name] {
-			e.logger.Error(fmt.Sprintf(errcode.ESYM_CYCLIC, name), sym.Context)
+	var visit func(sym *object.SymbolObject, id intern.SymbolID)
+	visit = func(sym *object.SymbolObject, id intern.SymbolID) {
+		if visiting[id] {
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_CYCLIC, id), sym.Context)
 			return
 		}
-		if visited[name] {
+		if visited[id] {
 			return
 		}
-		visiting[name] = true
-		if obj, ok := env.Get(name); ok {
+		visiting[id] = true
+		if obj, ok := env.Get(id); ok {
 			if newSym, ok := obj.(*object.SymbolObject); ok {
 				for _, dep := range newSym.DependsOn {
 					visit(newSym, dep)
 				}
 			}
 		}
-		visited[name] = true
-		visiting[name] = false
+		visited[id] = true
+		visiting[id] = false
 	}
 
 	for name, obj := range env.Store() {

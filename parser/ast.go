@@ -197,7 +197,7 @@ func (s *CharmapStatement) ReplaceContext(ctx filecontent.Context) {
 	s.Context = &ctx
 }
 func (s *CharmapStatement) String() string {
-	str := fmt.Sprintf("CHARMAP %s, %q", intern.Lookup(s.NameID), s.Filename)
+	str := fmt.Sprintf("CHARMAP %s, %q", s.NameID, s.Filename)
 	if s.DefChar != nil {
 		str += ", " + s.DefChar.String()
 	}
@@ -335,7 +335,7 @@ func (s *EnumStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *EnumStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(intern.Lookup(s.NameID) + " ENUM\n")
+	out.WriteString(s.NameID.String() + " ENUM\n")
 	out.WriteString(s.Elements.String() + "\n")
 	out.WriteString("ENDE")
 
@@ -375,7 +375,7 @@ func (s *EnumElement) ReplaceContext(ctx filecontent.Context) {
 	s.Context = &ctx
 }
 func (s *EnumElement) String() string {
-	name := intern.Lookup(s.NameID)
+	name := s.NameID.String()
 	if s.Value == nil {
 		return name
 	} else {
@@ -498,7 +498,7 @@ func (s *FuncStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *FuncStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(intern.Lookup(s.NameID) + " FUNC " + strings.Join(s.Params, ", ") + "\n")
+	out.WriteString(s.NameID.String() + strings.Join(s.Params, ", ") + "\n")
 	out.WriteString(s.Block.String() + "\n")
 	out.WriteString("ENDF")
 
@@ -526,7 +526,7 @@ func (s *MacroStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *MacroStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(intern.Lookup(s.NameID) + " MACRO " + strings.Join(s.Params, ", ") + "\n")
+	out.WriteString(s.NameID.String() + " MACRO " + strings.Join(s.Params, ", ") + "\n")
 	out.WriteString(s.Body.String() + "\n")
 	out.WriteString("ENDM")
 
@@ -555,7 +555,7 @@ func (s *MacroCallStatement) String() string {
 	for _, arg := range s.Args.Expressions {
 		args = append(args, arg.String())
 	}
-	return fmt.Sprintf("MACRO %s CALL with %s", intern.Lookup(s.NameID), strings.Join(args, ","))
+	return fmt.Sprintf("MACRO %s CALL with %s", s.NameID, strings.Join(args, ","))
 }
 
 // block statement
@@ -600,7 +600,7 @@ func (s *MacroBlockStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *MacroBlockStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(fmt.Sprintf("MACRO BLOCK(%s) {\n", intern.Lookup(s.NameID)))
+	out.WriteString(fmt.Sprintf("MACRO BLOCK(%s) {\n", s.Name))
 	for _, s := range s.Block {
 		out.WriteString(s.String() + "\n")
 	}
@@ -638,7 +638,7 @@ func (s *ConstStatement) String() string {
 
 // 変数定義文 - VAR
 type VariableStatement struct {
-	NameID  Expression
+	Name    Expression
 	Value   Expression
 	Context *filecontent.Context
 }
@@ -656,7 +656,7 @@ func (s *VariableStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("VAR ")
-	out.WriteString(intern.Lookup(s.NameID.(*Ident).NameID))
+	out.WriteString(s.Name.(*Ident).Name)
 	out.WriteString(" = ")
 	out.WriteString(s.Value.String())
 
@@ -956,7 +956,7 @@ type Ident struct {
 
 func (e *Ident) expressionNode()    {}
 func (e *Ident) NodeType() NodeType { return NODE_IDENT }
-func (e *Ident) String() string     { return intern.Lookup(e.NameID) }
+func (e *Ident) String() string     { return e.Name }
 
 // ドット識別子
 type DotIdent struct {
@@ -970,7 +970,7 @@ type DotIdent struct {
 
 func (e *DotIdent) expressionNode()    {}
 func (e *DotIdent) NodeType() NodeType { return NODE_DOT_IDENT }
-func (e *DotIdent) String() string     { return intern.Lookup(e.NameID) }
+func (e *DotIdent) String() string     { return e.Name }
 
 // レジスタ間接指定
 type RegIndirectExpression struct {

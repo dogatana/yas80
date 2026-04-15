@@ -198,7 +198,7 @@ func (e *Evaluator) ebfuncDefined(expr *parser.FuncCallExpression, env TEnv, ctx
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR
 	} else {
-		_, ok = env.Get(id.Name)
+		_, ok = env.Get(id.NameID)
 		return &object.NumberObject{Value: boolToInt(ok), Context: ctx}
 	}
 }

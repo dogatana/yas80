@@ -2,26 +2,29 @@ package object
 
 import (
 	"fmt"
+
+	"github.com/dogatana/yas80/intern"
 )
 
 const (
 	ENV_GLOBAL = iota
 	ENV_PROC
 	ENV_MACRO
+	envMapSize = 1000 // NewEnviroment で割り当てる map[inter.SymbolID]object.Object の cap
 )
 
 // interface
 type Environment interface {
 	EnvType() int
-	Get(name string) (Object, bool)
-	Set(name string, obj Object) Object
+	Get(id intern.SymbolID) (Object, bool)
+	Set(id intern.SymbolID, obj Object) Object
 	Outer() Environment
-	Store() map[string]Object
+	Store() map[intern.SymbolID]Object
 }
 
 // for Global
 func NewEnvironment(outer Environment) Environment {
-	env := &GlobalEnvironment{store: make(map[string]Object), outer: outer}
+	env := &GlobalEnvironment{store: make(map[intern.SymbolID]Object, envMapSize), outer: outer}
 	// 最上位の環境にはシステム変数を定義しておく
 	if outer == nil {
 		setupSystemVariables(env)
@@ -30,33 +33,38 @@ func NewEnvironment(outer Environment) Environment {
 }
 
 func setupSystemVariables(env Environment) {
-	env.Set("_", &SymbolObject{Name: "_", SymType: SYM_VAR, Value: NULL})
+	name := "_"
+	id := intern.Intern(name)
+	env.Set(id, &SymbolObject{Name: name, NameID: id, SymType: SYM_VAR, Value: NULL})
 
-	env.Set("$", &NumberObject{Value: 0})
-	env.Set("$$", &NumberObject{Value: 0})
+	env.Set(intern.ID_LOC, &NumberObject{Value: 0})  // $
+	env.Set(intern.ID_ALOC, &NumberObject{Value: 0}) // $$
 
-	env.Set("$FILL", &NumberObject{Value: 0})
+	env.Set(intern.Intern("$FILL"), &NumberObject{Value: 0})
+	env.Set(intern.Intern("$R800"), &NumberObject{Value: 0})
+	env.Set(intern.Intern("$STAGE2"), &NumberObject{Value: 0})
 
-	env.Set("$OFF", &NumberObject{Value: 0})
-	env.Set("$ON", &NumberObject{Value: 1})
-	env.Set("$FALSE", &NumberObject{Value: 0})
-	env.Set("$TRUE", &NumberObject{Value: 1})
+	// 以下固定値
+	v0 := &NumberObject{Value: 0}
+	v1 := &NumberObject{Value: 1}
+	env.Set(intern.Intern("$OFF"), v0)
+	env.Set(intern.Intern("$ON"), v1)
+	env.Set(intern.Intern("$FALSE"), v0)
+	env.Set(intern.Intern("$TRUE"), v1)
 
-	env.Set("$CMAP_ERR", &NumberObject{Value: -1})
-	env.Set("$CMAP_THRU", &NumberObject{Value: -2})
+	env.Set(intern.Intern("$CMAP_ERR"), &NumberObject{Value: -1})
+	env.Set(intern.Intern("$CMAP_THRU"), &NumberObject{Value: -2})
 
-	env.Set("$R800", &NumberObject{Value: 0})
-	env.Set("$STAGE2", &NumberObject{Value: 0})
 }
 
 // for Proc
 func NewProcEnvironment(outer Environment) Environment {
-	return &ProcEnvironment{store: make(map[string]Object), outer: outer}
+	return &ProcEnvironment{store: make(map[intern.SymbolID]Object), outer: outer}
 }
 
 // for Macro
 func NewMacroEnvironment(outer Environment) Environment {
-	return &MacroEnvironment{store: make(map[string]Object), outer: outer}
+	return &MacroEnvironment{store: make(map[intern.SymbolID]Object), outer: outer}
 }
 
 // 引数の環境の上位が ENV_GLOBAL か ENV_PROC かを返す
@@ -82,24 +90,24 @@ func InProcEnv(env Environment) bool {
 
 // グローバル環境
 type GlobalEnvironment struct {
-	store map[string]Object
+	store map[intern.SymbolID]Object
 	outer Environment
 }
 
 func (e *GlobalEnvironment) EnvType() int { return ENV_GLOBAL }
-func (e *GlobalEnvironment) Get(name string) (Object, bool) {
-	obj, ok := e.store[name]
+func (e *GlobalEnvironment) Get(id intern.SymbolID) (Object, bool) {
+	obj, ok := e.store[id]
 	if !ok && e.outer != nil {
-		obj, ok = e.outer.Get(name)
+		obj, ok = e.outer.Get(id)
 	}
 	return obj, ok
 }
-func (e *GlobalEnvironment) Set(name string, obj Object) Object {
-	e.store[name] = obj
+func (e *GlobalEnvironment) Set(id intern.SymbolID, obj Object) Object {
+	e.store[id] = obj
 	return obj
 }
-func (e *GlobalEnvironment) Outer() Environment       { return e.outer }
-func (e *GlobalEnvironment) Store() map[string]Object { return e.store }
+func (e *GlobalEnvironment) Outer() Environment                { return e.outer }
+func (e *GlobalEnvironment) Store() map[intern.SymbolID]Object { return e.store }
 func (e *GlobalEnvironment) Print() {
 	for k, v := range e.store {
 		fmt.Printf("env[%q] = %s\n", k, v.String())
@@ -108,62 +116,57 @@ func (e *GlobalEnvironment) Print() {
 
 // Proc 環境
 type ProcEnvironment struct {
-	store map[string]Object
+	store map[intern.SymbolID]Object
 	outer Environment
 }
 
 func (e *ProcEnvironment) EnvType() int { return ENV_PROC }
-func (e *ProcEnvironment) Get(name string) (Object, bool) {
-	obj, ok := e.store[name]
+func (e *ProcEnvironment) Get(id intern.SymbolID) (Object, bool) {
+	obj, ok := e.store[id]
 	if !ok && e.outer != nil {
-		obj, ok = e.outer.Get(name)
+		obj, ok = e.outer.Get(id)
 	}
 	return obj, ok
 }
-func (e *ProcEnvironment) Set(name string, obj Object) Object {
+func (e *ProcEnvironment) Set(id intern.SymbolID, obj Object) Object {
+	name := id.String()
 	if name[0] == '.' || name == "@@" { // .local  @@
-		e.store[name] = obj
+		e.store[id] = obj
 	} else if len(name) == 2 && name[0] == '@' && '1' <= name[1] && name[1] <= '9' { // @1-@9
-		e.store[name] = obj
+		e.store[id] = obj
 	} else {
-		e.outer.Set(name, obj)
+		e.outer.Set(id, obj)
 	}
 	return obj
 }
-func (e *ProcEnvironment) Outer() Environment       { return e.outer }
-func (e *ProcEnvironment) Store() map[string]Object { return e.store }
+func (e *ProcEnvironment) Outer() Environment                { return e.outer }
+func (e *ProcEnvironment) Store() map[intern.SymbolID]Object { return e.store }
 
 // Macro 環境
 type MacroEnvironment struct {
-	store map[string]Object
+	store map[intern.SymbolID]Object
 	outer Environment
 }
 
 func (e *MacroEnvironment) EnvType() int { return ENV_MACRO }
-func (e *MacroEnvironment) Get(name string) (Object, bool) {
-	obj, ok := e.store[name]
+func (e *MacroEnvironment) Get(id intern.SymbolID) (Object, bool) {
+	obj, ok := e.store[id]
 	if !ok && e.outer != nil {
-		obj, ok = e.outer.Get(name)
+		obj, ok = e.outer.Get(id)
 	}
 	return obj, ok
 }
-func (e *MacroEnvironment) Set(name string, obj Object) Object {
-	// if strings.HasPrefix(name, "@@") { // Macro Parameter
-	// 	e.store[name[2:]] = obj
-	// } else if name[0] == '@' { // Macro Local
-	// 	e.store[name] = obj
-	// } else {
-	// 	e.outer.Set(name, obj)
-	// }
-	if name[0] == '$' {
-		e.store[name] = obj
+func (e *MacroEnvironment) Set(id intern.SymbolID, obj Object) Object {
+	name := id.String()
+	if name[0] == '$' { // $ で始まるシステム変数は上位Envへ処理を移譲する
+		e.store[id] = obj
 	} else {
-		e.outer.Set(name, obj)
+		e.outer.Set(id, obj)
 	}
 	return obj
 }
-func (e *MacroEnvironment) Outer() Environment       { return e.outer }
-func (e *MacroEnvironment) Store() map[string]Object { return e.store }
+func (e *MacroEnvironment) Outer() Environment                { return e.outer }
+func (e *MacroEnvironment) Store() map[intern.SymbolID]Object { return e.store }
 
 // debug
 func PrintEnv(env Environment) {
@@ -181,10 +184,11 @@ func PrintEnv(env Environment) {
 			envType = "?"
 		}
 		for k, v := range env.Store() {
-			fmt.Printf("%s[%d]%sENV[%s]=%s\n", prefix, i, envType, k, v.String())
+			name := k.String()
+			fmt.Printf("%s[%d]%sENV[%s]=%s\n", prefix, i, envType, name, v.String())
 			if pobj, ok := v.(*ProcObject); ok {
 				for pk, pv := range pobj.Store() {
-					fmt.Printf("%s%s%s=%s\n", prefix, k, pk, pv.String())
+					fmt.Printf("%s%s%s=%s\n", prefix, name, pk, pv.String())
 				}
 			}
 		}

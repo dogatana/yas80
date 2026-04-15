@@ -222,3 +222,15 @@ func testStringObject(t *testing.T, tn int, obj object.Object, expected string) 
 	}
 	return true
 }
+
+// ENV から NumberObject を取得する（システム変数用）
+func (e *Evaluator) getNumberFromEnv(name string, env TEnv) (*object.NumberObject, bool) {
+	obj, ok := env.Get(name)
+	if !ok {
+		return nil, false
+	}
+	if obj, ok := obj.(*object.NumberObject); ok {
+		return obj, true
+	}
+	return nil, false
+}

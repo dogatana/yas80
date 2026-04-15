@@ -4,17 +4,17 @@
 
 package parser
 
-import __yyfmt__ "fmt"
-
-//line parser/parser.y:3
-
 import (
 	"fmt"
+	__yyfmt__ "fmt"
+	"strings"
+
 	"github.com/dogatana/yas80/errcode"
 	"github.com/dogatana/yas80/filecontent"
 	"github.com/dogatana/yas80/intern"
-	"strings"
 )
+
+//line parser/parser.y:3
 
 // goyacc が __yyfmt__ を勝手に import することの対策
 var _ = __yyfmt__.Sprintf
@@ -484,7 +484,7 @@ var (
 
 type yyLexer interface {
 	Lex(lval *yySymType) int
-	Error(s string, ctx *filecontent.Context) // # changed
+	Error(s string, ctx *filecontent.Context)                                          // # changed
 	Push(filename string, fc *filecontent.FileContent, ctx *filecontent.Context) error // # added
 }
 
@@ -644,15 +644,15 @@ func (yyrcvr *yyParserImpl) Parse(yylex yyLexer) int {
 	goto yystack
 
 ret0:
-if yyDebug >= 2 {
-	__yyfmt__.Println("# $end accept")
-}
+	if yyDebug >= 2 {
+		__yyfmt__.Println("# $end accept")
+	}
 	return 0
 
 ret1:
-if yyDebug >= 2 {
-	__yyfmt__.Println("# abort")
-}
+	if yyDebug >= 2 {
+		__yyfmt__.Println("# abort")
+	}
 	return 1
 
 yystack:
@@ -683,7 +683,7 @@ yynewstate:
 		goto yydefault
 	}
 	yyn = int(yyAct[yyn])
-	yySave = yystate // # added
+	yySave = yystate                // # added
 	if int(yyChk[yyn]) == yytoken { /* valid shift */
 		yyrcvr.char = -1
 		yytoken = -1
@@ -797,7 +797,7 @@ yydefault:
 	if yyDebug >= 2 {
 		__yyfmt__.Printf("# top %d\n", yyS[yyp].yys) // # added
 	}
-	yySave = yyS[yyp].yys  // # added
+	yySave = yyS[yyp].yys // # added
 	/* consult goto table to find next state */
 	yyn = int(yyR1[yyn])
 	yyg := int(yyPgo[yyn])
@@ -967,7 +967,7 @@ yydefault:
 			if yyDollar[4].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[4].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &VariableStatement{NameID: &Ident{NameID: yyDollar[2].ident.NameID}, Value: yyDollar[4].expr, Context: yyDollar[1].token.Context}
+				yyVAL.statement = &VariableStatement{Name: &Ident{NameID: yyDollar[2].ident.NameID}, Value: yyDollar[4].expr, Context: yyDollar[1].token.Context}
 			}
 		}
 	case 17:

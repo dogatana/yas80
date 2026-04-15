@@ -21,7 +21,7 @@ SRC = main.go \
 	evaluator/eval_data_statement.go \
 	evaluator/expand_macro.go evaluator/eval_macro.go \
 	evaluator/eval_expression.go \
-	evaluator/eval_env.go evaluator/check_symbol.go \
+	evaluator/check_symbol.go \
 	evaluator/eval_builtin_func.go \
 	evaluator/eval_builtin_macro.go \
 	evaluator/eval_charmap.go \

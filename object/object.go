@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/logging"
 	"github.com/dogatana/yas80/parser"
@@ -314,11 +315,11 @@ func (o *ProcObject) Type() ObjectType { return OBJ_PROC }
 func (o *ProcObject) String() string   { return fmt.Sprintf("PROC(%s[0x%04x])", o.Name, o.Addr) }
 
 // Environ interface の実装
-func (o *ProcObject) EnvType() int                       { return o.Env.EnvType() }
-func (o *ProcObject) Get(name string) (Object, bool)     { return o.Env.Get(name) }
-func (o *ProcObject) Set(name string, obj Object) Object { return o.Env.Set(name, obj) }
-func (o *ProcObject) Outer() Environment                 { return o.Env.Outer() }
-func (o *ProcObject) Store() map[string]Object           { return o.Env.Store() }
+func (o *ProcObject) EnvType() int                              { return o.Env.EnvType() }
+func (o *ProcObject) Get(id intern.SymbolID) (Object, bool)     { return o.Env.Get(id) }
+func (o *ProcObject) Set(id intern.SymbolID, obj Object) Object { return o.Env.Set(id, obj) }
+func (o *ProcObject) Outer() Environment                        { return o.Env.Outer() }
+func (o *ProcObject) Store() map[intern.SymbolID]Object         { return o.Env.Store() }
 
 // enum - Object interface と Environ interface を実装する
 type EnumObject struct {
@@ -341,11 +342,11 @@ func (o *EnumObject) String() string {
 }
 
 // Environ interface の実装
-func (o *EnumObject) EnvType() int                       { return o.Env.EnvType() }
-func (o *EnumObject) Get(name string) (Object, bool)     { return o.Env.Get(name) }
-func (o *EnumObject) Set(name string, obj Object) Object { return o.Env.Set(name, obj) }
-func (o *EnumObject) Outer() Environment                 { return o.Env.Outer() }
-func (o *EnumObject) Store() map[string]Object           { return o.Env.Store() }
+func (o *EnumObject) EnvType() int                              { return o.Env.EnvType() }
+func (o *EnumObject) Get(id intern.SymbolID) (Object, bool)     { return o.Env.Get(id) }
+func (o *EnumObject) Set(id intern.SymbolID, obj Object) Object { return o.Env.Set(id, obj) }
+func (o *EnumObject) Outer() Environment                        { return o.Env.Outer() }
+func (o *EnumObject) Store() map[intern.SymbolID]Object         { return o.Env.Store() }
 
 // exitm
 type ExitmObject struct {
