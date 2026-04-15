@@ -147,9 +147,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	// case *parser.InfixExpression:
 	// 	return e.evalInfixExpression(node, env, ctx)
 
-	// // 前置演算子
-	// case *parser.PrefixExpression:
-	// 	return e.evalPrefixExpression(node, env, ctx)
+	// 前置演算子
+	case *parser.PrefixExpression:
+		return e.evalPrefixExpression(node, env, ctx)
 
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_EXPR, node), ctx)
@@ -375,39 +375,39 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 // 	}
 // }
 
-// // 前置演算子式
-// func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv, ctx TContext) object.Object {
-// 	opcode := expr.Operator
+// 前置演算子式
+func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv, ctx TContext) object.Object {
+	opcode := expr.Operator
 
-// 	op := e.evalExpression(expr.Op, env, ctx)
-// 	if isError(op) {
-// 		return op
-// 	}
-// 	if isRefNotFound(op) {
-// 		e.Resolved = false
-// 		return op
-// 	}
+	op := e.evalExpression(expr.Op, env, ctx)
+	if isError(op) {
+		return op
+	}
+	if isRefNotFound(op) {
+		e.Resolved = false
+		return op
+	}
 
-// 	// 論理否定は非演算子の Truthy を反転して返す
-// 	if opcode == '!' {
-// 		return &object.NumberObject{Value: boolToInt(!object.IsTruthy(op)), Context: ctx}
-// 	}
+	// 論理否定は被演算子の Truthy を反転して返す
+	if opcode == '!' {
+		return &object.NumberObject{Value: boolToInt(!object.IsTruthy(op)), Context: ctx}
+	}
 
-// 	// +, -, ~ は数値のみ利用可能
-// 	if num, ok := op.(*object.NumberObject); ok {
-// 		switch opcode {
-// 		case '+':
-// 			return &object.NumberObject{Value: num.Value, Context: ctx}
-// 		case '-':
-// 			return &object.NumberObject{Value: -num.Value, Context: ctx}
-// 		case '~':
-// 			return &object.NumberObject{Value: num.Value ^ -1, Context: ctx}
-// 		}
-// 	}
+	// +, -, ~ は数値のみ利用可能
+	if num, ok := op.(*object.NumberObject); ok {
+		switch opcode {
+		case '+':
+			return &object.NumberObject{Value: num.Value, Context: ctx}
+		case '-':
+			return &object.NumberObject{Value: -num.Value, Context: ctx}
+		case '~':
+			return &object.NumberObject{Value: num.Value ^ -1, Context: ctx}
+		}
+	}
 
-// 	e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
-// 	return object.ERROR
-// }
+	e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
+	return object.ERROR
+}
 
 // // 配列リテラル
 // func (e *Evaluator) evalArrayLiteral(expr *parser.ArrayLiteral, env TEnv, ctx TContext) object.Object {

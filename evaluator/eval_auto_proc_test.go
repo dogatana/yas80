@@ -106,7 +106,8 @@ func TestAutoProc(t *testing.T) {
 func collectProc(env object.Environment) ([]string, map[string]*object.ProcObject) {
 	procs := map[string]*object.ProcObject{}
 	keys := []string{}
-	for name, obj := range env.Store() {
+	for id, obj := range env.Store() {
+		name := id.String()
 		if obj, ok := obj.(*object.ProcObject); ok {
 			procs[name] = obj
 			keys = append(keys, name)

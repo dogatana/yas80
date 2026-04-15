@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/testutil"
 	"github.com/dogatana/yas80/logging"
 	"github.com/dogatana/yas80/object"
@@ -417,7 +418,7 @@ func TestInstructionError_JP_JR_DJNZ(t *testing.T) {
 		testCodeResult(t, tn, tt.code, prog)
 
 		// sym
-		obj, ok := env.Get("VAL")
+		obj, ok := env.Get(intern.Intern("VAL"))
 		if !ok {
 			t.Errorf("[%d] VAL not in env", tn)
 			continue
@@ -856,7 +857,7 @@ func TestInstruction_MUL(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		env.Set("$R800", &object.NumberObject{Value: 1}) // -R800 有効化
+		env.Set(intern.Intern("$R800"), &object.NumberObject{Value: 1}) // -R800 有効化
 
 		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
@@ -898,7 +899,7 @@ func TestInstruction_MUL_on_Z80(t *testing.T) {
 			continue
 		}
 		env := object.NewEnvironment(nil)
-		env.Set("$R800", &object.NumberObject{Value: 0}) // -R800 無効化
+		env.Set(intern.Intern("$R800"), &object.NumberObject{Value: 0}) // -R800 無効化
 
 		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)

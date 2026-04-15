@@ -8,6 +8,7 @@ import (
 
 	"github.com/dogatana/yas80/evaluator"
 	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/logging"
 	"github.com/dogatana/yas80/object"
 	"github.com/dogatana/yas80/parser"
@@ -44,7 +45,7 @@ func evalInput(input any, logger *logging.Logger, env object.Environment) (*obje
 	code := object.CollectCode(obj.(*object.BlockObject).Block)
 	eval.CodeStable = false
 	eval.Stage2 = true
-	env.Set("$STAGE2", &object.NumberObject{Value: 1})
+	env.Set(intern.ID_STAGE2, &object.NumberObject{Value: 1})
 	for i := 0; i < 256 && !eval.CodeStable; i++ {
 		pass++
 		obj = eval.EvalProgram(prog, pass, env)

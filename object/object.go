@@ -548,6 +548,8 @@ func FlattenObject(obj Object) []Object {
 	return objs
 }
 
+// Object の真偽判定
+// 非ゼロ数値、非空文字が真(1)、これ以外は偽(0)
 func IsTruthy(obj Object) bool {
 	switch obj := obj.(type) {
 	case *NumberObject:

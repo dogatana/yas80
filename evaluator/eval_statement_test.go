@@ -1,6 +1,7 @@
 package evaluator
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/dogatana/yas80/errcode"
@@ -498,10 +499,17 @@ func TestOrgStatement(t *testing.T) {
 		logger := logging.New()
 		prog, e := evalInput(tt.input, logger, env)
 
+		testEvalResult(t, tn, tt.err, e)
+
 		// error, warning, information
 		if tt.err != "" {
 			testutil.TestLogMessage(t, tn, tt.err, e.logger)
 			continue
+		}
+
+		if logger.ErrorCount() != 0 {
+			logger.Print()
+
 		}
 
 		// code address
@@ -513,6 +521,7 @@ func TestOrgStatement(t *testing.T) {
 				break
 			}
 		}
+		fmt.Printf("prog.Block %#v\n", prog)
 		if code == nil {
 			t.Errorf("[%d] not CodeObject. got %T", tn, prog.Block[0])
 			continue

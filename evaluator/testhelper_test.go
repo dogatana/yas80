@@ -7,6 +7,7 @@ import (
 
 	"github.com/dogatana/yas80/binwriter"
 	"github.com/dogatana/yas80/filecontent"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/testutil"
 	"github.com/dogatana/yas80/logging"
 	"github.com/dogatana/yas80/object"
@@ -64,7 +65,7 @@ func evalProg(prog *parser.BlockStatement, logger *logging.Logger, env TEnv) (*o
 	code := object.CollectCode(obj.(*object.BlockObject).Block)
 	eval.CodeStable = false
 	eval.Stage2 = true
-	env.Set("$STAGE2", &object.NumberObject{Value: 1})
+	env.Set(intern.ID_STAGE2, &object.NumberObject{Value: 1})
 	for i := 0; i < 256 && !eval.CodeStable; i++ {
 		pass++
 		obj = eval.EvalProgram(prog, pass, env)
@@ -225,7 +226,7 @@ func testStringObject(t *testing.T, tn int, obj object.Object, expected string) 
 
 // ENV から NumberObject を取得する（システム変数用）
 func (e *Evaluator) getNumberFromEnv(name string, env TEnv) (*object.NumberObject, bool) {
-	obj, ok := env.Get(name)
+	obj, ok := env.Get(intern.Intern(name))
 	if !ok {
 		return nil, false
 	}
