@@ -4,6 +4,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/logging"
 	"github.com/dogatana/yas80/object"
 )
@@ -107,7 +108,7 @@ func collectProc(env object.Environment) ([]string, map[string]*object.ProcObjec
 	procs := map[string]*object.ProcObject{}
 	keys := []string{}
 	for id, obj := range env.Store() {
-		name := id.String()
+		name := intern.SymbolID(id).String()
 		if obj, ok := obj.(*object.ProcObject); ok {
 			procs[name] = obj
 			keys = append(keys, name)
