@@ -23,7 +23,7 @@ type LexerContext struct {
 }
 
 func (ctx *LexerContext) toContext(start int) filecontent.Context {
-	return filecontent.Context{FileContent: ctx.fileContent, Line: ctx.lineNumber, Index: start}
+	return filecontent.Context{FileContent: ctx.fileContent, Line: uint32(ctx.lineNumber), Index: uint32(start)}
 }
 
 // 最低限必要な構造体を定義

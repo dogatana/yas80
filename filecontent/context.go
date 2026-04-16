@@ -4,10 +4,10 @@ import "fmt"
 
 type Context struct {
 	FileContent *FileContent
-	Line        int      // 1-
-	Index       int      // 0- FileBox.Contet の Index
-	Offset      int      // 0 マクロ未展開, 1- マクロ展開後
 	Source      *Context // マクロ定義 Context
+	Line        uint32   // 1-
+	Index       uint32   // 0- FileBox.Contet の Index
+	Offset      uint32   // 0 マクロ未展開, 1- マクロ展開後
 }
 
 func (c *Context) String() string {
@@ -33,11 +33,11 @@ func (c *Context) GetLine() string {
 		return "<Context nil>"
 	}
 	if c.Offset == 0 {
-		s, _ := c.FileContent.GetLine(c.Line)
+		s, _ := c.FileContent.GetLine(int(c.Line))
 		return s
 	}
 	if c.Source != nil {
-		s, _ := c.Source.FileContent.GetLine(c.Source.Line)
+		s, _ := c.Source.FileContent.GetLine(int(c.Source.Line))
 		return s
 	}
 	return "<Context.Source nil>"

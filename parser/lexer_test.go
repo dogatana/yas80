@@ -625,7 +625,7 @@ func TestLexerContextLineNumber(t *testing.T) {
 				}
 				break
 			}
-			if tok.Context.Line != ln {
+			if tok.Context.Line != uint32(ln) {
 				t.Errorf("[%d] LineNumber not %d. got %d", tn, ln, tok.Context.Line)
 			}
 			if strings.Contains(tt.input, "\\") {

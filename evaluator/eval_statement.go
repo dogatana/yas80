@@ -481,7 +481,7 @@ func (e *Evaluator) evalAnonymouseLable(label *parser.Label, env TEnv) object.Ob
 	pos := &object.AnonLabel{
 		Addr:     getLocationCounter(env),
 		Filename: label.Context.FileContent.Filename,
-		Line:     label.Context.Line}
+		Line:     int(label.Context.Line)}
 
 	obj, ok := env.Get(label.NameID)
 	if !ok {

@@ -214,13 +214,13 @@ func (l *Logger) BuildMessageMap() MessageMap {
 		}
 
 		om := mmap[file]
-		msgs, ok := om.Get(msg.Context.Line)
+		msgs, ok := om.Get(int(msg.Context.Line))
 		if ok {
 			msgs = append(msgs, msg)
 		} else {
 			msgs = []*Message{msg}
 		}
-		om.Set(msg.Context.Line, msgs)
+		om.Set(int(msg.Context.Line), msgs)
 	}
 	return mmap
 }

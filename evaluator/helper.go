@@ -288,7 +288,7 @@ func (e *Evaluator) findAnonLabel(name string, env TEnv, ctx TContext) object.Ob
 	case 'B':
 		// 逆順検索
 		for i := len(labels) - 1; i >= 0; i-- {
-			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line < ctx.Line {
+			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line < int(ctx.Line) {
 				return labels[i]
 			}
 		}
@@ -298,7 +298,7 @@ func (e *Evaluator) findAnonLabel(name string, env TEnv, ctx TContext) object.Ob
 	case 'F':
 		// 順方向検索
 		for i := 0; i < len(labels); i++ {
-			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line > ctx.Line {
+			if labels[i].Filename == ctx.FileContent.Filename && labels[i].Line > int(ctx.Line) {
 				return labels[i]
 			}
 		}

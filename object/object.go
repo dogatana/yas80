@@ -626,7 +626,7 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 			fb = &FileBlock{Filename: name, Line: obj.Line, LineObjects: lo}
 
 		case *CodeObject:
-			line := obj.Context.Line
+			line := int(obj.Context.Line)
 			if objs, ok := fb.LineObjects.Get(line); !ok {
 				fb.LineObjects.Set(line, []Object{obj})
 			} else {
@@ -635,7 +635,7 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 			}
 
 		case *CommentObject:
-			line := obj.Context.Line
+			line := int(obj.Context.Line)
 			if objs, ok := fb.LineObjects.Get(line); !ok {
 				fb.LineObjects.Set(line, []Object{obj})
 			} else {
@@ -644,7 +644,7 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 			}
 
 		case *TextObject:
-			line := obj.Context.Line
+			line := int(obj.Context.Line)
 			if objs, ok := fb.LineObjects.Get(line); !ok {
 				fb.LineObjects.Set(line, []Object{obj})
 			} else {
@@ -652,7 +652,7 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 				fb.LineObjects.Set(line, objs)
 			}
 		case *ListControl:
-			line := obj.Context.Line
+			line := int(obj.Context.Line)
 			if objs, ok := fb.LineObjects.Get(line); !ok {
 				fb.LineObjects.Set(line, []Object{obj})
 			} else {
@@ -746,15 +746,15 @@ func inserCommentObject(objects []Object) []Object {
 func lineOffset(obj Object) (int, int) {
 	switch obj := obj.(type) {
 	case *CodeObject:
-		return obj.Context.Line, obj.Context.Offset
+		return int(obj.Context.Line), int(obj.Context.Offset)
 	case *CommentObject:
-		return obj.Context.Line, obj.Context.Offset
+		return int(obj.Context.Line), int(obj.Context.Offset)
 	case *TextObject:
-		return obj.Context.Line, obj.Context.Offset
+		return int(obj.Context.Line), int(obj.Context.Offset)
 	case *ErrorObject:
-		return obj.Context.Line, obj.Context.Offset
+		return int(obj.Context.Line), int(obj.Context.Offset)
 	case *ListControl:
-		return obj.Context.Line, obj.Context.Offset
+		return int(obj.Context.Line), int(obj.Context.Offset)
 	default:
 		panic(fmt.Sprintf("unexpected object type: %T", obj))
 	}

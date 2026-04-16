@@ -995,7 +995,7 @@ yydefault:
 			if yyDollar[2].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[2].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &ReptStatement{MaxCount: yyDollar[2].expr, Block: yyDollar[4].block, Start: yyDollar[1].token.Context.Line, Context: &yyDollar[5].token.Context}
+				yyVAL.statement = &ReptStatement{MaxCount: yyDollar[2].expr, Block: yyDollar[4].block, Start: int(yyDollar[1].token.Context.Line), Context: &yyDollar[5].token.Context}
 			}
 		}
 	case 19:
@@ -1005,7 +1005,7 @@ yydefault:
 			if yyDollar[4].expr.NodeType() == NODE_ERROR {
 				yyVAL.statement = yyDollar[4].expr.(*ParseError)
 			} else {
-				yyVAL.statement = &ReptStatement{Label: yyDollar[1].expr, MaxCount: yyDollar[4].expr, Block: yyDollar[6].block, Start: yyDollar[3].token.Context.Line, Context: &yyDollar[7].token.Context}
+				yyVAL.statement = &ReptStatement{Label: yyDollar[1].expr, MaxCount: yyDollar[4].expr, Block: yyDollar[6].block, Start: int(yyDollar[3].token.Context.Line), Context: &yyDollar[7].token.Context}
 			}
 		}
 	case 20:
@@ -1102,7 +1102,7 @@ yydefault:
 		yyDollar = yyS[yypt-6 : yypt+1]
 //line parser/parser.y:307
 		{
-			yyVAL.statement = &MacroStatement{NameID: yyDollar[1].ident.NameID, Params: yyDollar[3].params, Body: yyDollar[5].block, End: yyDollar[6].token.Context.Line, Context: yyDollar[1].ident.Context}
+			yyVAL.statement = &MacroStatement{NameID: yyDollar[1].ident.NameID, Params: yyDollar[3].params, Body: yyDollar[5].block, End: int(yyDollar[6].token.Context.Line), Context: yyDollar[1].ident.Context}
 		}
 	case 27:
 		yyDollar = yyS[yypt-2 : yypt+1]

@@ -217,7 +217,7 @@ directive	: CONST ident_expr '=' expr
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else {
-					$$ = &ReptStatement{MaxCount: $2, Block: $4, Start: $1.Context.Line, Context: &$5.Context}
+					$$ = &ReptStatement{MaxCount: $2, Block: $4, Start: int($1.Context.Line), Context: &$5.Context}
 				}
 			}
 			| ident_expr ':' REPT expr EOL block_statement ENDR
@@ -225,7 +225,7 @@ directive	: CONST ident_expr '=' expr
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4.(*ParseError)
 				} else {
-					$$ = &ReptStatement{Label: $1, MaxCount: $4, Block: $6, Start: $3.Context.Line, Context: &$7.Context}
+					$$ = &ReptStatement{Label: $1, MaxCount: $4, Block: $6, Start: int($3.Context.Line), Context: &$7.Context}
 				}
 			}
 			| IF expr EOL block_statement elseifs ENDIF
@@ -305,7 +305,7 @@ directive	: CONST ident_expr '=' expr
 			}
 			| ident MACRO param_list EOL block_statement ENDM
 			{
-				$$ = &MacroStatement{NameID: $1.NameID, Params: $3, Body: $5, End: $6.Context.Line, Context: $1.Context}
+				$$ = &MacroStatement{NameID: $1.NameID, Params: $3, Body: $5, End: int($6.Context.Line), Context: $1.Context}
 			}
 			| IDENT expr_list 
 			{
