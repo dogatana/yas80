@@ -27,6 +27,32 @@ func Intern(s string) SymbolID {
 	return id
 }
 
+// 大文字化 buffer
+var upperBuf []byte
+
+func InternBytes(b []byte) SymbolID {
+	// 必要に応じて拡大
+	if cap(upperBuf) < len(b) {
+		upperBuf = make([]byte, len(b))
+	}
+	upperBuf = upperBuf[:len(b)]
+
+	// 大文字化（コピーは upperBuf のみ）
+	for i, c := range b {
+		if 'a' <= c && c <= 'z' {
+			upperBuf[i] = c - 32
+		} else {
+			upperBuf[i] = c
+		}
+	}
+
+	// unsafe で string 化 - これはできた文字列の内容を壊すのでNG
+	// s := *(*string)(unsafe.Pointer(&upperBuf)
+	// string でコピーを作成する
+	s := string(upperBuf)
+	return Intern(s)
+}
+
 // Reverse lookup: SymbolID → string
 func Lookup(id SymbolID) string {
 	return idToStr[id]

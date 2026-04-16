@@ -430,10 +430,10 @@ datastore	: DS expr
 			}
 			;
 	
-ident		: IDENT		 	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: IDENT, Context: &$1.Context}}
-			| LOCAL_IDENT	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: LOCAL_IDENT, Context: &$1.Context}}
-			| AT_IDENT		{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: AT_IDENT, Context: &$1.Context}}
-			| ANON_IDENT	{ $$ = &Ident{Name: $1.Literal, NameID: $1.SymbolID, IdentType: ANON_IDENT, Context: &$1.Context}}
+ident		: IDENT 		{ $$ = &Ident{Name: $1.SymbolID.String(), NameID: $1.SymbolID, IdentType: IDENT, Context: &$1.Context} }
+			| LOCAL_IDENT	{ $$ = &Ident{Name: $1.SymbolID.String(), NameID: $1.SymbolID, IdentType: LOCAL_IDENT, Context: &$1.Context}}
+			| AT_IDENT		{ $$ = &Ident{Name: $1.SymbolID.String(), NameID: $1.SymbolID, IdentType: AT_IDENT, Context: &$1.Context}}
+			| ANON_IDENT	{ $$ = &Ident{Name: $1.SymbolID.String(), NameID: $1.SymbolID, IdentType: ANON_IDENT, Context: &$1.Context}}
 			;
 
 ident_expr	: ident			{ $$ = $1 }
@@ -448,10 +448,10 @@ ident_expr	: ident			{ $$ = $1 }
 			;
 
 param_list	: 			{ $$ = []string{}}
-			| IDENT		{ $$ = []string{strings.ToUpper($1.Literal)} }
+			| IDENT		{ $$ = []string{($1.SymbolID.String())} }
 			| param_list ',' IDENT
 			{
-				$1 = append($1, strings.ToUpper($3.Literal))
+				$1 = append($1, $3.SymbolID.String())
 				$$ = $1
 			}
 			;
@@ -656,11 +656,11 @@ expr		: NUMBER
 			| ident_expr	{ $$ = $1 }
 			| DOT_IDENT
 			{
-				name := strings.ToUpper($1.Literal)
+				name := $1.SymbolID.String()
 				names := strings.Split(name, ".")
 				$$ = &DotIdent{Name: name, NameID: $1.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: &$1.Context}
 			}
-			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ Name: strings.ToUpper($1.Literal), NameID: $1.SymbolID, Args: $3, Context: &$1.Context} }
+			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ Name: $1.SymbolID.String(), NameID: $1.SymbolID, Args: $3, Context: &$1.Context} }
 			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2, Context: &$1.Context} }
 			| indexed_expr 				{ $$ = $1}
 			| '(' expr ')'				{ $$ = $2}

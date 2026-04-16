@@ -254,25 +254,25 @@ LINE_CONT:
 
 	case l.lctx.curChar == '$' && l.isWordChar(l.peekChar()):
 		// システム識別子($)
-		l.nextChar()
-		literal = "$" + l.readWord()
-		if l.isHexString(string(literal[1:])) && literal[1] != '_' {
-			tok = Token{TokenType: NUMBER, Literal: literal, Context: l.lctx.toContext(l.start)}
+		// l.nextChar()
+		// literal = "$" + l.readWord()
+		b := l.readWord()
+		if l.isHexString(string(b[1:])) && b[1] != '_' {
+			tok = Token{TokenType: NUMBER, Literal: string(b), Context: l.lctx.toContext(l.start)}
 		} else {
-			tok = Token{TokenType: IDENT, Literal: literal, Context: l.lctx.toContext(l.start)}
+			tok = Token{TokenType: IDENT, SymbolID: intern.InternBytes(b), Context: l.lctx.toContext(l.start)}
 		}
 		l.nextChar()
 		return tok
 
 	case l.lctx.curChar == '$':
-		if l.peekChar() == '$' { // アロケーションカウンタ
-			tok = Token{TokenType: IDENT, Literal: "$$", Context: l.lctx.toContext(l.start)}
+		if l.peekChar() == '$' { // $$
+			tok = Token{TokenType: IDENT, SymbolID: intern.ID_ALOC, Context: l.lctx.toContext(l.start)}
 			l.nextChar()
 			l.nextChar()
 			return tok
 		}
-		// $ ローケーションカウンタ
-		tok = Token{TokenType: IDENT, Literal: "$", Context: l.lctx.toContext(l.start)}
+		tok = Token{TokenType: IDENT, SymbolID: intern.ID_LOC, Context: l.lctx.toContext(l.start)} // $
 		l.nextChar()
 		return tok
 
@@ -370,25 +370,24 @@ LINE_CONT:
 
 	case l.isAlpha(l.lctx.curChar):
 		// IDENT, DOT_IDENT, 予約語
-		literal = l.readWord()
+		b := l.readWord()
 		if l.peekChar() == '.' {
 			// LABEL abc.def
 			l.nextChar()
-			literal += l.readWord()
-			literal := strings.ToUpper(literal)
-			id := intern.Intern(literal)
-			tok = Token{TokenType: DOT_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
+			b = append(b, l.readWord()...)
+			id := intern.InternBytes(b)
+			tok = Token{TokenType: DOT_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
 			l.nextChar()
 			return tok
 		}
-		literal := strings.ToUpper(literal)
-		if literal == "AF" && l.peekChar() == '\'' {
-			literal += "'"
+		// AF' の処理
+		if len(b) == 2 && (b[0] == 'a' || b[0] == 'A') && (b[1] == 'f' || b[1] == 'F') && l.peekChar() == '\'' {
+			b = append(b, '\'')
 			l.nextChar()
 		}
 
 		// intern literal
-		id := intern.Intern(literal)
+		id := intern.InternBytes(b)
 		// z80 予約語
 		tok, ok := z80ReservedWords[id]
 		if ok {
@@ -405,7 +404,7 @@ LINE_CONT:
 		}
 
 		// これ以外は IDENT
-		tok = Token{TokenType: IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
+		tok = Token{TokenType: IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
 		l.nextChar()
 		return tok
 
@@ -417,45 +416,46 @@ LINE_CONT:
 			l.nextChar()
 			return tok
 		}
+		b := l.readWord()
 		l.nextChar()
-		literal = "." + l.readWord()
-		l.nextChar()
-		literal := strings.ToUpper(literal)
-		id := intern.Intern(literal)
-		return Token{TokenType: LOCAL_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
+		id := intern.InternBytes(b)
+		return Token{TokenType: LOCAL_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
 
 	case l.lctx.curChar == '@':
 		// AT_IDENT, ANON_IDENT
 		ch := l.peekChar()
 		switch {
-		case '0' <= ch && ch <= '9':
-			l.nextChar()
-			literal := "@" + string(ch)
-			ch = l.peekChar()
-			if ch == 'f' || ch == 'F' || ch == 'b' || ch == 'B' {
-				literal += string(ch)
-				l.nextChar()
-			}
-			l.nextChar()
-			literal = strings.ToUpper(literal)
-			id := intern.Intern(literal)
-			return Token{TokenType: ANON_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
-		case ch == '@':
+		case ch == '@': // @@
 			l.nextChar()
 			l.nextChar()
 			id := intern.Intern("@@")
-			return Token{TokenType: ANON_IDENT, SymbolID: id, Literal: "@@", Context: l.lctx.toContext(l.start)}
+			return Token{TokenType: ANON_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
+
+		case ch == 'f' || ch == 'F' || ch == 'b' || ch == 'B': // @F, @B
+			l.nextChar()
+			l.nextChar()
+			id := intern.InternBytes([]byte{'@', byte(ch)})
+			return Token{TokenType: ANON_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
+
+		case '0' <= ch && ch <= '9': // @n @nF @nB
+			b := []byte{'@', byte(ch)}
+			l.nextChar()
+			ch = l.peekChar()
+			if ch == 'f' || ch == 'F' || ch == 'b' || ch == 'B' {
+				b = append(b, byte(ch))
+				l.nextChar()
+			}
+			l.nextChar()
+			id := intern.InternBytes(b)
+			return Token{TokenType: ANON_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
+
 		}
 
-		literal = strings.ToUpper(l.readWord())
+		b := l.readWord()
 		l.nextChar()
 
-		id := intern.Intern(literal)
-		if util.IsAnonRef(literal) {
-			return Token{TokenType: ANON_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
-		}
-		// MACRO ローカル
-		return Token{TokenType: AT_IDENT, SymbolID: id, Literal: literal, Context: l.lctx.toContext(l.start)}
+		id := intern.InternBytes(b)
+		return Token{TokenType: AT_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
 	default:
 		literal = string(l.lctx.curChar)
 		tok = Token{TokenType: INVALID, Literal: literal, Context: l.lctx.toContext(l.start)}
@@ -563,20 +563,21 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
+var escapeChars = map[rune]rune{
+	'\'': '\'',
+	'"':  '"',
+	'\\': '\\',
+	'0':  '\x00',
+	'a':  '\a',
+	'b':  '\b',
+	'f':  '\f',
+	'n':  '\n',
+	'r':  '\r',
+	't':  '\t',
+	'v':  '\v',
+}
+
 func (l *Lexer) readString(quote rune) string {
-	escapeChars := map[rune]rune{
-		'\'': '\'',
-		'"':  '"',
-		'\\': '\\',
-		'0':  '\x00',
-		'a':  '\a',
-		'b':  '\b',
-		'f':  '\f',
-		'n':  '\n',
-		'r':  '\r',
-		't':  '\t',
-		'v':  '\v',
-	}
 	runes := []rune{}
 
 	index := l.lctx.index
@@ -608,12 +609,12 @@ func (l *Lexer) readString(quote rune) string {
 	return string(runes)
 }
 
-func (l *Lexer) readWord() string {
+func (l *Lexer) readWord() []byte {
 	startIndex := l.lctx.index - 1
 	for l.lctx.index < len(l.lctx.fileContent.Content) && l.isWordChar(rune(l.lctx.fileContent.Content[l.lctx.index])) {
 		l.lctx.index++
 	}
-	return string(l.lctx.fileContent.Content[startIndex:l.lctx.index])
+	return l.lctx.fileContent.Content[startIndex:l.lctx.index]
 }
 
 func (l *Lexer) readHexString() string {

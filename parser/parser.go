@@ -1273,25 +1273,25 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:433
 		{
-			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: IDENT, Context: &yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, IdentType: IDENT, Context: &yyDollar[1].token.Context}
 		}
 	case 45:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:434
 		{
-			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: LOCAL_IDENT, Context: &yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, IdentType: LOCAL_IDENT, Context: &yyDollar[1].token.Context}
 		}
 	case 46:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:435
 		{
-			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: AT_IDENT, Context: &yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, IdentType: AT_IDENT, Context: &yyDollar[1].token.Context}
 		}
 	case 47:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:436
 		{
-			yyVAL.ident = &Ident{Name: yyDollar[1].token.Literal, NameID: yyDollar[1].token.SymbolID, IdentType: ANON_IDENT, Context: &yyDollar[1].token.Context}
+			yyVAL.ident = &Ident{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, IdentType: ANON_IDENT, Context: &yyDollar[1].token.Context}
 		}
 	case 48:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1319,13 +1319,13 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:451
 		{
-			yyVAL.params = []string{strings.ToUpper(yyDollar[1].token.Literal)}
+			yyVAL.params = []string{(yyDollar[1].token.SymbolID.String())}
 		}
 	case 52:
 		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:453
 		{
-			yyDollar[1].params = append(yyDollar[1].params, strings.ToUpper(yyDollar[3].token.Literal))
+			yyDollar[1].params = append(yyDollar[1].params, yyDollar[3].token.SymbolID.String())
 			yyVAL.params = yyDollar[1].params
 		}
 	case 53:
@@ -1607,7 +1607,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:658
 		{
-			name := strings.ToUpper(yyDollar[1].token.Literal)
+			name := yyDollar[1].token.SymbolID.String()
 			names := strings.Split(name, ".")
 			yyVAL.expr = &DotIdent{Name: name, NameID: yyDollar[1].token.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: &yyDollar[1].token.Context}
 		}
@@ -1615,7 +1615,7 @@ yydefault:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line parser/parser.y:663
 		{
-			yyVAL.expr = &FuncCallExpression{Name: strings.ToUpper(yyDollar[1].token.Literal), NameID: yyDollar[1].token.SymbolID, Args: yyDollar[3].expr_list, Context: &yyDollar[1].token.Context}
+			yyVAL.expr = &FuncCallExpression{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, Args: yyDollar[3].expr_list, Context: &yyDollar[1].token.Context}
 		}
 	case 85:
 		yyDollar = yyS[yypt-3 : yypt+1]

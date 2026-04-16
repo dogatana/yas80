@@ -32,7 +32,8 @@ SRC = main.go \
 	binwriter/binwriter.go \
 	options/options.go \
 	internal/util/util.go \
-	assembler/assembler.go
+	assembler/assembler.go \
+	intern/intern.go
 
 
 

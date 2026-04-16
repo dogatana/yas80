@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/testutil"
 )
 
@@ -68,16 +69,16 @@ func TestLexSymbols(t *testing.T) {
 	for tn, e := range expected {
 		tok := l.NextToken()
 		if tok.Context.Line == 0 {
-			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok)
 		}
 		if tok.TokenType != e.TokenType {
-			t.Errorf("[%d] expected Token.TokenType %s. got %s", tn, TokenLiteral(int(e.TokenType)), tok.String())
+			t.Errorf("[%d] expected Token.TokenType %s. got %s", tn, TokenLiteral(int(e.TokenType)), tok)
 		}
 		if e.SubType != 0 && tok.TokenSubType != e.SubType {
-			t.Errorf("[%d] expected Token.SubType %s. got %s", tn, TokenLiteral(int(e.SubType)), tok.String())
+			t.Errorf("[%d] expected Token.SubType %s. got %s", tn, TokenLiteral(int(e.SubType)), tok)
 		}
 		if tok.Literal != e.Literal {
-			t.Errorf("[%d] expected Token.Literal %q. got %s", tn, e.Literal, tok.String())
+			t.Errorf("[%d] expected Token.Literal %q. got %s", tn, e.Literal, tok)
 		}
 	}
 	testInputEnd(t, -1, l)
@@ -95,8 +96,8 @@ func TestLexAnonSymbols(t *testing.T) {
 		if tok.TokenType != ANON_IDENT {
 			t.Errorf("[%d] expected Token.TokenType %s. got %s", tn, TokenLiteral(ANON_IDENT), tok.String())
 		}
-		if tok.Literal != s {
-			t.Errorf("[%d] expected Token.Literal %q. got %s", tn, s, tok.String())
+		if tok.SymbolID != intern.Intern(s) {
+			t.Errorf("[%d] expected Token.SymbolID %q. got %q", tn, s, tok.SymbolID)
 		}
 	}
 	testInputEnd(t, -1, l)
@@ -332,13 +333,13 @@ func TestLexIdent(t *testing.T) {
 		l := newLexerForTest(tt.input)
 		tok := l.NextToken()
 		if tok.Context.Line == 0 {
-			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
+			t.Errorf("[%d] LineNumber not set. got %s", tn, tok)
 		}
 		if tok.TokenType != tt.expectedType {
-			t.Errorf("[%d] expected Type %s. got %s", tn, TokenLiteral(int(tt.expectedType)), tok.String())
+			t.Errorf("[%d] expected Type %s. got %s", tn, TokenLiteral(int(tt.expectedType)), tok)
 		}
-		if tok.Literal != tt.expectedLiteral {
-			t.Errorf("[%d] expected Literal %q. got %s", tn, tt.expectedLiteral, tok.String())
+		if tok.SymbolID != intern.Intern(tt.expectedLiteral) {
+			t.Errorf("[%d] expected SymbolID %q. got %s", tn, tt.expectedLiteral, tok.SymbolID)
 		}
 		testInputEnd(t, tn, l)
 	}
