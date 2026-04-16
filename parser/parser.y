@@ -106,7 +106,7 @@ program		: { }
 			;
 
 statement   : EOL { $$ = nil }
-			| FILE	{ $$ = &FileStatement{Filename: $1.Literal, Line: int($1.TokenSubType)} }
+			| FILE	{ $$ = &FileStatement{Filename: $1.SymbolID.String(), Line: int($1.TokenSubType)} }
 			| ident_expr ':'  EOL 
 			{
 				if $1.NodeType() == NODE_ERROR {
@@ -355,7 +355,7 @@ directive	: CONST ident_expr '=' expr
 					$$ = &ParseError{Message: errcode.EORG_ALLOC, Context: &$1.Context}
 				}
 			}
-			| INCLUDE STRING { $$ = &IncludeStatement{Filename: $2.Literal, Context: &$1.Context} }
+			| INCLUDE STRING { $$ = &IncludeStatement{Filename: $2.SymbolID.String(), Context: &$1.Context} }
 			| CHARMAP IDENT ',' expr
 			{ 
 				$$ = &CharmapStatement{NameID: $2.SymbolID, Filename: $4, Context: &$1.Context} 
@@ -635,21 +635,22 @@ string		: STRING 	{ $$ = $1 }
 			| string STRING
 			{
 				tok := $$
-				tok.Literal += $2.Literal
+				tok.SymbolID = intern.InternString(tok.SymbolID.String() + $2.SymbolID.String())
 				$$ = tok
 			}
 			;
 	
 expr		: NUMBER
 			{
-				n, err := parseInt($1.Literal)
+				s := $1.SymbolID.String()
+				n, err := parseInt(s)
 				if err == nil {
 					$$ = &NumberLiteral{Value: int(n), Context: &$1.Context}
 				} else {
-					$$ = &ParseError{Message: fmt.Sprintf(errcode.ENUMBER_LITERAL, $1.Literal), Context: &$1.Context}
+					$$ = &ParseError{Message: fmt.Sprintf(errcode.ENUMBER_LITERAL, s), Context: &$1.Context}
 				}
 			}
-			| string 		{ $$ = &StringLiteral{Value: $1.Literal, Context: &$1.Context} }
+			| string 		{ $$ = &StringLiteral{Value: $1.SymbolID.String(), Context: &$1.Context}}
 			| Z80_REG8 		{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), Context:&$1.Context}}
 			| Z80_REG16 	{ $$ = &RegisterLiteral{RegisterType: int($1.TokenType), Register:int($1.TokenSubType), Context:&$1.Context}}
 			| Z80_FLAG		{ $$ = &FlagLiteral{Flag: int($1.TokenSubType), Context:&$1.Context}}

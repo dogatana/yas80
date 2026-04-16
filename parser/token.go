@@ -14,7 +14,6 @@ type TokenSubType int
 type Token struct {
 	TokenType    TokenType
 	TokenSubType TokenSubType
-	Literal      string
 	SymbolID     intern.SymbolID
 	Context      filecontent.Context
 }
@@ -29,7 +28,7 @@ func (t Token) String() string {
 
 	ctx := t.Context.String()
 	return fmt.Sprintf("Token{%s(%d)%s, %d, %q, %s}",
-		TokenLiteral(tt), tt, tstName, t.SymbolID, t.Literal, ctx)
+		TokenLiteral(tt), tt, tstName, t.SymbolID, t.SymbolID, ctx)
 }
 
 // 予約語テーブルを初期化
@@ -37,7 +36,7 @@ func init() {
 	reservedWords = make(map[intern.SymbolID]Token, len(_reservedWords))
 	for s, tt := range _reservedWords {
 		id := intern.Intern(s)
-		reservedWords[id] = Token{TokenType: tt.Type, TokenSubType: tt.SubType, SymbolID: id, Literal: s}
+		reservedWords[id] = Token{TokenType: tt.Type, TokenSubType: tt.SubType, SymbolID: id}
 	}
 	_reservedWords = nil
 }

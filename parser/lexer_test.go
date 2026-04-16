@@ -29,39 +29,38 @@ func TestLexSymbols(t *testing.T) {
 	expected := []struct {
 		TokenType TokenType
 		SubType   TokenSubType
-		Literal   string
 	}{
-		{'(', 0, "("},
-		{')', 0, ")"},
-		{'=', 0, "="},
+		{'(', 0},
+		{')', 0},
+		{'=', 0},
 
-		{ADDSUB, '-', "-"},
-		{ADDSUB, '+', "+"},
-		{ADDSUB, '|', "|"},
-		{ADDSUB, '^', "^"},
+		{ADDSUB, '-'},
+		{ADDSUB, '+'},
+		{ADDSUB, '|'},
+		{ADDSUB, '^'},
 
-		{MULDIV, '*', "*"},
-		{MULDIV, '/', "/"},
-		{MULDIV, '%', "%"},
-		{MULDIV, '&', "&"},
+		{MULDIV, '*'},
+		{MULDIV, '/'},
+		{MULDIV, '%'},
+		{MULDIV, '&'},
 
-		{UNARY, '!', "!"},
-		{UNARY, '~', "~"},
+		{UNARY, '!'},
+		{UNARY, '~'},
 
-		{SHIFT, SL, "<<"},
-		{SHIFT, SR, ">>"},
+		{SHIFT, SL},
+		{SHIFT, SR},
 
-		{COMP, '<', "<"},
-		{COMP, LE, "<="},
-		{COMP, EQ, "=="},
-		{COMP, NEQ, "!="},
-		{COMP, GE, ">="},
-		{COMP, '>', ">"},
+		{COMP, '<'},
+		{COMP, LE},
+		{COMP, EQ},
+		{COMP, NEQ},
+		{COMP, GE},
+		{COMP, '>'},
 
-		{OR, 0, "||"},
-		{AND, 0, "&&"},
+		{OR, 0},
+		{AND, 0},
 
-		{CONCAT, 0, "##"},
+		{CONCAT, 0},
 	}
 
 	l := newLexerForTest(input)
@@ -76,9 +75,6 @@ func TestLexSymbols(t *testing.T) {
 		}
 		if e.SubType != 0 && tok.TokenSubType != e.SubType {
 			t.Errorf("[%d] expected Token.SubType %s. got %s", tn, TokenLiteral(int(e.SubType)), tok)
-		}
-		if tok.Literal != e.Literal {
-			t.Errorf("[%d] expected Token.Literal %q. got %s", tn, e.Literal, tok)
 		}
 	}
 	testInputEnd(t, -1, l)
@@ -119,13 +115,14 @@ func TestLexLineContAndMulti(t *testing.T) {
 		if tok.TokenType == EOL {
 			break
 		}
-		if tok.Literal == "nop" && tok.Context.Line != 4 {
+		lit := tok.SymbolID.String()
+		if lit == "nop" && tok.Context.Line != 4 {
 			t.Errorf("nop Line not 4. got %d", tok.Context.Line)
 		}
-		if tok.Literal == "ret" && tok.Context.Line != 4 {
+		if lit == "ret" && tok.Context.Line != 4 {
 			t.Errorf("ret Line not 4. got %d", tok.Context.Line)
 		}
-		if tok.Literal == "ei" && tok.Context.Line != 6 {
+		if lit == "ei" && tok.Context.Line != 6 {
 			t.Errorf("ei Line not 4. got %d", tok.Context.Line)
 		}
 	}
@@ -173,7 +170,8 @@ func TestLexInvalidCharacter(t *testing.T) {
 	if tok.Context.Line == 0 {
 		t.Errorf("LineNumber not set. got %s", tok.String())
 	}
-	if tok.TokenType != INVALID || tok.Literal != "あ" {
+	lit := tok.SymbolID.String()
+	if tok.TokenType != INVALID || lit != "あ" {
 		t.Errorf("expected=INVALID literal 'あ', got=%#v", tok)
 	}
 }
@@ -235,7 +233,8 @@ func TestLexString(t *testing.T) {
 		if tok.Context.Line == 0 {
 			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
-		if tok.TokenType != STRING || tok.Literal != tt.expected_literal {
+		lit := tok.SymbolID.String()
+		if tok.TokenType != STRING || lit != tt.expected_literal {
 			t.Errorf("[%d] expected=STRING with literal %q, got=%#v", tn, tt.expected_literal, tok)
 		}
 	}
@@ -283,7 +282,8 @@ func TestLexNumber(t *testing.T) {
 		if tok.Context.Line == 0 {
 			t.Errorf("[%d] LineNumber not set. got %s", tn, tok.String())
 		}
-		if tok.TokenType != NUMBER || tok.Literal != tt.expected_literal {
+		lit := tok.SymbolID.String()
+		if tok.TokenType != NUMBER || lit != tt.expected_literal {
 			t.Errorf("[%d] expected=NUMBER(%q), got=%s", tn, tt.expected_literal, tok.String())
 		}
 		testInputEnd(t, tn, l)
@@ -379,7 +379,8 @@ func TestLexZ80REG8(t *testing.T) {
 		if tok.TokenSubType != tt.expected {
 			t.Errorf("[%d] expected TokenSubtype %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
-		if tok.Literal != tt.input {
+		lit := tok.SymbolID.String()
+		if lit != tt.input {
 			t.Errorf("[%d] expected Literal %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
 		testInputEnd(t, tn, l)
@@ -413,7 +414,8 @@ func TestLexZ80REG16(t *testing.T) {
 		if tok.TokenSubType != TokenSubType(tt.expected) {
 			t.Errorf("[%d] expected TokenSubType %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
-		if tok.Literal != TokenLiteral(int(tt.expected)) {
+		lit := tok.SymbolID.String()
+		if lit != TokenLiteral(int(tt.expected)) {
 			t.Errorf("[%d] expected Literal %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
 		testInputEnd(t, tn, l)
@@ -448,7 +450,8 @@ func TestLexZ80FLAG(t *testing.T) {
 		if tok.TokenSubType != TokenSubType(tt.expected) {
 			t.Errorf("[%d] expected TokenSubType %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
-		if tok.Literal != TokenLiteral(int(tt.expected)) {
+		lit := tok.SymbolID.String()
+		if lit != TokenLiteral(int(tt.expected)) {
 			t.Errorf("[%d] expected Literal %q. got %s", tn, TokenLiteral(int(tt.expected)), tok.String())
 		}
 		testInputEnd(t, tn, l)
@@ -473,15 +476,17 @@ func TestLexZ80Instructions(t *testing.T) {
 			t.Errorf("LineNumber not set. got %s", tok.String())
 		}
 		expectedToken, ok := z80ReservedWords[tok.SymbolID]
+		lit := tok.SymbolID.String()
+		expectedLit := expectedToken.SymbolID.String()
 		if !ok {
-			t.Errorf("instruction %q not found", tok.Literal)
+			t.Errorf("instruction %q not found", lit)
 			continue
 		}
 		if tok.TokenType != expectedToken.TokenType {
 			t.Errorf("expected Type %s. got %s", TokenLiteral(int(tok.TokenType)), tok.String())
 		}
-		if tok.Literal != expectedToken.Literal {
-			t.Errorf("expected Literal %q. got %s", expectedToken.Literal, tok.String())
+		if lit != expectedLit {
+			t.Errorf("expected Literal %q. got %s", expectedLit, tok.String())
 		}
 		if tok.TokenSubType != expectedToken.TokenSubType {
 			t.Errorf("expected Op '%d'. got %s", expectedToken.TokenSubType, tok.String())
@@ -514,14 +519,17 @@ func TestLexReservedWords(t *testing.T) {
 			break
 		}
 		expected, ok := reservedWords[tok.SymbolID]
+		lit := tok.SymbolID.String()
+		expectedLit := expected.SymbolID.String()
+
 		if !ok {
-			t.Fatalf("word %q is not registered", tok.Literal)
+			t.Fatalf("word %q is not registered", lit)
 		}
 		if tok.TokenType != expected.TokenType {
 			t.Errorf("expected Type %s. got %s", TokenLiteral(int(tok.TokenType)), tok.String())
 		}
-		if tok.Literal != expected.Literal {
-			t.Errorf("expected Literal %q. got %s", expected.Literal, tok.String())
+		if lit != expectedLit {
+			t.Errorf("expected Literal %q. got %s", expectedLit, tok.String())
 		}
 		if tok.TokenSubType != expected.TokenSubType {
 			t.Errorf("expected Op '%d'. got %s", expected.TokenSubType, tok.String())

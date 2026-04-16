@@ -119,7 +119,7 @@ const (
 func Z80Opcode2Name(opcode int) string {
 	for _, v := range z80ReservedWords {
 		if int(v.TokenSubType) == opcode {
-			return v.Literal
+			return v.SymbolID.String()
 		}
 	}
 	return "UNKNOWN"
@@ -130,7 +130,7 @@ func init() {
 
 	for s, tt := range _z80ReservedWords {
 		id := intern.Intern(s)
-		z80ReservedWords[id] = Token{TokenType: tt.Type, TokenSubType: tt.SubType, SymbolID: id, Literal: s}
+		z80ReservedWords[id] = Token{TokenType: tt.Type, TokenSubType: tt.SubType, SymbolID: id}
 	}
 
 }
