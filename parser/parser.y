@@ -19,7 +19,6 @@ var _ = __yyfmt__.Sprintf
 	err any
 	enum_element *EnumElement
 	enum_elements *EnumElements
-	block *BlockStatement
 	params *[]string
 	expr_list *ExpressionList
 }
@@ -27,7 +26,7 @@ var _ = __yyfmt__.Sprintf
 
 // 非終端記号
 %type<statement> statement instruction directive elseifs enum_element datadef datastore
-%type<block> block_statement
+%type<statement> block_statement
 %type<enum_elements> enum_elements
 %type<params> param_list
 %type<expr_list> expr_list
@@ -179,7 +178,7 @@ directive	: CONST ident_expr '=' expr
 				if $1.NodeType() == NODE_ERROR {
 					$$ = $1.(*ParseError)
 				} else {
-					$$ = &ProcStatement{Name: $1, Block: $4, Context: &$2.Context}
+					$$ = &ProcStatement{Name: $1, Block: $4.(*BlockStatement), Context: &$2.Context}
 				}
 			}
 			| ident ENUM EOL enum_elements ENDE
@@ -217,7 +216,7 @@ directive	: CONST ident_expr '=' expr
 				if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else {
-					$$ = &ReptStatement{MaxCount: $2, Block: $4, Start: int($1.Context.Line), Context: &$5.Context}
+					$$ = &ReptStatement{MaxCount: $2, Block: $4.(*BlockStatement), Start: int($1.Context.Line), Context: &$5.Context}
 				}
 			}
 			| ident_expr ':' REPT expr EOL block_statement ENDR
@@ -225,7 +224,7 @@ directive	: CONST ident_expr '=' expr
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4.(*ParseError)
 				} else {
-					$$ = &ReptStatement{Label: $1, MaxCount: $4, Block: $6, Start: int($3.Context.Line), Context: &$7.Context}
+					$$ = &ReptStatement{Label: $1, MaxCount: $4, Block: $6.(*BlockStatement), Start: int($3.Context.Line), Context: &$7.Context}
 				}
 			}
 			| IF expr EOL block_statement elseifs ENDIF
@@ -238,11 +237,11 @@ directive	: CONST ident_expr '=' expr
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else if $5 == nil {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Statement{}}, Context: &$1.Context}
+					$$ = &IfStatement{Condition: $2, Consequence: $4.(*BlockStatement), Alternative: &BlockStatement{Block: []Statement{}}, Context: &$1.Context}
 				} else if $5.NodeType() == NODE_ERROR {
 					$$ = $5.(*ParseError)
 				} else if $5.NodeType() == NODE_BLOCK_STMT {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $5, Context: &$1.Context}
+					$$ = &IfStatement{Condition: $2, Consequence: $4.(*BlockStatement), Alternative: $5, Context: &$1.Context}
 				} else {
 					$$ = &ParseError{Message: fmt.Sprintf(errcode.EINTERNAL, "IF"), Context: &$1.Context}
 				} 
@@ -257,9 +256,9 @@ directive	: CONST ident_expr '=' expr
 				} else if $2.NodeType() == NODE_ERROR {
 					$$ = $2.(*ParseError)
 				} else if $5 == nil  && $7 == nil {
-					$$ = &IfStatement{ Condition: $2, Consequence: $4, Alternative: &BlockStatement{Block: []Statement{}}, Context: &$1.Context}
+					$$ = &IfStatement{ Condition: $2, Consequence: $4.(*BlockStatement), Alternative: &BlockStatement{Block: []Statement{}}, Context: &$1.Context}
 				} else if $5 == nil {
-					$$ = &IfStatement{Condition: $2, Consequence: $4, Alternative: $7, Context: &$1.Context}
+					$$ = &IfStatement{Condition: $2, Consequence: $4.(*BlockStatement), Alternative: $7, Context: &$1.Context}
 				} else if $5.NodeType() == NODE_ERROR {
 					$$ = $5
 				}  else if block, ok := $5.(*BlockStatement); ok {
@@ -281,7 +280,7 @@ directive	: CONST ident_expr '=' expr
 			| ident FUNC param_list EOL block_statement ENDF
 			{
 				id := $1.(*Ident)
-				$$ = &FuncStatement{NameID: id.NameID, Params: *$3, Block: $5, Context: &$2.Context}
+				$$ = &FuncStatement{NameID: id.NameID, Params: *$3, Block: $5.(*BlockStatement), Context: &$2.Context}
 			}
 			| FUNCTION ident '(' param_list ')' expr
 			{ 
@@ -307,7 +306,7 @@ directive	: CONST ident_expr '=' expr
 			| ident MACRO param_list EOL block_statement ENDM
 			{
 				id := $1.(*Ident)
-				$$ = &MacroStatement{NameID: id.NameID, Params: *$3, Body: $5, End: int($6.Context.Line), Context: id.Context}
+				$$ = &MacroStatement{NameID: id.NameID, Params: *$3, Body: $5.(*BlockStatement), End: int($6.Context.Line), Context: id.Context}
 			}
 			| IDENT expr_list 
 			{
@@ -462,7 +461,7 @@ param_list	: 			{ $$ = &[]string{}}
 elseifs		: { $$ = nil }
 			| elseifs ELIF expr EOL block_statement 
 			{ 
-				ifst := &IfStatement{Condition: $3, Consequence: $5, Alternative: &BlockStatement{Block:[]Statement{}}, Context: &$2.Context}
+				ifst := &IfStatement{Condition: $3, Consequence: $5.(*BlockStatement), Alternative: &BlockStatement{Block:[]Statement{}}, Context: &$2.Context}
 				if $3.NodeType() == NODE_ERROR {
 					$$ = $3.(*ParseError)
 				} else if $1 == nil {
@@ -504,8 +503,9 @@ block_statement	: 	 				{ $$ = &BlockStatement{Block: []Statement{}} }
 					err := $2.(*ParseError)
 					yylex.Error(err.Message, err.Context)
 				} else {
-					$1.Block = append($1.Block, $2.(Statement))
-					$$ = $1
+					block := $1.(*BlockStatement)
+					block.Block = append(block.Block, $2.(Statement))
+					$$ = block
 				}
 			}
 			;
