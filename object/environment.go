@@ -225,10 +225,16 @@ func PrintEnv(env Environment) {
 			envType = "?"
 		}
 		for k, v := range env.Store() {
+			if v == nil {
+				continue // 削除済みエントリ
+			}
 			name := intern.SymbolID(k).String()
 			fmt.Printf("%s[%d]%sENV[%s]=%s\n", prefix, i, envType, name, v.String())
 			if pobj, ok := v.(*ProcObject); ok {
 				for pk, pv := range pobj.Store() {
+					if pv == nil {
+						continue // 削除済みエントリ
+					}
 					fmt.Printf("%s%s%s=%s\n", prefix, name, pk, pv.String())
 				}
 			}
