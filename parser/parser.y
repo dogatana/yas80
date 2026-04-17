@@ -14,16 +14,14 @@ var _ = __yyfmt__.Sprintf
 %}
 %union {
 	token Token
-	num Node
 	statement Statement
+	expr Expression
 	err any
-	ident *Ident
 	enum_element *EnumElement
 	enum_elements *EnumElements
 	block *BlockStatement
-	params []string
+	params *[]string
 	expr_list *ExpressionList
-	expr Expression
 }
 
 
@@ -35,7 +33,7 @@ var _ = __yyfmt__.Sprintf
 %type<expr_list> expr_list
 %type<expr> expr indexed_expr ident_expr
 %type<expr> operand
-%type<ident> ident
+%type<expr> ident
 %type<token> string
 
 // 終端記号
@@ -186,14 +184,16 @@ directive	: CONST ident_expr '=' expr
 			}
 			| ident ENUM EOL enum_elements ENDE
 			{
-				$$ = &EnumStatement{NameID: $1.NameID, Elements: $4, Context: &$2.Context}
+				id := $1.(*Ident)
+				$$ = &EnumStatement{NameID: id.NameID, Elements: $4, Context: &$2.Context}
 			}
 			| VAR ident '=' expr
 			{
 				if $4.NodeType() == NODE_ERROR {
 					$$ = $4.(*ParseError)
 				} else {
-					$$ = &VariableStatement{Name: &Ident{Name: $2.Name, NameID: $2.NameID}, Value: $4, Context: &$1.Context}
+					id := $2.(*Ident)
+					$$ = &VariableStatement{Name: &Ident{Name: id.Name, NameID: id.NameID}, Value: $4, Context: &$1.Context}
 				}
 			}
 			| expr '=' expr
@@ -280,7 +280,8 @@ directive	: CONST ident_expr '=' expr
 			}
 			| ident FUNC param_list EOL block_statement ENDF
 			{
-				$$ = &FuncStatement{NameID: $1.NameID, Params: $3, Block: $5, Context: &$2.Context}
+				id := $1.(*Ident)
+				$$ = &FuncStatement{NameID: id.NameID, Params: *$3, Block: $5, Context: &$2.Context}
 			}
 			| FUNCTION ident '(' param_list ')' expr
 			{ 
@@ -288,8 +289,8 @@ directive	: CONST ident_expr '=' expr
 					$$ = $6.(*ParseError)
 				} else {
 					$$ = &FuncStatement{
-						NameID: $2.NameID, 
-						Params: $4, 
+						NameID: $2.(*Ident).NameID, 
+						Params: *$4, 
 						Block: &BlockStatement{Block: []Statement {&ReturnStatement{Value: $6, Context: &$1.Context}}}, 
 						Context: &$1.Context}
 				}
@@ -305,7 +306,8 @@ directive	: CONST ident_expr '=' expr
 			}
 			| ident MACRO param_list EOL block_statement ENDM
 			{
-				$$ = &MacroStatement{NameID: $1.NameID, Params: $3, Body: $5, End: int($6.Context.Line), Context: $1.Context}
+				id := $1.(*Ident)
+				$$ = &MacroStatement{NameID: id.NameID, Params: *$3, Body: $5, End: int($6.Context.Line), Context: id.Context}
 			}
 			| IDENT expr_list 
 			{
@@ -346,7 +348,7 @@ directive	: CONST ident_expr '=' expr
 			| ORG expr	{ $$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: &$1.Context }}
 			| ORG expr ',' ident	
 			{ 
-				switch $4.NameID {
+				switch $4.(*Ident).NameID {
 				case intern.Intern("ABS"):
 					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: &$1.Context }
 				case intern.Intern("REL"):
@@ -447,12 +449,13 @@ ident_expr	: ident			{ $$ = $1 }
 			}
 			;
 
-param_list	: 			{ $$ = []string{}}
-			| IDENT		{ $$ = []string{($1.SymbolID.String())} }
+param_list	: 			{ $$ = &[]string{}}
+			| IDENT		{ $$ = &[]string{($1.SymbolID.String())} }
 			| param_list ',' IDENT
 			{
-				$1 = append($1, $3.SymbolID.String())
-				$$ = $1
+				params := *$1
+				params =append(params, $3.SymbolID.String())
+				$$ = &params
 			}
 			;
 
