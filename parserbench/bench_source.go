@@ -11,6 +11,9 @@ func GenerateLargeSource(lines int) string {
 
 	for i := 0; i < lines; i++ {
 		// ラベル + 命令 + 即値 + コメント
+		if i != 0 && i%10000 == 0 {
+			b.WriteString("org $1000, rel\n")
+		}
 		b.WriteString(fmt.Sprintf("label_%d: ld a, 0x%02x ; comment\n", i, i&0xff))
 	}
 

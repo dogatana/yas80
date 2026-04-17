@@ -32,9 +32,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.LabelStatement:
 		return e.evalLabelStatement(stmt, env)
 
-	// // ORG
-	// case *parser.OrgStatement:
-	// 	return e.evalOrgStatement(stmt, env)
+	// ORG
+	case *parser.OrgStatement:
+		return e.evalOrgStatement(stmt, env)
 
 	// // INCLUDE
 	// case *parser.IncludeStatement:
@@ -337,43 +337,43 @@ LOOP:
 //		bs := &parser.BlockStatement{Block: stmt.Block}
 //		return e.evalStatement(bs, checkExitM, ectx, obj.(object.Environment))
 //	}
-//
-// // ORG
-//
-//	func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object.Object {
-//		e.concatenateSymbol(&stmt.Address, env, stmt.Context)
-//		obj := e.evalExpression(stmt.Address, env, stmt.Context)
-//
-//		var value int
-//		switch obj := obj.(type) {
-//		case *object.ErrorObject:
-//			return obj
-//		case *object.RefNotFoundObject:
-//			return obj
-//		case *object.NullObject:
-//			e.logger.Error(errcode.EORG_NULL, stmt.Context)
-//			return object.ERROR
-//
-//		case *object.NumberObject:
-//			value = obj.Value
-//
-//		default:
-//			e.logger.Error(errcode.EORG_VALUE, stmt.Context)
-//			return object.ERROR
-//		}
-//
-//		addr, ok := e.intToWord(value)
-//		if !ok {
-//			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
-//		}
-//
-//		// ABS は $, $$ REL は $ のみ変更
-//		setLocationCounter(env, addr)
-//		if stmt.AllocType == parser.ALLOC_ABS {
-//			setAllocLocationCounter(env, addr)
-//		}
-//		return &object.OrgObject{Addr: addr, AllocType: int(stmt.AllocType)}
-//	}
+
+// ORG
+func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object.Object {
+	e.concatenateSymbol(&stmt.Address, env, stmt.Context)
+	obj := e.evalExpression(stmt.Address, env, stmt.Context)
+
+	var value int
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		return obj
+	case *object.NullObject:
+		e.logger.Error(errcode.EORG_NULL, stmt.Context)
+		return object.ERROR
+
+	case *object.NumberObject:
+		value = obj.Value
+
+	default:
+		e.logger.Error(errcode.EORG_VALUE, stmt.Context)
+		return object.ERROR
+	}
+
+	addr, ok := e.intToWord(value)
+	if !ok {
+		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
+	}
+
+	// ABS は $, $$ REL は $ のみ変更
+	setLocationCounter(env, addr)
+	if stmt.AllocType == parser.ALLOC_ABS {
+		setAllocLocationCounter(env, addr)
+	}
+	return &object.OrgObject{Addr: addr, AllocType: stmt.AllocType}
+}
+
 //
 // // END
 //

@@ -207,7 +207,7 @@ func (o *CommentObject) String() string {
 // org
 type OrgObject struct {
 	Addr      int
-	AllocType int
+	AllocType parser.AllocType
 }
 
 func (o *OrgObject) Type() ObjectType { return OBJ_ORG }

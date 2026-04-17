@@ -11,10 +11,11 @@ import (
 	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/logging"
 	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
 )
 
 type Segment struct {
-	allocType int
+	allocType parser.AllocType
 	addr      int
 	size      int // children も含むサイズ
 	code      []byte
