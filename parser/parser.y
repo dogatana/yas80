@@ -17,8 +17,6 @@ var _ = __yyfmt__.Sprintf
 	statement Statement
 	expr Expression
 	err any
-	enum_element *EnumElement
-	enum_elements *EnumElements
 	params *[]string
 }
 
@@ -26,7 +24,7 @@ var _ = __yyfmt__.Sprintf
 // 非終端記号
 %type<statement> statement instruction directive elseifs enum_element datadef datastore
 %type<statement> block_statement
-%type<enum_elements> enum_elements
+%type<statement> enum_elements
 %type<params> param_list
 %type<expr> expr_list
 %type<expr> expr indexed_expr ident_expr
@@ -183,7 +181,8 @@ directive	: CONST ident_expr '=' expr
 			| ident ENUM EOL enum_elements ENDE
 			{
 				id := $1.(*Ident)
-				$$ = &EnumStatement{NameID: id.NameID, Elements: $4, Context: &$2.Context}
+				e := $4.(*EnumElements)
+				$$ = &EnumStatement{NameID: id.NameID, Elements: e, Context: &$2.Context}
 			}
 			| VAR ident '=' expr
 			{
@@ -520,8 +519,9 @@ enum_elements : 	 			{ $$ = &EnumElements{Elements: []*EnumElement{}} }
 					err := $2.(*ParseError)
 					yylex.Error(err.Message, err.Context)
 				}
-				$1.Elements = append($1.Elements, $2.(*EnumElement))
-				$$ = $1
+				e := $1.(*EnumElements)
+				e.Elements = append(e.Elements, $2.(*EnumElement))
+				$$ = e
 			}
 			;
 
