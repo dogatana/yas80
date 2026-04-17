@@ -89,12 +89,12 @@ func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) ob
 		}
 	}
 	if fn, ok := evalZ80InstructionFuncs[stmt.Opcode]; ok {
-		obj := fn(e, stmt, op1, op2, env)
-		if obj.Type() == object.OBJ_CODE {
-			return obj
-		}
-		// エラー等の場合、仮コードとして NOP を返す
-		return &object.CodeObject{Code: []byte{0}, TStates: [2]byte{4, 1}, Context: stmt.Context}
+		return fn(e, stmt, op1, op2, env)
+		// if obj.Type() == object.OBJ_CODE {
+		// 	return obj
+		// }
+		// // TODO:エラー等の場合、仮コードとして NOP を返す->オブジェクト生成するのでやめるか？
+		// return &object.CodeObject{Code: []byte{0}, TStates: [2]byte{4, 1}, Context: stmt.Context}
 	} else {
 		// 未実装
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_NOT_IMPL, parser.TokenLiteral(stmt.Opcode)), stmt.Context)
