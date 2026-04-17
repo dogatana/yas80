@@ -169,50 +169,48 @@ func boolToInt(value bool) int {
 
 // シンボル結合処理
 func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TContext) bool {
-	// switch expr := (*ptr).(type) {
-	// case *parser.InfixExpression:
-	// 	if expr.Operator != parser.CONCAT {
-	// 		return e.concatenateSymbol(&expr.Op1, env, ctx) || e.concatenateSymbol(&expr.Op2, env, ctx)
-	// 	}
-	// 	ident, ok := expr.Op1.(*parser.Ident)
-	// 	if !ok {
-	// 		panic("not ident")
-	// 		// TODO: parser の段階でここには来ないはず
-	// 		// e.logger.Error(errcode.ESYM_CONCAT_NOTSYM, ctx)
-	// 		// return false
-	// 	}
-	// 	// copy &(*ident) では新しい値が生成されないため
-	// 	{
-	// 		temp := *ident
-	// 		ident = &temp
-	// 	}
+	switch expr := (*ptr).(type) {
+	case *parser.InfixExpression:
+		if expr.Operator != parser.CONCAT {
+			return e.concatenateSymbol(&expr.Op1, env, ctx) || e.concatenateSymbol(&expr.Op2, env, ctx)
+		}
+		ident, ok := expr.Op1.(*parser.Ident)
+		if !ok {
+			// parser 処理済みで段階でここには来ないはず
+			panic("not ident")
+		}
+		{
+			// copy &(*ident) では新しい値が生成されないため
+			temp := *ident
+			ident = &temp
+		}
 
-	// 	suffix := ""
-	// 	op2 := e.evalExpression(expr.Op2, env, ctx)
-	// 	switch op2 := op2.(type) {
-	// 	case *object.ErrorObject:
-	// 		return false
-	// 	case *object.RefNotFoundObject:
-	// 		names := strings.Join(op2.Names, ", ")
-	// 		e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, names), ctx)
-	// 		return false
-	// 	case *object.NumberObject:
-	// 		suffix = fmt.Sprintf("%d", op2.Value)
-	// 	case *object.StringObject:
-	// 		suffix = strings.ToUpper(op2.Value) // 文字列リテラルは大文字化して結合する
-	// 	default:
-	// 		e.logger.Error(errcode.ECONCAT_TYPE, ctx)
-	// 		return false
-	// 	}
-	// 	ident.Name += suffix
-	// 	*ptr = ident
-	// 	return true
-	// case *parser.PrefixExpression:
-	// 	return e.concatenateSymbol(&expr.Op, env, ctx)
-	// default:
-	// 	return false
-	// }
-	return false
+		suffix := ""
+		op2 := e.evalExpression(expr.Op2, env, ctx)
+		switch op2 := op2.(type) {
+		case *object.ErrorObject:
+			return false
+		case *object.RefNotFoundObject:
+			names := strings.Join(op2.Names, ", ")
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, names), ctx)
+			return false
+		case *object.NumberObject:
+			suffix = fmt.Sprintf("%d", op2.Value)
+		case *object.StringObject:
+			suffix = strings.ToUpper(op2.Value) // 文字列リテラルは大文字化して結合する
+		default:
+			e.logger.Error(errcode.ECONCAT_TYPE, ctx)
+			return false
+		}
+		ident.Name += suffix
+		ident.NameID = intern.Intern(ident.Name)
+		*ptr = ident
+		return true
+	case *parser.PrefixExpression:
+		return e.concatenateSymbol(&expr.Op, env, ctx)
+	default:
+		return false
+	}
 }
 
 // ENV から SymbolObject を取得する

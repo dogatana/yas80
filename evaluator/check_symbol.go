@@ -30,11 +30,7 @@ func (e *Evaluator) CheckSymbolError(env TEnv) {
 			}
 			if obj.SymType == object.SYM_UNKNOWN && strings.Contains(name[1:], ".") {
 				// dotident が仮登録されている場合で、本登録されていれば削除しておく
-				if _, ok := e.getSymbolFromEnv(name, env); ok {
-					env.Store()[id] = nil // map->slice に変更したので、削除は nil にする
-					continue
-				}
-				e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, name), obj.Context)
+				env.Store()[id] = nil // map->slice に変更したので、削除は nil にする
 				continue
 			}
 			if obj.SymType == object.SYM_UNKNOWN {
