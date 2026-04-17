@@ -20,7 +20,6 @@ var _ = __yyfmt__.Sprintf
 	enum_element *EnumElement
 	enum_elements *EnumElements
 	params *[]string
-	expr_list *ExpressionList
 }
 
 
@@ -29,7 +28,7 @@ var _ = __yyfmt__.Sprintf
 %type<statement> block_statement
 %type<enum_elements> enum_elements
 %type<params> param_list
-%type<expr_list> expr_list
+%type<expr> expr_list
 %type<expr> expr indexed_expr ident_expr
 %type<expr> operand
 %type<expr> ident
@@ -310,11 +309,13 @@ directive	: CONST ident_expr '=' expr
 			}
 			| IDENT expr_list 
 			{
-				$$ = &MacroCallStatement{NameID: $1.SymbolID, Args: $2, Context: &$1.Context}
+				e := $2.(*ExpressionList)
+				$$ = &MacroCallStatement{NameID: $1.SymbolID, Args: e, Context: &$1.Context}
 			}
 			| ident_expr ':' IDENT expr_list
 			{
-				$$ = &MacroCallStatement{Label: $1, NameID: $3.SymbolID, Args: $4	, Context: &$3.Context}
+				e := $4.(*ExpressionList)
+				$$ = &MacroCallStatement{Label: $1, NameID: $3.SymbolID, Args: e	, Context: &$3.Context}
 			}
 			| EXITM			{ $$ = &ExitmStatement{Context: &$1.Context}}
 			| EXITM IF expr
@@ -629,8 +630,9 @@ expr_list	:   { $$ = &ExpressionList{Expressions: []Expression{}}}
 					err := $3.(*ParseError)
 					yylex.Error(err.Message, err.Context)
 				}
-				$1.Expressions = append($1.Expressions, $3)
-				$$ = $1
+				e := $1.(*ExpressionList)
+				e.Expressions = append(e.Expressions, $3)
+				$$ = e
 			}
 			;
 
@@ -664,8 +666,15 @@ expr		: NUMBER
 				names := strings.Split(name, ".")
 				$$ = &DotIdent{Name: name, NameID: $1.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: &$1.Context}
 			}
-			| IDENT '(' expr_list ')' 	{ $$ = &FuncCallExpression{ Name: $1.SymbolID.String(), NameID: $1.SymbolID, Args: $3, Context: &$1.Context} }
-			| '[' expr_list ']' { $$ = &ArrayLiteral{Elements: $2, Context: &$1.Context} }
+			| IDENT '(' expr_list ')' 	
+			{ 
+				e := $3.(*ExpressionList)
+				$$ = &FuncCallExpression{ Name: $1.SymbolID.String(), NameID: $1.SymbolID, Args: e, Context: &$1.Context} 
+			}
+			| '[' expr_list ']' 
+			{ 
+				$$ = &ArrayLiteral{Elements: $2.(*ExpressionList), Context: &$1.Context} 
+			}
 			| indexed_expr 				{ $$ = $1}
 			| '(' expr ')'				{ $$ = $2}
 			| expr ADDSUB expr			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, &$2.Context) }
