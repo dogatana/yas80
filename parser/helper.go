@@ -29,6 +29,9 @@ func parseInt(s string) (int64, error) {
 	case length >= 2 && (str[length-1] == 'D'):
 		return strconv.ParseInt(str[0:length-1], 10, 0)
 	default:
+		for len(str) > 1 && (str[0] == '0' || str[0] == '_') {
+			str = str[1:]
+		}
 		return strconv.ParseInt(str, 0, 0)
 	}
 }
