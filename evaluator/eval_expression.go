@@ -245,14 +245,21 @@ EVAL_AGAIN:
 		return e.evalNumberInfixExpression(node.Operator, op1, op2, ctx)
 
 	// 文字列演算
-	case isString(op1) && isString(op2):
-		if node.Operator != '+' {
-			e.logger.Error(errcode.EBIN_OP_TYPE, ctx)
-			return object.ERROR
-		}
+	case isString(op1) && isString(op2) && node.Operator == '+':
 		s1 := op1.(*object.StringObject).Value
 		s2 := op2.(*object.StringObject).Value
 		return &object.StringObject{Value: s1 + s2}
+
+	case isString(op1) && isString(op2):
+		op1 = e.evalOneCharStringAsNumber(op1.(*object.StringObject).Value, ctx)
+		if isError(op1) {
+			return op1
+		}
+		op2 = e.evalOneCharStringAsNumber(op2.(*object.StringObject).Value, ctx)
+		if isError(op2) {
+			return op2
+		}
+		goto EVAL_AGAIN
 
 	// 文字列 op 数値
 	case isString(op1) && isNumber(op2):
