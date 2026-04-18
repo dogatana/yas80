@@ -174,7 +174,7 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 		return object.NULL
 
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, stmt), nil) // TODO
+		e.logger.Error(fmt.Sprintf(errcode.ENOT_IMPL_STMT, stmt), stmt.GetContext()) // TODO
 		return object.ERROR
 	}
 }

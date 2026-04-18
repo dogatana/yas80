@@ -24,6 +24,9 @@ func (c *Context) String() string {
 }
 
 func (c *Context) Equal(o *Context) bool {
+	if o == nil {
+		return false
+	}
 	return c.FileContent == o.FileContent && c.Line == o.Line && c.Index == o.Index && c.Offset == o.Offset
 }
 
