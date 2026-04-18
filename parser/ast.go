@@ -570,7 +570,7 @@ func (s *BlockStatement) String() string {
 	stmts := []string{}
 
 	for _, s := range s.Block {
-		stmts = append(stmts, s.String())
+		stmts = append(stmts, s.GetContext().String()+": "+s.String())
 	}
 	return strings.Join(stmts, "\n")
 }
