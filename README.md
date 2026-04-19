@@ -157,17 +157,27 @@ ZMA は
 に従い、書き換えたものについて性能を計測しました。
 
 | 計測アセンブラ | 計測対象 | 行数 |
-| -- | -- | --: |
+| -- | -- | --: | 
 | z80as | 365面のパズルアクションゲーム FANTIC | 1,251 |
 | AILZ80ASM | LSX-Dodgers | 6,187 |
+| tools80, AILZ80ASM | MZ-700用BASICインタプリタ | 19,267 |
 
-### z80asm - FANTIC
+
+### FANTIC
 
 ![fantic](performance/FANTIC.svg)
 
-### AILZ80ASM - LSX-Dodgers
+### LSX-Dodgers
 
 ![lsx-dodgers](performance/LSX-Dodgers.svg)
+
+### MZ-700用BASICインタプリタ
+
+![basic](performance/basic.svg)
+
+- MZ-700用BASICインタプリタは yas80 v0.5.1 で計測
+- 修正内容について『メモ：他のアセンブラとの違い』には記載なし
+- AILZ80ASM での計測は yas80 用に修正したものを使用
 
 ## 参考
 
@@ -202,3 +212,4 @@ yas80 作成にあたって参考にした書籍、サイト、ソフトウェ�
 - [IPLセレクタ](https://web.archive.org/web/20210130154551/http://www.ne.jp/asahi/suga/junkyard/mz/mzsoft/iplsel/index.html)
 - [IPLセレクタ改 for MZ-80B/2000](https://github.com/kuran-kuran/IPLS09bKai?tab=readme-ov-file)
 - [LSX-Dodgers](https://github.com/tablacus/LSX-Dodgers)
+- [MZ-700用BASICインタプリタ](https://000.la.coocan.jp/mz700/index.html)
