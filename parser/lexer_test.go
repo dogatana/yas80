@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -9,19 +8,6 @@ import (
 	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/testutil"
 )
-
-//lint:ignore U1000 非テスト：文字列に対してトークン列を返す
-func testDisplayTokens(t *testing.T) {
-	input := `()= + - * / & | ^ == != < <= > >= ! ~ << >> || &&`
-	l := newLexerForTest(input)
-	for {
-		tok := l.NextToken()
-		fmt.Println(tok.String())
-		if tok.TokenType == 0 {
-			break
-		}
-	}
-}
 
 // 各種記号のテスト
 func TestLexSymbols(t *testing.T) {
