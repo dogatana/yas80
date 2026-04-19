@@ -34,6 +34,9 @@ func TestParseNumberLiteral(t *testing.T) {
 		{`_ = 1010_0101B`, 0xa5},
 		// 15-
 		{`_ = 123d`, 123},
+		{`_ = 0177`, 177},
+		{`_ = 0`, 0},
+		{`_ = 0b11_11`, 15},
 	}
 
 	for tn, tt := range tests {
