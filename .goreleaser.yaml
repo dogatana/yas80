@@ -16,9 +16,10 @@ before:
     - go generate ./...
 
 builds:
-  - main: main.go
+  - main: .
     env:
       - CGO_ENABLED=0
+    tags: []
     goos:
       - linux
       - windows
