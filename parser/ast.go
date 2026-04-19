@@ -8,6 +8,7 @@ import (
 
 	"github.com/dogatana/yas80/filecontent"
 	"github.com/dogatana/yas80/intern"
+	"github.com/dogatana/yas80/internal/util"
 )
 
 const (
@@ -308,9 +309,8 @@ func (s *ProcBlockStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("PROC BLOCK(" + s.Name + ") {\n")
-	for _, n := range s.Block {
-		out.WriteString(n.String() + "\n")
-	}
+	block := util.Map(s.Block, func(s Statement) string { return s.String() })
+	out.WriteString(strings.Join(block, "\n"))
 	out.WriteString("}")
 
 	return out.String()
@@ -351,10 +351,7 @@ func (s *EnumElements) GetContext() *filecontent.Context       { return nil }
 func (s *EnumElements) NodeType() NodeType                     { return NODE_ENUM_ELEMENTS_STMT }
 func (s *EnumElements) ReplaceContext(ctx filecontent.Context) {}
 func (s *EnumElements) String() string {
-	stmts := []string{}
-	for _, e := range s.Elements {
-		stmts = append(stmts, e.String())
-	}
+	stmts := util.Map(s.Elements, func(e *EnumElement) string { return e.String() })
 	return strings.Join(stmts, "\n")
 }
 
@@ -551,10 +548,7 @@ func (s *MacroCallStatement) ReplaceContext(ctx filecontent.Context) {
 	s.Context = &ctx
 }
 func (s *MacroCallStatement) String() string {
-	args := []string{}
-	for _, arg := range s.Args.Expressions {
-		args = append(args, arg.String())
-	}
+	args := util.Map(s.Args.Expressions, func(s Expression) string { return s.String() })
 	return fmt.Sprintf("MACRO %s CALL with %s", s.NameID, strings.Join(args, ","))
 }
 
@@ -567,11 +561,8 @@ func (s *BlockStatement) GetContext() *filecontent.Context       { return &filec
 func (s *BlockStatement) NodeType() NodeType                     { return NODE_BLOCK_STMT }
 func (s *BlockStatement) ReplaceContext(ctx filecontent.Context) {}
 func (s *BlockStatement) String() string {
-	stmts := []string{}
 
-	for _, s := range s.Block {
-		stmts = append(stmts, s.GetContext().String()+": "+s.String())
-	}
+	stmts := util.Map(s.Block, func(s Statement) string { return s.String() })
 	return strings.Join(stmts, "\n")
 }
 
@@ -601,9 +592,8 @@ func (s *MacroBlockStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString(fmt.Sprintf("MACRO BLOCK(%s) {\n", s.Name))
-	for _, s := range s.Block {
-		out.WriteString(s.String() + "\n")
-	}
+	block := util.Map(s.Block, func(s Statement) string { return s.String() })
+	out.WriteString(strings.Join(block, "\n"))
 	out.WriteString("}")
 
 	return out.String()
@@ -890,11 +880,8 @@ type ArrayLiteral struct {
 func (e *ArrayLiteral) expressionNode()    {}
 func (e *ArrayLiteral) NodeType() NodeType { return NODE_ARRAY }
 func (e *ArrayLiteral) String() string {
-	elems := []string{}
 
-	for _, e := range e.Elements.Expressions {
-		elems = append(elems, e.String())
-	}
+	elems := util.Map(e.Elements.Expressions, func(e Expression) string { return e.String() })
 	return "[" + strings.Join(elems, ", ") + "]"
 }
 
@@ -1084,11 +1071,7 @@ type ExpressionList struct {
 func (e *ExpressionList) expressionNode()    {}
 func (e *ExpressionList) NodeType() NodeType { return NODE_EXPR_LIST }
 func (e *ExpressionList) String() string {
-	list := []string{}
 
-	for _, e := range e.Expressions {
-		list = append(list, e.String())
-	}
-
+	list := util.Map(e.Expressions, func(e Expression) string { return e.String() })
 	return strings.Join(list, ", ")
 }
