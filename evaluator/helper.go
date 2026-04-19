@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/dogatana/yas80/errcode"
 	"github.com/dogatana/yas80/intern"
@@ -339,51 +340,66 @@ func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
 	return l
 }
 
-// // 1文字の文字列を数値に変換する
-// func (e *Evaluator) evalOneCharStringAsNumber(s string, ctx TContext) object.Object {
-// 	r := []rune(s)
-// 	if len(r) != 1 {
-// 		e.logger.Error(fmt.Sprintf(errcode.ESTR_TO_INT_LEN, len(r)), ctx)
-// 		return object.ERROR
-// 	}
-// 	b, err := util.Utf8ToShiftJis(string(r))
-// 	if err != nil || len(b) == 0 || len(b) > 2 {
-// 		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, string(r)), ctx)
-// 		return object.ERROR
-// 	}
+// 1文字の文字列を数値に変換する
+func (e *Evaluator) evalOneCharStringAsNumber(s string, ctx TContext) object.Object {
+	r, size := utf8.DecodeLastRuneInString(s)
+	if size == 0 || size != len(s) {
+		e.logger.Error(errcode.ESTR_TO_INT_LEN, ctx)
+		return object.ERROR
+	} else if r == utf8.RuneError {
+		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, s), ctx)
+		return object.ERROR
+	}
+	b, ok := util.TransformBytes(s)
+	if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.EDATA_ENCODE, string(r)), ctx)
+		return object.ERROR
+	}
 
-// 	var code int
-// 	if len(b) == 1 {
-// 		code = int(b[0])
-// 	} else {
-// 		code = int(b[0])*256 + int(b[1])
-// 	}
-// 	return &object.NumberObject{Value: code, Context: ctx}
-// }
+	var code int
+	if len(b) == 1 {
+		code = int(b[0])
+	} else {
+		code = int(b[0])*256 + int(b[1])
+	}
+	return &object.NumberObject{Value: code, Context: ctx}
+}
 
-// // 1/2 要素の数値配列を数値に変換する
-// func (e *Evaluator) evalArrayToInt(values []object.Object, ctx TContext) object.Object {
-// 	if len(values) < 1 || len(values) > 2 {
-// 		e.logger.Error(fmt.Sprintf(errcode.EARRAY_TO_INT_LEN, len(values)), ctx)
-// 		return object.ERROR
+// 1/2 要素の数値配列を数値に変換する
+func (e *Evaluator) evalArrayToInt(values []object.Object, ctx TContext) object.Object {
+	if len(values) < 1 || len(values) > 2 {
+		e.logger.Error(fmt.Sprintf(errcode.EARRAY_TO_INT_LEN, len(values)), ctx)
+		return object.ERROR
 
-// 	}
-// 	v1, ok := values[0].(*object.NumberObject)
-// 	if !ok {
-// 		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
-// 		return object.ERROR
-// 	}
-// 	if len(values) == 1 {
-// 		return &object.NumberObject{Value: v1.Value, Context: ctx}
-// 	}
+	}
+	// op1 をByte値に変換
+	v, ok := values[0].(*object.NumberObject)
+	if !ok {
+		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
+		return object.ERROR
+	}
+	v1, ok := e.intToByte(v.Value)
+	if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.WROUND_BYTE, v.Value, v.Value), ctx)
+	}
 
-// 	v2, ok := values[1].(*object.NumberObject)
-// 	if !ok {
-// 		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
-// 		return object.ERROR
-// 	}
-// 	return &object.NumberObject{Value: v1.Value*256 + v2.Value, Context: ctx}
-// }
+	if len(values) == 1 {
+		return &object.NumberObject{Value: int(v1), Context: ctx}
+	}
+
+	// op2 をByte値に変換
+	v, ok = values[1].(*object.NumberObject)
+	if !ok {
+		e.logger.Error(errcode.EARRAY_TO_INT_TYPE, ctx)
+		return object.ERROR
+	}
+	v2, ok := e.intToByte(v.Value)
+	if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.WROUND_BYTE, v.Value, v.Value), ctx)
+		return object.ERROR
+	}
+	return &object.NumberObject{Value: int(v1)*256 + int(v2), Context: ctx}
+}
 
 // // incbin charmap ファイル読み込み
 // func (e *Evaluator) readFile(from, name string) ([]byte, error) {

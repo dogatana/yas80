@@ -35,7 +35,7 @@ const (
 	EADDR_OVERFLOW       = "$ アドレスオーバーフロー $%x" // $
 	EALLOC_ADDR_OVERFLOW = "$$ アドレスオバーフロー $%x" // $$
 
-	ESTR_TO_INT_LEN = "文字数が %d のため数値に変換できない"
+	ESTR_TO_INT_LEN = "1文字の文字列リテラル以外数値として扱えない"
 	ESTR_CTRL       = "文字列リテラルに制御文字を含めることは不可"
 	ESTR_END_QUOTE  = "文字列リテラル終端の引用符なし"
 

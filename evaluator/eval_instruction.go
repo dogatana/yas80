@@ -74,11 +74,16 @@ func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) ob
 	}
 
 	// 命令毎の評価関数から evalExpression を呼び出すと循環参照エラーになるので事前に評価しておく
+	// ErroObject, RefNotFoundObject, NullObject のチェックも事前に行う
 	var op1, op2 object.Object
 	if stmt.Op1 != nil {
 		op1 = e.evalExpression(stmt.Op1, env, stmt.Context)
 		if isError(op1) || isRefNotFound(op1) {
 			return op1
+		}
+		if _, ok := op1.(*object.NullObject); ok {
+			e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
+			return object.ERROR
 		}
 	}
 	if stmt.Op2 != nil {
@@ -86,6 +91,10 @@ func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) ob
 		if isError(op2) || isRefNotFound(op2) {
 			return op2
 
+		}
+		if _, ok := op2.(*object.NullObject); ok {
+			e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
+			return object.ERROR
 		}
 	}
 	if fn, ok := evalZ80InstructionFuncs[stmt.Opcode]; ok {

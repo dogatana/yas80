@@ -12,6 +12,7 @@ import (
 	"github.com/dogatana/yas80/errcode"
 
 	"github.com/mattn/go-runewidth"
+	"golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/transform"
 )
@@ -111,10 +112,16 @@ func SlashPath(path string) string {
 	return filepath.ToSlash((p))
 }
 
+var sjisEncoder *encoding.Encoder
+
+func init() {
+	sjisEncoder = japanese.ShiftJIS.NewEncoder()
+}
+
 // utf-8 []byte を Shift-JIS []byte へ変換
 func ShiftJisToUtf8(input []byte) ([]byte, error) {
 	// Shift_JIS → UTF-8
-	reader := transform.NewReader(bytes.NewReader(input), japanese.ShiftJIS.NewDecoder())
+	reader := transform.NewReader(bytes.NewReader(input), sjisEncoder)
 	data, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
@@ -128,12 +135,21 @@ func ShiftJisToUtf8(input []byte) ([]byte, error) {
 
 // utf-8 string を Shift-JIS []byte へ変換
 func Utf8ToShiftJis(input string) ([]byte, error) {
-	reader := transform.NewReader(strings.NewReader(input), japanese.ShiftJIS.NewEncoder())
+	reader := transform.NewReader(strings.NewReader(input), sjisEncoder)
 	out, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
 	return out, err
+}
+
+// 1文字を Shift-JIS へ変換して []byte で返す。変換できない場合は false を返す
+func TransformBytes(s string) ([]byte, bool) {
+	b, _, err := transform.Bytes(sjisEncoder, []byte(s))
+	if err != nil || len(b) == 0 || len(b) > 2 {
+		return nil, false
+	}
+	return b, true
 }
 
 // TextObject を表示幅（34）に合わせて切り詰める
