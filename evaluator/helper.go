@@ -146,25 +146,23 @@ func boolToInt(value bool) int {
 }
 
 // 数値/文字列/レジスタ/フラグをTextObject に変換する
-func (e *Evaluator) valueToTextObject(obj object.Object, ctx TContext) object.Object {
+func toTextObject(obj object.Object, ctx TContext) object.Object {
+	var text string
 	switch v := obj.(type) {
 	case *object.NumberObject:
-		text := fmt.Sprintf("%04x(%d)", v.Value, v.Value)
-		return &object.TextObject{Text: text, Context: ctx}
-
+		text = fmt.Sprintf("%04x(%d)", v.Value, v.Value)
 	case *object.StringObject:
-		text := fmt.Sprintf("%q", v.Value)
-		return &object.TextObject{Text: text, Context: ctx}
-
+		text = fmt.Sprintf("%q", v.Value)
 	case *object.RegisterObject:
-		text := parser.TokenLiteral(v.Register)
-		return &object.TextObject{Text: text, Context: ctx}
-
+		text = parser.TokenLiteral(v.Register)
 	case *object.FlagObject:
-		text := parser.TokenLiteral(v.Flag)
-		return &object.TextObject{Text: text, Context: ctx}
+		text = parser.TokenLiteral(v.Flag)
+	}
+	if text != "" {
+		return &object.CodeTextObject{Text: text, Context: ctx}
 	}
 
+	// dummy リスト出力では無視する
 	return &object.ValueObject{Value: obj, Context: ctx}
 }
 

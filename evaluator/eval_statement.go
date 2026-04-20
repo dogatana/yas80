@@ -705,11 +705,10 @@ func (e *Evaluator) evalAssignStatement(stmt *parser.AssignStatement, env TEnv) 
 	}
 	name := id.Name
 
-	switch {
-	case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
+	if (id.IdentType == parser.LOCAL_IDENT || id.IdentType == parser.ANON_IDENT) && object.OuterEnvType(env) != object.ENV_PROC {
 		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), stmt.Context)
 		return object.ERROR
-	case name[0] == '@' && env.EnvType() != object.ENV_MACRO:
+	} else if id.IdentType == parser.AT_IDENT && env.EnvType() != object.ENV_MACRO {
 		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), stmt.Context)
 		return object.ERROR
 	}
@@ -734,7 +733,8 @@ func (e *Evaluator) evalAssignStatement(stmt *parser.AssignStatement, env TEnv) 
 	case *object.ErrorObject:
 		return object.ERROR
 	case *object.RefNotFoundObject:
-		e.logger.Error(errcode.EASSIGN_VALUE, stmt.Context)
+		// 変数代入の値は前方参照不可とする
+		e.logger.Error(errcode.EASSIGN_FWD_VALUE, stmt.Context)
 		return object.ERROR
 	case *object.NullObject:
 		e.logger.Error(errcode.EASSIGN_VALUE, stmt.Context)
@@ -742,7 +742,7 @@ func (e *Evaluator) evalAssignStatement(stmt *parser.AssignStatement, env TEnv) 
 	}
 	sym.Value = value
 
-	return e.valueToTextObject(value, stmt.Context)
+	return toTextObject(value, stmt.Context)
 }
 
 //

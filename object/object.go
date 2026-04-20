@@ -38,9 +38,9 @@ const (
 	OBJ_SYMBOL
 	OBJ_EXITM
 	OBJ_VALUE
-	OBJ_TEXT // OBJ_VALUE を代替する Lister 用 Object
-	OBJ_FILE // 入力ファイル（include含む）変更通知用 Object
-	OBJ_COMMENT
+	OBJ_CODE_TEXT // OBJ_VALUE を代替する Lister 用 Object
+	OBJ_FILE      // 入力ファイル（include含む）変更通知用 Object
+	OBJ_SRC_TEXT  // ソースの位置に表示するテキスト or ソース表示
 	OBJ_ARRAY
 	OBJ_ANON_LABELS  // 匿名ラベルコレクション
 	OBJ_ANON_LABEL   // 匿名ラベル
@@ -104,7 +104,7 @@ func Equal(o1, o2 Object) bool {
 	}
 }
 
-// value - list ファイル出力用
+// dummy リスト出力では無視される
 type ValueObject struct {
 	Value   Object
 	Context *filecontent.Context
@@ -115,15 +115,44 @@ func (o *ValueObject) String() string {
 	return fmt.Sprintf("VALUE(%s)", o.Value.String())
 }
 
-// text - list ファイル出力用
-type TextObject struct {
+// リスト行のソース位置に表示するテキスト
+type SourceTextObject struct {
+	Text      any  // nil の場合は Context の指すソース行を表示
+	SetSysVar bool // システム変数の設定か
+	Context   *filecontent.Context
+}
+
+func (o *SourceTextObject) Type() ObjectType { return OBJ_SRC_TEXT }
+func (o *SourceTextObject) String() string {
+	var out bytes.Buffer
+
+	if o.Context != nil {
+		out.WriteString(fmt.Sprintf("src  %2d:%2d", o.Context.Line, o.Context.Offset))
+		if o.Context.Source == nil {
+			out.WriteString("(  ) ")
+		} else {
+			out.WriteString(fmt.Sprintf("(%2d) ", o.Context.Source.Line))
+		}
+	} else {
+		out.WriteString("src    :  (  ) ")
+	}
+	if o.Text == nil {
+		out.WriteString("<source>")
+	} else {
+		out.WriteString(o.Text.(string))
+	}
+	return out.String()
+}
+
+// リスト行のコード位置に表示するテキスト
+type CodeTextObject struct {
 	Text    string
 	Context *filecontent.Context
 }
 
-func (o *TextObject) Type() ObjectType { return OBJ_TEXT }
-func (o *TextObject) String() string {
-	return fmt.Sprintf("TEXT %s", o.Text)
+func (o *CodeTextObject) Type() ObjectType { return OBJ_CODE_TEXT }
+func (o *CodeTextObject) String() string {
+	return fmt.Sprintf("CODE_TEXT %s", o.Text)
 }
 
 // 匿名ラベル
@@ -173,35 +202,6 @@ type FileObject struct {
 func (o *FileObject) Type() ObjectType { return OBJ_FILE }
 func (o *FileObject) String() string {
 	return fmt.Sprintf("FILE %q:%d", o.Filename, o.Line)
-}
-
-// value - list ファイル出力用
-type CommentObject struct {
-	Text      any
-	SetSysVar bool // システム変数の設定か
-	Context   *filecontent.Context
-}
-
-func (o *CommentObject) Type() ObjectType { return OBJ_COMMENT }
-func (o *CommentObject) String() string {
-	var out bytes.Buffer
-
-	if o.Context != nil {
-		out.WriteString(fmt.Sprintf("comt %2d:%2d", o.Context.Line, o.Context.Offset))
-		if o.Context.Source == nil {
-			out.WriteString("(  ) ")
-		} else {
-			out.WriteString(fmt.Sprintf("(%2d) ", o.Context.Source.Line))
-		}
-	} else {
-		out.WriteString("comt   :  (  ) ")
-	}
-	if o.Text == nil {
-		out.WriteString("<source>")
-	} else {
-		out.WriteString(o.Text.(string))
-	}
-	return out.String()
 }
 
 // org
@@ -634,7 +634,7 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 				fb.LineObjects.Set(line, objs)
 			}
 
-		case *CommentObject:
+		case *SourceTextObject:
 			line := int(obj.Context.Line)
 			if objs, ok := fb.LineObjects.Get(line); !ok {
 				fb.LineObjects.Set(line, []Object{obj})
@@ -643,7 +643,7 @@ func BuildFileBlock(objects []Object) []*FileBlock {
 				fb.LineObjects.Set(line, objs)
 			}
 
-		case *TextObject:
+		case *CodeTextObject:
 			line := int(obj.Context.Line)
 			if objs, ok := fb.LineObjects.Get(line); !ok {
 				fb.LineObjects.Set(line, []Object{obj})
@@ -733,7 +733,7 @@ func inserCommentObject(objects []Object) []Object {
 	for _, ofs := range set.Keys() {
 		objs, _ := set.Get(ofs)
 		if e, ok := objs[0].(*ErrorObject); ok {
-			out = append(out, &CommentObject{Text: nil, Context: e.Context}, e)
+			out = append(out, &SourceTextObject{Text: nil, Context: e.Context}, e)
 			out = append(out, objs[1:]...)
 		} else {
 			out = append(out, objs...)
@@ -747,9 +747,9 @@ func lineOffset(obj Object) (int, int) {
 	switch obj := obj.(type) {
 	case *CodeObject:
 		return int(obj.Context.Line), int(obj.Context.Offset)
-	case *CommentObject:
+	case *SourceTextObject:
 		return int(obj.Context.Line), int(obj.Context.Offset)
-	case *TextObject:
+	case *CodeTextObject:
 		return int(obj.Context.Line), int(obj.Context.Offset)
 	case *ErrorObject:
 		return int(obj.Context.Line), int(obj.Context.Offset)

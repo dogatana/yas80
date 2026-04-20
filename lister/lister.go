@@ -142,7 +142,7 @@ func (l *Lister) List(out io.Writer) {
 					continue
 				}
 				switch obj := obj.(type) {
-				case *object.CommentObject:
+				case *object.SourceTextObject:
 					text := obj.Text
 					if text == nil {
 						// Context の指すソース行を取得
@@ -158,7 +158,7 @@ func (l *Lister) List(out io.Writer) {
 						fmt.Fprintf(w, fmtSrc, lnum, "", '+', text)
 					}
 
-				case *object.TextObject:
+				case *object.CodeTextObject:
 					src = obj.Context.GetLine()
 					text := util.TruncateWithEllipsis(obj.Text, 31)
 					if obj.Context.Offset == 0 {

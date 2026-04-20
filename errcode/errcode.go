@@ -138,12 +138,13 @@ const (
 	// ELABEL_EXPR = "LABEL としてシンボルが必要"
 
 	// VAR/ASSIGN
-	EVAR_UNDEF    = "変数 %s は未定義"
-	EVAR_SYS      = "_ は再定義不可"
-	EVAR_USED     = "%s を変数として再定義不可"
-	EVAR_VALUE    = "変数 %s の初期値が未確定"
-	EASSIGN_LEFT  = "変数/_ 以外へは代入不可"
-	EASSIGN_VALUE = "代入する値が未確定"
+	EVAR_UNDEF        = "変数 %s は未定義"
+	EVAR_SYS          = "_ は再定義不可"
+	EVAR_USED         = "%s を変数として再定義不可"
+	EVAR_VALUE        = "変数 %s の初期値が未確定"
+	EASSIGN_LEFT      = "変数/_ 以外へは代入不可"
+	EASSIGN_VALUE     = "代入する値が未確定"
+	EASSIGN_FWD_VALUE = "代入する値は前方参照不可"
 	// EASSIGN_UNDEF         = "変数 %s は未定義"
 
 	// PROC 定義
