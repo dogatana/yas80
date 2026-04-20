@@ -352,9 +352,9 @@ func TestEvalPrefixExpressionError(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `const val = "a" \ const result = +val`, err: errcode.EUNI_OP_TYPE},
-		{input: `const val = "a" \ const result = -val`, err: errcode.EUNI_OP_TYPE},
-		{input: `const val = "a" \ const result = ~val`, err: errcode.EUNI_OP_TYPE},
+		{input: `const val = "a" \ const result = +val`, err: errcode.EUNI_OP_VALUE},
+		{input: `const val = "a" \ const result = -val`, err: errcode.EUNI_OP_VALUE},
+		{input: `const val = "a" \ const result = ~val`, err: errcode.EUNI_OP_VALUE},
 	}
 
 	for tn, tt := range tests {

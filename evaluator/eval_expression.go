@@ -61,9 +61,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 			return object.ERROR
 		} else if !ok {
 			// 未定義の場合、遅延評価するため RefNotFound を返す
-			e.Resolved = false
 			sym := object.NewUnknownSymbol(id, name, node.Context)
 			env.Set(id, sym)
+			e.Resolved = false
 			return &object.RefNotFoundObject{Names: []string{name}}
 		}
 
@@ -90,9 +90,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	// 	obj, ok := env.Get(node.Left)
 	// 	// node.Left(PROC or ENUM) が未定義の場合、Name を SYM_UNKNOWN で登録
 	// 	if !ok {
-	// 		e.Resolved = false
 	// 		sym := object.NewUnknownSymbol(node.Name, node.Context)
 	// 		env.Set(node.Name, sym)
+	// 		e.Resolved = false
 	// 		return &object.RefNotFoundObject{Names: []string{node.Name}}
 	// 	}
 
@@ -101,9 +101,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	// 		vobj, ok := obj.Get(node.Right)
 	// 		if !ok {
 	// 			// ローカルラベルが未定義の場合、PROC 環境に SYM_UNKNOWN で登録
-	// 			e.Resolved = false
 	// 			sym := object.NewUnknownSymbol(node.Right, node.Context)
 	// 			obj.Set(node.Right, sym) // env でなく ProcObject に登録
+	// 			e.Resolved = false
 	// 			return &object.RefNotFoundObject{Names: []string{node.Name}}
 	// 		}
 	// 		sym, ok := vobj.(*object.SymbolObject)
@@ -230,7 +230,6 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 // 	case isError(op1) || isError(op2):
 // 		return object.ERROR
 // 	case isRefNotFound(op1) || isRefNotFound(op2):
-// 		e.Resolved = false
 // 		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
 
 // 	// 論理演算
@@ -384,7 +383,6 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv
 		return op
 	}
 	if isRefNotFound(op) {
-		e.Resolved = false
 		return op
 	}
 
@@ -393,20 +391,39 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv
 		return &object.NumberObject{Value: boolToInt(!object.IsTruthy(op)), Context: ctx}
 	}
 
-	// +, -, ~ は数値のみ利用可能
-	if num, ok := op.(*object.NumberObject); ok {
-		switch opcode {
-		case '+':
-			return &object.NumberObject{Value: num.Value, Context: ctx}
-		case '-':
-			return &object.NumberObject{Value: -num.Value, Context: ctx}
-		case '~':
-			return &object.NumberObject{Value: num.Value ^ -1, Context: ctx}
-		}
+	// ! 以外では NULL をエラーとする
+	if op.Type() == object.OBJ_NULL {
+		e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_NULL, parser.TokenLiteral(opcode)), ctx)
+		return object.ERROR
 	}
 
-	e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
-	return object.ERROR
+EVAL_AGAIN:
+	// +, -, ~ は数値のみ利用可能
+	switch eop := op.(type) {
+	case *object.ErrorObject:
+		return op
+	case *object.NumberObject:
+		switch opcode {
+		case '+':
+			return &object.NumberObject{Value: eop.Value, Context: ctx}
+		case '-':
+			return &object.NumberObject{Value: -eop.Value, Context: ctx}
+		case '~':
+			return &object.NumberObject{Value: eop.Value ^ -1, Context: ctx}
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_TYPE, parser.TokenLiteral(opcode)), ctx)
+			return object.ERROR
+		}
+	case *object.StringObject:
+		op = e.evalOneCharStringAsNumber(eop.Value, ctx)
+		goto EVAL_AGAIN
+	case *object.ArrayObject:
+		op = e.evalArrayToInt(eop.Values, ctx)
+		goto EVAL_AGAIN
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_VALUE, parser.TokenLiteral(opcode)), ctx)
+		return object.ERROR
+	}
 }
 
 // // 配列リテラル
@@ -499,12 +516,12 @@ func (e *Evaluator) evalRegIndirectExpression(expr *parser.RegIndirectExpression
 	e.concatenateSymbol(&expr.Displacement, env, ctx)
 
 	obj := e.evalExpression(expr.Displacement, env, ctx)
-	if isError(obj) {
+	if isError(obj) || isRefNotFound(obj) {
 		return obj
 	}
-	if isRefNotFound(obj) {
-		e.Resolved = false
-		return obj
+	if obj.Type() == object.OBJ_NULL {
+		e.logger.Error(errcode.EINDIRECT_DISP_NULL, ctx)
+		return object.ERROR
 	}
 
 	num, ok := obj.(*object.NumberObject)
@@ -530,7 +547,6 @@ func (e *Evaluator) evalAddrIndirectExpression(expr *parser.AddrIndirectExpressi
 	case *object.ErrorObject:
 		return addr
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return addr
 	case *object.NumberObject:
 		return &object.AddrIndirectObject{Address: addr.Value}

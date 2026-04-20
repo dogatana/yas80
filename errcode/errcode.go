@@ -48,7 +48,10 @@ const (
 	EARRAY_INDEX        = "配列インデックス誤り"
 	EARRAY_OUT_OF_INDEX = "配列インデックスが範囲外"
 
-	EUNI_OP_TYPE = "単項演算子 '%s' は使用できない"
+	// 単項演算子
+	EUNI_OP_VALUE = "単項演算子 '%s' の非演算子エラー"
+	EUNI_OP_NULL  = "単項演算子 '%s' の被演算子が未確定"
+	EUNI_OP_TYPE  = "単項演算子 '%s' は利用不可"
 
 	EBIN_OP_DIVZERO = "0 除算"
 	EBIN_OP_TYPE    = "%s が使用できない値"

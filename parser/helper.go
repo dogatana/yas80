@@ -257,7 +257,7 @@ func buildPrefixExpression(opcode int, op Expression, ctx *filecontent.Context) 
 			}
 			return &NumberLiteral{Value: result, Context: ctx}
 		}
-		return &ParseError{Message: fmt.Sprintf(errcode.EUNI_OP_TYPE, TokenLiteral(opcode)), Context: ctx}
+		return &ParseError{Message: fmt.Sprintf(errcode.EUNI_OP_VALUE, TokenLiteral(opcode)), Context: ctx}
 	}
 	return &PrefixExpression{Operator: opcode, Op: op, Context: ctx}
 }

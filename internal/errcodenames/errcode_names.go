@@ -38,7 +38,7 @@ var ErrcodeNames map[string]string = map[string]string{
 	errcode.EARRAY_NAME:              "EARRAY_NAME",
 	errcode.EARRAY_INDEX:             "EARRAY_INDEX",
 	errcode.EARRAY_OUT_OF_INDEX:      "EARRAY_OUT_OF_INDEX",
-	errcode.EUNI_OP_TYPE:             "EUNI_OP_TYPE",
+	errcode.EUNI_OP_VALUE:            "EUNI_OP_TYPE",
 	errcode.EBIN_OP_DIVZERO:          "EBIN_OP_DIVZERO",
 	errcode.EBIN_OP_TYPE:             "EBIN_OP_TYPE",
 	errcode.EDATA_DW_STR:             "EDATA_DW_STR",
