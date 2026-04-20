@@ -143,9 +143,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	// case *parser.FuncCallExpression:
 	// 	return e.evalFuncCallExpression(node, env, ctx)
 
-	// // 中置演算子
-	// case *parser.InfixExpression:
-	// 	return e.evalInfixExpression(node, env, ctx)
+	// 中置演算子
+	case *parser.InfixExpression:
+		return e.evalInfixExpression(node, env, ctx)
 
 	// 前置演算子
 	case *parser.PrefixExpression:
@@ -220,159 +220,148 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 // 	return object.NULL
 // }
 
-// // 中置演算子式
-// func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, ctx TContext) object.Object {
-// 	op1 := e.evalExpression(node.Op1, env, ctx)
-// 	op2 := e.evalExpression(node.Op2, env, ctx)
+// 中置演算子式
+func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, ctx TContext) object.Object {
+	op1 := e.evalExpression(node.Op1, env, ctx)
+	op2 := e.evalExpression(node.Op2, env, ctx)
 
-// EVAL_AGAIN:
-// 	switch {
-// 	case isError(op1) || isError(op2):
-// 		return object.ERROR
-// 	case isRefNotFound(op1) || isRefNotFound(op2):
-// 		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
+EVAL_AGAIN:
+	switch {
+	case isError(op1) || isError(op2):
+		return object.ERROR
+	case isRefNotFound(op1) || isRefNotFound(op2):
+		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
 
-// 	// 論理演算
-// 	case node.Operator == parser.OR || node.Operator == parser.AND:
-// 		return e.evalLogicalInfixExpression(node.Operator, op1, op2, ctx)
+	// 論理演算
+	case node.Operator == parser.OR || node.Operator == parser.AND:
+		return e.evalLogicalInfixExpression(node.Operator, op1, op2, ctx)
 
-// 	// 同値判定
-// 	case node.Operator == parser.EQ || node.Operator == parser.NEQ:
-// 		return e.evalEqualityExpression(node.Operator, op1, op2, ctx)
+	// 同値判定
+	case node.Operator == parser.EQ || node.Operator == parser.NEQ:
+		return e.evalEqualityExpression(node.Operator, op1, op2, ctx)
 
-// 	// 数値演算
-// 	case isNumber(op1) && isNumber(op2):
-// 		return e.evalNumberInfixExpression(node.Operator, op1, op2, ctx)
+	// 数値演算
+	case isNumber(op1) && isNumber(op2):
+		return e.evalNumberInfixExpression(node.Operator, op1, op2, ctx)
 
-// 	// 文字列演算
-// 	case isString(op1) && isString(op2):
-// 		if node.Operator != '+' {
-// 			e.logger.Error(errcode.EBIN_OP_TYPE, ctx)
-// 			return object.ERROR
-// 		}
-// 		s1 := op1.(*object.StringObject).Value
-// 		s2 := op2.(*object.StringObject).Value
-// 		return &object.StringObject{Value: s1 + s2}
+	// 文字列演算
+	case isString(op1) && isString(op2):
+		if node.Operator != '+' {
+			e.logger.Error(errcode.EBIN_OP_TYPE, ctx)
+			return object.ERROR
+		}
+		s1 := op1.(*object.StringObject).Value
+		s2 := op2.(*object.StringObject).Value
+		return &object.StringObject{Value: s1 + s2}
 
-// 	// 文字列 op 数値
-// 	case isString(op1) && isNumber(op2):
-// 		op1 = e.evalOneCharStringAsNumber(op1.(*object.StringObject).Value, ctx)
-// 		if isError(op1) {
-// 			return op1
-// 		}
-// 		goto EVAL_AGAIN
+	// 文字列 op 数値
+	case isString(op1) && isNumber(op2):
+		op1 = e.evalOneCharStringAsNumber(op1.(*object.StringObject).Value, ctx)
+		goto EVAL_AGAIN
 
-// 	// 数値 op 文字列
-// 	case isNumber(op1) && isString(op2):
-// 		op2 = e.evalOneCharStringAsNumber(op2.(*object.StringObject).Value, ctx)
-// 		if isError(op2) {
-// 			return op2
-// 		}
-// 		goto EVAL_AGAIN
+	// 数値 op 文字列
+	case isNumber(op1) && isString(op2):
+		op2 = e.evalOneCharStringAsNumber(op2.(*object.StringObject).Value, ctx)
+		goto EVAL_AGAIN
 
-// 	// 配列 op 数値
-// 	case op1.Type() == object.OBJ_ARRAY && isNumber(op2):
-// 		op1 = e.evalArrayToInt(op1.(*object.ArrayObject).Values, ctx)
-// 		if isError(op1) {
-// 			return op1
-// 		}
-// 		goto EVAL_AGAIN
+	// 配列 op 数値
+	case op1.Type() == object.OBJ_ARRAY && isNumber(op2):
+		op1 = e.evalArrayToInt(op1.(*object.ArrayObject).Values, ctx)
+		goto EVAL_AGAIN
 
-// 	// 数値 op 配列
-// 	case isNumber(op1) && op2.Type() == object.OBJ_ARRAY:
-// 		op2 = e.evalArrayToInt(op2.(*object.ArrayObject).Values, ctx)
-// 		if isError(op2) {
-// 			return op2
-// 		}
-// 		goto EVAL_AGAIN
+	// 数値 op 配列
+	case isNumber(op1) && op2.Type() == object.OBJ_ARRAY:
+		op2 = e.evalArrayToInt(op2.(*object.ArrayObject).Values, ctx)
+		goto EVAL_AGAIN
 
-// 	default:
-// 		if e.Debug > 0 {
-// 			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
-// 		}
-// 		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_TYPE, parser.TokenLiteral(node.Operator)), ctx)
-// 		return object.ERROR
-// 	}
-// }
+	default:
+		if e.Debug > 0 {
+			fmt.Printf("op1 %#v, op2 %#v", op1, op2)
+		}
+		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_TYPE, parser.TokenLiteral(node.Operator)), ctx)
+		return object.ERROR
+	}
+}
 
-// // 論理演算 && ||
-// func (e *Evaluator) evalLogicalInfixExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
-// 	var v1, v2 bool
-// 	v1 = object.IsTruthy(op1)
-// 	v2 = object.IsTruthy(op2)
-// 	switch opCode {
-// 	case parser.OR:
-// 		return &object.NumberObject{Value: boolToInt(v1 || v2), Context: ctx}
-// 	case parser.AND:
-// 		return &object.NumberObject{Value: boolToInt(v1 && v2), Context: ctx}
-// 	default:
-// 		panic("invalid evalLogcalInfixExpression")
-// 	}
-// }
+// 論理演算 && ||
+func (e *Evaluator) evalLogicalInfixExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
+	v1 := object.IsTruthy(op1)
+	v2 := object.IsTruthy(op2)
 
-// // 同値判定 == !=
-// func (e *Evaluator) evalEqualityExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
-// 	c := object.Equal(op1, op2)
-// 	if opCode == parser.NEQ {
-// 		c = !c
-// 	}
-// 	if c {
-// 		return &object.NumberObject{Value: 1}
-// 	} else {
-// 		return &object.NumberObject{Value: 0}
-// 	}
-// }
+	switch opCode {
+	case parser.OR:
+		return &object.NumberObject{Value: boolToInt(v1 || v2), Context: ctx}
+	case parser.AND:
+		return &object.NumberObject{Value: boolToInt(v1 && v2), Context: ctx}
+	default:
+		panic("invalid evalLogcalInfixExpression")
+	}
+}
 
-// // 中置演算子式（数値）
-// func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
-// 	v1 := op1.(*object.NumberObject).Value
-// 	v2 := op2.(*object.NumberObject).Value
-// 	switch opCode {
-// 	case '+':
-// 		return &object.NumberObject{Value: v1 + v2, Context: ctx}
-// 	case '-':
-// 		return &object.NumberObject{Value: v1 - v2, Context: ctx}
-// 	case '*':
-// 		return &object.NumberObject{Value: v1 * v2, Context: ctx}
-// 	case '/':
-// 		if v2 == 0 {
-// 			e.logger.Error(errcode.EBIN_OP_DIVZERO, ctx)
-// 			return object.ERROR
-// 		}
-// 		return &object.NumberObject{Value: v1 / v2, Context: ctx}
-// 	case '%':
-// 		return &object.NumberObject{Value: v1 % v2, Context: ctx}
-// 	case parser.SL:
-// 		return &object.NumberObject{Value: v1 << v2, Context: ctx}
-// 	case parser.SR:
-// 		return &object.NumberObject{Value: v1 >> v2, Context: ctx}
-// 	case '&':
-// 		return &object.NumberObject{Value: v1 & v2, Context: ctx}
-// 	case '|':
-// 		return &object.NumberObject{Value: v1 | v2, Context: ctx}
-// 	case '^':
-// 		return &object.NumberObject{Value: v1 ^ v2, Context: ctx}
-// 	case parser.EQ:
-// 		return &object.NumberObject{Value: boolToInt(v1 == v2), Context: ctx}
-// 	case parser.NEQ:
-// 		return &object.NumberObject{Value: boolToInt(v1 != v2), Context: ctx}
-// 	case '<':
-// 		return &object.NumberObject{Value: boolToInt(v1 < v2), Context: ctx}
-// 	case parser.LE:
-// 		return &object.NumberObject{Value: boolToInt(v1 <= v2), Context: ctx}
-// 	case '>':
-// 		return &object.NumberObject{Value: boolToInt(v1 > v2), Context: ctx}
-// 	case parser.GE:
-// 		return &object.NumberObject{Value: boolToInt(v1 >= v2), Context: ctx}
-// 	case parser.OR:
-// 		return &object.NumberObject{Value: boolToInt(v1 != 0 || v2 != 0), Context: ctx}
-// 	case parser.AND:
-// 		return &object.NumberObject{Value: boolToInt(v1 != 0 && v2 != 0), Context: ctx}
-// 	default:
-// 		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_TYPE, parser.TokenLiteral(opCode)), nil)
-// 		return object.ERROR
-// 	}
-// }
+// 同値判定 == !=
+func (e *Evaluator) evalEqualityExpression(opCode int, op1, op2 object.Object, _ TContext) object.Object {
+	c := object.Equal(op1, op2)
+	if opCode == parser.NEQ {
+		c = !c
+	}
+	if c {
+		return &object.NumberObject{Value: 1}
+	} else {
+		return &object.NumberObject{Value: 0}
+	}
+}
+
+// 中置演算子式（数値）
+func (e *Evaluator) evalNumberInfixExpression(opCode int, op1, op2 object.Object, ctx TContext) object.Object {
+	v1 := op1.(*object.NumberObject).Value
+	v2 := op2.(*object.NumberObject).Value
+
+	switch opCode {
+	case '+':
+		return &object.NumberObject{Value: v1 + v2, Context: ctx}
+	case '-':
+		return &object.NumberObject{Value: v1 - v2, Context: ctx}
+	case '*':
+		return &object.NumberObject{Value: v1 * v2, Context: ctx}
+	case '/':
+		if v2 == 0 {
+			e.logger.Error(errcode.EBIN_OP_DIVZERO, ctx)
+			return object.ERROR
+		}
+		return &object.NumberObject{Value: v1 / v2, Context: ctx}
+	case '%':
+		return &object.NumberObject{Value: v1 % v2, Context: ctx}
+	case parser.SL:
+		return &object.NumberObject{Value: v1 << v2, Context: ctx}
+	case parser.SR:
+		return &object.NumberObject{Value: v1 >> v2, Context: ctx}
+	case '&':
+		return &object.NumberObject{Value: v1 & v2, Context: ctx}
+	case '|':
+		return &object.NumberObject{Value: v1 | v2, Context: ctx}
+	case '^':
+		return &object.NumberObject{Value: v1 ^ v2, Context: ctx}
+	case parser.EQ:
+		return &object.NumberObject{Value: boolToInt(v1 == v2), Context: ctx}
+	case parser.NEQ:
+		return &object.NumberObject{Value: boolToInt(v1 != v2), Context: ctx}
+	case '<':
+		return &object.NumberObject{Value: boolToInt(v1 < v2), Context: ctx}
+	case parser.LE:
+		return &object.NumberObject{Value: boolToInt(v1 <= v2), Context: ctx}
+	case '>':
+		return &object.NumberObject{Value: boolToInt(v1 > v2), Context: ctx}
+	case parser.GE:
+		return &object.NumberObject{Value: boolToInt(v1 >= v2), Context: ctx}
+	case parser.OR:
+		return &object.NumberObject{Value: boolToInt(v1 != 0 || v2 != 0), Context: ctx}
+	case parser.AND:
+		return &object.NumberObject{Value: boolToInt(v1 != 0 && v2 != 0), Context: ctx}
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EBIN_OP_TYPE, parser.TokenLiteral(opCode)), nil)
+		return object.ERROR
+	}
+}
 
 // 前置演算子式
 func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv, ctx TContext) object.Object {

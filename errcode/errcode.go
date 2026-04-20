@@ -54,7 +54,7 @@ const (
 	EUNI_OP_TYPE  = "単項演算子 '%s' は利用不可"
 
 	EBIN_OP_DIVZERO = "0 除算"
-	EBIN_OP_TYPE    = "%s が使用できない値"
+	EBIN_OP_TYPE    = "二項演算子 %s が使用できない値"
 
 	// データ定義
 	// EDATA_EMPTY  = "DB/DW/DD に値が指定されていない"
