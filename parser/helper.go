@@ -11,6 +11,12 @@ import (
 	"github.com/dogatana/yas80/intern"
 )
 
+// token.Context のコピーを作成しそのポインタを返す
+func newCtxFromTokenCtx(c filecontent.Context) *filecontent.Context {
+	ctx := c
+	return &ctx
+}
+
 func parseInt(s string) (int64, error) {
 	// 数値リテラルの途中の _ を無視する
 	// strconv.ParseInt("10_00", 2, 0) 等がエラーになるのを回避
@@ -220,7 +226,7 @@ func buildInfixExpression(opcode int, op1, op2 Expression, ctx *filecontent.Cont
 	return &InfixExpression{Operator: opcode, Op1: op1, Op2: op2, Context: ctx}
 }
 
-// 数値リテラルの畳み込み(前置演算子)
+// 数値・文字列リテラルの畳み込み(前置演算子)
 type prefixFuncType func(x int) int
 
 var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
@@ -234,6 +240,32 @@ var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
 			return 1
 		}
 	},
+}
+
+func buildPrefixExpression(opcode int, op Expression, ctx *filecontent.Context) Expression {
+	if op.NodeType() == NODE_ERROR {
+		return op
+	}
+	switch op := op.(type) {
+	case *NumberLiteral:
+		if fn, ok := prefixFuncs[opcode]; ok {
+			return &NumberLiteral{Value: fn(op.Value), Context: ctx}
+		}
+		panic("buildPrefixExpression")
+
+	case *StringLiteral:
+		if opcode == '!' {
+			var result int
+			if op.Value == "" {
+				result = 1
+			} else {
+				result = 0
+			}
+			return &NumberLiteral{Value: result, Context: ctx}
+		}
+		return &ParseError{Message: fmt.Sprintf(errcode.EUNI_OP_VALUE, TokenLiteral(opcode)), Context: ctx}
+	}
+	return &PrefixExpression{Operator: opcode, Op: op, Context: ctx}
 }
 
 // elif の連鎖している if 文の最後を抽出する
