@@ -131,9 +131,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	// 		return &object.RefNotFoundObject{Names: []string{node.Name}}
 	// 	}
 
-	// // 配列リテラル
-	// case *parser.ArrayLiteral:
-	// 	return e.evalArrayLiteral(node, env, ctx)
+	// 配列リテラル
+	case *parser.ArrayLiteral:
+		return e.evalArrayLiteral(node, env, ctx)
 
 	// // 添え字式
 	// case *parser.IndexedExpression:
@@ -282,12 +282,12 @@ EVAL_AGAIN:
 		goto EVAL_AGAIN
 
 	// 配列 op 数値
-	case op1.Type() == object.OBJ_ARRAY && isNumber(op2):
+	case isArray(op1) && isNumber(op2):
 		op1 = e.evalArrayToInt(op1.(*object.ArrayObject).Values, ctx)
 		goto EVAL_AGAIN
 
 	// 数値 op 配列
-	case isNumber(op1) && op2.Type() == object.OBJ_ARRAY:
+	case isNumber(op1) && isArray(op2):
 		op2 = e.evalArrayToInt(op2.(*object.ArrayObject).Values, ctx)
 		goto EVAL_AGAIN
 
@@ -398,7 +398,7 @@ func (e *Evaluator) evalPrefixExpression(expr *parser.PrefixExpression, env TEnv
 	}
 
 	// ! 以外では NULL をエラーとする
-	if op.Type() == object.OBJ_NULL {
+	if isNull(op) {
 		e.logger.Error(fmt.Sprintf(errcode.EUNI_OP_NULL, parser.TokenLiteral(opcode)), ctx)
 		return object.ERROR
 	}
@@ -432,28 +432,31 @@ EVAL_AGAIN:
 	}
 }
 
-// // 配列リテラル
-// func (e *Evaluator) evalArrayLiteral(expr *parser.ArrayLiteral, env TEnv, ctx TContext) object.Object {
-// 	// ## の処理
-// 	for i := range expr.Elements.Expressions {
-// 		e.concatenateSymbol(&expr.Elements.Expressions[i], env, ctx)
-// 	}
+// 配列リテラル
+func (e *Evaluator) evalArrayLiteral(expr *parser.ArrayLiteral, env TEnv, ctx TContext) object.Object {
+	// ## の処理
+	for i := range expr.Elements.Expressions {
+		e.concatenateSymbol(&expr.Elements.Expressions[i], env, ctx)
+	}
 
-// 	values := []object.Object{}
-// 	for _, ele := range expr.Elements.Expressions {
-// 		obj := e.evalExpression(ele, env, ctx)
-// 		if isError(obj) {
-// 			continue
-// 		}
-// 		if isRefNotFound(obj) {
-// 			e.Resolved = false
-// 			return obj
-// 		}
-// 		values = append(values, obj)
-// 	}
+	values := []object.Object{}
+	for i, ele := range expr.Elements.Expressions {
+		obj := e.evalExpression(ele, env, ctx)
+		if isError(obj) {
+			continue
+		}
+		if isRefNotFound(obj) {
+			return obj
+		}
+		if isNull(obj) {
+			e.logger.Error(fmt.Sprintf(errcode.EARRAY_ELE_NULL, i), ctx)
+			return obj
+		}
+		values = append(values, obj)
+	}
 
-// 	return &object.ArrayObject{Values: values, Expressions: expr.Elements.Expressions}
-// }
+	return &object.ArrayObject{Values: values, Expressions: expr.Elements.Expressions}
+}
 
 // // 添え字式
 // func (e *Evaluator) evalIndexedExpression(expr *parser.IndexedExpression, env TEnv, ctx TContext) object.Object {
@@ -525,7 +528,7 @@ func (e *Evaluator) evalRegIndirectExpression(expr *parser.RegIndirectExpression
 	if isError(obj) || isRefNotFound(obj) {
 		return obj
 	}
-	if obj.Type() == object.OBJ_NULL {
+	if isNull(obj) {
 		e.logger.Error(errcode.EINDIRECT_DISP_NULL, ctx)
 		return object.ERROR
 	}

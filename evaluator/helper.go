@@ -34,6 +34,10 @@ func isRefNotFound(obj object.Object) bool {
 	return obj.Type() == object.OBJ_REF_NOTFOUND
 }
 
+func isNull(obj object.Object) bool {
+	return obj.Type() == object.OBJ_NULL
+}
+
 // 依存先の識別子を抽出する: 重複する名は後段のソートでユニークになる
 func mergeNames(obj1, obj2 object.Object) []string {
 	names := []string{}

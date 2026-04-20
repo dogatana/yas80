@@ -235,7 +235,7 @@ func PrintEnv(env Environment) {
 					if pv == nil {
 						continue // 削除済みエントリ
 					}
-					fmt.Printf("%s%s%s=%s\n", prefix, name, pk, pv.String())
+					fmt.Printf("%s%s%s=%s\n", prefix, name, intern.SymbolID(pk), pv.String())
 				}
 			}
 		}

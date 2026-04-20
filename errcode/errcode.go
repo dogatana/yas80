@@ -47,6 +47,7 @@ const (
 	EARRAY_NAME         = "配列名誤り"
 	EARRAY_INDEX        = "配列インデックス誤り"
 	EARRAY_OUT_OF_INDEX = "配列インデックスが範囲外"
+	EARRAY_ELE_NULL     = "配列要素（インデックス %d）が未確定"
 
 	// 単項演算子
 	EUNI_OP_VALUE = "単項演算子 '%s' の非演算子エラー"
