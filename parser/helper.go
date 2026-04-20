@@ -236,32 +236,6 @@ var prefixFuncs map[int]prefixFuncType = map[int]prefixFuncType{
 	},
 }
 
-func buildPrefixExpression(opcode int, op Expression, ctx *filecontent.Context) Expression {
-	if op.NodeType() == NODE_ERROR {
-		return op
-	}
-	switch op := op.(type) {
-	case *NumberLiteral:
-		if fn, ok := prefixFuncs[opcode]; ok {
-			return &NumberLiteral{Value: fn(op.Value), Context: ctx}
-		}
-		panic("buildPrefixExpression")
-
-	case *StringLiteral:
-		if opcode == '!' {
-			var result int
-			if op.Value == "" {
-				result = 1
-			} else {
-				result = 0
-			}
-			return &NumberLiteral{Value: result, Context: ctx}
-		}
-		return &ParseError{Message: fmt.Sprintf(errcode.EUNI_OP_VALUE, TokenLiteral(opcode)), Context: ctx}
-	}
-	return &PrefixExpression{Operator: opcode, Op: op, Context: ctx}
-}
-
 // elif の連鎖している if 文の最後を抽出する
 func getLastIfStatement(stmt *IfStatement) Node {
 	for {

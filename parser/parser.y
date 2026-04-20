@@ -596,7 +596,7 @@ operand		: '(' Z80_REG16 ')'
 				reg := &RegisterLiteral{RegisterType: int($2.TokenType), Register:int($2.TokenSubType), Context:&$2.Context}
 				$$ = &RegIndirectExpression{
 						Register: reg,
-						Displacement: buildPrefixExpression(int($3.TokenSubType), $4, &$1.Context),
+						Displacement: &PrefixExpression{Operator: int($3.TokenSubType), Op: $4, Context: &$1.Context},
 						Context: &$1.Context}
 			}
 			| '(' Z80_REG8 ')'
@@ -683,8 +683,8 @@ expr		: NUMBER
 			| expr SHIFT expr			{ $$ = buildInfixExpression(int($2.TokenSubType), $1, $3, &$2.Context) }
 			| expr OR expr				{ $$ = buildInfixExpression(OR, $1, $3, &$2.Context) }
 			| expr AND expr				{ $$ = buildInfixExpression(AND, $1, $3, &$2.Context) }
-			| ADDSUB expr %prec UNARY	{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, &$1.Context) }
-			| UNARY expr 				{ $$ = buildPrefixExpression(int($1.TokenSubType), $2, &$1.Context) }
+			| ADDSUB expr %prec UNARY	{ $$ = &PrefixExpression{Operator: int($1.TokenSubType), Op: $2, Context: &$1.Context } }
+			| UNARY expr 				{ $$ = &PrefixExpression{Operator: int($1.TokenSubType), Op: $2, Context: &$1.Context } }
 			;
 
 indexed_expr: expr '[' ']'

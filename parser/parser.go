@@ -1501,7 +1501,7 @@ yydefault:
 			reg := &RegisterLiteral{RegisterType: int(yyDollar[2].token.TokenType), Register: int(yyDollar[2].token.TokenSubType), Context: &yyDollar[2].token.Context}
 			yyVAL.expr = &RegIndirectExpression{
 				Register:     reg,
-				Displacement: buildPrefixExpression(int(yyDollar[3].token.TokenSubType), yyDollar[4].expr, &yyDollar[1].token.Context),
+				Displacement: &PrefixExpression{Operator: int(yyDollar[3].token.TokenSubType), Op: yyDollar[4].expr, Context: &yyDollar[1].token.Context},
 				Context:      &yyDollar[1].token.Context}
 		}
 	case 69:
@@ -1682,13 +1682,13 @@ yydefault:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line parser/parser.y:686
 		{
-			yyVAL.expr = buildPrefixExpression(int(yyDollar[1].token.TokenSubType), yyDollar[2].expr, &yyDollar[1].token.Context)
+			yyVAL.expr = &PrefixExpression{Operator: int(yyDollar[1].token.TokenSubType), Op: yyDollar[2].expr, Context: &yyDollar[1].token.Context}
 		}
 	case 95:
 		yyDollar = yyS[yypt-2 : yypt+1]
 //line parser/parser.y:687
 		{
-			yyVAL.expr = buildPrefixExpression(int(yyDollar[1].token.TokenSubType), yyDollar[2].expr, &yyDollar[1].token.Context)
+			yyVAL.expr = &PrefixExpression{Operator: int(yyDollar[1].token.TokenSubType), Op: yyDollar[2].expr, Context: &yyDollar[1].token.Context}
 		}
 	case 96:
 		yyDollar = yyS[yypt-3 : yypt+1]

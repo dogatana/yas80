@@ -136,7 +136,7 @@ func (e *GlobalEnvironment) Outer() Environment { return e.outer }
 func (e *GlobalEnvironment) Store() []Object    { return e.store }
 func (e *GlobalEnvironment) Print() {
 	for k, v := range e.store {
-		fmt.Printf("env[%q] = %s\n", k, v.String())
+		fmt.Printf("env[%q] = %s\n", intern.SymbolID(k), v.String())
 	}
 }
 
@@ -196,7 +196,7 @@ func (e *MacroEnvironment) Get(id intern.SymbolID) (Object, bool) {
 }
 func (e *MacroEnvironment) Set(id intern.SymbolID, obj Object) Object {
 	name := id.String()
-	if name[0] == '$' { // $ で始まるシステム変数は上位Envへ処理を移譲する
+	if name[0] != '$' { // $I/$V/$COUNT 以外はグローバル環境に登録
 		e.outer.Set(id, obj)
 		return obj
 	}
