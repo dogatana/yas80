@@ -244,15 +244,17 @@ EVAL_AGAIN:
 	case isNumber(op1) && isNumber(op2):
 		return e.evalNumberInfixExpression(node.Operator, op1, op2, ctx)
 
-	// 文字列演算
+	// 文字列演算 + は結合
 	case isString(op1) && isString(op2):
-		if node.Operator != '+' {
-			e.logger.Error(errcode.EBIN_OP_TYPE, ctx)
-			return object.ERROR
+		if node.Operator == '+' {
+			s1 := op1.(*object.StringObject).Value
+			s2 := op2.(*object.StringObject).Value
+			return &object.StringObject{Value: s1 + s2}
 		}
-		s1 := op1.(*object.StringObject).Value
-		s2 := op2.(*object.StringObject).Value
-		return &object.StringObject{Value: s1 + s2}
+		// + 以外は数値に変換して演算
+		op1 = e.evalOneCharStringAsNumber(op1.(*object.StringObject).Value, ctx)
+		op2 = e.evalOneCharStringAsNumber(op2.(*object.StringObject).Value, ctx)
+		goto EVAL_AGAIN
 
 	// 文字列 op 数値
 	case isString(op1) && isNumber(op2):
@@ -262,6 +264,21 @@ EVAL_AGAIN:
 	// 数値 op 文字列
 	case isNumber(op1) && isString(op2):
 		op2 = e.evalOneCharStringAsNumber(op2.(*object.StringObject).Value, ctx)
+		goto EVAL_AGAIN
+
+	// 配列演算 + は結合
+	case isArray(op1) && isArray(op2):
+		if node.Operator == '+' {
+			arr1 := op1.(*object.ArrayObject).Values
+			arr2 := op2.(*object.ArrayObject).Values
+			arr := make([]object.Object, len(arr1)+len(arr2))
+			copy(arr, arr1)
+			copy(arr[len(arr1):], arr2)
+			return &object.ArrayObject{Values: arr}
+		}
+		// + 以外は数値に変換して演算
+		op1 = e.evalArrayToInt(op1.(*object.ArrayObject).Values, ctx)
+		op2 = e.evalArrayToInt(op2.(*object.ArrayObject).Values, ctx)
 		goto EVAL_AGAIN
 
 	// 配列 op 数値

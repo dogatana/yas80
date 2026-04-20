@@ -26,6 +26,10 @@ func isString(obj object.Object) bool {
 	return obj.Type() == object.OBJ_STRING
 }
 
+func isArray(obj object.Object) bool {
+	return obj.Type() == object.OBJ_ARRAY
+}
+
 func isRefNotFound(obj object.Object) bool {
 	return obj.Type() == object.OBJ_REF_NOTFOUND
 }
