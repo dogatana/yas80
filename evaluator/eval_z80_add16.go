@@ -11,6 +11,11 @@ import (
 // 16 ビット演算命令
 // ADD A, ADC A, SBC A, は evalZ80_ADD8 に処理を移譲する
 func (e *Evaluator) evalZ80_ADD16(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
+	if op1 == nil || op2 == nil {
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
+		return object.ERROR
+	}
+
 	var code *object.CodeObject
 	switch stmt.Opcode {
 	case parser.Z80_INST_ADD:
@@ -21,15 +26,9 @@ func (e *Evaluator) evalZ80_ADD16(stmt *parser.Z80Instruction, op1, op2 object.O
 		code = &object.CodeObject{Code: []byte{0xed, 0x42}, TStates: [2]byte{15, 2}, Context: stmt.Context}
 	}
 
-	if op1 == nil {
-		e.logger.Error(errcode.EZ80_OP1, stmt.Context)
-		return object.ERROR
-	}
-
 	reg1 := 0
 	switch op1 := op1.(type) {
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return op1
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
@@ -40,13 +39,15 @@ func (e *Evaluator) evalZ80_ADD16(stmt *parser.Z80Instruction, op1, op2 object.O
 			// 第1オペランドが8ビットレジスタの場合は evalZ80_ADD8 を呼び出す
 			return e.evalZ80_ADD8(stmt, op1, op2, env)
 		}
-		if stmt.Opcode == parser.Z80_INST_ADD && op1.Register != parser.Z80_REG_HL &&
-			// ADD 第1オペランドは HL/IX/IY
-			op1.Register != parser.Z80_REG_IX && op1.Register != parser.Z80_REG_IY {
+		if stmt.Opcode == parser.Z80_INST_ADD &&
+			op1.Register != parser.Z80_REG_HL &&
+			op1.Register != parser.Z80_REG_IX &&
+			op1.Register != parser.Z80_REG_IY {
+			// ADD 第1オペランドは HL/IX/IYのいずれか
 			e.logger.Error(errcode.EZ80_OP1_REG_HL_IXY, stmt.Context)
 			return object.ERROR
 		} else if stmt.Opcode != parser.Z80_INST_ADD && op1.Register != parser.Z80_REG_HL {
-			// ADC, SBC 第1オペランドは HL
+			// ADC, SBC 第1オペランドは HLのみ
 			e.logger.Error(errcode.EZ80_OP1_REG_HL, stmt.Context)
 			return object.ERROR
 		}
@@ -59,7 +60,6 @@ func (e *Evaluator) evalZ80_ADD16(stmt *parser.Z80Instruction, op1, op2 object.O
 
 	switch op2 := op2.(type) {
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return op2
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)

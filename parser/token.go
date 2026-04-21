@@ -31,6 +31,14 @@ func (t Token) String() string {
 		TokenLiteral(tt), tt, tstName, t.SymbolID, t.SymbolID, ctx)
 }
 
+// parser からErrorで呼ばれる際、Token を文字列化するのに使用する
+func (t Token) Error() string {
+	if t.TokenSubType != 0 {
+		return TokenLiteral(int(t.TokenSubType))
+	}
+	return TokenLiteral(int(t.TokenType))
+}
+
 // 予約語テーブルを初期化
 func init() {
 	reservedWords = make(map[intern.SymbolID]Token, len(_reservedWords))

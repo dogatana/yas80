@@ -15,7 +15,7 @@ import (
 func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
 
 	if op1 == nil || op2 == nil {
-		e.logger.Error(errcode.EZ80_OP, stmt.Context)
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
 		return object.ERROR
 	}
 

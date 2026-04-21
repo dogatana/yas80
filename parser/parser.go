@@ -534,7 +534,7 @@ func yyErrorMessage(state, lookAhead int, token Token) string {
 		}
 	}
 
-	res := __yyfmt__.Sprintf("syntax error(state %d): unexpected '%s'", state, token.SymbolID.String())
+	res := __yyfmt__.Sprintf("syntax error(state %d): unexpected '%s'", state, token.Error())
 
 	// To match Bison, suggest at most four expected tokens.
 	expected := make([]int, 0, 4)

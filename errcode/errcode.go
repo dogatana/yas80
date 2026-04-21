@@ -77,6 +77,7 @@ const (
 	EINDIRECT_DISP_NULL  = "IX/IY のオフセットが未確定"
 
 	// Z80
+	EZ80_OP_LESS          = "オペランド不足"
 	EZ80_NOT_IMPL         = "評価未実装 %s"
 	EZ80_FLAG             = "フラグ未指定"
 	EZ80_OP               = "命令オペランドエラー"
@@ -87,7 +88,7 @@ const (
 	EZ80_OP1_SP           = "第1オペランドは SP 以外指定不可"
 	EZ80_OP1_REG_A        = "第1オペランドは A 以外指定不可（省略可能）"
 	EZ80_OP1_REG_HL       = "第1オペランドは HL 以外指定不可"
-	EZ80_OP1_REG_HL_IXY   = "第2オペランドは HL/IX/IY 以外指定不可"
+	EZ80_OP1_REG_HL_IXY   = "第1オペランドは HL/IX/IY 以外指定不可"
 	EZ80_OP2              = "第2オペランドエラー"
 	EZ80_OP2_NULL         = "第2オペランドが未確定"
 	EZ80_OP2_HL_IXY       = "第2オペランドは HL, IX, IY 以外指定不可"

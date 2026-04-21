@@ -38,7 +38,7 @@ patch_data: list[PatchData] = [
         'res := "syntax error: unexpected " + yyTokname(lookAhead)',
         # 'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected %s(%d, %q)", state, yyTokname(lookAhead), lookAhead, token.Literal)'
         # 'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected %s", state, token.String())'
-        'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected \'%s\'", state, token.SymbolID.String())'
+        'res := __yyfmt__.Sprintf("syntax error(state %d): unexpected \'%s\'", state, token.Error())'
     ),
     PatchData(
         'yylex.Error(yyErrorMessage(yystate, yytoken))',
