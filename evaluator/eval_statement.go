@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/object"
 	"github.com/dogatana/yas80/parser"
@@ -75,9 +76,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	// 	}
 	// 	return obj
 
-	// // 定数定義
-	// case *parser.ConstStatement:
-	// 	return e.evalConstStatement(stmt, env)
+	// 定数定義
+	case *parser.ConstStatement:
+		return e.evalConstStatement(stmt, env)
 
 	// // マクロ定義
 	// case *parser.MacroStatement:
@@ -499,121 +500,115 @@ func (e *Evaluator) evalAnonymouseLable(label *parser.Label, env TEnv) object.Ob
 	return lo
 }
 
-// // const / equ 文
-//
-//	func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env TEnv) object.Object {
-//		e.concatenateSymbol(&node.Name, env, node.Context)
-//		e.concatenateSymbol(&node.Value, env, node.Context)
-//
-//		id, ok := node.Name.(*parser.Ident)
-//		if !ok {
-//			// rule で回避されているため発生しない
-//			return object.ERROR
-//		}
-//		name := id.Name
-//
-//		switch {
-//		case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
-//			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), node.Context)
-//			return object.ERROR
-//		case name[0] == '@' && env.EnvType() != object.ENV_MACRO:
-//			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), node.Context)
-//			return object.ERROR
-//		}
-//
-//		// 定義済みならエラー
-//		obj, ok := env.Get(name)
-//		if ok {
-//			switch obj := obj.(type) {
-//			case *object.SymbolObject:
-//				if obj.SymType == object.SYM_UNKNOWN {
-//					// 不明シンボンルなら更新
-//				} else if obj.Name != id.Name || !obj.Context.Equal(node.Context) {
-//					// 別シンボルなら二重定義エラー
-//					e.logger.Error(fmt.Sprintf(errcode.ECONST_DUP, name), node.Context)
-//					return object.ERROR
-//				}
-//				// fmt.Printf("obj.Context %s\n", obj.Context.String())
-//				// fmt.Printf("node.Context %s\n", node.Context.String())
-//				// 同一シンボルなら更新
-//			case *object.RefNotFoundObject:
-//				// 未定で登録済なら更新
-//			case *object.NullObject:
-//				// NULL ならエラー
-//				e.logger.Error(fmt.Sprintf(errcode.ECONST_NULL, name), node.Context)
-//				return object.ERROR
-//
-//			default:
-//				e.logger.Error(fmt.Sprintf(errcode.ECONST_USED, name), node.Context)
-//				return object.ERROR
-//			}
-//		}
-//
-//		v := e.evalExpression(node.Value, env, node.Context)
-//
-//		switch v := v.(type) {
-//		case *object.ErrorObject:
-//			return object.ERROR
-//
-//		case *object.RefNotFoundObject:
-//			names := removeSelfName(v.Names, name)
-//			sym := object.NewConstSymbol(name, node.Value, object.NULL, names, node.Context)
-//			env.Set(name, sym)
-//			return object.NULL
-//
-//		case *object.NumberObject:
-//			// NumberObject の copy を値とする Symbol を作成し環境へ登録
-//			val := *v // copy
-//			sym := object.NewConstSymbol(name, node.Value, &val, []string{}, node.Context)
-//			env.Set(name, sym)
-//			text := fmt.Sprintf("%04x(%d)", v.Value, v.Value)
-//			return &object.TextObject{Text: text, Context: node.Context}
-//
-//		case *object.StringObject:
-//			// StringObject の copy を値とする Symbol を作成し環境へ登録
-//			val := *v // copy
-//			sym := object.NewConstSymbol(name, node.Value, &val, []string{}, node.Context)
-//			env.Set(name, sym)
-//			text := fmt.Sprintf("%q", v.Value)
-//			return &object.TextObject{Text: text, Context: node.Context}
-//
-//		case *object.RegisterObject:
-//			// 値を SymbolObject として環境へ登録
-//			sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
-//			env.Set(name, sym)
-//			text := parser.TokenLiteral(v.Register)
-//			return &object.TextObject{Text: text, Context: node.Context}
-//
-//		case *object.FlagObject:
-//			// 値を SymbolObject として環境へ登録
-//			sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
-//			env.Set(name, sym)
-//			text := parser.TokenLiteral(v.Flag)
-//			return &object.TextObject{Text: text, Context: node.Context}
-//
-//		case *object.FunctionObject, *object.ArrayObject:
-//			// 値を SymbolObject として環境へ登録
-//			sym := object.NewConstSymbol(name, node.Value, v, []string{}, node.Context)
-//			env.Set(name, sym)
-//			return &object.ValueObject{Value: v, Context: node.Context}
-//
-//		default:
-//			if e.Debug > 0 {
-//				fmt.Printf("const %s = %#v\n", name, v)
-//			}
-//			env.Set(name, v)
-//			return v
-//		}
-//	}
-//
-// // RefNotFoundObjectの依存リストから名前を削除
-//
-//	func removeSelfName(names []string, name string) []string {
-//		// slices パッケージ利用へ変更
-//		s := slices.Clone(names)
-//		return slices.DeleteFunc(s, func(v string) bool { return v == name })
-//	}
-//
+// const / equ 文
+
+func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env TEnv) object.Object {
+	e.concatenateSymbol(&node.Name, env, node.Context)
+	e.concatenateSymbol(&node.Value, env, node.Context)
+
+	ident, ok := node.Name.(*parser.Ident)
+	if !ok {
+		// rule で回避されているため発生しない
+		// panic(fmt.Sprintf("const name is not Ident %#v", node.Name))
+		e.logger.Error("const name is not Ident", node.Context)
+		return object.ERROR
+	}
+	id := ident.NameID
+	name := ident.Name
+
+	switch {
+	case (ident.IdentType == parser.LOCAL_IDENT || ident.IdentType == parser.ANON_IDENT) && object.OuterEnvType(env) != object.ENV_PROC:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), node.Context)
+		return object.ERROR
+	case ident.IdentType == parser.AT_IDENT && env.EnvType() != object.ENV_MACRO:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), node.Context)
+		return object.ERROR
+	}
+
+	// 定義済みならエラー
+	obj, ok := env.Get(id)
+	if ok {
+		switch obj := obj.(type) {
+		case *object.SymbolObject:
+			if obj.SymType == object.SYM_UNKNOWN {
+				// 不明シンボンルなら更新
+			} else if obj.NameID != id || !obj.Context.Equal(node.Context) {
+				// 別シンボルなら二重定義エラー
+				e.logger.Error(fmt.Sprintf(errcode.ECONST_DUP, name), node.Context)
+				return object.ERROR
+			}
+			// 同一シンボルなら更新
+		case *object.RefNotFoundObject:
+			// 未定で登録済なら更新
+		case *object.NullObject:
+			// NULL ならエラー
+			e.logger.Error(fmt.Sprintf(errcode.ECONST_NULL, name), node.Context)
+			return object.ERROR
+
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.ECONST_USED, name), node.Context)
+			return object.ERROR
+		}
+	}
+
+	v := e.evalExpression(node.Value, env, node.Context)
+
+	switch v := v.(type) {
+	case *object.ErrorObject:
+		return object.ERROR
+
+	case *object.RefNotFoundObject:
+		deps := removeSelfName(v.NameIDs, id)
+		sym := object.NewConstSymbol(id, name, node.Value, object.NULL, deps, node.Context)
+		env.Set(id, sym)
+		return object.NULL
+
+	case *object.NumberObject:
+		// NumberObject の copy を値とする Symbol を作成し環境へ登録
+		val := *v // copy
+		sym := object.NewConstSymbol(id, name, node.Value, &val, []intern.SymbolID{}, node.Context)
+		env.Set(id, sym)
+		return toTextObject(v, node.Context)
+
+	case *object.StringObject:
+		// StringObject の copy を値とする Symbol を作成し環境へ登録
+		val := *v // copy
+		sym := object.NewConstSymbol(id, name, node.Value, &val, []intern.SymbolID{}, node.Context)
+		env.Set(id, sym)
+		return toTextObject(v, node.Context)
+
+	case *object.RegisterObject:
+		// 値を SymbolObject として環境へ登録
+		sym := object.NewConstSymbol(id, name, node.Value, v, []intern.SymbolID{}, node.Context)
+		env.Set(id, sym)
+		return toTextObject(v, node.Context)
+
+	case *object.FlagObject:
+		// 値を SymbolObject として環境へ登録
+		sym := object.NewConstSymbol(id, name, node.Value, v, []intern.SymbolID{}, node.Context)
+		env.Set(id, sym)
+		return toTextObject(v, node.Context)
+
+	case *object.FunctionObject, *object.ArrayObject:
+		// 値を SymbolObject として環境へ登録
+		sym := object.NewConstSymbol(id, name, node.Value, v, []intern.SymbolID{}, node.Context)
+		env.Set(id, sym)
+		return &object.ValueObject{Value: v, Context: node.Context}
+
+	default:
+		if e.Debug > 0 {
+			fmt.Printf("const %s = %#v\n", name, v)
+		}
+		env.Set(id, v)
+		return v
+	}
+}
+
+// RefNotFoundObjectの依存リストから名前を削除
+func removeSelfName(ids []intern.SymbolID, id intern.SymbolID) []intern.SymbolID {
+	return util.Filter(ids, func(v intern.SymbolID) bool { return v != id })
+}
+
 // // var 文
 //
 //	func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TEnv) object.Object {

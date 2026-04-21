@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/intern"
 	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/object"
 	"github.com/dogatana/yas80/parser"
@@ -64,7 +65,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 			sym := object.NewUnknownSymbol(id, name, node.Context)
 			env.Set(id, sym)
 			e.Resolved = false
-			return &object.RefNotFoundObject{Names: []string{name}}
+			return &object.RefNotFoundObject{NameIDs: []intern.SymbolID{id}}
 		}
 
 		switch obj := obj.(type) {
@@ -77,7 +78,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 			}
 			// 値が NULL なら RefNotFound にして返す
 			if obj.Value == object.NULL {
-				return &object.RefNotFoundObject{Names: []string{obj.Name}}
+				return &object.RefNotFoundObject{NameIDs: []intern.SymbolID{obj.NameID}}
 			}
 			// 値が NULL でないなら Value を返す
 			return obj.Value
@@ -230,7 +231,7 @@ EVAL_AGAIN:
 	case isError(op1) || isError(op2):
 		return object.ERROR
 	case isRefNotFound(op1) || isRefNotFound(op2):
-		return &object.RefNotFoundObject{Names: mergeNames(op1, op2)}
+		return &object.RefNotFoundObject{NameIDs: mergeNameIDs(op1, op2)}
 
 	// 論理演算
 	case node.Operator == parser.OR || node.Operator == parser.AND:

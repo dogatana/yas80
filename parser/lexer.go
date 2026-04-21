@@ -149,17 +149,18 @@ func (l *Lexer) Lex(lval *yySymType) int {
 }
 
 // yyLexer インターフェースメソッド
-func (l *Lexer) Error(msg string, ctx *filecontent.Context) {
+func (l *Lexer) Error(msg string, c *filecontent.Context) {
+	ctx := *c
 	if strings.HasPrefix(msg, "[I]") {
-		l.logger.Info(msg[3:], ctx)
+		l.logger.Info(msg[3:], &ctx)
 	} else if strings.HasPrefix(msg, "[W]") {
-		l.logger.Warning(msg[3:], ctx)
+		l.logger.Warning(msg[3:], &ctx)
 	} else if strings.HasPrefix(msg, "[E]") {
-		l.logger.Error(msg[3:], ctx)
+		l.logger.Error(msg[3:], &ctx)
 	} else if msg[0] == '[' {
-		l.logger.Error(msg, ctx)
+		l.logger.Error(msg, &ctx)
 	} else {
-		l.logger.Error(msg, ctx)
+		l.logger.Error(msg, &ctx)
 	}
 }
 

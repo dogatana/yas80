@@ -38,24 +38,34 @@ func isNull(obj object.Object) bool {
 	return obj.Type() == object.OBJ_NULL
 }
 
-// 依存先の識別子を抽出する: 重複する名は後段のソートでユニークになる
-func mergeNames(obj1, obj2 object.Object) []string {
-	names := []string{}
+// 依存先の識別子を抽出する
+func mergeNameIDs(obj1, obj2 object.Object) []intern.SymbolID {
+	ids1 := extractNameIDs(obj1)
+	ids2 := extractNameIDs(obj2)
 
-	names = append(names, extractNames(obj1)...)
-	names = append(names, extractNames(obj2)...)
+	uids := make(map[intern.SymbolID]struct{}, len(ids1)+len(ids2))
+	for _, id := range ids1 {
+		uids[id] = struct{}{}
+	}
+	for _, id := range ids2 {
+		uids[id] = struct{}{}
+	}
 
-	return names
+	ids := make([]intern.SymbolID, 0, len(uids))
+	for id := range uids {
+		ids = append(ids, id)
+	}
+	return ids
 }
 
-func extractNames(obj object.Object) []string {
+func extractNameIDs(obj object.Object) []intern.SymbolID {
 	switch obj := obj.(type) {
 	case *object.RefNotFoundObject:
-		return obj.Names
+		return obj.NameIDs
 	case *object.SymbolObject:
-		return []string{obj.Name}
+		return []intern.SymbolID{obj.NameID}
 	default:
-		return []string{}
+		return []intern.SymbolID{}
 	}
 }
 
@@ -198,8 +208,8 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TCon
 		case *object.ErrorObject:
 			return false
 		case *object.RefNotFoundObject:
-			names := strings.Join(op2.Names, ", ")
-			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, names), ctx)
+			names := util.Map(op2.NameIDs, func(id intern.SymbolID) string { return id.String() })
+			e.logger.Error(fmt.Sprintf(errcode.ESYM_UNDEF, strings.Join(names, ", ")), ctx)
 			return false
 		case *object.NumberObject:
 			suffix = fmt.Sprintf("%d", op2.Value)

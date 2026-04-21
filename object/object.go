@@ -290,7 +290,7 @@ func (o *ErrorObject) String() string {
 
 // 右辺値で識別子が見つからない場合に使用
 type RefNotFoundObject struct {
-	Names []string
+	NameIDs []intern.SymbolID
 }
 
 func (o *RefNotFoundObject) Type() ObjectType { return OBJ_REF_NOTFOUND }
@@ -298,7 +298,8 @@ func (o *RefNotFoundObject) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("REF_NOTFOUND(")
-	out.WriteString(strings.Join(o.Names, ", "))
+	names := util.Map(o.NameIDs, func(id intern.SymbolID) string { return id.String() })
+	out.WriteString(strings.Join(names, ", "))
 	out.WriteRune(')')
 	return out.String()
 }

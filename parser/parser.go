@@ -478,7 +478,7 @@ var (
 
 type yyLexer interface {
 	Lex(lval *yySymType) int
-	Error(s string, ctx *filecontent.Context)                                          // # changed
+	Error(s string, ctx *filecontent.Context) // # changed
 	Push(filename string, fc *filecontent.FileContent, ctx *filecontent.Context) error // # added
 }
 
@@ -638,15 +638,15 @@ func (yyrcvr *yyParserImpl) Parse(yylex yyLexer) int {
 	goto yystack
 
 ret0:
-	if yyDebug >= 2 {
-		__yyfmt__.Println("# $end accept")
-	}
+if yyDebug >= 2 {
+	__yyfmt__.Println("# $end accept")
+}
 	return 0
 
 ret1:
-	if yyDebug >= 2 {
-		__yyfmt__.Println("# abort")
-	}
+if yyDebug >= 2 {
+	__yyfmt__.Println("# abort")
+}
 	return 1
 
 yystack:
@@ -677,7 +677,7 @@ yynewstate:
 		goto yydefault
 	}
 	yyn = int(yyAct[yyn])
-	yySave = yystate                // # added
+	yySave = yystate // # added
 	if int(yyChk[yyn]) == yytoken { /* valid shift */
 		yyrcvr.char = -1
 		yytoken = -1
@@ -791,7 +791,7 @@ yydefault:
 	if yyDebug >= 2 {
 		__yyfmt__.Printf("# top %d\n", yyS[yyp].yys) // # added
 	}
-	yySave = yyS[yyp].yys // # added
+	yySave = yyS[yyp].yys  // # added
 	/* consult goto table to find next state */
 	yyn = int(yyR1[yyn])
 	yyg := int(yyPgo[yyn])
