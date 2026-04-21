@@ -100,7 +100,8 @@ const (
 	EZ80_JP_INDIRECT_REG  = "(HL), (IX), (IY) のみ指定可能"
 	EZ80_BIT_NUM_RANGE    = "BIT番号(0-7)が範囲外"
 	EZ80_PORT_RANGE       = "ポート番号(0-255)が範囲外 %d(0x%x)"
-	EZ80_IM_RANGE         = "0/1/2 のみ有効 %d(0x%x)"
+	EZ80_IM_RANGE         = "IM 0/1/2 のみ有効"
+	EZ80_EX_REG           = "EX %s,%s は指定不可"
 
 	ER800 = "R800 専用命令のため利用不可"
 

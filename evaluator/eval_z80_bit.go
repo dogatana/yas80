@@ -10,6 +10,11 @@ import (
 
 // BIT, SET RES
 func (e *Evaluator) evalZ80_BIT(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
+	if op1 == nil || op2 == nil {
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
+		return object.ERROR
+	}
+
 	code := &object.CodeObject{Code: []byte{0xcb, 0x00}, TStates: [2]byte{8, 2}, Context: stmt.Context}
 	switch stmt.Opcode {
 	case parser.Z80_INST_BIT:
@@ -24,7 +29,6 @@ func (e *Evaluator) evalZ80_BIT(stmt *parser.Z80Instruction, op1, op2 object.Obj
 	bn := byte(0)
 	switch op1 := op1.(type) {
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return op1
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
@@ -45,7 +49,6 @@ func (e *Evaluator) evalZ80_BIT(stmt *parser.Z80Instruction, op1, op2 object.Obj
 	// レジスタ or (HL),(IX+d),(IY+d)
 	switch op2 := op2.(type) {
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return op2
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
