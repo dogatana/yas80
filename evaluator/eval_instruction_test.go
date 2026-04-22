@@ -167,6 +167,7 @@ func TestInstructionError_LD16(t *testing.T) {
 		{input: `ld`, err: errcode.ESYNTAX},
 		// {input: `ld hl, 'a'`, err: errcode.EZ80_OP2}, // 有効オペランド
 		{input: `ld hl, cy`, err: errcode.EZ80_OP2},
+		{input: `fn func\endf\ld fn(),hl`, err: errcode.EZ80_OP1_NULL},
 		{input: `fn func\endf\ld hl, fn()`, err: errcode.EZ80_OP2_NULL},
 		{input: `ld hl, sp`, err: errcode.EZ80_OP_REG},
 		{input: `ld ix, sp`, err: errcode.EZ80_OP_REG},
@@ -208,6 +209,7 @@ func TestInstructionError_LD8(t *testing.T) {
 		{input: `ld`, err: errcode.ESYNTAX},
 		// {input: `ld a, 'a'`, err: errcode.EZ80_OP2}, // 有効オペランド
 		{input: `ld a, cy`, err: errcode.EZ80_OP2},
+		{input: `fn func\endf\ld fn(),a`, err: errcode.EZ80_OP1_NULL},
 		{input: `fn func\endf\ld a, fn()`, err: errcode.EZ80_OP2_NULL},
 		{input: `ld i, i`, err: errcode.EZ80_OP_REG},
 		{input: `ld r, r`, err: errcode.EZ80_OP_REG},
@@ -250,6 +252,7 @@ func TestInstructionError_LDRegIndirect(t *testing.T) {
 		// 0-
 		{input: `ld (hl)`, err: errcode.EZ80_OP_LESS},
 		{input: `fn func\endf\ld (hl), fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `fn func\endf\ld (fn()), fn()`, err: errcode.EINDIRECT_NULL},
 		{input: `ld (hl), i`, err: errcode.EZ80_OP_REG},
 		{input: `ld (hl), r`, err: errcode.EZ80_OP_REG},
 		{input: `ld (sp), a`, err: errcode.EZ80_OP_REG},
@@ -287,6 +290,7 @@ func TestInstructionError_LDAddrIndirect(t *testing.T) {
 		// 0-
 		{input: `ld (0)`, err: errcode.EZ80_OP_LESS},
 		{input: `fn func\endf\ld (0), fn()`, err: errcode.EZ80_OP2_NULL},
+		{input: `fn func\endf\ld (fn()), a`, err: errcode.EINDIRECT_NULL},
 		{input: `ld (0), i`, err: errcode.EZ80_OP_REG},
 		{input: `ld (0), r`, err: errcode.EZ80_OP_REG},
 		{input: `ld (0), 1`, err: errcode.EZ80_OP2},

@@ -81,20 +81,11 @@ func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) ob
 		if isError(op1) || isRefNotFound(op1) {
 			return op1
 		}
-		if _, ok := op1.(*object.NullObject); ok {
-			e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
-			return object.ERROR
-		}
 	}
 	if stmt.Op2 != nil {
 		op2 = e.evalExpression(stmt.Op2, env, stmt.Context)
 		if isError(op2) || isRefNotFound(op2) {
 			return op2
-
-		}
-		if _, ok := op2.(*object.NullObject); ok {
-			e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
-			return object.ERROR
 		}
 	}
 	if fn, ok := evalZ80InstructionFuncs[stmt.Opcode]; ok {

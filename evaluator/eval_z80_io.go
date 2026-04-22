@@ -29,6 +29,12 @@ func (e *Evaluator) evalZ80_IN(stmt *parser.Z80Instruction, op1, op2 object.Obje
 	}
 
 	switch port := op2.(type) {
+	case *object.RefNotFoundObject:
+		return op2
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
+		return object.ERROR
+
 	case *object.RegIndirectObject: // IN r, (C)
 		if port.Register != parser.Z80_REG_C {
 			e.logger.Error(fmt.Sprintf(errcode.EINDIRECT_REG, parser.TokenLiteral(port.Register)), stmt.Context)

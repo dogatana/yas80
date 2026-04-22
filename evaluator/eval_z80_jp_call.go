@@ -24,6 +24,9 @@ func (e *Evaluator) evalZ80_RET(stmt *parser.Z80Instruction, op1, _ object.Objec
 		index = op1.Register
 	case *object.RefNotFoundObject:
 		return op1
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
+		return object.ERROR
 	default:
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
 		return object.ERROR
@@ -47,6 +50,13 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 		value = op2.Value
 	case *object.RefNotFoundObject:
 		return op2
+	case *object.NullObject:
+		if op1 == nil {
+			e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
+		} else {
+			e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
+		}
+		return object.ERROR
 	default:
 		if op1 == nil {
 			e.logger.Error(errcode.EZ80_OP, stmt.Context)
@@ -78,6 +88,9 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 		flag = op1.Register
 	case *object.RefNotFoundObject:
 		return op1
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
+		return object.ERROR
 	default:
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
 		return object.ERROR
@@ -111,6 +124,9 @@ func (e *Evaluator) evalZ80_RST(stmt *parser.Z80Instruction, op1, op2 object.Obj
 		}
 	case *object.RefNotFoundObject:
 		return op1
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
+		return object.ERROR
 	default:
 		e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		return object.ERROR
@@ -131,6 +147,14 @@ func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		value = op2.Value
 	case *object.RefNotFoundObject:
 		return op2
+	case *object.NullObject:
+		if op1 == nil {
+			e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
+		} else {
+			e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
+
+		}
+		return object.ERROR
 	case *object.RegIndirectObject:
 		// レジスタ間接
 		if op2.Displacement != 0 {
@@ -202,6 +226,13 @@ func (e *Evaluator) evalZ80_JR(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		addr = op2.Value
 	case *object.RefNotFoundObject:
 		return op2
+	case *object.NullObject:
+		if op1 == nil {
+			e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
+		} else {
+			e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
+		}
+		return object.ERROR
 	default:
 		if op1 == nil {
 			e.logger.Error(errcode.EZ80_OP, stmt.Context)
@@ -236,6 +267,9 @@ func (e *Evaluator) evalZ80_JR(stmt *parser.Z80Instruction, op1, op2 object.Obje
 		flag = op1.Register
 	case *object.RefNotFoundObject:
 		return op1
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
+		return object.ERROR
 	default:
 		e.logger.Error(errcode.EZ80_FLAG, stmt.Context)
 		return object.ERROR
@@ -265,6 +299,9 @@ func (e *Evaluator) evalZ80_DJNZ(stmt *parser.Z80Instruction, op1, _ object.Obje
 		addr = op.Value
 	case *object.RefNotFoundObject:
 		return op
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
+		return object.ERROR
 	default:
 		e.logger.Error(errcode.EZ80_OP, stmt.Context)
 		return object.ERROR

@@ -21,6 +21,9 @@ func (e *Evaluator) evalZ80LD(stmt *parser.Z80Instruction, op1, op2 object.Objec
 
 	// op1 の型によって処理を分類
 	switch op1 := op1.(type) {
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
+		return object.ERROR
 	case *object.RegisterObject:
 		if op1.RegisterType == parser.Z80_REG8 {
 			// LD r, expr
@@ -361,9 +364,15 @@ EVAL_AGAIN:
 
 // アドレス間接（メモリ）
 func (e *Evaluator) evalZ80LD_AddrIndirect(stmt *parser.Z80Instruction, op1 *object.AddrIndirectObject, op2 object.Object, _ TEnv) object.Object {
+	var r2 *object.RegisterObject
 
-	r2, ok := op2.(*object.RegisterObject)
-	if !ok {
+	switch op2 := op2.(type) {
+	case *object.NullObject:
+		e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
+		return object.ERROR
+	case *object.RegisterObject:
+		r2 = op2
+	default:
 		e.logger.Error(errcode.EZ80_OP2, stmt.Context)
 		return object.ERROR
 	}
