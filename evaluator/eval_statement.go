@@ -162,13 +162,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	// 	}
 	// 	return obj
 
-	// // end
-	// case *parser.EndStatement:
-	// 	obj := e.evalEndStatement(stmt, env)
-	// 	if isError(obj) {
-	// 		return object.ERROR
-	// 	}
-	// 	return obj
+	// end
+	case *parser.EndStatement:
+		return e.evalEndStatement(stmt, env)
 
 	// Null
 	case *parser.NullStatement:
@@ -375,31 +371,36 @@ func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object
 	return &object.OrgObject{Addr: addr, AllocType: stmt.AllocType}
 }
 
-//
-// // END
-//
-//	func (e *Evaluator) evalEndStatement(stmt *parser.EndStatement, env TEnv) object.Object {
-//		if stmt.Start == nil {
-//			return &object.EntryObject{StartAddr: -1}
-//		}
-//
-//		e.concatenateSymbol(&stmt.Start, env, stmt.Context)
-//		obj := e.evalExpression(stmt.Start, env, stmt.Context)
-//		switch obj := obj.(type) {
-//		case *object.ErrorObject:
-//			return obj
-//		case *object.RefNotFoundObject, *object.NullObject:
-//			e.logger.Error(errcode.EEND_NULL, stmt.Context)
-//			return object.ERROR
-//
-//		case *object.NumberObject:
-//			return &object.EntryObject{StartAddr: obj.Value}
-//
-//		default:
-//			e.logger.Error(errcode.EEND_VALUE, stmt.Context)
-//			return object.ERROR
-//		}
-//	}
+// END
+func (e *Evaluator) evalEndStatement(stmt *parser.EndStatement, env TEnv) object.Object {
+	if stmt.Start == nil {
+		return &object.EntryObject{StartAddr: -1}
+	}
+
+	e.concatenateSymbol(&stmt.Start, env, stmt.Context)
+	obj := e.evalExpression(stmt.Start, env, stmt.Context)
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		return obj
+	case *object.NullObject:
+		e.logger.Error(errcode.EEND_NULL, stmt.Context)
+		return object.ERROR
+
+	case *object.NumberObject:
+		v := obj.Value
+		addr, ok := e.intToWord(v)
+		if !ok {
+			e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, v, v), stmt.Context)
+		}
+		return &object.EntryObject{StartAddr: addr}
+
+	default:
+		e.logger.Error(errcode.EEND_VALUE, stmt.Context)
+		return object.ERROR
+	}
+}
 
 // ラベル定義文
 func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env TEnv) object.Object {

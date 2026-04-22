@@ -221,7 +221,7 @@ func (o *OrgObject) String() string {
 
 // entry
 type EntryObject struct {
-	StartAddr int
+	StartAddr int // エントリポイントのアドレス -1ならエントリポイントなし
 }
 
 func (o *EntryObject) Type() ObjectType { return OBJ_ENTRY }
