@@ -1,6 +1,8 @@
 package evaluator
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/dogatana/yas80/errcode"
@@ -913,5 +915,71 @@ func TestInstruction_MUL_on_Z80(t *testing.T) {
 
 		// code
 		testCodeResult(t, tn, tt.code, prog)
+	}
+}
+
+func TestInst0ExtraOperand(t *testing.T) {
+	inst0 := "CCF CPD CPDR CPI CPIR CPL DAA DI EI EXX HALT IND INDR INI INIR LDD LDDR LDI LDIR NEG NOP OTDR OTIR OUTD OUTI RETI RETN RLA RLCA RLD RRA RRCA RRD SCF"
+	tests := strings.Split(inst0, " ")
+
+	for tn, tt := range tests {
+		input := fmt.Sprintf("%s 1", tt)
+
+		env := object.NewEnvironment(nil)
+		env.Set(intern.Intern("$R800"), &object.NumberObject{Value: 1}) // -R800 有効化
+
+		logger := logging.New()
+		evalInput(input, logger, env)
+
+		if logger.ErrorCount() == 0 {
+			t.Errorf("[%d] expected error but got none. input: %s", tn, input)
+			continue
+		}
+		if !strings.Contains(logger.GetErrors()[0].String(), "syntax error") {
+			t.Errorf("[%d] expected syntax error but got: %s", tn, logger.GetErrors()[0].String())
+		}
+	}
+}
+
+func TestInst1NotEnoughOperand(t *testing.T) {
+	inst1 := "DEC DJNZ IM INC POP PUSH RL RLC RR RRC RST SLA SRA SRL" //  RET は省略可能
+	tests := strings.Split(inst1, " ")
+
+	for tn, input := range tests {
+
+		env := object.NewEnvironment(nil)
+		env.Set(intern.Intern("$R800"), &object.NumberObject{Value: 1}) // -R800 有効化
+
+		logger := logging.New()
+		evalInput(input, logger, env)
+
+		if logger.ErrorCount() == 0 {
+			t.Errorf("[%d] expected error but got none. input: %s", tn, input)
+			continue
+		}
+		testutil.TestLogMessage(t, tn, errcode.EZ80_OP_LESS, logger)
+	}
+}
+
+func TestInst2NotEnoughOperand(t *testing.T) {
+	inst2 := "ADC ADD AND BIT CALL CP EX IN JP JR LD MUL OR OUT RES SBC SET SUB XOR"
+	tests := strings.Split(inst2, " ")
+
+	for tn, input := range tests {
+
+		env := object.NewEnvironment(nil)
+		env.Set(intern.Intern("$R800"), &object.NumberObject{Value: 1}) // -R800 有効化
+
+		logger := logging.New()
+		evalInput(input, logger, env)
+
+		if logger.ErrorCount() == 0 {
+			t.Errorf("[%d] expected error but got none. input: %s", tn, input)
+			continue
+		}
+		if !strings.Contains(logger.GetErrors()[0].String(), "syntax error") {
+			t.Errorf("[%d] expected syntax error but got: %s", tn, logger.GetErrors()[0].String())
+		}
+		// testutil.TestLogMessage(t, tn, errcode.EZ80_OP_LESS, logger)
 	}
 }
