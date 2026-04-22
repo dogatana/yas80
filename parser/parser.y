@@ -349,9 +349,9 @@ directive	: CONST ident_expr '=' expr
 			| ORG expr ',' ident	
 			{ 
 				switch $4.(*Ident).NameID {
-				case intern.Intern("ABS"):
+				case intern.InternString("ABS"):
 					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_ABS, Context: newCtxFromTokenCtx($1.Context) }
-				case intern.Intern("REL"):
+				case intern.InternString("REL"):
 					$$ = &OrgStatement{Address: $2, AllocType: ALLOC_REL, Context: newCtxFromTokenCtx($1.Context) }
 				default:
 					$$ = &ParseError{Message: errcode.EORG_ALLOC, Context: newCtxFromTokenCtx($1.Context)}
@@ -666,7 +666,7 @@ expr		: NUMBER
 			{
 				name := $1.SymbolID.String()
 				names := strings.Split(name, ".")
-				$$ = &DotIdent{Name: name, NameID: $1.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: newCtxFromTokenCtx($1.Context)}
+				$$ = &DotIdent{Name: name, NameID: $1.SymbolID, Left: intern.InternString(names[0]), Right: intern.InternString("." + names[1]), Context: newCtxFromTokenCtx($1.Context)}
 			}
 			| IDENT '(' expr_list ')' 	
 			{ 

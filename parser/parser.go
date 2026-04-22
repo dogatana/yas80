@@ -1178,9 +1178,9 @@ yydefault:
 //line parser/parser.y:350
 		{
 			switch yyDollar[4].expr.(*Ident).NameID {
-			case intern.Intern("ABS"):
+			case intern.InternString("ABS"):
 				yyVAL.statement = &OrgStatement{Address: yyDollar[2].expr, AllocType: ALLOC_ABS, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
-			case intern.Intern("REL"):
+			case intern.InternString("REL"):
 				yyVAL.statement = &OrgStatement{Address: yyDollar[2].expr, AllocType: ALLOC_REL, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
 			default:
 				yyVAL.statement = &ParseError{Message: errcode.EORG_ALLOC, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
@@ -1617,7 +1617,7 @@ yydefault:
 		{
 			name := yyDollar[1].token.SymbolID.String()
 			names := strings.Split(name, ".")
-			yyVAL.expr = &DotIdent{Name: name, NameID: yyDollar[1].token.SymbolID, Left: intern.Intern(names[0]), Right: intern.Intern("." + names[1]), Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
+			yyVAL.expr = &DotIdent{Name: name, NameID: yyDollar[1].token.SymbolID, Left: intern.InternString(names[0]), Right: intern.InternString("." + names[1]), Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
 		}
 	case 84:
 		yyDollar = yyS[yypt-4 : yypt+1]

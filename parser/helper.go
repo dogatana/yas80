@@ -328,7 +328,7 @@ func PrintNode(stmt Statement, indent int) {
 
 // 文字列が予約語かどうかを返す
 func IsReservedWord(s string) bool {
-	id := intern.Intern(strings.ToUpper(s))
+	id := intern.InternString(strings.ToUpper(s))
 	if _, ok := z80ReservedWords[id]; ok {
 		return true
 	}

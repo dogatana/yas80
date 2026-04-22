@@ -78,7 +78,7 @@ func TestLexAnonSymbols(t *testing.T) {
 		if tok.TokenType != ANON_IDENT {
 			t.Errorf("[%d] expected Token.TokenType %s. got %s", tn, TokenLiteral(ANON_IDENT), tok.String())
 		}
-		if tok.SymbolID != intern.Intern(s) {
+		if tok.SymbolID != intern.InternString(s) {
 			t.Errorf("[%d] expected Token.SymbolID %q. got %q", tn, s, tok.SymbolID)
 		}
 	}
@@ -324,7 +324,7 @@ func TestLexIdent(t *testing.T) {
 		if tok.TokenType != tt.expectedType {
 			t.Errorf("[%d] expected Type %s. got %s", tn, TokenLiteral(int(tt.expectedType)), tok)
 		}
-		if tok.SymbolID != intern.Intern(tt.expectedLiteral) {
+		if tok.SymbolID != intern.InternString(tt.expectedLiteral) {
 			t.Errorf("[%d] expected SymbolID %q. got %s", tn, tt.expectedLiteral, tok.SymbolID)
 		}
 		testInputEnd(t, tn, l)

@@ -295,15 +295,15 @@ func (as *Assembler) evalStage2(eval *evaluator.Evaluator, pass int, logger *log
 func (as *Assembler) initEnvironment(env object.Environment) {
 	// オプションに従いシステム変数更新
 	// 初期設定は object.setupSystemVariables で実行
-	env.Set(intern.Intern("$FILL"), &object.NumberObject{Value: as.Fill})
+	env.Set(intern.InternString("$FILL"), &object.NumberObject{Value: as.Fill})
 
 	if as.R800 {
-		env.Set(intern.Intern("$R800"), &object.NumberObject{Value: 1})
+		env.Set(intern.InternString("$R800"), &object.NumberObject{Value: 1})
 	}
 
 	// -D オプションで定義した定数を NumberObject として環境に登録
 	for name, value := range as.Constants {
-		env.Set(intern.Intern(name), &object.NumberObject{Value: value})
+		env.Set(intern.InternString(name), &object.NumberObject{Value: value})
 	}
 }
 

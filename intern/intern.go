@@ -16,8 +16,11 @@ func init() {
 	idToStr = make([]string, 0, symbolCap)
 }
 
-// Intern: string → SymbolID
-func Intern(s string) SymbolID {
+func Size() int { return len(idToStr) }
+
+// Token NUMBER, STRING のLiteral の intern
+// 大文字化なし
+func InternString(s string) SymbolID {
 	if id, ok := strToID[s]; ok {
 		return id
 	}
@@ -50,21 +53,12 @@ func InternBytes(b []byte) SymbolID {
 	// s := *(*string)(unsafe.Pointer(&upperBuf)
 	// string でコピーを作成する
 	s := string(upperBuf)
-	return Intern(s)
+	return InternString(s)
 }
 
 // Reverse lookup: SymbolID → string
 func Lookup(id SymbolID) string {
 	return idToStr[id]
-}
-
-// Token NUMBER, STRING のLiteral の intern
-// 登録済みチェック、大文字化なし
-func InternString(s string) SymbolID {
-	id := SymbolID(len(idToStr))
-	strToID[s] = id
-	idToStr = append(idToStr, s)
-	return id
 }
 
 var ID_LOC SymbolID      // $
@@ -74,9 +68,9 @@ var ID_STAGE2 SymbolID   // $STAGE2
 var ID_STR_ZERO SymbolID // "0"
 
 func init() {
-	ID_LOC = Intern("$")
-	ID_ALOC = Intern("$$")
-	ID_PASS = Intern("$PASS")
-	ID_STAGE2 = Intern("$STAGE2")
+	ID_LOC = InternString("$")
+	ID_ALOC = InternString("$$")
+	ID_PASS = InternString("$PASS")
+	ID_STAGE2 = InternString("$STAGE2")
 	ID_STR_ZERO = InternString("0")
 }

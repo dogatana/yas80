@@ -220,7 +220,7 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TCon
 			return false
 		}
 		ident.Name += suffix
-		ident.NameID = intern.Intern(ident.Name)
+		ident.NameID = intern.InternString(ident.Name)
 		*ptr = ident
 		return true
 	case *parser.PrefixExpression:
@@ -234,7 +234,7 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TCon
 func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObject, bool) {
 	names := strings.Split(name, ".")
 	if len(names) == 1 {
-		if obj, ok := env.Get(intern.Intern(name)); ok {
+		if obj, ok := env.Get(intern.InternString(name)); ok {
 			switch obj := obj.(type) {
 			case *object.SymbolObject:
 				return obj, true
@@ -244,13 +244,13 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 			return nil, false
 		}
 	}
-	obj, ok := env.Get(intern.Intern(names[0]))
+	obj, ok := env.Get(intern.InternString(names[0]))
 	if !ok {
 		return nil, false
 	}
 	switch obj := obj.(type) {
 	case *object.ProcObject:
-		v, ok := obj.Get(intern.Intern("." + names[1]))
+		v, ok := obj.Get(intern.InternString("." + names[1]))
 		if !ok {
 			return nil, false
 		}
@@ -260,7 +260,7 @@ func (e *Evaluator) getSymbolFromEnv(name string, env TEnv) (*object.SymbolObjec
 		return nil, false
 
 	case *object.EnumObject:
-		v, ok := obj.Get(intern.Intern("." + names[1]))
+		v, ok := obj.Get(intern.InternString("." + names[1]))
 		if !ok {
 			return nil, false
 		}
@@ -282,7 +282,7 @@ func (e *Evaluator) findAnonLabel(name string, env TEnv, ctx TContext) object.Ob
 	} else {
 		def = name[:2] // @nF, @nB -> @n を検索
 	}
-	id := intern.Intern(def)
+	id := intern.InternString(def)
 	obj, ok := env.Get(id)
 	if !ok {
 		if name[len(name)-1] == 'B' { // B の場合は定義済みのはず

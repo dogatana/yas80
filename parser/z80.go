@@ -129,10 +129,9 @@ func init() {
 	z80ReservedWords = make(map[intern.SymbolID]Token, len(_z80ReservedWords))
 
 	for s, tt := range _z80ReservedWords {
-		id := intern.Intern(s)
+		id := intern.InternString(s)
 		z80ReservedWords[id] = Token{TokenType: tt.Type, TokenSubType: tt.SubType, SymbolID: id}
 	}
-
 }
 
 var z80ReservedWords map[intern.SymbolID]Token

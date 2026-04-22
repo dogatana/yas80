@@ -43,10 +43,14 @@ func (t Token) Error() string {
 func init() {
 	reservedWords = make(map[intern.SymbolID]Token, len(_reservedWords))
 	for s, tt := range _reservedWords {
-		id := intern.Intern(s)
+		id := intern.InternString(s)
 		reservedWords[id] = Token{TokenType: tt.Type, TokenSubType: tt.SubType, SymbolID: id}
 	}
 	_reservedWords = nil
+}
+
+func TableSize() (int, int) {
+	return len(reservedWords), len(z80ReservedWords)
 }
 
 // 予約語テーブル

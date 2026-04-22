@@ -34,27 +34,27 @@ func NewEnvironment(outer Environment) Environment {
 
 func setupSystemVariables(env Environment) {
 	name := "_"
-	id := intern.Intern(name)
+	id := intern.InternString(name)
 	env.Set(id, &SymbolObject{Name: name, NameID: id, SymType: SYM_VAR, Value: NULL})
 
 	env.Set(intern.ID_LOC, &NumberObject{Value: 0})  // $
 	env.Set(intern.ID_ALOC, &NumberObject{Value: 0}) // $$
 	env.Set(intern.ID_PASS, &NumberObject{Value: 0}) // $PASS
 
-	env.Set(intern.Intern("$FILL"), &NumberObject{Value: 0})
-	env.Set(intern.Intern("$R800"), &NumberObject{Value: 0})
-	env.Set(intern.Intern("$STAGE2"), &NumberObject{Value: 0})
+	env.Set(intern.InternString("$FILL"), &NumberObject{Value: 0})
+	env.Set(intern.InternString("$R800"), &NumberObject{Value: 0})
+	env.Set(intern.InternString("$STAGE2"), &NumberObject{Value: 0})
 
 	// 以下固定値
 	v0 := &NumberObject{Value: 0}
 	v1 := &NumberObject{Value: 1}
-	env.Set(intern.Intern("$OFF"), v0)
-	env.Set(intern.Intern("$ON"), v1)
-	env.Set(intern.Intern("$FALSE"), v0)
-	env.Set(intern.Intern("$TRUE"), v1)
+	env.Set(intern.InternString("$OFF"), v0)
+	env.Set(intern.InternString("$ON"), v1)
+	env.Set(intern.InternString("$FALSE"), v0)
+	env.Set(intern.InternString("$TRUE"), v1)
 
-	env.Set(intern.Intern("$CMAP_ERR"), &NumberObject{Value: -1})
-	env.Set(intern.Intern("$CMAP_THRU"), &NumberObject{Value: -2})
+	env.Set(intern.InternString("$CMAP_ERR"), &NumberObject{Value: -1})
+	env.Set(intern.InternString("$CMAP_THRU"), &NumberObject{Value: -2})
 
 }
 

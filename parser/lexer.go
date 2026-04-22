@@ -413,7 +413,7 @@ LINE_CONT:
 		// LOCAL_IDENT
 		if !l.isWordChar(l.peekChar()) {
 			// "." のケース
-			tok = Token{TokenType: LOCAL_IDENT, SymbolID: intern.Intern("."), Context: l.lctx.toContext(l.start)}
+			tok = Token{TokenType: LOCAL_IDENT, SymbolID: intern.InternString("."), Context: l.lctx.toContext(l.start)}
 			l.nextChar()
 			return tok
 		}
@@ -429,7 +429,7 @@ LINE_CONT:
 		case ch == '@': // @@
 			l.nextChar()
 			l.nextChar()
-			id := intern.Intern("@@")
+			id := intern.InternString("@@")
 			return Token{TokenType: ANON_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
 
 		case ch == 'f' || ch == 'F' || ch == 'b' || ch == 'B': // @F, @B
