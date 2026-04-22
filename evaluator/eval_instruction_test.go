@@ -248,12 +248,12 @@ func TestInstructionError_LDRegIndirect(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `ld (hl)`, err: errcode.EZ80_OP},
+		{input: `ld (hl)`, err: errcode.EZ80_OP_LESS},
 		{input: `fn func\endf\ld (hl), fn()`, err: errcode.EZ80_OP2_NULL},
 		{input: `ld (hl), i`, err: errcode.EZ80_OP_REG},
 		{input: `ld (hl), r`, err: errcode.EZ80_OP_REG},
 		{input: `ld (sp), a`, err: errcode.EZ80_OP_REG},
-		{input: `ld (sp), 1`, err: errcode.EZ80_OP},
+		{input: `ld (sp), 1`, err: errcode.EZ80_OP_REG},
 		// {input: `ld (hl), 'a'`, err: errcode.EZ80_OP2},
 		{input: `ld (hl), cy`, err: errcode.EZ80_OP2},
 	}
@@ -285,7 +285,7 @@ func TestInstructionError_LDAddrIndirect(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `ld (0)`, err: errcode.EZ80_OP},
+		{input: `ld (0)`, err: errcode.EZ80_OP_LESS},
 		{input: `fn func\endf\ld (0), fn()`, err: errcode.EZ80_OP2_NULL},
 		{input: `ld (0), i`, err: errcode.EZ80_OP_REG},
 		{input: `ld (0), r`, err: errcode.EZ80_OP_REG},
@@ -448,7 +448,7 @@ func TestInstructionError_CALL_RET_RST(t *testing.T) {
 		{input: `ret VAL`, err: errcode.ESYM_UNDEF},
 		{input: `ret hl`, err: errcode.EZ80_FLAG},
 		{input: `ret 123`, err: errcode.EZ80_FLAG},
-		{input: `rst`, err: errcode.EZ80_OP},
+		{input: `rst`, err: errcode.EZ80_OP_LESS},
 		{input: `rst 1`, err: errcode.EZ80_RST},
 		{input: `rst 40h`, err: errcode.EZ80_RST},
 		{input: `rst hl`, err: errcode.EZ80_OP},
@@ -606,7 +606,7 @@ func TestInstructionError_IM(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `im`, err: errcode.EZ80_OP},
+		{input: `im`, err: errcode.EZ80_OP_LESS},
 		{input: `im hl`, err: errcode.EZ80_OP},
 		{input: `im 'a'`, err: errcode.EZ80_OP},
 		{input: `im -1`, err: errcode.EZ80_IM_RANGE},
@@ -642,11 +642,11 @@ func TestInstructionError_EX(t *testing.T) {
 	}{
 		// 0-
 		{input: `ex`, err: errcode.ESYNTAX},
-		{input: `ex hl`, err: errcode.EZ80_OP},
+		{input: `ex hl`, err: errcode.EZ80_OP_LESS},
 		{input: `ex hl, 1`, err: errcode.EZ80_OP},
-		{input: `ex hl, sp`, err: errcode.EZ80_OP},
-		{input: `ex ix, iy`, err: errcode.EZ80_OP},
-		{input: `ex hl, iy`, err: errcode.EZ80_OP},
+		{input: `ex hl, sp`, err: errcode.EZ80_OP_REG},
+		{input: `ex ix, iy`, err: errcode.EZ80_OP_REG},
+		{input: `ex hl, iy`, err: errcode.EZ80_OP_REG},
 		{input: `ex (hl), iy`, err: errcode.EINDIRECT_REG},
 		{input: `ex af, (sp), `, err: errcode.EZ80_OP_REG},
 		{input: `ex (sp), (hl), `, err: errcode.EZ80_OP},
@@ -679,7 +679,7 @@ func TestInstructionError_INC_DEC(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `inc`, err: errcode.EZ80_OP},
+		{input: `inc`, err: errcode.EZ80_OP_LESS},
 		{input: `inc 1`, err: errcode.EZ80_OP},
 		{input: `inc 'a'`, err: errcode.EZ80_OP},
 		{input: `fn func\endf \ inc fn()`, err: errcode.EZ80_OP_NULL},
@@ -719,7 +719,7 @@ func TestInstructionError_PUSH_POP(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `push`, err: errcode.EZ80_OP},
+		{input: `push`, err: errcode.EZ80_OP_LESS},
 		{input: `push 1`, err: errcode.EZ80_OP},
 		{input: `push 'a'`, err: errcode.EZ80_OP},
 		{input: `push a`, err: errcode.EZ80_OP_REG},
