@@ -40,6 +40,7 @@ func (e *Evaluator) evalZ80_RET(stmt *parser.Z80Instruction, op1, _ object.Objec
 
 func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
 
+	// nn 取得
 	value := 0
 	switch op2 := op2.(type) {
 	case *object.NumberObject:
@@ -60,13 +61,14 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 	if !ok {
 		e.logger.Warning(fmt.Sprintf(errcode.WROUND_WORD, value, value), stmt.Context)
 	}
-
 	// addr set
 	code := &object.CodeObject{Code: []byte{0xcd, byte(addr & 0xff), byte((addr >> 8) & 0xff)}, TStates: [2]byte{17, 5}, Context: stmt.Context}
+
 	// CALL
 	if op1 == nil {
 		return code
 	}
+
 	// CALL cc
 	flag := -1
 	switch op1 := op1.(type) {
@@ -92,6 +94,11 @@ func (e *Evaluator) evalZ80_CALL(stmt *parser.Z80Instruction, op1, op2 object.Ob
 }
 
 func (e *Evaluator) evalZ80_RST(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
+	if op1 == nil {
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
+		return object.ERROR
+	}
+
 	code := &object.CodeObject{Code: []byte{0xc7}, TStates: [2]byte{11, 4}, Context: stmt.Context}
 
 	addr := 0
@@ -117,11 +124,11 @@ func (e *Evaluator) evalZ80_RST(stmt *parser.Z80Instruction, op1, op2 object.Obj
 
 func (e *Evaluator) evalZ80_JP(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
 
+	// nn 取得
 	value := 0
 	switch op2 := op2.(type) {
 	case *object.NumberObject:
 		value = op2.Value
-
 	case *object.RefNotFoundObject:
 		return op2
 	case *object.RegIndirectObject:
@@ -206,7 +213,7 @@ func (e *Evaluator) evalZ80_JR(stmt *parser.Z80Instruction, op1, op2 object.Obje
 
 	// addr set
 	ofs := addr - getLocationCounter(env) - 2
-	// ofs 検査は Evaluator.Satge2 で行う。Stage1 ではラベルのアドレスが確定していないため
+	// ofs 範囲検査は Evaluator.Satge2 で行う。Stage1 ではラベルのアドレスが確定していないため
 	if e.Stage2 && (ofs < -128 || ofs > 127) {
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_JR_RANGE, ofs, ofs), stmt.Context)
 		return object.ERROR
@@ -248,6 +255,10 @@ func (e *Evaluator) evalZ80_JR(stmt *parser.Z80Instruction, op1, op2 object.Obje
 }
 
 func (e *Evaluator) evalZ80_DJNZ(stmt *parser.Z80Instruction, op1, _ object.Object, env TEnv) object.Object {
+	if op1 == nil {
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
+		return object.ERROR
+	}
 	addr := 0
 	switch op := op1.(type) {
 	case *object.NumberObject:
@@ -261,7 +272,8 @@ func (e *Evaluator) evalZ80_DJNZ(stmt *parser.Z80Instruction, op1, _ object.Obje
 
 	// addr set
 	ofs := addr - getLocationCounter(env) - 2
-	if ofs < -128 || ofs > 127 {
+	// ofs 範囲検査は Evaluator.Satge2 で行う。Stage1 ではラベルのアドレスが確定していないため
+	if e.Stage2 && (ofs < -128 || ofs > 127) {
 		e.logger.Error(fmt.Sprintf(errcode.EZ80_JR_RANGE, ofs, ofs), stmt.Context)
 		return object.ERROR
 	}

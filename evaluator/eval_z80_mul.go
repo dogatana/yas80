@@ -20,15 +20,13 @@ func (e *Evaluator) evalZ80_MUL(stmt *parser.Z80Instruction, op1, op2 object.Obj
 	}
 
 	if op1 == nil || op2 == nil {
-		e.logger.Error(errcode.EZ80_OP, stmt.Context)
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
 		return object.ERROR
 	}
 	if isRefNotFound(op1) {
-		e.Resolved = false
 		return op1
 	}
 	if isRefNotFound(op2) {
-		e.Resolved = false
 		return op2
 	}
 	if op1 == object.NULL {

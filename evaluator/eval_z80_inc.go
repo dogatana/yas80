@@ -9,39 +9,40 @@ import (
 )
 
 func (e *Evaluator) evalZ80_INC_DEC(stmt *parser.Z80Instruction, op, _ object.Object, env TEnv) object.Object {
-
 	if op == nil {
-		e.logger.Error(errcode.EZ80_OP, stmt.Context)
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
 		return object.ERROR
 	}
 
 	switch op := op.(type) {
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return op
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
 		return object.ERROR
 
 	case *object.RegisterObject:
-
 		if op.RegisterType == parser.Z80_REG8 {
 			// 8 bit register
 			code := &object.CodeObject{Code: []byte{0x04}, TStates: [2]byte{4, 1}, Context: stmt.Context}
 			if stmt.Opcode == parser.Z80_INST_DEC {
 				code.Code[0] = 0x05 // DEC
 			}
+			// INC r / DEC r
 			if index, ok := Z80Reg8Index[op.Register]; ok {
 				code.Code[0] |= index << 3
 				return code
 			}
 
+			// ix* / iy*
 			code.TStates = [2]byte{8, 2}
 			if index, ok := Z80Reg8IndexIX[op.Register]; ok {
+				// ixh, ixl
 				code.Code = []byte{0xdd, code.Code[0] | index<<3}
 				return code
 			}
 			if index, ok := Z80Reg8IndexIY[op.Register]; ok {
+				// iyh, iyl
 				code.Code = []byte{0xfd, code.Code[0] | index<<3}
 				return code
 			}
@@ -60,12 +61,11 @@ func (e *Evaluator) evalZ80_INC_DEC(stmt *parser.Z80Instruction, op, _ object.Ob
 
 		code.TStates = [2]byte{10, 2}
 		code.Code[0] |= 0x20
-		switch op.Register {
 
+		switch op.Register {
 		case parser.Z80_REG_IX: // INC/DEC IX
 			code.Code = []byte{0xdd, code.Code[0]}
 			return code
-
 		case parser.Z80_REG_IY: // INC/DEC IY
 			code.Code = []byte{0xfd, code.Code[0]}
 			return code
@@ -108,13 +108,12 @@ func (e *Evaluator) evalZ80_INC_DEC(stmt *parser.Z80Instruction, op, _ object.Ob
 func (e *Evaluator) evalZ80_PUSH_POP(stmt *parser.Z80Instruction, op, _ object.Object, env TEnv) object.Object {
 
 	if op == nil {
-		e.logger.Error(errcode.EZ80_OP, stmt.Context)
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
 		return object.ERROR
 	}
 
 	switch op := op.(type) {
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return op
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)

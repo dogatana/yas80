@@ -8,18 +8,24 @@ import (
 	"github.com/dogatana/yas80/parser"
 )
 
+var _rlcCodeTable = map[int]byte{
+	parser.Z80_INST_RLC: 0x00,
+	parser.Z80_INST_RL:  0x10,
+	parser.Z80_INST_RRC: 0x08,
+	parser.Z80_INST_RR:  0x18,
+	parser.Z80_INST_SLA: 0x20,
+	parser.Z80_INST_SRA: 0x28,
+	parser.Z80_INST_SRL: 0x38,
+}
+
 func (e *Evaluator) evalZ80_RLC(stmt *parser.Z80Instruction, op1, op2 object.Object, env TEnv) object.Object {
-	codeTable := map[int]byte{
-		parser.Z80_INST_RLC: 0x00,
-		parser.Z80_INST_RL:  0x10,
-		parser.Z80_INST_RRC: 0x08,
-		parser.Z80_INST_RR:  0x18,
-		parser.Z80_INST_SLA: 0x20,
-		parser.Z80_INST_SRA: 0x28,
-		parser.Z80_INST_SRL: 0x38,
+	if op1 == nil {
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
+		return object.ERROR
 	}
+
 	code := &object.CodeObject{Code: []byte{0xcb, 0x00}, TStates: [2]byte{8, 2}, Context: stmt.Context}
-	if b, ok := codeTable[stmt.Opcode]; ok {
+	if b, ok := _rlcCodeTable[stmt.Opcode]; ok {
 		code.Code[1] = b
 	} else {
 		panic("invalid opecode")
@@ -28,19 +34,15 @@ func (e *Evaluator) evalZ80_RLC(stmt *parser.Z80Instruction, op1, op2 object.Obj
 	// レジスタ or (HL),(IX+d),(IY+d)
 	switch op1 := op1.(type) {
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return op1
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP_NULL, stmt.Context)
 		return object.ERROR
 
 	case *object.RegisterObject: // OP r
-		if op1.Register < parser.Z80_REG_B || op1.Register > parser.Z80_REG_A {
+		if index, ok := Z80Reg8Index[op1.Register]; !ok {
 			e.logger.Error(fmt.Sprintf(errcode.EZ80_OP_REG, parser.TokenLiteral(op1.Register)), stmt.Context)
 			return object.ERROR
-		}
-		if index, ok := Z80Reg8Index[op1.Register]; !ok {
-			panic("unexpected register in RLC...")
 		} else {
 			code.Code[1] |= byte(index)
 			return code

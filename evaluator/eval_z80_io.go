@@ -9,11 +9,14 @@ import (
 )
 
 func (e *Evaluator) evalZ80_IN(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
+	if op1 == nil || op2 == nil {
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
+		return object.ERROR
+	}
 
 	var reg *object.RegisterObject
 	switch obj := op1.(type) {
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return obj
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP1_NULL, stmt.Context)
@@ -57,11 +60,14 @@ func (e *Evaluator) evalZ80_IN(stmt *parser.Z80Instruction, op1, op2 object.Obje
 }
 
 func (e *Evaluator) evalZ80_OUT(stmt *parser.Z80Instruction, op1, op2 object.Object, _ TEnv) object.Object {
+	if op1 == nil || op2 == nil {
+		e.logger.Error(errcode.EZ80_OP_LESS, stmt.Context)
+		return object.ERROR
+	}
 
 	var reg *object.RegisterObject
 	switch obj := op2.(type) {
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return obj
 	case *object.NullObject:
 		e.logger.Error(errcode.EZ80_OP2_NULL, stmt.Context)
