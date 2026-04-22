@@ -54,7 +54,10 @@ func (e *Evaluator) evalZ80Instruction(stmt *parser.Z80Instruction, env TEnv) ob
 
 	if stmt.Label != nil {
 		e.concatenateSymbol(&stmt.Label, env, stmt.Context)
-		e.exprToLabel(stmt.Label, env, stmt.Context)
+		obj := e.exprToLabel(stmt.Label, env, stmt.Context)
+		if isError(obj) {
+			return object.ERROR
+		}
 	}
 
 	// オペランドなし

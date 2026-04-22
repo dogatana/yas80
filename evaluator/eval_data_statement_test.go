@@ -87,24 +87,24 @@ func TestDataStoreStatementError(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `ds 0`, err: errcode.EDS_COUNT},
-		{input: `dsb 0`, err: errcode.EDS_COUNT},
-		{input: `dsw 0`, err: errcode.EDS_COUNT},
-		{input: `ds -1`, err: errcode.EDS_COUNT},
-		{input: `dsb -1`, err: errcode.EDS_COUNT},
-		{input: `dsw -1`, err: errcode.EDS_COUNT},
+		{input: `ds 0`, err: errcode.EDS_COUNT_VALUE},
+		{input: `dsb 0`, err: errcode.EDS_COUNT_VALUE},
+		{input: `dsw 0`, err: errcode.EDS_COUNT_VALUE},
+		{input: `ds -1`, err: errcode.EDS_COUNT_VALUE},
+		{input: `dsb -1`, err: errcode.EDS_COUNT_VALUE},
+		{input: `dsw -1`, err: errcode.EDS_COUNT_VALUE},
 
-		{input: `ds "a"`, err: errcode.EDS_COUNT},
-		{input: `ds a`, err: errcode.EDS_COUNT},
-		{input: `ds cy`, err: errcode.EDS_COUNT},
+		{input: `ds "a"`, err: errcode.EDS_COUNT_VALUE},
+		{input: `ds a`, err: errcode.EDS_COUNT_VALUE},
+		{input: `ds cy`, err: errcode.EDS_COUNT_VALUE},
 
-		{input: `ds 1, "a"`, err: errcode.EDS_FILL},
-		{input: `ds 1, a`, err: errcode.EDS_FILL},
-		{input: `ds 1, cy`, err: errcode.EDS_FILL},
+		{input: `ds 1, "a"`, err: errcode.EDS_FILL_VALUE},
+		{input: `ds 1, a`, err: errcode.EDS_FILL_VALUE},
+		{input: `ds 1, cy`, err: errcode.EDS_FILL_VALUE},
 
-		{input: `dummy func\endf\ const size=dummy() \ ds size`, err: errcode.EDS_COUNT},
-		{input: `dummy func\endf\ const size=dummy() \ dsb size`, err: errcode.EDS_COUNT},
-		{input: `dummy func\endf\ const size=dummy() \ dsw size`, err: errcode.EDS_COUNT},
+		{input: `dummy func\endf\ const size=dummy() \ ds size`, err: errcode.EDS_COUNT_NULL},
+		{input: `dummy func\endf\ const size=dummy() \ dsb size`, err: errcode.EDS_COUNT_NULL},
+		{input: `dummy func\endf\ const size=dummy() \ dsw size`, err: errcode.EDS_COUNT_NULL},
 		{input: "123 ds 1", err: errcode.ESYNTAX},
 		// 10-
 		{input: `aaa ds 1 \ aaa ds 1`, err: errcode.ELABEL_DUP},
@@ -137,7 +137,7 @@ func TestDataStoreStatementError(t *testing.T) {
 		testSymValues(t, tn, tt.syms, getter)
 	}
 }
-func TestDataStatement(t *testing.T) {
+func TestDataDefineStatement(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -195,6 +195,10 @@ func TestDataStatement(t *testing.T) {
 		{input: `dw ["abあい12"]`, code: []byte{0x61, 0, 0x62, 0, 0xa0, 0x82, 0xa2, 0x82, 0x31, 0, 0x32, 0}}, // dw 0x61, 062, x0x82a0, 0x82a2, 0x31, 0x32
 		{input: `db ["` + string([]byte{0x80, 0xff}) + `"]`, err: errcode.EDATA_ENCODE},
 		{input: `db []`, err: errcode.EARRAY_EMPTY},
+		// error
+		{input: `fn func\endf\ db fn()`, code: []byte{}, err: errcode.EDATA_VALUE},
+		{input: `fn func\endf\ dw fn()`, code: []byte{}, err: errcode.EDATA_VALUE},
+		{input: `fn func\endf\ dd fn()`, code: []byte{}, err: errcode.EDATA_VALUE},
 	}
 
 	for tn, tt := range tests {

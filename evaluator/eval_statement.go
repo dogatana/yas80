@@ -54,27 +54,27 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	// case *parser.ProcBlockStatement:
 	// 	return e.evalProcBlockStatement(stmt, checkExitM, ectx, env)
 
-	// // DS/DSB/DSW
-	// case *parser.DataStoreStatement:
-	// 	obj := e.evalDataStoreStatement(stmt, env)
-	// 	if isError(obj) {
-	// 		return object.ERROR
-	// 	}
-	// 	if err := advanceLocationCounters(env, len(obj.(*object.CodeObject).Code)); err != nil {
-	// 		e.logger.Error(err.Error(), stmt.Context)
-	// 	}
-	// 	return obj
+	// DS/DSB/DSW
+	case *parser.DataStoreStatement:
+		obj := e.evalDataStoreStatement(stmt, env)
+		if isError(obj) {
+			return object.ERROR
+		}
+		if err := advanceLocationCounters(env, len(obj.(*object.CodeObject).Code)); err != nil {
+			e.logger.Error(err.Error(), stmt.Context)
+		}
+		return obj
 
-	// // DB/DW/DD
-	// case *parser.DataDefineStatement:
-	// 	obj := e.evalDataDefineStatement(stmt, env)
-	// 	if isError(obj) {
-	// 		return object.ERROR
-	// 	}
-	// 	if err := advanceLocationCounters(env, len(obj.(*object.CodeObject).Code)); err != nil {
-	// 		e.logger.Error(err.Error(), stmt.Context)
-	// 	}
-	// 	return obj
+	// DB/DW/DD
+	case *parser.DataDefineStatement:
+		obj := e.evalDataDefineStatement(stmt, env)
+		if isError(obj) {
+			return object.ERROR
+		}
+		if err := advanceLocationCounters(env, len(obj.(*object.CodeObject).Code)); err != nil {
+			e.logger.Error(err.Error(), stmt.Context)
+		}
+		return obj
 
 	// 定数定義
 	case *parser.ConstStatement:

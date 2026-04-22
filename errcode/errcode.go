@@ -63,8 +63,10 @@ const (
 	EDATA_ENCODE = "文字列 %q を SHIFT-JIS へ変換できない"
 	EDATA_VALUE  = "データ定義(DB/DW/DD)に使用できない値"
 
-	EDS_COUNT = "DS/DSB/DSW のデータ数が未確定"
-	EDS_FILL  = "DS/DSB/DSW の埋め込みデータが未確定"
+	EDS_COUNT_NULL  = "DS/DSB/DSW のデータ数が未確定"
+	EDS_COUNT_VALUE = "DS/DSB/DSW のデータ数指定誤り"
+	EDS_FILL_NULL   = "DS/DSB/DSW の埋め込み値が未確定"
+	EDS_FILL_VALUE  = "DS/DSB/DSW の埋め込み値指定誤り"
 
 	// レジスタ間接
 	EINDIRECT_VALUE      = "(数値) が必要"

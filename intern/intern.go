@@ -66,11 +66,13 @@ var ID_ALOC SymbolID     // $$
 var ID_PASS SymbolID     // $PASS
 var ID_STAGE2 SymbolID   // $STAGE2
 var ID_STR_ZERO SymbolID // "0"
+var ID_FILL SymbolID     // $FILL
 
 func init() {
 	ID_LOC = InternString("$")
 	ID_ALOC = InternString("$$")
 	ID_PASS = InternString("$PASS")
+	ID_FILL = InternString("$FILL")
 	ID_STAGE2 = InternString("$STAGE2")
 	ID_STR_ZERO = InternString("0")
 }
