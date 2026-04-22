@@ -140,9 +140,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	// case *parser.IndexedExpression:
 	// 	return e.evalIndexedExpression(node, env, ctx)
 
-	// // 関数呼出し
-	// case *parser.FuncCallExpression:
-	// 	return e.evalFuncCallExpression(node, env, ctx)
+	// 関数呼出し
+	case *parser.FuncCallExpression:
+		return e.evalFuncCallExpression(node, env, ctx)
 
 	// 中置演算子
 	case *parser.InfixExpression:
@@ -158,68 +158,68 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	}
 }
 
-// // 関数呼出し
-// func (e *Evaluator) evalFuncCallExpression(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-// 	if expr.Name[0] == '$' {
-// 		return e.evalBuiltinFunction(expr, env, ctx)
-// 	}
-// 	obj, ok := env.Get(expr.Name)
-// 	if !ok {
-// 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_UNDEF, expr.Name), expr.Context)
-// 		return object.ERROR
-// 	}
+// 関数呼出し
+func (e *Evaluator) evalFuncCallExpression(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
+	if expr.Name[0] == '$' {
+		return e.evalBuiltinFunction(expr, env, ctx)
+	}
+	obj, ok := env.Get(expr.NameID)
+	if !ok {
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_UNDEF, expr.Name), expr.Context)
+		return object.ERROR
+	}
 
-// 	// Symbol なら値を取り出す
-// 	if sym, ok := obj.(*object.SymbolObject); ok {
-// 		obj = sym.Value
-// 	}
+	// Symbol なら値を取り出す
+	if sym, ok := obj.(*object.SymbolObject); ok {
+		obj = sym.Value
+	}
 
-// 	var fn *object.FunctionObject
+	var fn *object.FunctionObject
 
-// 	switch obj := obj.(type) {
-// 	case *object.FunctionObject:
-// 		fn = obj
-// 	case *object.CharamapObject:
-// 		return e.applyCharmap(obj, expr, env, ctx)
+	switch obj := obj.(type) {
+	case *object.FunctionObject:
+		fn = obj
+	// case *object.CharamapObject:
+	// 	return e.applyCharmap(obj, expr, env, ctx)
 
-// 	default:
-// 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NOT_FUNC, expr.Name), ctx)
-// 		return object.ERROR
-// 	}
+	default:
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NOT_FUNC, expr.Name), ctx)
+		return object.ERROR
+	}
 
-// 	if len(expr.Args.Expressions) != len(fn.Params) {
-// 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), ctx)
-// 		return object.ERROR
-// 	}
+	if len(expr.Args.Expressions) != len(fn.Params) {
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), ctx)
+		return object.ERROR
+	}
 
-// 	newEnv := object.NewEnvironment(fn.Env)
-// 	for i, param := range fn.Params {
-// 		v := e.evalExpression(expr.Args.Expressions[i], env, nil) // TODO nil
-// 		if isError(v) || isRefNotFound(v) {
-// 			return v
-// 		}
-// 		newEnv.Set(param, v)
-// 	}
+	newEnv := object.NewEnvironment(fn.Env)
+	for i, param := range fn.Params {
+		v := e.evalExpression(expr.Args.Expressions[i], env, nil) // TODO nil
+		if isError(v) || isRefNotFound(v) {
+			return v
+		}
+		newEnv.Set(intern.InternString(param), v)
+	}
 
-// 	ret, ok := e.evalBlockStatement(fn.Body.(*parser.BlockStatement), false, nil, newEnv).(*object.BlockObject)
-// 	if !ok {
-// 		panic(fmt.Sprintf("call func %s returns %T(%#v)", fn.Name, ret, ret))
-// 	}
+	ret, ok := e.evalBlockStatement(fn.Body.(*parser.BlockStatement), false, nil, newEnv).(*object.BlockObject)
+	if !ok {
+		panic(fmt.Sprintf("call func %s returns %T(%#v)", fn.Name, ret, ret))
+	}
 
-// 	if len(ret.Block) == 0 {
-// 		return object.NULL
-// 	}
-// 	for _, obj := range ret.Block {
-// 		if isError(obj) || isRefNotFound(obj) {
-// 			return obj
-// 		}
-// 	}
-// 	last := ret.Block[len(ret.Block)-1]
-// 	if last.Type() == object.OBJ_RETURN {
-// 		return last.(*object.ReturnObject).Value
-// 	}
-// 	return object.NULL
-// }
+	if len(ret.Block) == 0 {
+		return object.NULL
+	}
+	for _, obj := range ret.Block {
+		if isError(obj) || isRefNotFound(obj) {
+			return obj
+		}
+	}
+	last := ret.Block[len(ret.Block)-1]
+	if last.Type() == object.OBJ_RETURN {
+		return last.(*object.ReturnObject).Value
+	}
+	return object.NULL
+}
 
 // 中置演算子式
 func (e *Evaluator) evalInfixExpression(node *parser.InfixExpression, env TEnv, ctx TContext) object.Object {

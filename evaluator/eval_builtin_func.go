@@ -50,11 +50,11 @@ func (e *Evaluator) ebfuncWord(expr *parser.FuncCallExpression, env TEnv, ctx TC
 	case *object.ErrorObject:
 		return v
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return v
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
+
 	case *object.NumberObject:
 		w, ok := e.intToWord(v.Value)
 		if !ok {
@@ -80,11 +80,11 @@ func (e *Evaluator) ebfuncHighLow(expr *parser.FuncCallExpression, env TEnv, ctx
 	case *object.ErrorObject:
 		return v
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return v
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
+
 	case *object.NumberObject:
 		var b int
 		if expr.Name[1] == 'H' {
@@ -112,13 +112,14 @@ func (e *Evaluator) ebfuncIsArray(expr *parser.FuncCallExpression, env TEnv, ctx
 	case *object.ErrorObject:
 		return v
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return v
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
+
 	case *object.ArrayObject:
 		return &object.NumberObject{Value: 1}
+
 	default:
 		return &object.NumberObject{Value: 0}
 	}
@@ -137,14 +138,14 @@ func (e *Evaluator) ebfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx 
 	case *object.ErrorObject:
 		return v
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return v
-
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
+
 	case *object.ArrayObject:
 		return &object.NumberObject{Value: len(v.Values)}
+
 	case *object.StringObject:
 		sj, err := util.Utf8ToShiftJis(v.Value)
 		if err != nil {
@@ -152,6 +153,7 @@ func (e *Evaluator) ebfuncLength(expr *parser.FuncCallExpression, env TEnv, ctx 
 			return object.ERROR
 		}
 		return &object.NumberObject{Value: len(sj)}
+
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR
@@ -171,16 +173,22 @@ func (e *Evaluator) ebfuncReverse(expr *parser.FuncCallExpression, env TEnv, ctx
 	case *object.ErrorObject:
 		return v
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return v
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
+
 	case *object.ArrayObject:
 		nv := *v
 		nv.Values = slices.Clone(nv.Values)
 		slices.Reverse(nv.Values)
 		return &nv
+
+	case *object.StringObject:
+		runes := []rune(v.Value)
+		slices.Reverse(runes)
+		return &object.StringObject{Value: string(runes), Context: ctx}
+
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR
@@ -218,16 +226,17 @@ func (e *Evaluator) ebfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx 
 	case *object.ErrorObject:
 		return obj
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return obj
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
+
 	case *object.StringObject:
 		if len(args) == 1 {
 			return obj
 		}
 		fmts = obj.Value
+
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR
@@ -241,11 +250,15 @@ func (e *Evaluator) ebfuncFormat(expr *parser.FuncCallExpression, env TEnv, ctx 
 			return v
 		case *object.RefNotFoundObject:
 			return v
+		case *object.NullObject:
+			e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
+			return object.ERROR
 
 		case *object.NumberObject:
 			fargs = append(fargs, v.Value)
 		case *object.StringObject:
 			fargs = append(fargs, v.Value)
+
 		default:
 			e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
 			return object.ERROR
@@ -266,11 +279,11 @@ func (e *Evaluator) ebfuncCode(expr *parser.FuncCallExpression, env TEnv, ctx TC
 	obj := e.evalExpression(args[0], env, ctx)
 
 	var array *object.ArrayObject
+
 	switch obj := obj.(type) {
 	case *object.ErrorObject:
 		return obj
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return obj
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
@@ -278,6 +291,7 @@ func (e *Evaluator) ebfuncCode(expr *parser.FuncCallExpression, env TEnv, ctx TC
 
 	case *object.ArrayObject:
 		array = obj
+
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_VALUE, expr.Name), ctx)
 		return object.ERROR
@@ -342,17 +356,17 @@ func (e *Evaluator) ebfuncStr(expr *parser.FuncCallExpression, env TEnv, ctx TCo
 	case *object.ErrorObject:
 		return obj
 	case *object.RefNotFoundObject:
-		e.Resolved = false
 		return obj
 	case *object.NullObject:
 		e.logger.Error(fmt.Sprintf(errcode.EEBFN_ARG_NULL, expr.Name), ctx)
 		return object.ERROR
+
 	case *object.StringObject:
-		return &object.StringObject{Value: obj.Value, Context: ctx}
+		return &object.StringObject{Value: obj.Value}
 	case *object.NumberObject:
-		return &object.StringObject{Value: fmt.Sprintf("%d", obj.Value), Context: ctx}
+		return &object.StringObject{Value: fmt.Sprintf("%d", obj.Value)}
 
 	default:
-		return &object.StringObject{Value: obj.String(), Context: ctx}
+		return &object.StringObject{Value: obj.String()}
 	}
 }

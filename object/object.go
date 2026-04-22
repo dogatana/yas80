@@ -461,6 +461,7 @@ func (o *CharamapObject) String() string {
 
 // Function
 type FunctionObject struct {
+	NameID  intern.SymbolID
 	Name    string
 	Params  []string
 	Body    parser.Node

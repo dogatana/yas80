@@ -116,13 +116,13 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.BlockStatement:
 		return e.evalBlockStatement(stmt, checkExitM, ectx, env)
 
-	// // func
-	// case *parser.FuncStatement:
-	// 	return e.evalFuncStatement(stmt, env)
+	// func
+	case *parser.FuncStatement:
+		return e.evalFuncStatement(stmt, env)
 
-	// // return
-	// case *parser.ReturnStatement:
-	// 	return e.evalReturnStatement(stmt, env)
+	// return
+	case *parser.ReturnStatement:
+		return e.evalReturnStatement(stmt, env)
 
 	// // charmap
 	// case *parser.CharmapStatement:
@@ -761,81 +761,82 @@ func (e *Evaluator) evalAssignStatement(stmt *parser.AssignStatement, env TEnv) 
 //		return e.evalStatement(stmt.Alternative.(parser.Statement), checkExitM, ectx, env)
 //	}
 //}
-//
-//// func 文
-//func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env TEnv) object.Object {
-//	name := stmt.Name
-//	if name[0] == '@' || name[0] == '.' {
-//		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NAME, name), stmt.Context)
-//		return object.ERROR
-//	}
-//	if obj, ok := env.Get(name); ok {
-//		fobj, ok := obj.(*object.FunctionObject)
-//		if !ok {
-//			e.logger.Error(fmt.Sprintf(errcode.EFUNC_USED, name), stmt.Context)
-//			return object.ERROR
-//		}
-//		if !fobj.Context.Equal(stmt.Context) {
-//			e.logger.Error(fmt.Sprintf(errcode.EFUNC_DUP, name), stmt.Context)
-//			return object.ERROR
-//		}
-//	} else {
-//		// 無効な文をチェック
-//		e.filterValidStatementForFunc(stmt.Block)
-//	}
-//
-//	obj := &object.FunctionObject{Name: name, Params: stmt.Params, Body: stmt.Block, Env: env, Context: stmt.Context}
-//	env.Set(name, obj)
-//	return obj
-//}
-//
-//// func 内で利用可能な文を抽出するフィルタ
-//func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
-//	stmts := make([]parser.Statement, 0, len(bs.Block))
-//
-//	for _, stmt := range bs.Block {
-//		switch stmt := stmt.(type) {
-//		// 利用可能
-//		case *parser.ConstStatement, *parser.VariableStatement, *parser.AssignStatement, *parser.ReturnStatement:
-//			stmts = append(stmts, stmt)
-//
-//		// 要再帰チェック
-//		case *parser.FuncStatement:
-//			e.filterValidStatementForFunc(stmt.Block)
-//			stmts = append(stmts, stmt)
-//
-//		case *parser.IfStatement:
-//			if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
-//				e.filterValidStatementForFunc(bs)
-//			}
-//			if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
-//				e.filterValidStatementForFunc(bs)
-//			}
-//			stmts = append(stmts, stmt)
-//
-//		case *parser.BlockStatement:
-//			e.filterValidStatementForFunc(stmt)
-//			stmts = append(stmts, stmt)
-//
-//		default:
-//			// 利用不可
-//			e.logger.Warning(errcode.WSCOPE_FUNC, stmt.GetContext())
-//		}
-//	}
-//	bs.Block = stmts
-//}
-//
-//// return 文
-//func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env TEnv) object.Object {
-//	var ret object.Object
-//	if stmt.Value == nil {
-//		ret = object.NULL
-//	} else {
-//		ret = e.evalExpression(stmt.Value, env, stmt.Context)
-//	}
-//	return &object.ReturnObject{Value: ret, LineNumber: stmt.Context.Line}
-//}
-//
+
+// func 文
+func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env TEnv) object.Object {
+	id := stmt.NameID
+	name := id.String()
+	if name[0] == '@' || name[0] == '.' {
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NAME, name), stmt.Context)
+		return object.ERROR
+	}
+	if obj, ok := env.Get(id); ok {
+		fobj, ok := obj.(*object.FunctionObject)
+		if !ok {
+			e.logger.Error(fmt.Sprintf(errcode.EFUNC_USED, name), stmt.Context)
+			return object.ERROR
+		}
+		if !fobj.Context.Equal(stmt.Context) {
+			e.logger.Error(fmt.Sprintf(errcode.EFUNC_DUP, name), stmt.Context)
+			return object.ERROR
+		}
+	} else {
+		// 無効な文をチェック
+		e.filterValidStatementForFunc(stmt.Block)
+	}
+
+	obj := &object.FunctionObject{NameID: id, Name: name, Params: stmt.Params, Body: stmt.Block, Env: env, Context: stmt.Context}
+	env.Set(id, obj)
+	return obj
+}
+
+// func 内で利用可能な文を抽出するフィルタ
+func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
+	stmts := make([]parser.Statement, 0, len(bs.Block))
+
+	for _, stmt := range bs.Block {
+		switch stmt := stmt.(type) {
+		// 利用可能
+		case *parser.ConstStatement, *parser.VariableStatement, *parser.AssignStatement, *parser.ReturnStatement:
+			stmts = append(stmts, stmt)
+
+		// 要再帰チェック
+		case *parser.FuncStatement:
+			e.filterValidStatementForFunc(stmt.Block)
+			stmts = append(stmts, stmt)
+
+		case *parser.IfStatement:
+			if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
+				e.filterValidStatementForFunc(bs)
+			}
+			if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
+				e.filterValidStatementForFunc(bs)
+			}
+			stmts = append(stmts, stmt)
+
+		case *parser.BlockStatement:
+			e.filterValidStatementForFunc(stmt)
+			stmts = append(stmts, stmt)
+
+		default:
+			// 利用不可
+			e.logger.Warning(errcode.WSCOPE_FUNC, stmt.GetContext())
+		}
+	}
+	bs.Block = stmts
+}
+
+// return 文
+func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env TEnv) object.Object {
+	var ret object.Object
+	if stmt.Value == nil {
+		ret = object.NULL
+	} else {
+		ret = e.evalExpression(stmt.Value, env, stmt.Context)
+	}
+	return &object.ReturnObject{Value: ret, LineNumber: int(stmt.Context.Line)}
+}
+
 //// enum 文
 //func (e *Evaluator) evalEnumStatement(stmt *parser.EnumStatement, env TEnv) object.Object {
 //	name := stmt.Name
