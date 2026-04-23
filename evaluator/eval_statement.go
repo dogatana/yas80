@@ -108,9 +108,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.AssignStatement:
 		return e.evalAssignStatement(stmt, env)
 
-	// // if
-	// case *parser.IfStatement:
-	// 	return e.evalIfStatement(stmt, checkExitM, ectx, env)
+	// if
+	case *parser.IfStatement:
+		return e.evalIfStatement(stmt, checkExitM, ectx, env)
 
 	// block
 	case *parser.BlockStatement:
@@ -742,26 +742,25 @@ func (e *Evaluator) evalAssignStatement(stmt *parser.AssignStatement, env TEnv) 
 	return toTextObject(value, stmt.Context)
 }
 
-//
-//// if 文
-//func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
-//	obj := e.evalExpression(stmt.Condition, env, stmt.Context)
-//	if isError(obj) {
-//		return object.ERROR
-//	}
-//
-//	if object.IsTruthy(obj) {
-//		if stmt.Consequence == nil {
-//			return object.NULL
-//		}
-//		return e.evalStatement(stmt.Consequence.(parser.Statement), checkExitM, ectx, env)
-//	} else {
-//		if stmt.Alternative == nil {
-//			return object.NULL
-//		}
-//		return e.evalStatement(stmt.Alternative.(parser.Statement), checkExitM, ectx, env)
-//	}
-//}
+// if 文
+func (e *Evaluator) evalIfStatement(stmt *parser.IfStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+	obj := e.evalExpression(stmt.Condition, env, stmt.Context)
+	if isError(obj) {
+		return object.ERROR
+	}
+
+	if object.IsTruthy(obj) {
+		if stmt.Consequence == nil {
+			return object.NULL
+		}
+		return e.evalStatement(stmt.Consequence.(parser.Statement), checkExitM, ectx, env)
+	} else {
+		if stmt.Alternative == nil {
+			return object.NULL
+		}
+		return e.evalStatement(stmt.Alternative.(parser.Statement), checkExitM, ectx, env)
+	}
+}
 
 // func 文
 func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env TEnv) object.Object {

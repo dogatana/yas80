@@ -1,7 +1,6 @@
 package evaluator
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/dogatana/yas80/errcode"
@@ -521,7 +520,6 @@ func TestOrgStatement(t *testing.T) {
 				break
 			}
 		}
-		fmt.Printf("prog.Block %#v\n", prog)
 		if code == nil {
 			t.Errorf("[%d] not CodeObject. got %T", tn, prog.Block[0])
 			continue
@@ -597,7 +595,7 @@ func TestOrgAbsRel(t *testing.T) {
 		{input: `const abc = 1 \ var abc = 1`, err: errcode.EVAR_USED},
 		// 5-
 		{input: `var abc = 1 \ var abc = 2`, err: errcode.EVAR_USED},
-		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE_NULL},
+		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE_FWD},
 		{input: `const def = 1\ var abc = def`, syms: []symValue{{"ABC", 1}}},
 		{input: `abc = 123`, err: errcode.EVAR_UNDEF},
 		{input: `hl = 123`, err: errcode.EASSIGN_LEFT},
