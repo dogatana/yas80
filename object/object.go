@@ -487,7 +487,7 @@ func (o *FunctionObject) String() string {
 
 // Macro
 type MacroObject struct {
-	Name    string
+	NameID  intern.SymbolID
 	Params  []string
 	End     int
 	Body    *parser.BlockStatement
@@ -498,7 +498,7 @@ func (o *MacroObject) Type() ObjectType { return OBJ_MACRO }
 func (o *MacroObject) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(o.Name + " MACRO")
+	out.WriteString(o.NameID.String() + " MACRO")
 	if len(o.Params) > 0 {
 		out.WriteRune(' ')
 		out.WriteString(strings.Join(o.Params, ", "))

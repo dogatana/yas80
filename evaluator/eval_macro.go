@@ -1,81 +1,81 @@
 package evaluator
 
-// import (
-// 	"fmt"
+import (
+	"fmt"
 
-// 	"github.com/dogatana/yas80/errcode"
-// 	"github.com/dogatana/yas80/object"
-// 	"github.com/dogatana/yas80/parser"
-// )
+	"github.com/dogatana/yas80/errcode"
+	"github.com/dogatana/yas80/object"
+	"github.com/dogatana/yas80/parser"
+)
 
-// // macro 定義
-// func (e *Evaluator) evalMacroStatement(stmt *parser.MacroStatement, env TEnv) object.Object {
-// 	name := stmt.Name
-// 	if name[0] == '@' || name[0] == '.' {
-// 		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NAME, name), stmt.Context)
-// 		return object.ERROR
-// 	}
-// 	if obj, ok := env.Get(name); ok {
-// 		mo, ok := obj.(*object.MacroObject)
-// 		if !ok {
-// 			e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, name), stmt.Context)
-// 			return object.ERROR
-// 		}
-// 		if !stmt.Context.Equal(mo.Context) { // Context が同一でない場合は重複定義エラー
-// 			e.logger.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), stmt.Context)
-// 		}
-// 		return mo
-// 	}
-// 	// 無効な文をチェック
-// 	e.filterValidStatementForMacro(stmt.Body)
+// macro 定義
+func (e *Evaluator) evalMacroStatement(stmt *parser.MacroStatement, env TEnv) object.Object {
+	name := stmt.NameID.String()
+	if name[0] == '@' || name[0] == '.' {
+		e.logger.Error(fmt.Sprintf(errcode.EMACRO_NAME, name), stmt.Context)
+		return object.ERROR
+	}
+	if obj, ok := env.Get(stmt.NameID); ok {
+		mo, ok := obj.(*object.MacroObject)
+		if !ok {
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_USED, name), stmt.Context)
+			return object.ERROR
+		}
+		if !stmt.Context.Equal(mo.Context) { // Context が同一でない場合は重複定義エラー
+			e.logger.Error(fmt.Sprintf(errcode.EMACRO_DUP, name), stmt.Context)
+		}
+		return mo
+	}
+	// 無効な文をチェック
+	e.filterValidStatementForMacro(stmt.Body)
 
-// 	obj := &object.MacroObject{Name: name, Params: stmt.Params, End: stmt.End, Body: stmt.Body, Context: stmt.Context}
-// 	env.Set(name, obj)
-// 	return obj // 形式上必要
-// }
+	obj := &object.MacroObject{NameID: stmt.NameID, Params: stmt.Params, End: stmt.End, Body: stmt.Body, Context: stmt.Context}
+	env.Set(stmt.NameID, obj)
+	return obj // 形式上必要
+}
 
-// // macro 内で利用可能な文を抽出するフィルタ
-// func (e *Evaluator) filterValidStatementForMacro(bs *parser.BlockStatement) {
-// 	stmts := make([]parser.Statement, 0, len(bs.Block))
+// macro 内で利用可能な文を抽出するフィルタ
+func (e *Evaluator) filterValidStatementForMacro(bs *parser.BlockStatement) {
+	stmts := make([]parser.Statement, 0, len(bs.Block))
 
-// 	for _, stmt := range bs.Block {
-// 		switch stmt := stmt.(type) {
-// 		// error
-// 		case *parser.MacroStatement:
-// 			e.logger.Error(errcode.EMACRO_NEST, stmt.GetContext())
+	for _, stmt := range bs.Block {
+		switch stmt := stmt.(type) {
+		// error
+		case *parser.MacroStatement:
+			e.logger.Error(errcode.EMACRO_NEST, stmt.GetContext())
 
-// 		// warning
-// 		case *parser.FuncStatement:
-// 			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
-// 		case *parser.ReturnStatement:
-// 			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
-// 		case *parser.ProcStatement:
-// 			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
-// 		case *parser.ProcBlockStatement:
-// 			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
-// 		case *parser.EnumStatement:
-// 			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
+		// warning
+		case *parser.FuncStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
+		case *parser.ReturnStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
+		case *parser.ProcStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
+		case *parser.ProcBlockStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
+		case *parser.EnumStatement:
+			e.logger.Warning(errcode.WSCOPE_MACRO, stmt.Context)
 
-// 		// 要再帰チェック
-// 		case *parser.IfStatement:
-// 			if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
-// 				e.filterValidStatementForMacro(bs)
-// 			}
-// 			if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
-// 				e.filterValidStatementForMacro(bs)
-// 			}
-// 			stmts = append(stmts, stmt)
-// 		case *parser.BlockStatement:
-// 			e.filterValidStatementForMacro(stmt)
-// 			stmts = append(stmts, stmt)
+		// 要再帰チェック
+		case *parser.IfStatement:
+			if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
+				e.filterValidStatementForMacro(bs)
+			}
+			if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
+				e.filterValidStatementForMacro(bs)
+			}
+			stmts = append(stmts, stmt)
+		case *parser.BlockStatement:
+			e.filterValidStatementForMacro(stmt)
+			stmts = append(stmts, stmt)
 
-// 		default:
-// 			// 利用可能
-// 			stmts = append(stmts, stmt)
-// 		}
-// 	}
-// 	bs.Block = stmts
-// }
+		default:
+			// 利用可能
+			stmts = append(stmts, stmt)
+		}
+	}
+	bs.Block = stmts
+}
 
 // // マクロ展開が再帰しているかのチェック用
 // var expandingMacro map[string]bool = map[string]bool{}

@@ -80,9 +80,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.ConstStatement:
 		return e.evalConstStatement(stmt, env)
 
-	// // マクロ定義
-	// case *parser.MacroStatement:
-	// 	return e.evalMacroStatement(stmt, env)
+	// マクロ定義
+	case *parser.MacroStatement:
+		return e.evalMacroStatement(stmt, env)
 
 	// // マクロ呼出し
 	// case *parser.MacroCallStatement:
