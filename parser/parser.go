@@ -1699,7 +1699,7 @@ yydefault:
 			if yyDollar[1].expr.NodeType() == NODE_ERROR {
 				err := yyDollar[1].expr.(*ParseError)
 				yylex.Error(err.Message, err.Context)
-				yylex.Error(errcode.EARRAY_NAME, newCtxFromTokenCtx(yyDollar[2].token.Context))
+				yylex.Error(errcode.EARRAY_NOT_ARRAY, newCtxFromTokenCtx(yyDollar[2].token.Context))
 			}
 			yyVAL.expr = &ParseError{Message: errcode.EARRAY_INDEX, Context: newCtxFromTokenCtx(yyDollar[2].token.Context)}
 		}
@@ -1708,14 +1708,14 @@ yydefault:
 //line parser/parser.y:702
 		{
 			if yyDollar[1].expr.NodeType() == NODE_ERROR && yyDollar[3].expr.NodeType() == NODE_ERROR {
-				yylex.Error(errcode.EARRAY_NAME, newCtxFromTokenCtx(yyDollar[2].token.Context))
+				yylex.Error(errcode.EARRAY_NOT_ARRAY, newCtxFromTokenCtx(yyDollar[2].token.Context))
 				err := yyDollar[1].expr.(*ParseError)
 				yylex.Error(err.Message, err.Context)
 
 				yylex.Error(errcode.EARRAY_INDEX, newCtxFromTokenCtx(yyDollar[2].token.Context))
 				yyVAL.expr = yyDollar[3].expr
 			} else if yyDollar[1].expr.NodeType() == NODE_ERROR {
-				yylex.Error(errcode.EARRAY_NAME, newCtxFromTokenCtx(yyDollar[2].token.Context))
+				yylex.Error(errcode.EARRAY_NOT_ARRAY, newCtxFromTokenCtx(yyDollar[2].token.Context))
 				yyVAL.expr = yyDollar[1].expr
 			} else if yyDollar[3].expr.NodeType() == NODE_ERROR {
 				yylex.Error(errcode.EARRAY_INDEX, newCtxFromTokenCtx(yyDollar[2].token.Context))

@@ -35,7 +35,7 @@ var ErrcodeNames map[string]string = map[string]string{
 	errcode.EARRAY_TO_INT_LEN:        "EARRAY_TO_INT_LEN",
 	errcode.EARRAY_TO_INT_TYPE:       "EARRAY_TO_INT_TYPE",
 	errcode.EARRAY_EMPTY:             "EARRAY_EMPTY",
-	errcode.EARRAY_NAME:              "EARRAY_NAME",
+	errcode.EARRAY_NOT_ARRAY:         "EARRAY_NAME",
 	errcode.EARRAY_INDEX:             "EARRAY_INDEX",
 	errcode.EARRAY_OUT_OF_INDEX:      "EARRAY_OUT_OF_INDEX",
 	errcode.EARRAY_ELE_NULL:          "EARRAY_ELE_NULL",

@@ -44,8 +44,9 @@ const (
 	EARRAY_TO_INT_LEN   = "配列要素数が %d のため数値に変換できない"
 	EARRAY_TO_INT_TYPE  = "配列要素が数値でないため、数値に変換できない"
 	EARRAY_EMPTY        = "空の配列"
-	EARRAY_NAME         = "配列名誤り"
+	EARRAY_NOT_ARRAY    = "配列が必要"
 	EARRAY_INDEX        = "配列インデックス誤り"
+	EARRAY_INDEX_NULL   = "配列インデックスが未確定"
 	EARRAY_OUT_OF_INDEX = "配列インデックスが範囲外"
 	EARRAY_ELE_NULL     = "配列要素（インデックス %d）が未確定"
 

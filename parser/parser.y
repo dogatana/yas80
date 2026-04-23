@@ -694,21 +694,21 @@ indexed_expr: expr '[' ']'
 				if $1.NodeType() == NODE_ERROR {
 					err := $1.(*ParseError)
 					yylex.Error(err.Message, err.Context)
-					yylex.Error(errcode.EARRAY_NAME, newCtxFromTokenCtx($2.Context))
+					yylex.Error(errcode.EARRAY_NOT_ARRAY, newCtxFromTokenCtx($2.Context))
 				} 
 				$$ = &ParseError{Message: errcode.EARRAY_INDEX, Context: newCtxFromTokenCtx($2.Context)}
 			}
 			| expr '[' expr ']'
 			{
 				if $1.NodeType() == NODE_ERROR && $3.NodeType() == NODE_ERROR {
-					yylex.Error(errcode.EARRAY_NAME, newCtxFromTokenCtx($2.Context))
+					yylex.Error(errcode.EARRAY_NOT_ARRAY, newCtxFromTokenCtx($2.Context))
 					err := $1.(*ParseError)
 					yylex.Error(err.Message, err.Context)
 
 					yylex.Error(errcode.EARRAY_INDEX, newCtxFromTokenCtx($2.Context))
 					$$ = $3
 				} else if $1.NodeType() == NODE_ERROR {
-					yylex.Error(errcode.EARRAY_NAME, newCtxFromTokenCtx($2.Context))
+					yylex.Error(errcode.EARRAY_NOT_ARRAY, newCtxFromTokenCtx($2.Context))
 					$$ = $1
 				} else if $3.NodeType() == NODE_ERROR {
 					yylex.Error(errcode.EARRAY_INDEX, newCtxFromTokenCtx($2.Context))

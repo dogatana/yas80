@@ -136,9 +136,9 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	case *parser.ArrayLiteral:
 		return e.evalArrayLiteral(node, env, ctx)
 
-	// // 添え字式
-	// case *parser.IndexedExpression:
-	// 	return e.evalIndexedExpression(node, env, ctx)
+	// 添え字式
+	case *parser.IndexedExpression:
+		return e.evalIndexedExpression(node, env, ctx)
 
 	// 関数呼出し
 	case *parser.FuncCallExpression:
@@ -459,46 +459,49 @@ func (e *Evaluator) evalArrayLiteral(expr *parser.ArrayLiteral, env TEnv, ctx TC
 	return &object.ArrayObject{Values: values, Expressions: expr.Elements.Expressions}
 }
 
-// // 添え字式
-// func (e *Evaluator) evalIndexedExpression(expr *parser.IndexedExpression, env TEnv, ctx TContext) object.Object {
-// 	e.concatenateSymbol(&expr.Left, env, ctx)
-// 	e.concatenateSymbol(&expr.Index, env, ctx)
+// 添え字式
+func (e *Evaluator) evalIndexedExpression(expr *parser.IndexedExpression, env TEnv, ctx TContext) object.Object {
+	e.concatenateSymbol(&expr.Left, env, ctx)
+	e.concatenateSymbol(&expr.Index, env, ctx)
 
-// 	var array *object.ArrayObject
-// 	var index int
+	var array *object.ArrayObject
+	var index int
 
-// 	obj := e.evalExpression(expr.Left, env, ctx)
-// 	switch obj := obj.(type) {
-// 	case *object.ErrorObject:
-// 		return obj
-// 	case *object.RefNotFoundObject:
-// 		return obj
-// 	case *object.ArrayObject:
-// 		array = obj
-// 	default:
-// 		e.logger.Error(errcode.EARRAY_NAME, ctx)
-// 		return object.ERROR
-// 	}
+	obj := e.evalExpression(expr.Left, env, ctx)
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		return obj
+	case *object.ArrayObject:
+		array = obj
+	default:
+		e.logger.Error(errcode.EARRAY_NOT_ARRAY, ctx)
+		return object.ERROR
+	}
 
-// 	obj = e.evalExpression(expr.Index, env, ctx)
-// 	switch obj := obj.(type) {
-// 	case *object.ErrorObject:
-// 		return obj
-// 	case *object.RefNotFoundObject:
-// 		return obj
-// 	case *object.NumberObject:
-// 		index = obj.Value
-// 		if index < 0 || index >= len(array.Values) {
-// 			e.logger.Error(errcode.EARRAY_OUT_OF_INDEX, ctx)
-// 			return object.ERROR
-// 		}
-// 	default:
-// 		e.logger.Error(errcode.EARRAY_INDEX, ctx)
-// 		return object.ERROR
-// 	}
+	obj = e.evalExpression(expr.Index, env, ctx)
+	switch obj := obj.(type) {
+	case *object.ErrorObject:
+		return obj
+	case *object.RefNotFoundObject:
+		return obj
+	case *object.NullObject:
+		e.logger.Error(errcode.EARRAY_INDEX_NULL, ctx)
+		return object.ERROR
+	case *object.NumberObject:
+		index = obj.Value
+		if index < 0 || index >= len(array.Values) {
+			e.logger.Error(errcode.EARRAY_OUT_OF_INDEX, ctx)
+			return object.ERROR
+		}
+	default:
+		e.logger.Error(errcode.EARRAY_INDEX, ctx)
+		return object.ERROR
+	}
 
-// 	return array.Values[index]
-// }
+	return array.Values[index]
+}
 
 // レジスタ間接 (SP),(HL),(IX+d),(IY+d),(C)
 func (e *Evaluator) evalRegIndirectExpression(expr *parser.RegIndirectExpression, env TEnv, ctx TContext) object.Object {
