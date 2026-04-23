@@ -107,6 +107,8 @@ var ErrcodeNames map[string]string = map[string]string{
 	errcode.EVAR_SYS:                 "EVAR_SYS",
 	errcode.EVAR_USED:                "EVAR_USED",
 	errcode.EVAR_VALUE:               "EVAR_VALUE",
+	errcode.EVAR_VALUE_NULL:          "EVAR_VALUE_NULL",
+	errcode.EVAR_VALUE_FWD:           "EVAR_VALUE_FWD",
 	errcode.EASSIGN_LEFT:             "EASSIGN_LEFT",
 	errcode.EASSIGN_VALUE:            "EASSIGN_VALUE",
 	errcode.EASSIGN_FWD_VALUE:        "EASSIGN_FWD_VALUE",

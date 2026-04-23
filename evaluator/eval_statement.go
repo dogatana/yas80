@@ -100,9 +100,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	// case *parser.ReptStatement:
 	// 	return e.evalReptStatement(stmt, checkExitM, ectx, env)
 
-	// // var
-	// case *parser.VariableStatement:
-	// 	return e.evalVariableStatement(stmt, env)
+	// var
+	case *parser.VariableStatement:
+		return e.evalVariableStatement(stmt, env)
 
 	// 代入文
 	case *parser.AssignStatement:
@@ -610,85 +610,86 @@ func removeSelfName(ids []intern.SymbolID, id intern.SymbolID) []intern.SymbolID
 	return util.Filter(ids, func(v intern.SymbolID) bool { return v != id })
 }
 
-// // var 文
-//
-//	func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TEnv) object.Object {
-//		e.concatenateSymbol(&stmt.Value, env, stmt.Context)
-//
-//		id := stmt.Name.(*parser.Ident)
-//		name := id.Name
-//
-//		if name == "_" {
-//			e.logger.Error(errcode.EVAR_SYS, stmt.Context)
-//			return object.ERROR
-//		}
-//
-//		switch {
-//		case name[0] == '.' && object.OuterEnvType(env) != object.ENV_PROC:
-//			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), stmt.Context)
-//			return object.ERROR
-//		case name[0] == '@' && env.EnvType() != object.ENV_MACRO:
-//			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), stmt.Context)
-//			return object.ERROR
-//		}
-//
-//		// 定義済みで同じ Symbol でないならエラー
-//		obj, ok := env.Get(name)
-//		if ok {
-//			sym, ok := obj.(*object.SymbolObject)
-//			if !ok || sym.Name != name || sym.SymType != object.SYM_VAR || !sym.Context.Equal(stmt.Context) {
-//				e.logger.Error(fmt.Sprintf(errcode.EVAR_USED, name), stmt.Context)
-//			}
-//		}
-//
-//		v := e.evalExpression(stmt.Value, env, stmt.Context)
-//
-//		switch v := v.(type) {
-//		case *object.ErrorObject:
-//			return object.ERROR
-//
-//		case *object.NumberObject:
-//			// NumberObject の copy を値とする Symbol を作成し環境へ登録
-//			val := *v // copy
-//			sym := object.NewVarSymbol(name, stmt.Value, &val, []string{}, stmt.Context)
-//			env.Set(name, sym)
-//			text := fmt.Sprintf("%04x(%d)", v.Value, v.Value)
-//			return &object.TextObject{Text: text, Context: stmt.Context}
-//
-//		case *object.StringObject:
-//			// StringObject の copy を値とする Symbol を作成し環境へ登録
-//			val := *v // copy
-//			sym := object.NewVarSymbol(name, stmt.Value, &val, []string{}, stmt.Context)
-//			env.Set(name, sym)
-//			text := fmt.Sprintf("%q", v.Value)
-//			return &object.TextObject{Text: text, Context: stmt.Context}
-//
-//		case *object.RegisterObject:
-//			// 値を持つ Symbol を作成し環境へ登録
-//			sym := object.NewVarSymbol(name, stmt.Value, v, []string{}, stmt.Context)
-//			env.Set(name, sym)
-//			text := parser.TokenLiteral(v.Register)
-//			return &object.TextObject{Text: text, Context: stmt.Context}
-//
-//		case *object.FlagObject:
-//			// 値を持つ Symbol を作成し環境へ登録
-//			sym := object.NewVarSymbol(name, stmt.Value, v, []string{}, stmt.Context)
-//			env.Set(name, sym)
-//			text := parser.TokenLiteral(v.Flag)
-//			return &object.TextObject{Text: text, Context: stmt.Context}
-//
-//		case *object.FunctionObject, *object.ArrayObject:
-//			// 値を持つ Symbol を作成し環境へ登録
-//			sym := object.NewVarSymbol(name, stmt.Value, v, []string{}, stmt.Context)
-//			env.Set(name, sym)
-//			return &object.ValueObject{Value: v, Context: stmt.Context}
-//
-//		default:
-//			e.logger.Error(fmt.Sprintf(errcode.EVAR_VALUE, name), stmt.Context)
-//			return object.ERROR
-//		}
-//	}
-//
+// var 文
+
+func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TEnv) object.Object {
+	e.concatenateSymbol(&stmt.Value, env, stmt.Context)
+
+	ident := stmt.Name.(*parser.Ident)
+	id := ident.NameID
+	name := ident.Name
+
+	if name == "_" {
+		e.logger.Error(errcode.EVAR_SYS, stmt.Context)
+		return object.ERROR
+	}
+
+	switch {
+	case (ident.IdentType == parser.LOCAL_IDENT || ident.IdentType == parser.ANON_IDENT) && object.OuterEnvType(env) != object.ENV_PROC:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), stmt.Context)
+		return object.ERROR
+	case ident.IdentType == parser.AT_IDENT && env.EnvType() != object.ENV_MACRO:
+		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), stmt.Context)
+		return object.ERROR
+	}
+
+	// 定義済みで同じ Symbol でないならエラー
+	obj, ok := env.Get(id)
+	if ok {
+		sym, ok := obj.(*object.SymbolObject)
+		if !ok || sym.NameID != id || sym.SymType != object.SYM_VAR || !sym.Context.Equal(stmt.Context) {
+			e.logger.Error(fmt.Sprintf(errcode.EVAR_USED, name), stmt.Context)
+		}
+	}
+
+	v := e.evalExpression(stmt.Value, env, stmt.Context)
+
+	switch v := v.(type) {
+	case *object.ErrorObject:
+		return object.ERROR
+	case *object.NullObject:
+		e.logger.Error(fmt.Sprintf(errcode.EVAR_VALUE_NULL, name), stmt.Context)
+	case *object.RefNotFoundObject:
+		e.logger.Error(fmt.Sprintf(errcode.EVAR_VALUE_FWD, name), stmt.Context)
+		return object.ERROR
+
+	case *object.NumberObject:
+		// NumberObject の copy を値とする Symbol を作成し環境へ登録
+		val := *v // copy
+		sym := object.NewVarSymbol(id, name, stmt.Value, &val, []intern.SymbolID{}, stmt.Context)
+		env.Set(id, sym)
+		return toTextObject(v, stmt.Context)
+
+	case *object.StringObject:
+		// StringObject の copy を値とする Symbol を作成し環境へ登録
+		val := *v // copy
+		sym := object.NewVarSymbol(id, name, stmt.Value, &val, []intern.SymbolID{}, stmt.Context)
+		env.Set(id, sym)
+		return toTextObject(v, stmt.Context)
+
+	case *object.RegisterObject:
+		// 値を持つ Symbol を作成し環境へ登録
+		sym := object.NewVarSymbol(id, name, stmt.Value, v, []intern.SymbolID{}, stmt.Context)
+		env.Set(id, sym)
+		return toTextObject(v, stmt.Context)
+
+	case *object.FlagObject:
+		// 値を持つ Symbol を作成し環境へ登録
+		sym := object.NewVarSymbol(id, name, stmt.Value, v, []intern.SymbolID{}, stmt.Context)
+		env.Set(id, sym)
+		return toTextObject(v, stmt.Context)
+
+	case *object.FunctionObject, *object.ArrayObject:
+		// 値を持つ Symbol を作成し環境へ登録
+		sym := object.NewVarSymbol(id, name, stmt.Value, v, []intern.SymbolID{}, stmt.Context)
+		env.Set(id, sym)
+		return toTextObject(v, stmt.Context)
+	}
+
+	e.logger.Error(fmt.Sprintf(errcode.EVAR_VALUE, name), stmt.Context)
+	return object.ERROR
+}
+
 // 代入
 func (e *Evaluator) evalAssignStatement(stmt *parser.AssignStatement, env TEnv) object.Object {
 	e.concatenateSymbol(&stmt.Left, env, stmt.Context)

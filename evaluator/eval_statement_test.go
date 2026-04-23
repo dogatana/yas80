@@ -371,7 +371,7 @@ func TestEnumStatement(t *testing.T) {
 	}
 }
 
-func TestVarAssignStatement(t *testing.T) {
+func TestVariableStatement(t *testing.T) {
 	tests := []struct {
 		input string
 		code  []byte
@@ -386,7 +386,7 @@ func TestVarAssignStatement(t *testing.T) {
 		{input: `const abc = 1 \ var abc = 1`, err: errcode.EVAR_USED},
 		// 5-
 		{input: `var abc = 1 \ var abc = 2`, err: errcode.EVAR_USED},
-		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE},
+		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE_FWD},
 		{input: `const def = 1\ var abc = def`, syms: []symValue{{"ABC", 1}}},
 		{input: `abc = 123`, err: errcode.EVAR_UNDEF},
 		{input: `hl = 123`, err: errcode.EASSIGN_LEFT},
@@ -597,7 +597,7 @@ func TestOrgAbsRel(t *testing.T) {
 		{input: `const abc = 1 \ var abc = 1`, err: errcode.EVAR_USED},
 		// 5-
 		{input: `var abc = 1 \ var abc = 2`, err: errcode.EVAR_USED},
-		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE},
+		{input: `var abc = def \ const def = 1`, err: errcode.EVAR_VALUE_NULL},
 		{input: `const def = 1\ var abc = def`, syms: []symValue{{"ABC", 1}}},
 		{input: `abc = 123`, err: errcode.EVAR_UNDEF},
 		{input: `hl = 123`, err: errcode.EASSIGN_LEFT},
