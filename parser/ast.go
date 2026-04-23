@@ -569,7 +569,6 @@ func (s *BlockStatement) String() string {
 // macro block statement
 type MacroBlockStatement struct {
 	Label   Expression
-	Name    string
 	NameID  intern.SymbolID // マクロ名 もしくは "REPT"
 	Index   int             // REPT 用
 	Count   int             // REPT 用
@@ -591,7 +590,7 @@ func (s *MacroBlockStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *MacroBlockStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(fmt.Sprintf("MACRO BLOCK(%s) {\n", s.Name))
+	out.WriteString(fmt.Sprintf("MACRO BLOCK(%s) {\n", s.NameID))
 	block := util.Map(s.Block, func(s Statement) string { return s.String() })
 	out.WriteString(strings.Join(block, "\n"))
 	out.WriteString("}")
@@ -646,7 +645,7 @@ func (s *VariableStatement) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("VAR ")
-	out.WriteString(s.Name.(*Ident).Name)
+	out.WriteString(s.Name.(*Ident).NameID.String())
 	out.WriteString(" = ")
 	out.WriteString(s.Value.String())
 
@@ -838,14 +837,13 @@ func (s *CommentStatement) String() string {
 // ラベル
 type Label struct {
 	LabelType int
-	Name      string
 	NameID    intern.SymbolID
 	Context   *filecontent.Context
 }
 
 func (e *Label) expressionNode()    {}
 func (e *Label) NodeType() NodeType { return NODE_LABEL }
-func (e *Label) String() string     { return e.Name }
+func (e *Label) String() string     { return e.NameID.String() }
 
 // 数値
 type NumberLiteral struct {
@@ -934,7 +932,6 @@ func (e *FlagLiteral) String() string {
 
 // 識別子
 type Ident struct {
-	Name      string
 	NameID    intern.SymbolID
 	IdentType int
 	Value     Expression
@@ -943,11 +940,10 @@ type Ident struct {
 
 func (e *Ident) expressionNode()    {}
 func (e *Ident) NodeType() NodeType { return NODE_IDENT }
-func (e *Ident) String() string     { return e.Name }
+func (e *Ident) String() string     { return e.NameID.String() }
 
 // ドット識別子
 type DotIdent struct {
-	Name    string
 	NameID  intern.SymbolID
 	Left    intern.SymbolID
 	Right   intern.SymbolID
@@ -957,7 +953,7 @@ type DotIdent struct {
 
 func (e *DotIdent) expressionNode()    {}
 func (e *DotIdent) NodeType() NodeType { return NODE_DOT_IDENT }
-func (e *DotIdent) String() string     { return e.Name }
+func (e *DotIdent) String() string     { return e.NameID.String() }
 
 // レジスタ間接指定
 type RegIndirectExpression struct {
@@ -1045,7 +1041,6 @@ func (e *PrefixExpression) String() string {
 
 // 関数呼出し
 type FuncCallExpression struct {
-	Name    string
 	NameID  intern.SymbolID
 	Args    *ExpressionList
 	Context *filecontent.Context
@@ -1056,7 +1051,7 @@ func (e *FuncCallExpression) NodeType() NodeType { return NODE_CALL }
 func (e *FuncCallExpression) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(e.Name + "(")
+	out.WriteString(e.NameID.String() + "(")
 	out.WriteString(e.Args.String())
 	out.WriteRune(')')
 

@@ -190,7 +190,7 @@ directive	: CONST ident_expr '=' expr
 					$$ = $4.(*ParseError)
 				} else {
 					id := $2.(*Ident)
-					$$ = &VariableStatement{Name: &Ident{Name: id.Name, NameID: id.NameID}, Value: $4, Context: newCtxFromTokenCtx($1.Context)}
+					$$ = &VariableStatement{Name: &Ident{NameID: id.NameID}, Value: $4, Context: newCtxFromTokenCtx($1.Context)}
 				}
 			}
 			| expr '=' expr
@@ -432,10 +432,10 @@ datastore	: DS expr
 			}
 			;
 	
-ident		: IDENT 		{ $$ = &Ident{Name: $1.SymbolID.String(), NameID: $1.SymbolID, IdentType: IDENT, Context: newCtxFromTokenCtx($1.Context)} }
-			| LOCAL_IDENT	{ $$ = &Ident{Name: $1.SymbolID.String(), NameID: $1.SymbolID, IdentType: LOCAL_IDENT, Context: newCtxFromTokenCtx($1.Context)}}
-			| AT_IDENT		{ $$ = &Ident{Name: $1.SymbolID.String(), NameID: $1.SymbolID, IdentType: AT_IDENT, Context: newCtxFromTokenCtx($1.Context)}}
-			| ANON_IDENT	{ $$ = &Ident{Name: $1.SymbolID.String(), NameID: $1.SymbolID, IdentType: ANON_IDENT, Context: newCtxFromTokenCtx($1.Context)}}
+ident		: IDENT 		{ $$ = &Ident{NameID: $1.SymbolID, IdentType: IDENT, Context: newCtxFromTokenCtx($1.Context)} }
+			| LOCAL_IDENT	{ $$ = &Ident{NameID: $1.SymbolID, IdentType: LOCAL_IDENT, Context: newCtxFromTokenCtx($1.Context)}}
+			| AT_IDENT		{ $$ = &Ident{NameID: $1.SymbolID, IdentType: AT_IDENT, Context: newCtxFromTokenCtx($1.Context)}}
+			| ANON_IDENT	{ $$ = &Ident{NameID: $1.SymbolID, IdentType: ANON_IDENT, Context: newCtxFromTokenCtx($1.Context)}}
 			;
 
 ident_expr	: ident			{ $$ = $1 }
@@ -666,12 +666,12 @@ expr		: NUMBER
 			{
 				name := $1.SymbolID.String()
 				names := strings.Split(name, ".")
-				$$ = &DotIdent{Name: name, NameID: $1.SymbolID, Left: intern.InternString(names[0]), Right: intern.InternString("." + names[1]), Context: newCtxFromTokenCtx($1.Context)}
+				$$ = &DotIdent{NameID: $1.SymbolID, Left: intern.InternString(names[0]), Right: intern.InternString("." + names[1]), Context: newCtxFromTokenCtx($1.Context)}
 			}
 			| IDENT '(' expr_list ')' 	
 			{ 
 				e := $3.(*ExpressionList)
-				$$ = &FuncCallExpression{ Name: $1.SymbolID.String(), NameID: $1.SymbolID, Args: e, Context: newCtxFromTokenCtx($1.Context)} 
+				$$ = &FuncCallExpression{NameID: $1.SymbolID, Args: e, Context: newCtxFromTokenCtx($1.Context)} 
 			}
 			| '[' expr_list ']' 
 			{ 

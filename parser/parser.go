@@ -964,7 +964,7 @@ yydefault:
 				yyVAL.statement = yyDollar[4].expr.(*ParseError)
 			} else {
 				id := yyDollar[2].expr.(*Ident)
-				yyVAL.statement = &VariableStatement{Name: &Ident{Name: id.Name, NameID: id.NameID}, Value: yyDollar[4].expr, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
+				yyVAL.statement = &VariableStatement{Name: &Ident{NameID: id.NameID}, Value: yyDollar[4].expr, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
 			}
 		}
 	case 17:
@@ -1275,25 +1275,25 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:435
 		{
-			yyVAL.expr = &Ident{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, IdentType: IDENT, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
+			yyVAL.expr = &Ident{NameID: yyDollar[1].token.SymbolID, IdentType: IDENT, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
 		}
 	case 45:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:436
 		{
-			yyVAL.expr = &Ident{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, IdentType: LOCAL_IDENT, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
+			yyVAL.expr = &Ident{NameID: yyDollar[1].token.SymbolID, IdentType: LOCAL_IDENT, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
 		}
 	case 46:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:437
 		{
-			yyVAL.expr = &Ident{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, IdentType: AT_IDENT, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
+			yyVAL.expr = &Ident{NameID: yyDollar[1].token.SymbolID, IdentType: AT_IDENT, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
 		}
 	case 47:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:438
 		{
-			yyVAL.expr = &Ident{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, IdentType: ANON_IDENT, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
+			yyVAL.expr = &Ident{NameID: yyDollar[1].token.SymbolID, IdentType: ANON_IDENT, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
 		}
 	case 48:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -1617,14 +1617,14 @@ yydefault:
 		{
 			name := yyDollar[1].token.SymbolID.String()
 			names := strings.Split(name, ".")
-			yyVAL.expr = &DotIdent{Name: name, NameID: yyDollar[1].token.SymbolID, Left: intern.InternString(names[0]), Right: intern.InternString("." + names[1]), Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
+			yyVAL.expr = &DotIdent{NameID: yyDollar[1].token.SymbolID, Left: intern.InternString(names[0]), Right: intern.InternString("." + names[1]), Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
 		}
 	case 84:
 		yyDollar = yyS[yypt-4 : yypt+1]
 //line parser/parser.y:672
 		{
 			e := yyDollar[3].expr.(*ExpressionList)
-			yyVAL.expr = &FuncCallExpression{Name: yyDollar[1].token.SymbolID.String(), NameID: yyDollar[1].token.SymbolID, Args: e, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
+			yyVAL.expr = &FuncCallExpression{NameID: yyDollar[1].token.SymbolID, Args: e, Context: newCtxFromTokenCtx(yyDollar[1].token.Context)}
 		}
 	case 85:
 		yyDollar = yyS[yypt-3 : yypt+1]

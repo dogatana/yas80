@@ -416,7 +416,7 @@ func (e *Evaluator) evalLabelStatement(stmt *parser.LabelStatement, env TEnv) ob
 // parser.Label 評価&環境登録
 func (e *Evaluator) evalLabel(label *parser.Label, env TEnv) object.Object {
 	id := label.NameID
-	name := label.Name
+	name := id.String()
 
 	// 匿名ラベル処理
 	if label.LabelType == parser.NODE_ANON_LABEL {
@@ -488,7 +488,7 @@ func (e *Evaluator) evalAnonymouseLable(label *parser.Label, env TEnv) object.Ob
 	obj, ok := env.Get(label.NameID)
 	if !ok {
 		// 環境にないなら新規登録
-		obj := &object.AnonLabelsObject{Name: label.Name, NameID: label.NameID, Labels: []*object.AnonLabel{pos}}
+		obj := &object.AnonLabelsObject{NameID: label.NameID, Labels: []*object.AnonLabel{pos}}
 		env.Set(label.NameID, obj)
 		return obj
 	}
@@ -515,7 +515,7 @@ func (e *Evaluator) evalConstStatement(node *parser.ConstStatement, env TEnv) ob
 		return object.ERROR
 	}
 	id := ident.NameID
-	name := ident.Name
+	name := id.String()
 
 	switch {
 	case (ident.IdentType == parser.LOCAL_IDENT || ident.IdentType == parser.ANON_IDENT) && object.OuterEnvType(env) != object.ENV_PROC:
@@ -617,7 +617,7 @@ func (e *Evaluator) evalVariableStatement(stmt *parser.VariableStatement, env TE
 
 	ident := stmt.Name.(*parser.Ident)
 	id := ident.NameID
-	name := ident.Name
+	name := id.String()
 
 	if name == "_" {
 		e.logger.Error(errcode.EVAR_SYS, stmt.Context)
@@ -695,22 +695,22 @@ func (e *Evaluator) evalAssignStatement(stmt *parser.AssignStatement, env TEnv) 
 	e.concatenateSymbol(&stmt.Left, env, stmt.Context)
 	e.concatenateSymbol(&stmt.Value, env, stmt.Context)
 
-	id, ok := stmt.Left.(*parser.Ident)
+	ident, ok := stmt.Left.(*parser.Ident)
 	if !ok {
 		e.logger.Error(errcode.EASSIGN_LEFT, stmt.Context)
 		return object.ERROR
 	}
-	name := id.Name
+	name := ident.NameID.String()
 
-	if (id.IdentType == parser.LOCAL_IDENT || id.IdentType == parser.ANON_IDENT) && object.OuterEnvType(env) != object.ENV_PROC {
+	if (ident.IdentType == parser.LOCAL_IDENT || ident.IdentType == parser.ANON_IDENT) && object.OuterEnvType(env) != object.ENV_PROC {
 		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, name), stmt.Context)
 		return object.ERROR
-	} else if id.IdentType == parser.AT_IDENT && env.EnvType() != object.ENV_MACRO {
+	} else if ident.IdentType == parser.AT_IDENT && env.EnvType() != object.ENV_MACRO {
 		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_MACRO, name), stmt.Context)
 		return object.ERROR
 	}
 
-	obj, ok := env.Get(id.NameID)
+	obj, ok := env.Get(ident.NameID)
 	if !ok {
 		// 未定義ならエラー
 		e.logger.Error(fmt.Sprintf(errcode.EVAR_UNDEF, name), stmt.Context)

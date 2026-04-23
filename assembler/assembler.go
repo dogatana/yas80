@@ -361,11 +361,12 @@ func showResult(count int, prog *parser.BlockStatement, obj object.Object, env o
 func printStatement(stmt parser.Statement) {
 	switch stmt := stmt.(type) {
 	case *parser.MacroBlockStatement:
+		name := stmt.NameID.String()
 		printContext(stmt.GetContext())
-		if stmt.Name == "REPT" {
+		if name == "REPT" {
 			fmt.Printf("REPT %d\n", stmt.Count)
 		} else {
-			fmt.Println("MACRO", stmt.Name)
+			fmt.Println("MACRO", name)
 		}
 		for _, s := range stmt.Block {
 			printContext(s.GetContext())

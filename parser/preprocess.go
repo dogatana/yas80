@@ -169,7 +169,7 @@ func getName(expr Expression) string {
 		return expr.Value
 	case *Ident:
 		if expr.IdentType == IDENT || expr.IdentType == LOCAL_IDENT || expr.IdentType == ANON_IDENT {
-			return expr.Name
+			return expr.NameID.String()
 		}
 		panic(fmt.Sprintf("unexpected Ident %s", intern.Lookup(expr.NameID)))
 	case *InfixExpression:

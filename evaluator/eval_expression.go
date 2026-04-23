@@ -36,7 +36,7 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 	// 識別子
 	case *parser.Ident:
 		id := node.NameID
-		name := node.Name
+		name := id.String()
 
 		// 匿名ラベルの参照を解決
 		if node.IdentType == parser.ANON_IDENT {
@@ -160,12 +160,13 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 
 // 関数呼出し
 func (e *Evaluator) evalFuncCallExpression(expr *parser.FuncCallExpression, env TEnv, ctx TContext) object.Object {
-	if expr.Name[0] == '$' {
+	name := expr.NameID.String()
+	if name[0] == '$' {
 		return e.evalBuiltinFunction(expr, env, ctx)
 	}
 	obj, ok := env.Get(expr.NameID)
 	if !ok {
-		e.logger.Error(fmt.Sprintf(errcode.EFUNC_UNDEF, expr.Name), expr.Context)
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_UNDEF, name), expr.Context)
 		return object.ERROR
 	}
 
@@ -183,7 +184,7 @@ func (e *Evaluator) evalFuncCallExpression(expr *parser.FuncCallExpression, env 
 	// 	return e.applyCharmap(obj, expr, env, ctx)
 
 	default:
-		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NOT_FUNC, expr.Name), ctx)
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NOT_FUNC, name), ctx)
 		return object.ERROR
 	}
 

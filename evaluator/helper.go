@@ -219,8 +219,8 @@ func (e *Evaluator) concatenateSymbol(ptr *parser.Expression, env TEnv, ctx TCon
 			e.logger.Error(errcode.ECONCAT_TYPE, ctx)
 			return false
 		}
-		ident.Name += suffix
-		ident.NameID = intern.InternString(ident.Name)
+		name := ident.NameID.String() + suffix
+		ident.NameID = intern.InternString(name)
 		*ptr = ident
 		return true
 	case *parser.PrefixExpression:
@@ -344,13 +344,14 @@ func (e *Evaluator) exprToLabel(expr parser.Expression, env TEnv, ctx TContext) 
 
 // parser.Ident -> parser.Label 変換(exprToLabel から呼ばれる)
 func (e *Evaluator) identToLabel(id *parser.Ident) *parser.Label {
-	l := &parser.Label{Name: id.Name, NameID: id.NameID, LabelType: parser.NODE_LABEL, Context: id.Context}
+	l := &parser.Label{NameID: id.NameID, LabelType: parser.NODE_LABEL, Context: id.Context}
+	name := id.NameID.String()
 	switch {
-	case util.IsAnonDef(id.Name) || util.IsAnonRef(id.Name):
+	case util.IsAnonDef(name) || util.IsAnonRef(name):
 		l.LabelType = parser.NODE_ANON_LABEL
-	case id.Name[0] == '.':
+	case name[0] == '.':
 		l.LabelType = parser.NODE_LOCAL_LABEL
-	case id.Name[0] == '@':
+	case name[0] == '@':
 		l.LabelType = parser.NODE_AT_LABEL
 	}
 	return l
