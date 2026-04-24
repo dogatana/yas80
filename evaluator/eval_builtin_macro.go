@@ -5,21 +5,22 @@ import (
 	"github.com/dogatana/yas80/parser"
 )
 
+var _builtinMacroNames = map[string]bool{
+	// "ENTRY":    true,
+	// "ALIGN":    true,
+	// "ERROR":    true,
+	// "WARN":     true,
+	// "INFO":     true,
+	// "INCBIN":   true,
+	// "BINCLUDE": true,
+	// "SETMAP":   true,
+	// "LIST":     true,
+	// "CHECK256": true,
+}
+
 // 組み込みマクロかどうか
 func isBuiltinMacroName(name string) bool {
-	builtinMacroNames := map[string]bool{
-		"ENTRY":    true,
-		"ALIGN":    true,
-		"ERROR":    true,
-		"WARN":     true,
-		"INFO":     true,
-		"INCBIN":   true,
-		"BINCLUDE": true,
-		"SETMAP":   true,
-		"LIST":     true,
-		"CHECK256": true,
-	}
-	return builtinMacroNames[name]
+	return _builtinMacroNames[name]
 }
 
 // 組み込みマクロの実行

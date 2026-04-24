@@ -352,9 +352,8 @@ func TestEvalPrefixExpressionError(t *testing.T) {
 		err   string
 	}{
 		// 0-
-		{input: `const val = "a" \ const result = +val`, err: errcode.EUNI_OP_VALUE},
-		{input: `const val = "a" \ const result = -val`, err: errcode.EUNI_OP_VALUE},
-		{input: `const val = "a" \ const result = ~val`, err: errcode.EUNI_OP_VALUE},
+		// {input: `const val = "a" \ const result = +val`, err: errcode.EUNI_OP_VALUE},  1文字文字列の数値化でエラーでなくなった
+		{input: `const val = "ab" \ const result = -val`, err: errcode.ESTR_TO_INT_LEN},
 	}
 
 	for tn, tt := range tests {

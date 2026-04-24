@@ -84,13 +84,13 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.MacroStatement:
 		return e.evalMacroStatement(stmt, env)
 
-	// // マクロ呼出し
-	// case *parser.MacroCallStatement:
-	// 	return e.evalMacroCallStatement(stmt, checkExitM, ectx, env)
+	// マクロ呼出し
+	case *parser.MacroCallStatement:
+		return e.evalMacroCallStatement(stmt, checkExitM, ectx, env)
 
-	// // マクロ呼出し
-	// case *parser.MacroBlockStatement:
-	// 	return e.evalMacroBlockStatement(stmt, checkExitM, ectx, env)
+	// マクロ呼出し
+	case *parser.MacroBlockStatement:
+		return e.evalMacroBlockStatement(stmt, checkExitM, ectx, env)
 
 	// // exitm
 	// case *parser.ExitmStatement:
@@ -132,9 +132,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.FileStatement:
 		return &object.FileObject{Filename: stmt.Filename, Line: stmt.Line}
 
-	// // comment
-	// case *parser.CommentStatement:
-	// 	return &object.CommentObject{Text: stmt.Text, Context: stmt.Context}
+	// comment
+	case *parser.CommentStatement:
+		return &object.SourceTextObject{Text: stmt.Text, Context: stmt.Context}
 
 	// // システム変数設定
 	// case *parser.SetSysVarStatement:
