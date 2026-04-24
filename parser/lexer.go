@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/dogatana/yas80/errcode"
 	"github.com/dogatana/yas80/filecontent"
@@ -424,39 +425,23 @@ LINE_CONT:
 
 	case l.lctx.curChar == '@':
 		// AT_IDENT, ANON_IDENT
-		ch := l.peekChar()
-		switch {
-		case ch == '@': // @@
+		if l.peekChar() == '@' { // @@
 			l.nextChar()
 			l.nextChar()
 			id := intern.InternString("@@")
 			return Token{TokenType: ANON_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
-
-		case ch == 'f' || ch == 'F' || ch == 'b' || ch == 'B': // @F, @B
-			l.nextChar()
-			l.nextChar()
-			id := intern.InternBytes([]byte{'@', byte(ch)})
-			return Token{TokenType: ANON_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
-
-		case '0' <= ch && ch <= '9': // @n @nF @nB
-			b := []byte{'@', byte(ch)}
-			l.nextChar()
-			ch = l.peekChar()
-			if ch == 'f' || ch == 'F' || ch == 'b' || ch == 'B' {
-				b = append(b, byte(ch))
-				l.nextChar()
-			}
-			l.nextChar()
-			id := intern.InternBytes(b)
-			return Token{TokenType: ANON_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
-
 		}
 
 		b := l.readWord()
+		id := intern.InternBytes(b)
 		l.nextChar()
 
-		id := intern.InternBytes(b)
-		return Token{TokenType: AT_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
+		if len(b) == 2 && (b[1] == 'f' || b[1] == 'F' || b[1] == 'b' || b[1] == 'B' || '0' <= b[1] && b[1] <= '9') || // @F @B @[0-9]
+			len(b) == 3 && '0' <= b[1] && b[1] <= '9' && (b[2] == 'f' || b[2] == 'F' || b[2] == 'b' || b[2] == 'B') { // @[0-9][FB]
+			return Token{TokenType: ANON_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)}
+		}
+		return Token{TokenType: AT_IDENT, SymbolID: id, Context: l.lctx.toContext(l.start)} //@name
+
 	default:
 		literal = string(l.lctx.curChar)
 		tok = Token{TokenType: INVALID, SymbolID: intern.InternString(literal), Context: l.lctx.toContext(l.start)}
@@ -542,12 +527,13 @@ func (l *Lexer) nextChar() {
 		l.isEOF = true
 		return
 	}
-	start := l.lctx.index
-	l.lctx.index += l.charSize(l.lctx.fileContent.Content[l.lctx.index])
-	l.lctx.curChar = []rune(string(l.lctx.fileContent.Content[start:l.lctx.index]))[0]
-	// if l.lctx.curChar == '\n' {
-	// 	l.lctx.lineNumber++
-	// }
+	// start := l.lctx.index
+	// l.lctx.index += l.charSize(l.lctx.fileContent.Content[l.lctx.index])
+	// l.lctx.curChar = []rune(string(l.lctx.fileContent.Content[start:l.lctx.index]))[0]
+	b := l.lctx.fileContent.Content[l.lctx.index:]
+	r, size := utf8.DecodeRune(b)
+	l.lctx.curChar = r
+	l.lctx.index += size
 }
 
 func (l *Lexer) peekChar() rune {
