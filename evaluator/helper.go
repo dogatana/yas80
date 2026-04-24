@@ -2,6 +2,8 @@ package evaluator
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"unicode/utf8"
 
@@ -418,22 +420,22 @@ func (e *Evaluator) evalArrayToInt(values []object.Object, ctx TContext) object.
 	return &object.NumberObject{Value: int(v1)*256 + int(v2), Context: ctx}
 }
 
-// // incbin charmap ファイル読み込み
-// func (e *Evaluator) readFile(from, name string) ([]byte, error) {
-// 	dirs := make([]string, 0, len(e.incDirs)+1)
+// incbin charmap ファイル読み込み
+func (e *Evaluator) readFile(from, name string) ([]byte, error) {
+	dirs := make([]string, 0, len(e.incDirs)+1)
 
-// 	dirs = append(dirs, filepath.Dir(from))
-// 	dirs = append(dirs, e.incDirs...)
+	dirs = append(dirs, filepath.Dir(from))
+	dirs = append(dirs, e.incDirs...)
 
-// 	base := filepath.Base(name)
-// 	for _, dir := range dirs {
-// 		path := filepath.Join(dir, base)
-// 		if content, err := os.ReadFile(path); err == nil {
-// 			return content, nil
-// 		}
-// 	}
-// 	return nil, fmt.Errorf(errcode.EFILE_NOT_FOUND, name)
-// }
+	base := filepath.Base(name)
+	for _, dir := range dirs {
+		path := filepath.Join(dir, base)
+		if content, err := os.ReadFile(path); err == nil {
+			return content, nil
+		}
+	}
+	return nil, fmt.Errorf(errcode.EFILE_NOT_FOUND, name)
+}
 
 // ENV から NumberObject を取得する（システム変数用）
 func getNumberFromEnv(id intern.SymbolID, env TEnv) (int, bool) {

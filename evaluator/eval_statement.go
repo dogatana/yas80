@@ -92,9 +92,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.MacroBlockStatement:
 		return e.evalMacroBlockStatement(stmt, checkExitM, ectx, env)
 
-	// // exitm
-	// case *parser.ExitmStatement:
-	// 	return &object.ExitmObject{}
+	// exitm
+	case *parser.ExitmStatement:
+		return &object.ExitmObject{}
 
 	// // rept
 	// case *parser.ReptStatement:
