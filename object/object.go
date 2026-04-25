@@ -90,7 +90,7 @@ func Equal(o1, o2 Object) bool {
 	case *EnumObject:
 		return v1.NameID == o2.(*EnumObject).NameID
 	case *ProcObject:
-		return v1.Name == o2.(*ProcObject).Name
+		return v1.NameID == o2.(*ProcObject).NameID
 	case *FunctionObject:
 		return v1.Name == o2.(*FunctionObject).Name
 	case *CharamapObject:
@@ -306,7 +306,7 @@ func (o *RefNotFoundObject) String() string {
 
 // proc - Object interface と Environ interface を実装する
 type ProcObject struct {
-	Name    string
+	NameID  intern.SymbolID
 	Addr    int
 	Env     Environment
 	Context *filecontent.Context
@@ -314,7 +314,7 @@ type ProcObject struct {
 
 // Object の実装
 func (o *ProcObject) Type() ObjectType { return OBJ_PROC }
-func (o *ProcObject) String() string   { return fmt.Sprintf("PROC(%s[0x%04x])", o.Name, o.Addr) }
+func (o *ProcObject) String() string   { return fmt.Sprintf("PROC(%s[0x%04x])", o.NameID, o.Addr) }
 
 // Environ interface の実装
 func (o *ProcObject) EnvType() int                              { return o.Env.EnvType() }

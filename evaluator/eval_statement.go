@@ -42,17 +42,17 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 		// ソースを表示するため nil とする
 		return &object.SourceTextObject{Text: nil, Context: stmt.Context}
 
-	// // PROC
-	// case *parser.ProcStatement:
-	// 	if object.InProcEnv(env) {
-	// 		e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, "PROC"), stmt.Context)
-	// 		return object.ERROR
-	// 	}
-	// 	return e.evalProcStatement(stmt, env)
+	// PROC
+	case *parser.ProcStatement:
+		if object.InProcEnv(env) {
+			e.logger.Error(fmt.Sprintf(errcode.ESCOPE_PROC, "PROC"), stmt.Context)
+			return object.ERROR
+		}
+		return e.evalProcStatement(stmt, env)
 
-	// // PROC BLOCK
-	// case *parser.ProcBlockStatement:
-	// 	return e.evalProcBlockStatement(stmt, checkExitM, ectx, env)
+	// PROC BLOCK
+	case *parser.ProcBlockStatement:
+		return e.evalProcBlockStatement(stmt, checkExitM, ectx, env)
 
 	// DS/DSB/DSW
 	case *parser.DataStoreStatement:
@@ -239,97 +239,95 @@ LOOP:
 	return block
 }
 
-// // PROC
-//
-//	func (e *Evaluator) evalProcStatement(node *parser.ProcStatement, env TEnv) object.Object {
-//		e.concatenateSymbol(&node.Name, env, node.Context)
-//
-//		id, ok := node.Name.(*parser.Ident)
-//		if !ok {
-//			e.logger.Error(errcode.ECONCAT_TYPE, node.Context)
-//			return object.ERROR
-//		}
-//		name := id.Name
-//		obj, ok := env.Get(name)
-//		if ok {
-//			switch obj := obj.(type) {
-//			case *object.ProcObject:
-//				e.logger.Error(fmt.Sprintf(errcode.EPROC_DUP, name), node.Context)
-//				return object.ERROR
-//			case *object.SymbolObject:
-//				if obj.SymType != object.SYM_UNKNOWN {
-//					e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
-//					return object.ERROR
-//				}
-//				// SYM_UNKNOWN（前方参照）なら proc として登録
-//			default:
-//				e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, name), node.Context)
-//				return object.ERROR
-//			}
-//		}
-//		penv := object.NewProcEnvironment(env)
-//		env.Set(name, &object.ProcObject{Name: name, Addr: getLocationCounter(env), Env: penv})
-//
-//		e.filterValidStatementForProc(node.Block)
-//
-//		pbs := &parser.ProcBlockStatement{Name: name, Block: node.Block.Block, Context: node.Context}
-//		return &object.StatementObject{Statement: pbs}
-//	}
-//
-// // PROC 内で有効な文をフィルタ
-//
-//	func (e *Evaluator) filterValidStatementForProc(bs *parser.BlockStatement) {
-//		stmts := make([]parser.Statement, 0, len(bs.Block))
-//
-//		for _, stmt := range bs.Block {
-//			switch stmt := stmt.(type) {
-//			// error
-//			case *parser.ProcStatement:
-//				e.logger.Error(errcode.EPROC_NEST, stmt.GetContext())
-//
-//			// warning
-//			case *parser.ReturnStatement:
-//				e.logger.Warning(errcode.WSCOPE_PROC, stmt.Context)
-//
-//			// 要再帰チェック
-//			case *parser.IfStatement:
-//				if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
-//					e.filterValidStatementForProc(bs)
-//				}
-//				if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
-//					e.filterValidStatementForProc(bs)
-//				}
-//				stmts = append(stmts, stmt)
-//			case *parser.BlockStatement:
-//				e.filterValidStatementForProc(stmt)
-//				stmts = append(stmts, stmt)
-//
-//			default:
-//				// 利用可能
-//				stmts = append(stmts, stmt)
-//			}
-//		}
-//		bs.Block = stmts
-//
-// }
-//
-// // PROC BLOCK
-//
-//	func (e *Evaluator) evalProcBlockStatement(stmt *parser.ProcBlockStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
-//		obj, ok := env.Get(stmt.Name)
-//		if !ok {
-//			panic(fmt.Sprintf("no ProcEnv(%s)", stmt.Name))
-//		}
-//		if po, ok := obj.(*object.ProcObject); ok {
-//			po.Addr = getLocationCounter(env) // proc アドレスを更新
-//		} else {
-//			panic(fmt.Sprintf("invalid ProcjObject(%s)", stmt.Name))
-//		}
-//
-//		// ProcObject は Environment intterface を実装
-//		bs := &parser.BlockStatement{Block: stmt.Block}
-//		return e.evalStatement(bs, checkExitM, ectx, obj.(object.Environment))
-//	}
+// PROC
+func (e *Evaluator) evalProcStatement(node *parser.ProcStatement, env TEnv) object.Object {
+	e.concatenateSymbol(&node.Name, env, node.Context)
+
+	ident, ok := node.Name.(*parser.Ident)
+	if !ok {
+		e.logger.Error(errcode.ECONCAT_TYPE, node.Context)
+		return object.ERROR
+	}
+	id := ident.NameID
+	obj, ok := env.Get(id)
+	if ok {
+		switch obj := obj.(type) {
+		case *object.ProcObject:
+			e.logger.Error(fmt.Sprintf(errcode.EPROC_DUP, id), node.Context)
+			return object.ERROR
+		case *object.SymbolObject:
+			if obj.SymType != object.SYM_UNKNOWN {
+				e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, id), node.Context)
+				return object.ERROR
+			}
+			// SYM_UNKNOWN（前方参照）なら proc として登録
+		default:
+			e.logger.Error(fmt.Sprintf(errcode.EPROC_USED, id), node.Context)
+			return object.ERROR
+		}
+	}
+	penv := object.NewProcEnvironment(env)
+	env.Set(id, &object.ProcObject{NameID: id, Addr: getLocationCounter(env), Env: penv})
+
+	e.filterValidStatementForProc(node.Block)
+
+	pbs := &parser.ProcBlockStatement{NameID: id, Block: node.Block.Block, Context: node.Context}
+	return &object.StatementObject{Statement: pbs}
+}
+
+// PROC 内で有効な文をフィルタ
+
+func (e *Evaluator) filterValidStatementForProc(bs *parser.BlockStatement) {
+	stmts := make([]parser.Statement, 0, len(bs.Block))
+
+	for _, stmt := range bs.Block {
+		switch stmt := stmt.(type) {
+		// error
+		case *parser.ProcStatement:
+			e.logger.Error(errcode.EPROC_NEST, stmt.GetContext())
+
+		// warning
+		case *parser.ReturnStatement:
+			e.logger.Warning(errcode.WSCOPE_PROC, stmt.Context)
+
+		// 要再帰チェック
+		case *parser.IfStatement:
+			if bs, ok := stmt.Consequence.(*parser.BlockStatement); ok {
+				e.filterValidStatementForProc(bs)
+			}
+			if bs, ok := stmt.Alternative.(*parser.BlockStatement); ok {
+				e.filterValidStatementForProc(bs)
+			}
+			stmts = append(stmts, stmt)
+		case *parser.BlockStatement:
+			e.filterValidStatementForProc(stmt)
+			stmts = append(stmts, stmt)
+
+		default:
+			// 利用可能
+			stmts = append(stmts, stmt)
+		}
+	}
+	bs.Block = stmts
+
+}
+
+// PROC BLOCK
+func (e *Evaluator) evalProcBlockStatement(stmt *parser.ProcBlockStatement, checkExitM bool, ectx TContext, env TEnv) object.Object {
+	obj, ok := env.Get(stmt.NameID)
+	if !ok {
+		panic(fmt.Sprintf("no ProcEnv(%s)", stmt.NameID))
+	}
+	if po, ok := obj.(*object.ProcObject); ok {
+		po.Addr = getLocationCounter(env) // proc アドレスを更新
+	} else {
+		panic(fmt.Sprintf("invalid ProcjObject(%s)", stmt.NameID))
+	}
+
+	// ProcObject は Environment intterface を実装
+	bs := &parser.BlockStatement{Block: stmt.Block}
+	return e.evalStatement(bs, checkExitM, ectx, obj.(object.Environment))
+}
 
 // ORG
 func (e *Evaluator) evalOrgStatement(stmt *parser.OrgStatement, env TEnv) object.Object {

@@ -51,7 +51,6 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 	// default filler
 	var filler int
 	if stmt.FillValue == nil {
-		e.concatenateSymbol(&stmt.FillValue, env, stmt.Context)
 		// 指定がなければ $FILL を使用
 		if obj, ok := env.Get(intern.ID_FILL); !ok {
 			panic("no $FILL")
@@ -64,6 +63,7 @@ func (e *Evaluator) evalDataStoreStatement(stmt *parser.DataStoreStatement, env 
 		}
 	} else {
 		// 文で指定した filler
+		e.concatenateSymbol(&stmt.FillValue, env, stmt.Context)
 		obj = e.evalExpression(stmt.FillValue, env, stmt.Context)
 		switch obj := obj.(type) {
 		case *object.ErrorObject:

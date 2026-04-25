@@ -341,7 +341,7 @@ func (b *BinWriter) collectSymbols(env object.Environment) symMap {
 				syms.add(no.Value, v.Name)
 			}
 		case *object.ProcObject:
-			pname := v.Name
+			pname := v.NameID.String()
 			syms.add(v.Addr, pname)
 
 			pmap := b.collectSymbols(v)

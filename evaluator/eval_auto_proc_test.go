@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/dogatana/yas80/intern"
+	"github.com/dogatana/yas80/internal/util"
 	"github.com/dogatana/yas80/logging"
 	"github.com/dogatana/yas80/object"
 )
@@ -85,16 +86,16 @@ func TestAutoProc(t *testing.T) {
 
 		testCodeResult(t, tn, tt.code, prog)
 
-		proc_names, procs := collectProc(env)
+		proc_ids, procs := collectProc(env)
 		if len(procs) != len(tt.names) {
 			t.Errorf("[%d] expect %d procs. got %d", tn, len(tt.names), len(procs))
 			continue
 		}
-		names := slices.Clone(tt.names)
-		slices.Sort(names)
-		slices.Sort(proc_names)
-		if !slices.Equal(names, proc_names) {
-			t.Errorf("[%d] expect %v procs. got %v", tn, names, proc_names)
+		ids := util.Map(tt.names, func(s string) intern.SymbolID { return intern.InternString(s) })
+		slices.Sort(ids)
+		slices.Sort(proc_ids)
+		if !slices.Equal(ids, proc_ids) {
+			t.Errorf("[%d] expect %v procs. got %v", tn, ids, proc_ids)
 			continue
 		}
 		getter := func(name string) (*object.SymbolObject, bool) {
@@ -104,14 +105,14 @@ func TestAutoProc(t *testing.T) {
 	}
 }
 
-func collectProc(env object.Environment) ([]string, map[string]*object.ProcObject) {
-	procs := map[string]*object.ProcObject{}
-	keys := []string{}
-	for id, obj := range env.Store() {
-		name := intern.SymbolID(id).String()
+func collectProc(env object.Environment) ([]intern.SymbolID, map[intern.SymbolID]*object.ProcObject) {
+	procs := map[intern.SymbolID]*object.ProcObject{}
+	keys := []intern.SymbolID{}
+	for i, obj := range env.Store() {
+		id := intern.SymbolID(i)
 		if obj, ok := obj.(*object.ProcObject); ok {
-			procs[name] = obj
-			keys = append(keys, name)
+			procs[id] = obj
+			keys = append(keys, id)
 		}
 	}
 	return keys, procs

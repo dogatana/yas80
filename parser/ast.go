@@ -291,7 +291,7 @@ func (s *ProcStatement) String() string     { return fmt.Sprintf("PROC(%s)", s.N
 
 // Prock block statement
 type ProcBlockStatement struct {
-	Name    string
+	NameID  intern.SymbolID
 	Block   []Statement
 	Context *filecontent.Context
 }
@@ -308,7 +308,7 @@ func (s *ProcBlockStatement) ReplaceContext(ctx filecontent.Context) {
 func (s *ProcBlockStatement) String() string {
 	var out bytes.Buffer
 
-	out.WriteString("PROC BLOCK(" + s.Name + ") {\n")
+	out.WriteString("PROC BLOCK(" + s.NameID.String() + ") {\n")
 	block := util.Map(s.Block, func(s Statement) string { return s.String() })
 	out.WriteString(strings.Join(block, "\n"))
 	out.WriteString("}")
@@ -772,7 +772,6 @@ type Z80Instruction struct {
 	Op1      Expression
 	Op2      Expression
 	Context  *filecontent.Context
-	Code     any // *object.CodeObject
 }
 
 func (s *Z80Instruction) GetContext() *filecontent.Context { return s.Context }
