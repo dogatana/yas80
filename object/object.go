@@ -88,7 +88,7 @@ func Equal(o1, o2 Object) bool {
 		}
 		return true
 	case *EnumObject:
-		return v1.Name == o2.(*EnumObject).Name
+		return v1.NameID == o2.(*EnumObject).NameID
 	case *ProcObject:
 		return v1.Name == o2.(*ProcObject).Name
 	case *FunctionObject:
@@ -325,8 +325,8 @@ func (o *ProcObject) Store() []Object                           { return o.Env.S
 
 // enum - Object interface と Environ interface を実装する
 type EnumObject struct {
-	Name string
-	Env  Environment
+	NameID intern.SymbolID
+	Env    Environment
 }
 
 // Object の実装
@@ -334,7 +334,7 @@ func (o *EnumObject) Type() ObjectType { return OBJ_ENUM }
 func (o *EnumObject) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(fmt.Sprintf("ENUM(%s) {\n", o.Name))
+	out.WriteString(fmt.Sprintf("ENUM(%s) {\n", o.NameID))
 	for k, v := range o.Env.Store() {
 		out.WriteString(fmt.Sprintf("%s=%s\n", intern.SymbolID(k), v.String()))
 	}

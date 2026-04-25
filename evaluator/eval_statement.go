@@ -154,13 +154,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 		comment := fmt.Sprintf("%s = %s", stmt.NameID, v.String())
 		return &object.SourceTextObject{Text: comment, SetSysVar: true, Context: stmt.Context}
 
-	// // enum
-	// case *parser.EnumStatement:
-	// 	obj := e.evalEnumStatement(stmt, env)
-	// 	if isError(obj) {
-	// 		return object.ERROR
-	// 	}
-	// 	return obj
+	// enum
+	case *parser.EnumStatement:
+		return e.evalEnumStatement(stmt, env)
 
 	// end
 	case *parser.EndStatement:
@@ -837,61 +833,65 @@ func (e *Evaluator) evalReturnStatement(stmt *parser.ReturnStatement, env TEnv) 
 	return &object.ReturnObject{Value: ret, LineNumber: int(stmt.Context.Line)}
 }
 
-//// enum 文
-//func (e *Evaluator) evalEnumStatement(stmt *parser.EnumStatement, env TEnv) object.Object {
-//	name := stmt.Name
-//	obj, ok := env.Get(name)
-//	if ok {
-//		if obj.Type() == object.OBJ_ENUM {
-//			e.logger.Error(fmt.Sprintf(errcode.EENUM_DUP, name), stmt.Context)
-//		} else {
-//			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED, name), stmt.Context)
-//		}
-//		return object.ERROR
-//	}
-//
-//	// EnumObject は Enviromnet interface を実装している
-//	enum := &object.EnumObject{Name: name, Env: object.NewEnvironment(env)}
-//	env.Set(name, enum)
-//
-//	// enum element の評価でエラーが発生した場合、単に無効とする
-//	value := 0 // 初期値
-//	for _, ele := range stmt.Elements.Elements {
-//		ename := "." + ele.Name // . を先頭に付けたものを要素に内部名
-//		if _, ok := enum.Get(ename); ok {
-//			e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_DUP, name, ename), stmt.Context)
-//			// 定義済みなら無効（無視）
-//			continue
-//		}
-//		if ele.Value == nil {
-//			esym := &object.SymbolObject{
-//				Name:    ename,
-//				SymType: object.SYM_CONST,
-//				Value:   &object.NumberObject{Value: value}}
-//			enum.Set(ename, esym)
-//			value++
-//			continue
-//		}
-//		v := e.evalExpression(ele.Value, enum, stmt.Context)
-//		if isError(v) {
-//			// 値がエラーなら無効（無視）
-//			continue
-//		}
-//		sym := &object.SymbolObject{Name: ename, SymType: object.SYM_CONST}
-//		switch v := v.(type) {
-//		case *object.RefNotFoundObject:
-//			e.logger.Error(errcode.EENUM_ELE_FWD, ele.Context)
-//		case *object.NumberObject:
-//			sym.Value = v
-//			enum.Set(ename, sym)
-//			value = v.Value + 1
-//		case *object.StringObject:
-//			sym.Value = v
-//			enum.Set(ename, sym)
-//		default:
-//			e.logger.Error(errcode.EENUM_ELE_VALUE, ele.Context)
-//		}
-//	}
-//	return enum
-//}
-//
+// enum 文
+func (e *Evaluator) evalEnumStatement(stmt *parser.EnumStatement, env TEnv) object.Object {
+	id := stmt.NameID
+	name := id.String()
+
+	obj, ok := env.Get(id)
+	if ok {
+		if obj.Type() == object.OBJ_ENUM {
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_DUP, name), stmt.Context)
+		} else {
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_USED, name), stmt.Context)
+		}
+		return object.ERROR
+	}
+
+	// EnumObject は Enviromnet interface を実装している
+	enum := &object.EnumObject{NameID: id, Env: object.NewEnvironment(env)}
+	env.Set(id, enum)
+
+	// enum element の評価でエラーが発生した場合、単に無効とする
+	value := 0 // 初期値
+	for _, ele := range stmt.Elements.Elements {
+		ename := "." + ele.NameID.String() // . を先頭に付けたものを要素内部名とする
+		eid := intern.InternString(ename)
+		if _, ok := enum.Get(eid); ok {
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_DUP, name, ename), stmt.Context)
+			// 定義済みなら無効（無視）
+			continue
+		}
+		if ele.Value == nil {
+			esym := &object.SymbolObject{
+				Name:    ename,
+				SymType: object.SYM_CONST,
+				Value:   &object.NumberObject{Value: value}}
+			enum.Set(eid, esym)
+			value++
+			continue
+		}
+		v := e.evalExpression(ele.Value, enum, stmt.Context)
+		if isError(v) {
+			// 値がエラーなら無効（無視）
+			continue
+		}
+		sym := &object.SymbolObject{Name: ename, SymType: object.SYM_CONST}
+		switch v := v.(type) {
+		case *object.RefNotFoundObject:
+			e.logger.Error(errcode.EENUM_ELE_FWD, ele.Context)
+		case *object.NullObject:
+			e.logger.Error(errcode.EENUM_ELE_NULL, ele.Context)
+		case *object.NumberObject:
+			sym.Value = v
+			enum.Set(eid, sym)
+			value = v.Value + 1
+		case *object.StringObject:
+			sym.Value = v
+			enum.Set(eid, sym)
+		default:
+			e.logger.Error(errcode.EENUM_ELE_VALUE, ele.Context)
+		}
+	}
+	return enum
+}

@@ -86,51 +86,51 @@ func (e *Evaluator) evalExpression(node parser.Node, env TEnv, ctx TContext) obj
 			return obj
 		}
 
-	// // enum or proc.local
-	// case *parser.DotIdent:
-	// 	obj, ok := env.Get(node.Left)
-	// 	// node.Left(PROC or ENUM) が未定義の場合、Name を SYM_UNKNOWN で登録
-	// 	if !ok {
-	// 		sym := object.NewUnknownSymbol(node.Name, node.Context)
-	// 		env.Set(node.Name, sym)
-	// 		e.Resolved = false
-	// 		return &object.RefNotFoundObject{Names: []string{node.Name}}
-	// 	}
+	// enum or proc.local
+	case *parser.DotIdent:
+		obj, ok := env.Get(node.Left)
+		// node.Left(PROC or ENUM) が未定義の場合、Name を SYM_UNKNOWN で登録
+		if !ok {
+			sym := object.NewUnknownSymbol(node.NameID, node.NameID.String(), node.Context)
+			env.Set(node.NameID, sym)
+			e.Resolved = false
+			return &object.RefNotFoundObject{NameIDs: []intern.SymbolID{node.NameID}}
+		}
 
-	// 	switch obj := obj.(type) {
-	// 	case *object.ProcObject:
-	// 		vobj, ok := obj.Get(node.Right)
-	// 		if !ok {
-	// 			// ローカルラベルが未定義の場合、PROC 環境に SYM_UNKNOWN で登録
-	// 			sym := object.NewUnknownSymbol(node.Right, node.Context)
-	// 			obj.Set(node.Right, sym) // env でなく ProcObject に登録
-	// 			e.Resolved = false
-	// 			return &object.RefNotFoundObject{Names: []string{node.Name}}
-	// 		}
-	// 		sym, ok := vobj.(*object.SymbolObject)
-	// 		// SymbolObject でないならそのまま返す
-	// 		if !ok {
-	// 			return vobj
-	// 		}
-	// 		// SymbolObject で値に応じた内容を返す
-	// 		if sym.Value == object.NULL {
-	// 			e.Resolved = false
-	// 			return &object.RefNotFoundObject{Names: []string{sym.Name}}
-	// 		} else {
-	// 			return sym.Value
-	// 		}
+		switch obj := obj.(type) {
+		case *object.ProcObject:
+			vobj, ok := obj.Get(node.Right)
+			if !ok {
+				// ローカルラベルが未定義の場合、PROC 環境に SYM_UNKNOWN で登録
+				sym := object.NewUnknownSymbol(node.Right, node.Right.String(), node.Context)
+				obj.Set(node.Right, sym) // env でなく ProcObject に登録
+				e.Resolved = false
+				return &object.RefNotFoundObject{NameIDs: []intern.SymbolID{node.NameID}}
+			}
+			sym, ok := vobj.(*object.SymbolObject)
+			// SymbolObject でないならそのまま返す
+			if !ok {
+				return vobj
+			}
+			// SymbolObject で値に応じた内容を返す
+			if sym.Value == object.NULL {
+				e.Resolved = false
+				return &object.RefNotFoundObject{NameIDs: []intern.SymbolID{sym.NameID}}
+			} else {
+				return sym.Value
+			}
 
-	// 	case *object.EnumObject:
-	// 		if vobj, ok := obj.Get(node.Right); ok {
-	// 			return vobj.(*object.SymbolObject).Value
-	// 		}
-	// 		e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_UNDEF, node.Name), node.Context)
-	// 		return object.ERROR
+		case *object.EnumObject:
+			if vobj, ok := obj.Get(node.Right); ok {
+				return vobj.(*object.SymbolObject).Value
+			}
+			e.logger.Error(fmt.Sprintf(errcode.EENUM_ELE_UNDEF, node.NameID), node.Context)
+			return object.ERROR
 
-	// 	default:
-	// 		e.Resolved = false
-	// 		return &object.RefNotFoundObject{Names: []string{node.Name}}
-	// 	}
+		default:
+			e.Resolved = false
+			return &object.RefNotFoundObject{NameIDs: []intern.SymbolID{node.NameID}}
+		}
 
 	// 配列リテラル
 	case *parser.ArrayLiteral:
