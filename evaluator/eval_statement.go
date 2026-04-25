@@ -779,7 +779,7 @@ func (e *Evaluator) evalFuncStatement(stmt *parser.FuncStatement, env TEnv) obje
 		e.filterValidStatementForFunc(stmt.Block)
 	}
 
-	obj := &object.FunctionObject{NameID: id, Name: name, Params: stmt.Params, Body: stmt.Block, Env: env, Context: stmt.Context}
+	obj := &object.FunctionObject{NameID: id, Params: stmt.Params, Body: stmt.Block, Env: env, Context: stmt.Context}
 	env.Set(id, obj)
 	return obj
 }

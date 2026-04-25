@@ -92,7 +92,7 @@ func Equal(o1, o2 Object) bool {
 	case *ProcObject:
 		return v1.NameID == o2.(*ProcObject).NameID
 	case *FunctionObject:
-		return v1.Name == o2.(*FunctionObject).Name
+		return v1.NameID == o2.(*FunctionObject).NameID
 	case *CharamapObject:
 		return v1.NameID == o2.(*CharamapObject).NameID
 	case *SymbolObject:
@@ -462,7 +462,6 @@ func (o *CharamapObject) String() string {
 // Function
 type FunctionObject struct {
 	NameID  intern.SymbolID
-	Name    string
 	Params  []string
 	Body    parser.Node
 	Env     Environment
@@ -473,7 +472,7 @@ func (o *FunctionObject) Type() ObjectType { return OBJ_FUNC }
 func (o *FunctionObject) String() string {
 	var out bytes.Buffer
 
-	out.WriteString(o.Name + " FUNC")
+	out.WriteString(o.NameID.String() + " FUNC")
 	if len(o.Params) > 0 {
 		out.WriteRune(' ')
 		out.WriteString(strings.Join(o.Params, ", "))

@@ -189,7 +189,7 @@ func (e *Evaluator) evalFuncCallExpression(expr *parser.FuncCallExpression, env 
 	}
 
 	if len(expr.Args.Expressions) != len(fn.Params) {
-		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.Name), ctx)
+		e.logger.Error(fmt.Sprintf(errcode.EFUNC_ARG_COUNT, fn.NameID), ctx)
 		return object.ERROR
 	}
 
@@ -204,7 +204,7 @@ func (e *Evaluator) evalFuncCallExpression(expr *parser.FuncCallExpression, env 
 
 	ret, ok := e.evalBlockStatement(fn.Body.(*parser.BlockStatement), false, nil, newEnv).(*object.BlockObject)
 	if !ok {
-		panic(fmt.Sprintf("call func %s returns %T(%#v)", fn.Name, ret, ret))
+		panic(fmt.Sprintf("call func %s returns %T(%#v)", fn.NameID, ret, ret))
 	}
 
 	if len(ret.Block) == 0 {
