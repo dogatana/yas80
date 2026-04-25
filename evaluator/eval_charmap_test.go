@@ -23,8 +23,8 @@ func TestCharmapDef(t *testing.T) {
 		{input: `charmap cmap, 123`, err: errcode.ECHARMAP_NOT_STR},
 		{input: `charmap cmap, HL`, err: errcode.ECHARMAP_NOT_STR},
 		{input: `fn func\endf \ charmap cmap, 'cmap.json', fn()`, err: errcode.ECHARMAP_DEFCHAR_NULL},
-		{input: `charmap cmap, 'cmap.json', 'x'`, err: errcode.ECHARMAP_DEFCHAR_NOT_INT},
-		{input: `charmap cmap, 'cmap.json', HL`, err: errcode.ECHARMAP_DEFCHAR_NOT_INT},
+		// {input: `charmap cmap, 'cmap.json', 'x'`, err: errcode.ECHARMAP_DEFCHAR_VALUE},
+		{input: `charmap cmap, 'cmap.json', HL`, err: errcode.ECHARMAP_DEFCHAR_VALUE},
 		{input: `charmap cmap, 'no.json'`, err: errcode.ECHARMAP_READ},
 		{input: `charmap cmap, 'zilog.bin`, err: errcode.ECHARMAP_JSON},
 		{input: `charmap cmap, 'cmap-err1.json'`, err: errcode.ECHARMAP_JSON}, // [1]
@@ -95,6 +95,22 @@ func TestCharmapApply(t *testing.T) {
 		{
 			input: `charmap cmap, '{"a":[97],"b":[1,2],"あ":[130,160],"い":[66]}', 0x82a0\ db cmap('abxy')`,
 			code:  []byte{97, 1, 2, 0x82, 0xa0, 0x82, 0xa0},
+		},
+		{
+			input: `charmap cmap, '{"a":[1]}', 'A' \ db cmap('ab')`,
+			code:  []byte{1, 0x41},
+		},
+		{
+			input: `charmap cmap, '{"a":[1]}', 'あ' \ db cmap('ab')`,
+			code:  []byte{1, 0x82, 0xa0},
+		},
+		{
+			input: `charmap cmap, '{"a":[1]}', [0x41] \ db cmap('ab')`,
+			code:  []byte{1, 0x41},
+		},
+		{
+			input: `charmap cmap, '{"a":[1]}', [0x41, 0x42] \ db cmap('ab')`,
+			code:  []byte{1, 0x41, 0x42},
 		},
 		{
 			input: `charmap cmap, '{"a":[97],"b":[1,2],"あ":[130,160],"い":[66]}', 0x182a0\ db cmap('abxy')`,

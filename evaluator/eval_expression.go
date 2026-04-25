@@ -180,8 +180,8 @@ func (e *Evaluator) evalFuncCallExpression(expr *parser.FuncCallExpression, env 
 	switch obj := obj.(type) {
 	case *object.FunctionObject:
 		fn = obj
-	// case *object.CharamapObject:
-	// 	return e.applyCharmap(obj, expr, env, ctx)
+	case *object.CharamapObject:
+		return e.applyCharmap(obj, expr, env, ctx)
 
 	default:
 		e.logger.Error(fmt.Sprintf(errcode.EFUNC_NOT_FUNC, name), ctx)

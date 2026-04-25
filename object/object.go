@@ -94,7 +94,7 @@ func Equal(o1, o2 Object) bool {
 	case *FunctionObject:
 		return v1.Name == o2.(*FunctionObject).Name
 	case *CharamapObject:
-		return v1.Name == o2.(*CharamapObject).Name
+		return v1.NameID == o2.(*CharamapObject).NameID
 	case *SymbolObject:
 		v2 := o2.(*SymbolObject)
 		return Equal(v1.Value, v2.Value)
@@ -448,7 +448,7 @@ func (o *BlockObject) String() string {
 
 // charmap
 type CharamapObject struct {
-	Name    string
+	NameID  intern.SymbolID
 	DefChar int
 	Cmap    map[string][]byte
 	Context *filecontent.Context
@@ -456,7 +456,7 @@ type CharamapObject struct {
 
 func (o *CharamapObject) Type() ObjectType { return OBJ_CHARMAP }
 func (o *CharamapObject) String() string {
-	return fmt.Sprintf("CHARAMAP %s (%d chars)", o.Name, len(o.Cmap))
+	return fmt.Sprintf("CHARAMAP %s (%d chars)", o.NameID, len(o.Cmap))
 }
 
 // Function
