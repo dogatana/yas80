@@ -85,7 +85,7 @@ func TestErrorRept(t *testing.T) {
 		expected string
 	}{
 		// 0-
-		{`rept a \ nop \ endr`, errcode.EREPT_COUNT},
+		{`rept a \ nop \ endr`, errcode.EREPT_ARG},
 	}
 	for tn, tt := range tests {
 		logger := logging.New()

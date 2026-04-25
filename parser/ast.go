@@ -414,7 +414,7 @@ func (s *ReptStatement) String() string {
 
 // システム変数設定 - REPT 展開時で使用する
 type SetSysVarStatement struct {
-	Name    string
+	NameID  intern.SymbolID
 	Value   any // Expression or Object
 	Context *filecontent.Context
 }
@@ -429,7 +429,7 @@ func (s *SetSysVarStatement) ReplaceContext(ctx filecontent.Context) {
 	s.Context = &ctx
 }
 func (s *SetSysVarStatement) String() string {
-	return fmt.Sprintf("SET_SYS_VAR(%s, %v)", s.Name, s.Value)
+	return fmt.Sprintf("SET_SYS_VAR(%s, %v)", s.NameID, s.Value)
 }
 
 // if statement

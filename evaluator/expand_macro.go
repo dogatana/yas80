@@ -29,7 +29,7 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 		switch news := news.(type) {
 		case *parser.MacroCallStatement:
 			// 組み込みマクロならそのまま stmts へ追加
-			if isBuiltinMacroName(name) {
+			if isBuiltinMacroName(news.NameID.String()) {
 				stmts = append(stmts, news)
 				continue
 			}
@@ -43,11 +43,11 @@ func (e *Evaluator) expandMacro(mcall *parser.MacroCallStatement, macro *object.
 			stmts = append(stmts, mbs)
 
 		case *parser.ReptStatement:
-			// obj := e.evalReptStatement(news, checkExitM, ectx, env)
-			// if isError(obj) {
-			// 	continue
-			// }
-			// stmts = append(stmts, obj.(*object.StatementObject).Statement)
+			obj := e.evalReptStatement(news, checkExitM, ectx, env)
+			if isError(obj) {
+				continue
+			}
+			stmts = append(stmts, obj.(*object.StatementObject).Statement)
 
 		default:
 			stmts = append(stmts, news)
@@ -94,56 +94,56 @@ func (e *Evaluator) replaceContext(stmt parser.Statement, ectx TContext) {
 	}
 }
 
-// func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx TContext) object.Object {
-// 	seq := e.Counter()
+func (e *Evaluator) expandReptBlock(rept *parser.ReptStatement, env TEnv, ectx TContext) object.Object {
+	seq := e.Counter()
 
-// 	args := map[string]parser.Expression{} // 空
-// 	mangleFn := buildMangleNamesFunc(args, seq, "REPT")
+	args := map[string]parser.Expression{} // 空
+	mangleFn := buildMangleNamesFunc(args, seq, "REPT")
 
-// 	stmts := []parser.Statement{}
-// 	for _, stmt := range rept.Block.Block {
-// 		news := e.mangleNamesInStatement(stmt, mangleFn, ectx)
-// 		switch news := news.(type) {
-// 		case *parser.MacroCallStatement:
-// 			// 組み込みマクロならそのまま stmts へ追加
-// 			if isBuiltinMacroName(news.Name) {
-// 				news.ReplaceContext(*ectx)
-// 				stmts = append(stmts, news)
-// 				continue
-// 			}
+	stmts := []parser.Statement{}
+	for _, stmt := range rept.Block.Block {
+		news := e.mangleNamesInStatement(stmt, mangleFn, ectx)
+		switch news := news.(type) {
+		case *parser.MacroCallStatement:
+			// 組み込みマクロならそのまま stmts へ追加
+			if isBuiltinMacroName(news.NameID.String()) {
+				news.ReplaceContext(*ectx)
+				stmts = append(stmts, news)
+				continue
+			}
 
-// 			obj := e.evalMacroCallStatement(news, true, ectx, env)
-// 			if isError(obj) {
-// 				return object.ERROR
-// 			}
-// 			sobj, ok := obj.(*object.StatementObject)
-// 			if !ok {
-// 				panic("not *object.StatementObject")
-// 			}
+			obj := e.evalMacroCallStatement(news, true, ectx, env)
+			if isError(obj) {
+				return object.ERROR
+			}
+			sobj, ok := obj.(*object.StatementObject)
+			if !ok {
+				panic("not *object.StatementObject")
+			}
 
-// 			s := sobj.Statement
-// 			s.ReplaceContext(*ectx)
-// 			stmts = append(stmts, s)
+			s := sobj.Statement
+			s.ReplaceContext(*ectx)
+			stmts = append(stmts, s)
 
-// 		case *parser.ReptStatement:
-// 			obj := e.evalReptStatement(news, true, ectx, env)
-// 			if isError(obj) {
-// 				return object.ERROR
-// 			}
-// 			rs, ok := obj.(*object.StatementObject)
-// 			if !ok {
-// 				panic("not *object.NodeObject")
-// 			}
-// 			rs.Statement.ReplaceContext(*ectx)
-// 			stmts = append(stmts, rs.Statement)
+		case *parser.ReptStatement:
+			obj := e.evalReptStatement(news, true, ectx, env)
+			if isError(obj) {
+				return object.ERROR
+			}
+			rs, ok := obj.(*object.StatementObject)
+			if !ok {
+				panic("not *object.NodeObject")
+			}
+			rs.Statement.ReplaceContext(*ectx)
+			stmts = append(stmts, rs.Statement)
 
-// 		default:
-// 			news.ReplaceContext(*ectx)
-// 			stmts = append(stmts, news)
-// 		}
-// 	}
-// 	return &object.StatemetnsObject{Statements: stmts}
-// }
+		default:
+			news.ReplaceContext(*ectx)
+			stmts = append(stmts, news)
+		}
+	}
+	return &object.StatemetnsObject{Statements: stmts}
+}
 
 // 文の中のマクロローカル名をマングリングする
 // 引数 ecx は展開後の Context

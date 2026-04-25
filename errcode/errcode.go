@@ -202,7 +202,7 @@ const (
 	EMACRO_CYCLIC    = "MACRO %s の展開が再帰"
 
 	// REPT
-	EREPT_COUNT = "REPT 式の値が数値でない"
+	EREPT_ARG = "REPT には数値もしくは配列が必要"
 
 	// SCOPE
 	ESCOPE_PROC  = "%s は PROC 内部のみ利用可能"

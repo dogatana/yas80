@@ -37,10 +37,10 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.OrgStatement:
 		return e.evalOrgStatement(stmt, env)
 
-	// // INCLUDE
-	// case *parser.IncludeStatement:
-	// 	// ソースを表示するため nil とする
-	// 	return &object.CommentObject{Text: nil, Context: stmt.Context}
+	// INCLUDE
+	case *parser.IncludeStatement:
+		// ソースを表示するため nil とする
+		return &object.SourceTextObject{Text: nil, Context: stmt.Context}
 
 	// // PROC
 	// case *parser.ProcStatement:
@@ -96,9 +96,9 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.ExitmStatement:
 		return &object.ExitmObject{}
 
-	// // rept
-	// case *parser.ReptStatement:
-	// 	return e.evalReptStatement(stmt, checkExitM, ectx, env)
+	// rept
+	case *parser.ReptStatement:
+		return e.evalReptStatement(stmt, checkExitM, ectx, env)
 
 	// var
 	case *parser.VariableStatement:
@@ -136,23 +136,23 @@ func (e *Evaluator) evalStatement(stmt parser.Statement, checkExitM bool, ectx T
 	case *parser.CommentStatement:
 		return &object.SourceTextObject{Text: stmt.Text, Context: stmt.Context}
 
-	// // システム変数設定
-	// case *parser.SetSysVarStatement:
-	// 	var v object.Object
+	// システム変数設定
+	case *parser.SetSysVarStatement:
+		var v object.Object
 
-	// 	if obj, ok := stmt.Value.(object.Object); ok {
-	// 		v = obj
-	// 	} else {
-	// 		obj := e.evalExpression(stmt.Value.(parser.Expression), env, stmt.Context)
-	// 		if isError(obj) {
-	// 			return object.ERROR
-	// 		}
-	// 		v = obj
-	// 	}
+		if obj, ok := stmt.Value.(object.Object); ok {
+			v = obj
+		} else {
+			obj := e.evalExpression(stmt.Value.(parser.Expression), env, stmt.Context)
+			if isError(obj) {
+				return object.ERROR
+			}
+			v = obj
+		}
 
-	// 	env.Set(stmt.Name, v)
-	// 	comment := fmt.Sprintf("%s = %s", stmt.Name, v.String())
-	// 	return &object.CommentObject{Text: comment, SetSysVar: true, Context: stmt.Context}
+		env.Set(stmt.NameID, v)
+		comment := fmt.Sprintf("%s = %s", stmt.NameID, v.String())
+		return &object.SourceTextObject{Text: comment, SetSysVar: true, Context: stmt.Context}
 
 	// // enum
 	// case *parser.EnumStatement:

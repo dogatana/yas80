@@ -143,7 +143,7 @@ var ErrcodeNames map[string]string = map[string]string{
 	errcode.EMACRO_UNDEF:           "EMACRO_UNDEF",
 	errcode.EMACRO_ARG_COUNT:       "EMACRO_ARG_COUNT",
 	errcode.EMACRO_CYCLIC:          "EMACRO_CYCLIC",
-	errcode.EREPT_COUNT:            "EREPT_COUNT",
+	errcode.EREPT_ARG:              "EREPT_COUNT",
 	errcode.ESCOPE_PROC:            "ESCOPE_PROC",
 	errcode.ESCOPE_MACRO:           "ESCOPE_MACRO",
 	errcode.ENOT_IMPL_EXPR:         "ENOT_IMPL_EXPR",

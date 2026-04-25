@@ -315,79 +315,79 @@ BREAK:
 	return &object.BlockObject{Block: objects}
 }
 
-// // REPT 展開
-// func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, _ bool, ectx TContext, env TEnv) object.Object {
-// 	obj := e.evalExpression(stmt.MaxCount, env, stmt.Context)
-// 	if isError(obj) || isRefNotFound(obj) {
-// 		return obj
-// 	}
+// REPT 展開
+func (e *Evaluator) evalReptStatement(stmt *parser.ReptStatement, _ bool, ectx TContext, env TEnv) object.Object {
+	obj := e.evalExpression(stmt.MaxCount, env, stmt.Context)
+	if isError(obj) || isRefNotFound(obj) {
+		return obj
+	}
 
-// 	var num int
-// 	var values []any
+	var num int
+	var values []any
 
-// 	switch obj := obj.(type) {
-// 	case *object.NumberObject:
-// 		num = obj.Value
-// 	case *object.ArrayObject:
-// 		num = len(obj.Values)
-// 		values = make([]any, len(obj.Values))
-// 		for i, o := range obj.Values {
-// 			values[i] = o
-// 		}
-// 	default:
-// 		e.logger.Error(errcode.EREPT_COUNT, stmt.Context)
-// 		return object.ERROR
-// 	}
+	switch obj := obj.(type) {
+	case *object.NumberObject: // REPT n
+		num = obj.Value
+	case *object.ArrayObject: // REPT [e1, e2, ...]
+		num = len(obj.Values)
+		values = make([]any, len(obj.Values))
+		for i, o := range obj.Values {
+			values[i] = o
+		}
+	default:
+		e.logger.Error(errcode.EREPT_ARG, stmt.Context)
+		return object.ERROR
+	}
 
-// 	if ectx == nil {
-// 		// トップレベルからのマクロ展開の場合 Offset は 1 から
-// 		tmp := *stmt.Context
-// 		ectx = &tmp
-// 		ectx.Offset++
-// 	}
+	if ectx == nil {
+		// トップレベルからのマクロ展開の場合 Offset は 1 から
+		tmp := *stmt.Context
+		ectx = &tmp
+		ectx.Offset++
+	}
 
-// 	mb := &parser.MacroBlockStatement{
-// 		Label:   stmt.Label,
-// 		Name:    "REPT",
-// 		Count:   num,
-// 		Start:   stmt.Start,
-// 		Context: stmt.Context,
-// 	}
+	mb := &parser.MacroBlockStatement{
+		Label:   stmt.Label,
+		NameID:  intern.InternString("REPT"),
+		Count:   num,
+		Start:   stmt.Start,
+		Context: stmt.Context,
+	}
 
-// 	for i := 0; i < num; i++ {
-// 		bs := &parser.BlockStatement{}
+	for i := 0; i < num; i++ {
+		bs := &parser.BlockStatement{}
 
-// 		var s parser.Statement
-// 		s = &parser.SetSysVarStatement{
-// 			Name:    "$COUNT",
-// 			Value:   &object.NumberObject{Value: num},
-// 			Context: stmt.Context}
-// 		s.ReplaceContext(*ectx)
-// 		bs.Block = append(bs.Block, s)
+		var s parser.Statement
+		s = &parser.SetSysVarStatement{
+			NameID:  intern.InternString("$COUNT"),
+			Value:   &object.NumberObject{Value: num},
+			Context: stmt.Context}
+		s.ReplaceContext(*ectx)
+		bs.Block = append(bs.Block, s)
 
-// 		s = &parser.SetSysVarStatement{
-// 			Name:    "$I",
-// 			Value:   &object.NumberObject{Value: i},
-// 			Context: stmt.Context}
-// 		s.ReplaceContext(*ectx)
-// 		bs.Block = append(bs.Block, s)
+		s = &parser.SetSysVarStatement{
+			NameID:  intern.InternString("$I"),
+			Value:   &object.NumberObject{Value: i},
+			Context: stmt.Context}
+		s.ReplaceContext(*ectx)
+		bs.Block = append(bs.Block, s)
 
-// 		if values != nil {
-// 			s = &parser.SetSysVarStatement{
-// 				Name:    "$V",
-// 				Value:   values[i],
-// 				Context: stmt.Context}
-// 			s.ReplaceContext(*ectx)
-// 			bs.Block = append(bs.Block, s)
-// 		}
+		if values != nil {
+			s = &parser.SetSysVarStatement{
+				NameID:  intern.InternString("$V"),
+				Value:   values[i],
+				Context: stmt.Context}
+			s.ReplaceContext(*ectx)
+			bs.Block = append(bs.Block, s)
+		}
 
-// 		objs := e.expandReptBlock(stmt, env, ectx)
-// 		if isError(objs) {
-// 			continue
-// 		}
-// 		bs.Block = append(bs.Block, objs.(*object.StatemetnsObject).Statements...)
-// 		mb.Block = append(mb.Block, bs)
-// 	}
+		objs := e.expandReptBlock(stmt, env, ectx)
+		if isError(objs) {
+			continue
+		}
+		bs.Block = append(bs.Block, objs.(*object.StatemetnsObject).Statements...)
+		mb.Block = append(mb.Block, bs)
+	}
 
-// 	return &object.StatementObject{Statement: mb}
-// }
+	return &object.StatementObject{Statement: mb}
+}
