@@ -1,5 +1,7 @@
 package intern
 
+import "unsafe"
+
 type SymbolID uint32
 
 func (id SymbolID) String() string {
@@ -34,26 +36,17 @@ func InternString(s string) SymbolID {
 var upperBuf []byte
 
 func InternBytes(b []byte) SymbolID {
-	// 必要に応じて拡大
-	if cap(upperBuf) < len(b) {
-		upperBuf = make([]byte, len(b))
-	}
-	upperBuf = upperBuf[:len(b)]
+	// readWord で新規確保した buf を使用するの安全にゼロコピーできる
+	s := unsafe.String(&b[0], len(b))
 
-	// 大文字化（コピーは upperBuf のみ）
-	for i, c := range b {
-		if 'a' <= c && c <= 'z' {
-			upperBuf[i] = c - 32
-		} else {
-			upperBuf[i] = c
-		}
+	// InternString と同内容
+	if id, ok := strToID[s]; ok {
+		return id
 	}
-
-	// unsafe で string 化 - これはできた文字列の内容を壊すのでNG
-	// s := *(*string)(unsafe.Pointer(&upperBuf)
-	// string でコピーを作成する
-	s := string(upperBuf)
-	return InternString(s)
+	id := SymbolID(len(idToStr))
+	strToID[s] = id
+	idToStr = append(idToStr, s)
+	return id
 }
 
 // Reverse lookup: SymbolID → string

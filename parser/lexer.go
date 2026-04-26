@@ -596,12 +596,35 @@ func (l *Lexer) readString(quote rune) string {
 	return string(runes)
 }
 
+// 読み込み時点で大文字化する
 func (l *Lexer) readWord() []byte {
-	startIndex := l.lctx.index - 1
-	for l.lctx.index < len(l.lctx.fileContent.Content) && l.isWordChar(rune(l.lctx.fileContent.Content[l.lctx.index])) {
-		l.lctx.index++
+	start := l.lctx.index - 1
+	i := l.lctx.index
+
+	content := l.lctx.fileContent.Content
+	n := len(content)
+
+	for i < n {
+		c := content[i]
+		if !l.isWordChar(rune(c)) {
+			break
+		}
+		i++
 	}
-	return l.lctx.fileContent.Content[startIndex:l.lctx.index]
+	bytes := content[start:i]
+	l.lctx.index = i
+
+	// トークン専用の新規バッファを確保（安全性のため必須）
+	buf := make([]byte, len(bytes))
+	// コピーしながら大文字化（最速）
+	for i, b := range bytes {
+		if 'a' <= b && b <= 'z' {
+			buf[i] = b - 32
+		} else {
+			buf[i] = b
+		}
+	}
+	return buf
 }
 
 func (l *Lexer) readHexString() string {
