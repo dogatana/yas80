@@ -459,3 +459,67 @@ func TestRegIndirectExpression(t *testing.T) {
 	}
 
 }
+
+func TestEvalStringArrayAsNumberExpression(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `const v = 'a' + 1`, syms: []symValue{{"V", 'b'}}},
+		{input: `const v = 1 + 'a'`, syms: []symValue{{"V", 'b'}}},
+		{input: `const v = 'あ' + 1`, syms: []symValue{{"V", 0x82a1}}},
+		{input: `const v = 1 + 'あ'`, syms: []symValue{{"V", 0x82a1}}},
+		{input: `const v = [1] + 2`, syms: []symValue{{"V", 3}}},
+		{input: `const v = 2 + [1]`, syms: []symValue{{"V", 3}}},
+		{input: `const v = [1,2] + 3`, syms: []symValue{{"V", 0x0105}}},
+		{input: `const v = 3 + [1, 2]`, syms: []symValue{{"V", 0x0105}}},
+	}
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}
+
+func TestEvalSrtringArarayAddtion(t *testing.T) {
+	tests := []struct {
+		input string
+		syms  []symValue
+		err   string
+	}{
+		// 0-
+		{input: `const v = 'a' + 'b'`, syms: []symValue{{"V", "ab"}}},          // 文字列の結合
+		{input: `const v = 1 + 'a' + 'b'`, syms: []symValue{{"V", 'b' + 'b'}}}, // (1+'a') + 'b' => 'b' + 'b'
+		{input: `const v = [1] + [2] + 1`, syms: []symValue{{"V", 0x0103}}},    // ([1] + [2]) + 1 => [1,2] + 1
+		{input: `const v = 1 + [2] + [3]`, syms: []symValue{{"V", 6}}},         // (1 + [2]) + [3] => 3 + [3]
+	}
+	for tn, tt := range tests {
+		env := object.NewEnvironment(nil)
+		logger := logging.New()
+		_, e := evalInput(tt.input, logger, env)
+		testEvalResult(t, tn, tt.err, e)
+
+		// error, warning, information
+		if tt.err != "" {
+			testutil.TestLogMessage(t, tn, tt.err, e.logger)
+			continue
+		}
+		getter := func(name string) (*object.SymbolObject, bool) {
+			return e.getSymbolFromEnv(name, env)
+		}
+		testSymValues(t, tn, tt.syms, getter)
+	}
+}

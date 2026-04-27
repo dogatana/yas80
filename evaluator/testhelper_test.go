@@ -190,6 +190,8 @@ func testSymbolValue(t *testing.T, tn int, obj object.Object, expected any) bool
 	switch expected := expected.(type) {
 	case int:
 		return testNumberObject(t, tn, sym.Value, expected)
+	case int32:
+		return testNumberObject(t, tn, sym.Value, int(expected))
 	case string:
 		return testStringObject(t, tn, sym.Value, expected)
 	default:
