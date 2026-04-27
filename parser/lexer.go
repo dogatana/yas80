@@ -142,7 +142,7 @@ func (l *Lexer) Lex(lval *yySymType) int {
 			return int(tok.TokenType)
 
 		case 9:
-			tok := Token{TokenType: 0}
+			tok := Token{TokenType: 0, Context: l.lctx.toContext(l.start)}
 			lval.token = tok
 			return int(tok.TokenType)
 		}
