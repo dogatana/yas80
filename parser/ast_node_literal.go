@@ -1,10 +1,15 @@
 package parser
 
-var nodeLiteralTable map[int]string = map[int]string{
+var nodeLiteralTable = map[int]string{
 	NODE_NODE:               "NODE_NODE",
 	NODE_PROGRAM:            "NODE_PROGRAM",
+	NODE_FILE:               "NODE_FILE",
+	NODE_INCLUDE:            "NODE_INCLUDE",
 	NODE_ERROR:              "NODE_ERROR",
+	NODE_NULL:               "NODE_NULL",
 	NODE_STMT:               "NODE_STMT",
+	NODE_CHARMAP_STMT:       "NODE_CHARMAP_STMT",
+	NODE_ORG_STMT:           "NODE_ORG_STMT",
 	NODE_DELETED_STMT:       "NODE_DELETED_STMT",
 	NODE_LABEL_STMT:         "NODE_LABEL_STMT",
 	NODE_EXPR_STMT:          "NODE_EXPR_STMT",
@@ -20,8 +25,15 @@ var nodeLiteralTable map[int]string = map[int]string{
 	NODE_EXITM_STMT:         "NODE_EXITM_STMT",
 	NODE_RETURN_STMT:        "NODE_RETURN_STMT",
 	NODE_PROC_STMT:          "NODE_PROC_STMT",
+	NODE_PROC_BLOCK_STMT:    "NODE_PROC_BLOCK_STMT",
 	NODE_MACRO_STMT:         "NODE_MACRO_STMT",
 	NODE_MACRO_CALL_STMT:    "NODE_MACRO_CALL_STMT",
+	NODE_MACRO_BLOCK_STMT:   "NODE_MACRO_BLOCK_STMT",
+	NODE_SET_SYSVAR_STMT:    "NODE_SET_SYSVAR_STMT",
+	NODE_DATA_DEF_STMT:      "NODE_DATA_DEF_STMT",
+	NODE_DATA_STORE_STMT:    "NODE_DATA_STORE_STMT",
+	NODE_COMMENT_STMT:       "NODE_COMMENT_STMT",
+	NODE_END_STMT:           "NODE_END_STMT",
 	NODE_EXPR:               "NODE_EXPR",
 	NODE_ENUM_ELEMENT:       "NODE_ENUM_ELEMENT",
 	NODE_NUMBER:             "NODE_NUMBER",
@@ -38,6 +50,7 @@ var nodeLiteralTable map[int]string = map[int]string{
 	NODE_LABEL:              "NODE_LABEL",
 	NODE_LOCAL_LABEL:        "NODE_LOCAL_LABEL",
 	NODE_AT_LABEL:           "NODE_AT_LABEL",
+	NODE_ANON_LABEL:         "NODE_ANON_LABEL",
 	NODE_ADDR_INDIRECT:      "NODE_ADDR_INDIRECT",
 	NODE_REG_INDIRECT:       "NODE_REG_INDIRECT",
 }
