@@ -1,4 +1,4 @@
-package errtest
+package evaluator
 
 import (
 	"testing"
@@ -9,10 +9,10 @@ import (
 	"github.com/dogatana/yas80/object"
 )
 
-func TestErrorConstLabel(t *testing.T) {
+func TestEvalErrorConstLabel(t *testing.T) {
 	tests := []struct {
-		input    string
-		expected string
+		input string
+		err   string
 	}{
 		// 0-
 		{`const abc = 0 \ const abc = 1`, errcode.ECONST_DUP},
@@ -30,15 +30,15 @@ func TestErrorConstLabel(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logging.New()
 		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testutil.TestLogMessage(t, tn, tt.expected, logger)
+		evalInput(tt.input, logger, env)
+		testutil.TestLogMessage(t, tn, tt.err, logger)
 	}
 }
 
-func TestErrorScrope(t *testing.T) {
+func TestEvalErrorScrope(t *testing.T) {
 	tests := []struct {
-		input    string
-		expected string
+		input string
+		err   string
 	}{
 		// 0-
 		{`const @abc = 0 \ ld a, @abc`, errcode.ESCOPE_MACRO},
@@ -50,15 +50,15 @@ func TestErrorScrope(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logging.New()
 		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testutil.TestLogMessage(t, tn, tt.expected, logger)
+		evalInput(tt.input, logger, env)
+		testutil.TestLogMessage(t, tn, tt.err, logger)
 	}
 }
 
-func TestErrorFuncCall(t *testing.T) {
+func TestEvalErrorFuncCall(t *testing.T) {
 	tests := []struct {
-		input    string
-		expected string
+		input string
+		err   string
 	}{
 		// 0-
 		{`abc func \ return 1 \ endf \ _=abc(0)`, errcode.EFUNC_ARG_COUNT},
@@ -73,16 +73,16 @@ func TestErrorFuncCall(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logging.New()
 		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testutil.TestLogMessage(t, tn, tt.expected, logger)
+		evalInput(tt.input, logger, env)
+		testutil.TestLogMessage(t, tn, tt.err, logger)
 	}
 
 }
 
-func TestErrorRept(t *testing.T) {
+func TestEvalErrorRept(t *testing.T) {
 	tests := []struct {
-		input    string
-		expected string
+		input string
+		err   string
 	}{
 		// 0-
 		{`rept a \ nop \ endr`, errcode.EREPT_ARG},
@@ -90,7 +90,7 @@ func TestErrorRept(t *testing.T) {
 	for tn, tt := range tests {
 		logger := logging.New()
 		env := object.NewEnvironment(nil)
-		evaluateInput(TEST_ERROR, tt.input, logger, env)
-		testutil.TestLogMessage(t, tn, tt.expected, logger)
+		evalInput(tt.input, logger, env)
+		testutil.TestLogMessage(t, tn, tt.err, logger)
 	}
 }
