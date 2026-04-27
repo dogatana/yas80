@@ -110,6 +110,9 @@ func TestBuiltinFuncReverse(t *testing.T) {
 		// 0-
 		{input: `rept [1,2,3] \ ld a, $v \endr\ rept $rev([1,2,3]) \ ld a, $v \endr`, code: []byte{0x3e, 1, 0x3e, 2, 0x3e, 3, 0x3e, 3, 0x3e, 2, 0x3e, 1}},
 		{input: `rept [1,2,3] \ ld a, $v \endr\ rept $reverse($rev([1,2,3])) \ ld a, $v \endr`, code: []byte{0x3e, 1, 0x3e, 2, 0x3e, 3, 0x3e, 1, 0x3e, 2, 0x3e, 3}},
+		{input: `db $rev([1,2,3])`, code: []byte{3, 2, 1}},
+		{input: `db $rev('abc')`, code: []byte{'c', 'b', 'a'}},
+		{input: `db $rev('あいう')`, code: []byte{0x82, 0xa4, 0x82, 0xa2, 0x82, 0xa0}},
 		{input: `const abc = $rev()`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const abc = $rev(1, 2)`, err: errcode.EEBFN_ARG_COUNT},
 		{input: `const abc = $rev(1)`, err: errcode.EEBFN_ARG_VALUE},
