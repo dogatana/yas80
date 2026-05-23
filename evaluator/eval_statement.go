@@ -812,6 +812,15 @@ func (e *Evaluator) filterValidStatementForFunc(bs *parser.BlockStatement) {
 			e.filterValidStatementForFunc(stmt)
 			stmts = append(stmts, stmt)
 
+		case *parser.MacroCallStatement:
+			if stmt.NameID == intern.InternString("INFO") ||
+				stmt.NameID == intern.InternString("WARN") ||
+				stmt.NameID == intern.InternString("ERROR") {
+				stmts = append(stmts, stmt)
+			} else {
+				e.logger.Warning(errcode.WSCOPE_FUNC, stmt.GetContext())
+			}
+
 		default:
 			// 利用不可
 			e.logger.Warning(errcode.WSCOPE_FUNC, stmt.GetContext())
