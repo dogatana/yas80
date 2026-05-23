@@ -105,11 +105,11 @@ Z80 公開命令の範囲でアセンブル時間の比較を行っています�
 
 |アセンブラ | 平均実行時間（秒）|
 | --        |       --:         |
-| yas80     |             0.020 |
-| z80as     |             0.008 |
-| z80asm    |             0.049 |
-| tools80   |             0.111 |
-| AILZ80ASM |             0.550 |
+| yas80     |             0.008 |
+| z80as     |             0.005 |
+| z80asm    |             0.011 |
+| tools80   |             0.102 |
+| AILZ80ASM |             0.490 |
 
 
 ![min](https://raw.githubusercontent.com/dogatana/yas80/main/performance/min.asm.svg)
@@ -118,11 +118,11 @@ Z80 公開命令の範囲でアセンブル時間の比較を行っています�
 
 |アセンブラ | 平均実行時間（秒）|
 | --        |       --:         |
-| yas80     |             0.039 |
+| yas80     |             0.036 |
 | z80as     |             0.014 |
 | z80asm    |             0.140 |
-| tools80   |             0.301 |
-| AILZ80ASM |             0.967 |
+| tools80   |             0.304 |
+| AILZ80ASM |             0.960 |
 
 ![max](https://raw.githubusercontent.com/dogatana/yas80/main/performance/max.asm.svg)
 
@@ -130,11 +130,11 @@ Z80 公開命令の範囲でアセンブル時間の比較を行っています�
 
 |アセンブラ | 平均実行時間（秒）|
 | --        |       --:         |
-| yas80     |             0.056 |
+| yas80     |             0.052 |
 | z80as     |             0.025 |
-| z80asm    |             0.271 |
-| tools80   |             2.424 |
-| AILZ80ASM |             6.400 |
+| z80asm    |             0.273 |
+| tools80   |             2.407 |
+| AILZ80ASM |             6.201 |
 
 ![label](https://raw.githubusercontent.com/dogatana/yas80/main/performance/label.asm.svg)
 
