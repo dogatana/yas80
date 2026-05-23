@@ -19,7 +19,11 @@ patch_data: list[PatchData] = [
             "\tPush(filename string, fc *filecontent.FileContent, ctx *filecontent.Context) error // # added\n"
         )
     ),
-
+    # yyTokenNames 修正
+    PatchData(
+        '"$end",',
+        '"EOF",',
+    ),
     # ステート遷移のデバッグ表示強化
     PatchData(
         '__yyfmt__.Printf("lex %s(%d)\\n", yyTokname(token), uint(char))'

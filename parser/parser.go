@@ -94,7 +94,7 @@ const END = 57407
 const INVALID = 57408
 
 var yyToknames = [...]string{
-	"$end",
+	"EOF",
 	"error",
 	"$unk",
 	"EOL",
